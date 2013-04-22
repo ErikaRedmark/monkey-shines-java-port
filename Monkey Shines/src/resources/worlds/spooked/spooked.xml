@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<world>
+	<worldinfo>
+		<worldname>Spooked!</worldname>
+		<baseTileName>spooked</baseTileName>
+		<sprite>
+			<id>0</id>
+			<imagefile>sbee.gif</imagefile>
+		</sprite>
+		<baseScreenName>msScreen</baseScreenName>
+		<screen>
+			<id>1000</id>
+		</screen>
+		<screen>
+			<id>999</id>
+		</screen>
+		
+		<goodie>
+			<screenID>1000</screenID>
+			<row>16</row>
+			<col>4</col>
+			<type>4</type>
+		</goodie>
+		<goodie>
+			<screenID>1000</screenID>
+			<row>14</row>
+			<col>2</col>
+			<type>5</type>
+		</goodie>
+	</worldinfo>
+</world>
