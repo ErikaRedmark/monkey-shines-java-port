@@ -3,16 +3,10 @@ package edu.nova.erikaredmark.monkeyshines.encoder;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
 
 import edu.nova.erikaredmark.monkeyshines.Goodie;
 import edu.nova.erikaredmark.monkeyshines.LevelScreen;
-import edu.nova.erikaredmark.monkeyshines.World;
 import edu.nova.erikaredmark.monkeyshines.editor.WorldEditor;
 
 /**
@@ -34,7 +28,8 @@ import edu.nova.erikaredmark.monkeyshines.editor.WorldEditor;
  * @author Erika Redmark
  */
 public class EncodedWorld implements Serializable {
-
+	private static final long serialVersionUID = 264L;
+	
 	private final String name;
 	private final Map<String, EncodedGoodie> goodies;
 	private final Map<Integer, EncodedLevelScreen> levels;

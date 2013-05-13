@@ -23,8 +23,8 @@ public class Sprite {
 	
 	// Movement: Classic Monkeyshines bounding box movement
 	private       Point2D currentLocation;
-	private final Point2D startLocation;
-	private final ClippingRectangle boundingBox;
+	private final ImmutablePoint2D startLocation;
+	private final ImmutableRectangle boundingBox;
 	private       int speedX;
 	private       int speedY;
 	
@@ -59,7 +59,7 @@ public class Sprite {
 				  final Point2D currentLocation, 
 				  final int speedX, 
 				  final int speedY, 
-				  final ClippingRectangle boundingBox) {
+				  final ImmutableRectangle boundingBox) {
 		
 		this.spriteSheet = spriteSheet;
 		currentClip = ClippingRectangle.of(GameConstants.SPRITE_SIZE_X, GameConstants.SPRITE_SIZE_Y);
@@ -80,8 +80,8 @@ public class Sprite {
 //				   rightFace;
 
 		
-		this.boundingBox = ClippingRectangle.of(boundingBox);
-		this.startLocation = Point2D.of(currentLocation);
+		this.boundingBox = boundingBox;
+		this.startLocation = ImmutablePoint2D.from(currentLocation);
 		this.currentLocation = Point2D.of(currentLocation);
 		this.speedX = speedX;
 		this.speedY = speedY;
@@ -92,6 +92,16 @@ public class Sprite {
 			this.currentClip.setY(GameConstants.SPRITE_SIZE_Y);
 		}
 	}
+	
+	/**
+	 * 
+	 * Returns the starting location of this sprite. The returned object is immutable.
+	 * 
+	 * @return
+	 * 		starting location
+	 * 
+	 */
+	public ImmutablePoint2D getStaringLocation() { return this.startLocation; }
 
 	
 	/**
@@ -102,12 +112,25 @@ public class Sprite {
 	 */
 	public Point2D newPointFromSpritePosition() { return Point2D.of(currentLocation); }
 	
-	public void resetSpritePosition() { currentLocation = Point2D.of(startLocation); }
+//	/**
+//	 * 
+//	 * <strong> Warning: Method returns direct reference to this object's mutable location </strong>
+//	 * <p/>
+//	 * Returns the underlying mutable point representing the sprite's location on the screen. Intended only for drawing
+//	 * functions that need fast access repeatedly to this object's location.
+//	 * 
+//	 * @return
+//	 * 		underlying point for this sprite
+//	 * 
+//	 */
+//	public Point2D getSpritePosition() { return this.currentLocation; }
+//	
+	public void resetSpritePosition() { currentLocation = Point2D.from(startLocation); }
 	
 	public void paint(Graphics2D g2d) {
-			g2d.drawImage(spriteSheet, currentLocation.drawX(), currentLocation.drawY(), 
-					currentLocation.drawX() + GameConstants.SPRITE_SIZE_X, 
-					currentLocation.drawY() + GameConstants.SPRITE_SIZE_Y,
+			g2d.drawImage(spriteSheet, currentLocation.x(), currentLocation.y(), 
+					currentLocation.x() + GameConstants.SPRITE_SIZE_X, 
+					currentLocation.y() + GameConstants.SPRITE_SIZE_Y,
 					currentClip.x(), currentClip.y(), currentClip.width() + currentClip.x(),
 					currentClip.height() + currentClip.y(),  null  );
 	}
@@ -128,6 +151,17 @@ public class Sprite {
 		if (boundingBox.inBoundsY(currentLocation) == false) reverseY();
 		
 	}
+	
+	/**
+	 * 
+	 * Returns the bounding box of this sprite. The returned object is immutable. Bounding boxes of sprites may not
+	 * be changed once loaded.
+	 * 
+	 * @return
+	 * 		this sprites bounding box
+	 * 
+	 */
+	public ImmutableRectangle getBoundingBox() { return this.boundingBox; }
 	
 	
 	/** Reverse X speed, and if the sprite is a two-way facing sprite, swaps sprite sheet rows.							*/

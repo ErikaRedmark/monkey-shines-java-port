@@ -1,6 +1,7 @@
 package edu.nova.erikaredmark.monkeyshines;
 
-import java.awt.Dimension;
+import edu.nova.erikaredmark.monkeyshines.bounds.Boundable;
+import edu.nova.erikaredmark.monkeyshines.bounds.IPoint2D;
 
 /**
  * 
@@ -14,25 +15,28 @@ import java.awt.Dimension;
  * @author Erika Redmark
  *
  */
-public class ClippingRectangle {
+public class ClippingRectangle extends Boundable {
 	
-	/* Wrap the dimension instance so it becomes effectively immutable to clients.										*/
-	private final Dimension dim;
-	
-	private int X;
-	private int Y;
+	private ClippingRectangle(final int x, final int y, final int width, final int height) {
+		super.location = Point2D.of(x, y);
+		super.size = ImmutablePoint2D.of(width, height);
 
-	private ClippingRectangle(final int width, final int height, final int X, final int Y) {
-		dim = new Dimension(width, height);
-		this.X = X;
-		this.Y = Y;
 	}
 	
-	// Package visibility to allow UnmodifiableClippingRectangle only!
-	ClippingRectangle(ClippingRectangle cpy) {
-		dim = new Dimension(cpy.width(), cpy.height() );
-		this.X = cpy.X;
-		this.Y = cpy.Y;
+	private ClippingRectangle(ClippingRectangle cpy) {
+		super.size = ImmutablePoint2D.of(cpy.width(), cpy.height() );
+		super.size = ImmutablePoint2D.of(cpy.x(), cpy.y() );
+	}
+	
+	
+	/**
+	 * 
+	 * Returns a copy of this clipping rectangle's location so it may not be modified by clients. The copy may be
+	 * modified without affecting the original.
+	 * 
+	 */
+	@Override public IPoint2D getLocation() {
+		return Point2D.from(super.location);
 	}
 	
 	/**
@@ -46,7 +50,7 @@ public class ClippingRectangle {
 	 * @return
 	 * 		a new instance of a clipping rectangle
 	 */
-	public static ClippingRectangle of(final int width, final int height, final int x, final int y) { return new ClippingRectangle(width, height, x, y); }
+	public static ClippingRectangle of(final int x, final int y, final int width, final int height) { return new ClippingRectangle(width, height, x, y); }
 	
 	/**
 	 * Returns a clipping rectangle whose location is 0,0 (mutable) and whose width and height is as specified (immutable)
@@ -57,7 +61,7 @@ public class ClippingRectangle {
 	 * @return
 	 * 		a new instance of a clipping rectangle with the given features
 	 */
-	public static ClippingRectangle of(final int width, final int height) { return new ClippingRectangle(width, height, 0, 0); }
+	public static ClippingRectangle of(final int width, final int height) { return new ClippingRectangle(0, 0, width, height); }
 	
 	/**
 	 * Returns a new clipping rectangle whose properties are a copy of the passed clipping rectangle.
@@ -71,10 +75,10 @@ public class ClippingRectangle {
 	public static ClippingRectangle of(final ClippingRectangle other) { return new ClippingRectangle(other); }
 	
 	
-	public int x() { return X; }
-	public int y() { return Y; }
-	public int width() { return dim.width; }
-	public int height() { return dim.height; }
+	public int x() { return super.location.x(); }
+	public int y() { return super.location.y(); }
+	public int width() { return super.size.x(); }
+	public int height() { return super.size.y(); }
 	
 	/**
 	 * Moves the clipping region to a new location, keeping the same size.
@@ -85,9 +89,9 @@ public class ClippingRectangle {
 	 * @param Y
 	 * 		new y location for upper-left point
 	 */
-	public void move(final int X, final int Y) { this.X = X; this.Y = Y; }
-	public void setX(final int X) { this.X = X; }
-	public void setY(final int Y) { this.Y = Y; }
+	public void move(final int x, final int y) { ((Point2D)super.location).setX(x); ((Point2D)super.location).setY(y); }
+	public void setX(final int x) { ((Point2D)super.location).setX(x); }
+	public void setY(final int y) { ((Point2D)super.location).setY(y); }
 
 
 	/**
@@ -101,55 +105,11 @@ public class ClippingRectangle {
 	 * 		positive for n units down, negative for n units up
 	 * 
 	 */
-	public void translate(final int unitsX, final int unitsY) { this.X += unitsX; this.Y += unitsY; }
-	public void translateX(final int units) { this.X += units; }
-	public void translateY(final int units) { this.Y += units; }
+	public void translate(final int unitsX, final int unitsY) { ((Point2D)super.location).translateX(unitsX); ((Point2D)super.location).translateY(unitsY); }
+	public void translateX(final int units) { ((Point2D)super.location).translateX(units); }
+	public void translateY(final int units) { ((Point2D)super.location).translateY(units); }
 	
 	
-	/**
-	 * 
-	 * Tests if a given points lies within this copping region. Lying within is inclusive of the bounds, any point within
-	 * {@code [x, x + width], [y, y + width] } is considered within the region.
-	 * 
-	 * @param point
-	 * 
-	 * @return {@code true} if the given point lies within the rectangle given be this object, {@code false} if otherwise
-	 * 
-	 */
-	public boolean inBounds(Point2D point) {
-		return (inBoundsX(point) && inBoundsY(point) );
-	}
 	
-	/**
-	 * Does bounds checking only for X co-ordinate
-	 * 
-	 * @param point
-	 * @return {@code true} if the point's x value lies within the x bounds of this region, {@code false} if otherwise
-	 */
-	public boolean inBoundsX(Point2D point) {
-		return (point.x() >= this.x() && point.x() <= ( this.x() + this.width() ) );
-	}
-	
-	/**
-	 * Does bounds checking only for Y co-ordinate
-	 * 
-	 * @param point
-	 * @return {@code true} if the point's y value lies within the x bounds of this region, {@code false} if otherwise
-	 */
-	public boolean inBoundsY(Point2D point) {
-		return (point.y() >= this.y() && point.y() <= ( this.y() + this.height()) );
-	}
-	
-	/**
-	 * Determines if the given regions intersect.
-	 * 
-	 * @param other
-	 * @return
-	 */
-	public boolean intersect(ClippingRectangle other) {
-		// TODO method stub
-		return false;
-	}
-
 
 }

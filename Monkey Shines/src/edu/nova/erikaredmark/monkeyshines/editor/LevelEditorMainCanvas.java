@@ -267,7 +267,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		mousePosition.setX(e.getX() );
 		mousePosition.setY(e.getY() );
 		if (currentState == EditorState.PLACING_TILES)
-			addTile(mousePosition.drawX(), mousePosition.drawY() );
+			addTile(mousePosition.x(), mousePosition.y() );
 
 	}
 
@@ -293,8 +293,8 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 			// Paint the mouse box
 
 			g2d.setColor(Color.green);
-			g2d.drawRect(snapMouseX(mousePosition.drawX() ),
-						 snapMouseY(mousePosition.drawY() ), 
+			g2d.drawRect(snapMouseX(mousePosition.x() ),
+						 snapMouseY(mousePosition.y() ), 
 						 GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y);
 
 			// If we are selecting a tile, draw the whole sheet to the side.

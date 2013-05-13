@@ -14,27 +14,31 @@ import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
 public class Bonzo {
 	
 	// Constants for bonzo
-	static final int BONZO_SIZE_X = 40;
-	static final int BONZO_SIZE_Y = 40;
-	static final int BONZO_DEATH_SIZE_X = 80;
-	static final int BONZO_DEATH_SIZE_Y = 40;
-	static final int BONZO_BEE_SIZE_X = 40;
-	static final int BONZO_BEE_SIZE_Y = 80;
+	public static final int BONZO_SIZE_X = 40;
+	public static final int BONZO_SIZE_Y = 40;
+	private static final int BONZO_DEATH_SIZE_X = 80;
+	private static final int BONZO_DEATH_SIZE_Y = 40;
+	private static final int BONZO_BEE_SIZE_X = 40;
+	private static final int BONZO_BEE_SIZE_Y = 80;
 	
 	// ALL X'S HERE ARE ZERO
-	static final int WALK_RIGHT_Y = 0;
-	static final int WALK_SPRITES = 16;
-	static final int WALK_LEFT_Y = 40;
+	private static final int WALK_RIGHT_Y = 0;
+	private static final int WALK_SPRITES = 16;
+	private static final int WALK_LEFT_Y = 40;
 	
-	static final int JUMP_SPRITES = 8;
-	static final int JUMP_Y = 80;
-	static final int JUMP_RIGHT_X = 0;
-	static final int JUMP_LEFT_X = JUMP_SPRITES * BONZO_SIZE_X;
+	private static final int JUMP_SPRITES = 8;
+	private static final int JUMP_Y = 80;
+	private static final int JUMP_RIGHT_X = 0;
+	private static final int JUMP_LEFT_X = JUMP_SPRITES * BONZO_SIZE_X;
 	
-	static final int DEATH_SPRITES = 16;
-	static final int DEATH_ROWS = 2;
-	static final int DEATH_COLS = 8;
-	static final int DEATH_START_Y = 120;
+	private static final int DEATH_SPRITES = 16;
+	private static final int DEATH_ROWS = 2;
+	private static final int DEATH_COLS = 8;
+	private static final int DEATH_START_Y = 120;
+	
+	private static final int TERMINAL_VELOCITY = 8;
+	
+	
 	
 	// Sprite Info
 	int walkingDirection; // used during walking for determing what to blit.
@@ -99,7 +103,7 @@ public class Bonzo {
 			return;
 		}
 		// Good thing this returns a COPY
-		currentLocation = currentScreen.newPointFromBonzoStart();
+		currentLocation = Point2D.from(currentScreen.getBonzoStartingLocation() );
 	}
 	
 	public void changeScreen(final int newScreen) {
@@ -117,14 +121,14 @@ public class Bonzo {
 	 */
 	public int onGround() {
 		// If rising, not falling, no need to check for ground. In fact, we are allowed to go through certain ground.
-		if (currentVelocity.y() < 0)
+		if (currentVelocity.precisionY() < 0)
 			return -1;
 		
 		LevelScreen currentScreen = worldPointer.getCurrentScreen();
-		int bonzoOneBelowFeetY = (currentLocation.drawY() + BONZO_SIZE_Y) + 1;
-		Optional<TileType> onGroundLeft = currentScreen.checkForGroundTile(currentLocation.drawX(), bonzoOneBelowFeetY);
-		Optional<TileType> onGroundMiddle = currentScreen.checkForGroundTile(currentLocation.drawX() + (GameConstants.TILE_SIZE_X), bonzoOneBelowFeetY);
-		Optional<TileType> onGroundRight = currentScreen.checkForGroundTile(currentLocation.drawX() + BONZO_SIZE_X, bonzoOneBelowFeetY );
+		int bonzoOneBelowFeetY = (currentLocation.y() + BONZO_SIZE_Y) + 1;
+		Optional<TileType> onGroundLeft = currentScreen.checkForGroundTile(currentLocation.x(), bonzoOneBelowFeetY);
+		Optional<TileType> onGroundMiddle = currentScreen.checkForGroundTile(currentLocation.x() + (GameConstants.TILE_SIZE_X), bonzoOneBelowFeetY);
+		Optional<TileType> onGroundRight = currentScreen.checkForGroundTile(currentLocation.x() + BONZO_SIZE_X, bonzoOneBelowFeetY );
 		
 		// If at least part of him is on a thru tile.
 		if ( (onGroundLeft.isPresent() && onGroundLeft.get() == TileType.THRU)     || 
@@ -149,9 +153,9 @@ public class Bonzo {
 	
 	public boolean solidToSide(final int newX) {
 		LevelScreen currentScreen = worldPointer.getCurrentScreen();
-		if (currentScreen.checkForTile(newX, currentLocation.drawY() ) ||
-				currentScreen.checkForTile(newX, currentLocation.drawY() + BONZO_SIZE_Y - 1) ||
-				currentScreen.checkForTile(newX, currentLocation.drawY() + (BONZO_SIZE_Y / 2) ) ) {
+		if (currentScreen.checkForTile(newX, currentLocation.y() ) ||
+				currentScreen.checkForTile(newX, currentLocation.y() + BONZO_SIZE_Y - 1) ||
+				currentScreen.checkForTile(newX, currentLocation.y() + (BONZO_SIZE_Y / 2) ) ) {
 			return true;
 		}
 		return false;
@@ -159,9 +163,9 @@ public class Bonzo {
 	
 	public boolean solidToUp(final int newY) {
 		LevelScreen currentScreen = worldPointer.getCurrentScreen();
-		if (currentScreen.checkForTile(currentLocation.drawX(), newY) ||
-				currentScreen.checkForTile(currentLocation.drawX() + (BONZO_SIZE_X - 1), newY ) ||
-				currentScreen.checkForTile(currentLocation.drawX() + (BONZO_SIZE_X / 2), newY ) ) {
+		if (currentScreen.checkForTile(currentLocation.x(), newY) ||
+				currentScreen.checkForTile(currentLocation.x() + (BONZO_SIZE_X - 1), newY ) ||
+				currentScreen.checkForTile(currentLocation.x() + (BONZO_SIZE_X / 2), newY ) ) {
 			return true;
 		}
 		return false;
@@ -185,13 +189,13 @@ public class Bonzo {
 		//currentVelocity.x = velocity * GameConstants.BONZO_SPEED_MULTIPLIER;
 		//only move if not a solid tile ahead
 		
-		int newX = currentLocation.drawX() + (int)( velocity * GameConstants.BONZO_SPEED_MULTIPLIER );
+		int newX = currentLocation.x() + (int)( velocity * GameConstants.BONZO_SPEED_MULTIPLIER );
 		if (velocity < 0) {
 			walkingDirection = 1;
 			if (!solidToSide(newX) )
 				currentLocation.setX(newX);
 		} else {
-			int rightSide = currentLocation.drawX() + Bonzo.BONZO_SIZE_X + (int)( velocity * GameConstants.BONZO_SPEED_MULTIPLIER);
+			int rightSide = currentLocation.x() + Bonzo.BONZO_SIZE_X + (int)( velocity * GameConstants.BONZO_SPEED_MULTIPLIER);
 			walkingDirection = 0;
 			if (!solidToSide(rightSide) ) {
 				currentLocation.setX(newX);
@@ -205,7 +209,7 @@ public class Bonzo {
 		if (isJumping)
 			return;
 		int onGround = onGround();
-		if (onGround != -1 && (currentVelocity.drawY() == 0)  ) {
+		if (onGround != -1 && (currentVelocity.y() == 0)  ) {
 			currentVelocity.setY(-(velocity * GameConstants.BONZO_JUMP_MULTIPLIER) );
 			isJumping = true;
 			currentSprite = 0;
@@ -252,7 +256,7 @@ public class Bonzo {
 		// if we are jumping, slowly increment the sprite until we get to the end, then leave it there.
 		if (isJumping) {
 			// check for a tile above us
-			if (!solidToUp(currentLocation.drawY() ) ) {
+			if (!solidToUp(currentLocation.y() ) ) {
 				//currentLocation.y -= currentVelocity.y;
 				if (currentSprite < 7)
 					currentSprite++;
@@ -264,15 +268,22 @@ public class Bonzo {
 		// check for floor. If none, add some points of fall to velocity until max or hitting a floor.
 		int onGround = onGround();
 		if ( onGround == -1) {
-			if (currentVelocity.y() <= GameConstants.MAX_FALL_SPEED);
+			if (currentVelocity.precisionY() <= GameConstants.MAX_FALL_SPEED);
 			else {
-				// Jumps should be smoother
-				// Nitpick: Bonzo falls slower if he jumps first. Not sure if this is a good idea.
-				if (isJumping) {
-					currentVelocity.translateYFine(-0.5);
-				} else {
-					currentVelocity.translateYFine(-1);
-				}
+				// No incrementing once bonzo hits terminal velocity.
+				// Note, bonzo's terminal velocity may be [8, 9] due to imprecision.
+				//if (currentVelocity.y() > TERMINAL_VELOCITY) {
+				
+					// Jumps should be smoother
+					// Nitpick: Bonzo falls slower if he jumps first. Not sure if this is a good idea.
+					if (isJumping) {
+						currentVelocity.translateYFine(-0.5);
+					} else {
+						currentVelocity.translateYFine(-1);
+					}
+				
+				//}
+				
 			}
 			// The Greater the absval of the current velocity the more the increase
 		// if we are falling and hit the ground, stop the jump. onGround will have returned -1 if we were rising, not falling.
@@ -294,8 +305,8 @@ public class Bonzo {
 		if (isDying) {
 			int yOffset = DEATH_START_Y + (BONZO_DEATH_SIZE_Y * (currentSprite / 8) );
 			int xOffset = BONZO_DEATH_SIZE_X * (currentSprite % 8);
-			g2d.drawImage(bonzoSprite, currentLocation.drawX(), currentLocation.drawY(),  //DEST
-						  currentLocation.drawX() + BONZO_DEATH_SIZE_X, currentLocation.drawY() + BONZO_DEATH_SIZE_Y, // DEST2
+			g2d.drawImage(bonzoSprite, currentLocation.x(), currentLocation.y(),  //DEST
+						  currentLocation.x() + BONZO_DEATH_SIZE_X, currentLocation.y() + BONZO_DEATH_SIZE_Y, // DEST2
 						  xOffset, yOffset, xOffset + BONZO_DEATH_SIZE_X, yOffset + BONZO_DEATH_SIZE_Y,
 						  null);
 			return;
@@ -303,16 +314,16 @@ public class Bonzo {
 		// if walking right
 		int takeFromX = currentSprite * BONZO_SIZE_X;
 		if (!isJumping) {
-			g2d.drawImage(bonzoSprite, currentLocation.drawX(), currentLocation.drawY(),  //DEST
-						  currentLocation.drawX() + BONZO_SIZE_X, currentLocation.drawY() + BONZO_SIZE_Y, // DEST2
+			g2d.drawImage(bonzoSprite, currentLocation.x(), currentLocation.y(),  //DEST
+						  currentLocation.x() + BONZO_SIZE_X, currentLocation.y() + BONZO_SIZE_Y, // DEST2
 						  takeFromX, walkingDirection * 40, takeFromX + BONZO_SIZE_X, (walkingDirection * 40) + 40,
 						  null);
 		} else if (isJumping) {
 			// if we are jumping to the left, we have to go 8 * 40 to the right to get to the right sprite level
 			if (walkingDirection == 1)
 				takeFromX += JUMP_LEFT_X;
-			g2d.drawImage(bonzoSprite, currentLocation.drawX(), currentLocation.drawY(),  //DEST
-						  currentLocation.drawX() + BONZO_SIZE_X, (int)currentLocation.drawY() + BONZO_SIZE_Y, // DEST2
+			g2d.drawImage(bonzoSprite, currentLocation.x(), currentLocation.y(),  //DEST
+						  currentLocation.x() + BONZO_SIZE_X, (int)currentLocation.y() + BONZO_SIZE_Y, // DEST2
 						  takeFromX, JUMP_Y, takeFromX + BONZO_SIZE_X, JUMP_Y + 40,
 						  null);
 		}

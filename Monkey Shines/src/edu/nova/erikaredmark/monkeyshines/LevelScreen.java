@@ -18,7 +18,6 @@ import org.xml.sax.SAXException;
 import com.google.common.base.Optional;
 
 import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
-import edu.nova.erikaredmark.monkeyshines.encoder.Tile;
 
 /**
  * Improving the screen-by-screen architecture is NOT something I will be doing.
@@ -53,8 +52,8 @@ public class LevelScreen {
 	private       Sprite spritesOnScreen[];
 	//boolean justOnce; // every time a screen is reloaded,
 	
-	// Bonzo's starting location
-	private       Point2D bonzoStart;
+	// Bonzo's starting location. Never changes
+	private       ImmutablePoint2D bonzoStart;
 	// Bonzo's starting location when entered from another screen. Set by the World, set to null when bonzo leaves.
 	private       Point2D bonzoCameFrom;
 	
@@ -127,12 +126,12 @@ public class LevelScreen {
 			if (nl != null && nl.getLength() > 0) {
 				Element bonzoEl = (Element)nl.item(0);
 				
-				bonzoStart = Point2D.of(GameConstants.getIntValue(bonzoEl, "x"),
+				bonzoStart = ImmutablePoint2D.of(GameConstants.getIntValue(bonzoEl, "x"),
 						                GameConstants.getIntValue(bonzoEl, "y" ) );
 				
 				/* Bonzo's initial entry into this current screen will be from the starting point.						*/
 				if (bonzoCameFrom != null) throw new IllegalStateException("Screen can not have 'cameFrom' data before bonzo's starting location is loaded");
-				bonzoCameFrom = Point2D.of(bonzoStart);
+				bonzoCameFrom = Point2D.from(bonzoStart);
 			}
 			
 			// Sprites
@@ -142,11 +141,11 @@ public class LevelScreen {
 				for (int i = 0; i < nl.getLength(); i++) {
 					Element spriteEl = (Element)nl.item(i);
 				
-					ClippingRectangle boundingBox = ClippingRectangle.of(
-							GameConstants.getIntValue(spriteEl, "width"),
-							GameConstants.getIntValue(spriteEl, "height"), 
+					ImmutableRectangle boundingBox = ImmutableRectangle.of(
 							GameConstants.getIntValue(spriteEl, "bound1x") ,
-							GameConstants.getIntValue(spriteEl, "bound1y") );
+							GameConstants.getIntValue(spriteEl, "bound1y"),
+							GameConstants.getIntValue(spriteEl, "width"),
+							GameConstants.getIntValue(spriteEl, "height") );
 				
 					Point2D spriteLocation = Point2D.of(
 							GameConstants.getIntValue(spriteEl, "startx"),
@@ -233,14 +232,14 @@ public class LevelScreen {
 	
 	/**
 	 * 
-	 * Gets the starting position of Bonzo in the level. The returned point may be freely modified and assigned as-is to any
-	 * object.
+	 * Gets the starting position of Bonzo in the level. The returned point is immutable: Use {@code Point2D#from(ImmutablePoint2D)}
+	 * to get a mutable version
 	 * 
 	 * @return
-	 * 		a new instance of a point that represents the starting location of bonzo in the level, never {@code null}
+	 * 		the location bonzo starts on this level. Never {@code null}
 	 */
-	public Point2D newPointFromBonzoStart() {
-		return Point2D.of(bonzoStart);
+	public ImmutablePoint2D getBonzoStartingLocation() {
+		return this.bonzoStart;
 	}
 	
 	/**
@@ -272,7 +271,7 @@ public class LevelScreen {
 	 * If, for some reason, the location Bonzo Came from becomes invalid, this resets it.
 	 */
 	public void resetBonzoCameFrom() {
-		this.bonzoCameFrom = Point2D.of(bonzoStart);
+		this.bonzoCameFrom = Point2D.from(bonzoStart);
 	}
 	
 	// Sprites

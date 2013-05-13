@@ -1,6 +1,6 @@
 package edu.nova.erikaredmark.monkeyshines.encoder;
 
-import edu.nova.erikaredmark.monkeyshines.Point2D;
+import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.Tile;
 import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
 
@@ -26,11 +26,10 @@ public final class EncodedTile {
 	private final int id;
 	/* Enums are OKAY to serialize.	*/
 	private final TileType type;
-	private final int row;
-	private final int col;
+	private final ImmutablePoint2D location;
 	
-	private EncodedTile(final int id, final TileType type, final int row, final int col) {
-		this.id = id; this.type = type; this.row = row; this.col = col;
+	private EncodedTile(final int id, final TileType type, final ImmutablePoint2D location) {
+		this.id = id; this.type = type; this.location = location;
 	}
 	
 	/**
@@ -43,11 +42,9 @@ public final class EncodedTile {
 	public static EncodedTile from(final Tile t) {
 		final int _id = t.getTileId();
 		final TileType _type = t.getType();
-		final Point2D location = t.getLocation();
-		final int _row = location.drawX();
-		final int _col = location.drawY();
+		final ImmutablePoint2D _location = ImmutablePoint2D.from(t.getLocation() );
 		
-		return new EncodedTile(_id, _type, _row, _col);
+		return new EncodedTile(_id, _type, _location);
 	}
 	
 }

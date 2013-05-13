@@ -21,7 +21,6 @@ import org.xml.sax.SAXException;
 import com.google.common.collect.ImmutableMap;
 
 import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
-import edu.nova.erikaredmark.monkeyshines.editor.LevelScreen;
 
 /**
  * Holds all information about the entire world.
@@ -366,8 +365,8 @@ public class World {
 		
 		// Assume that Java automatically optimises these with a StringBuilder. If it doesn't
 		// we will manually add that feature.
-		int topLeftX = (theBonzo.currentLocation.drawX() + (GameConstants.GOODIE_SIZE_X / 2) ) / GameConstants.GOODIE_SIZE_X;
-		int topLeftY = (theBonzo.currentLocation.drawY() + (GameConstants.GOODIE_SIZE_Y / 2) )/ GameConstants.GOODIE_SIZE_Y;
+		int topLeftX = (theBonzo.currentLocation.x() + (GameConstants.GOODIE_SIZE_X / 2) ) / GameConstants.GOODIE_SIZE_X;
+		int topLeftY = (theBonzo.currentLocation.y() + (GameConstants.GOODIE_SIZE_Y / 2) )/ GameConstants.GOODIE_SIZE_Y;
 		
 		String topLeftQuad = "" + (currentScreen) + "X" + topLeftX + "," + topLeftY;
 		String topRightQuad = "" + (currentScreen) + "X" + (topLeftX + 1) + "," + topLeftY;

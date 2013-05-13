@@ -86,8 +86,8 @@ public class Goodie {
 		yumSprite = -1; // The yumsprite will be set to zero before any drawing goes. This insures the first frame is not skipped.
 		
 		
-		drawToX = (int)currentLocation.x() * GameConstants.GOODIE_SIZE_X;
-		drawToY = (int)currentLocation.y() * GameConstants.GOODIE_SIZE_Y;
+		drawToX = (int)currentLocation.precisionX() * GameConstants.GOODIE_SIZE_X;
+		drawToY = (int)currentLocation.precisionY() * GameConstants.GOODIE_SIZE_Y;
 		
 		drawX = type * GameConstants.GOODIE_SIZE_X;
 		drawY = 0;

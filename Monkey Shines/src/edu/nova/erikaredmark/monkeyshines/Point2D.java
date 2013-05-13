@@ -1,5 +1,7 @@
 package edu.nova.erikaredmark.monkeyshines;
 
+import edu.nova.erikaredmark.monkeyshines.bounds.IPoint2D;
+
 /**
  * 
  * Represents a single point on the 2D world.
@@ -12,17 +14,17 @@ package edu.nova.erikaredmark.monkeyshines;
  * @author Erika Redmark
  *
  */
-public class Point2D {
+public class Point2D implements IPoint2D {
 	private double x;
 	private double y;
 	
 	private Point2D(final double x, final double y) { this.x = x; this.y = y; }
 	
-	public double x() { return x; }
-	public double y() { return y; }
+	public double precisionX() { return x; }
+	public double precisionY() { return y; }
 	
-	public int drawX() { return (int) x; }
-	public int drawY() { return (int) y; }
+	public int x() { return (int) x; }
+	public int y() { return (int) y; }
 	
 	public void setX(final double x) { this.x = x; }
 	public void setY(final double y) { this.y = y; }
@@ -51,14 +53,14 @@ public class Point2D {
 	public void translateY(int amt) { this.y += amt; }
 	
 	/**
-	 * Translates with extra precision; the translation may not affect the actual location returned by {@link #drawX() }
+	 * Translates with extra precision; the translation may not affect the actual location returned by {@link #x() }
 	 * 
 	 * @param amt positive values go right, negative values go left
 	 */
 	public void translateXFine(double amt) { this.x -= amt; }
 	
 	/**
-	 * Translates with extra precision; the translation may not affect the actual location returned by {@link #drawY() }
+	 * Translates with extra precision; the translation may not affect the actual location returned by {@link #y() }
 	 * 
 	 * @param amt positive values go down, negative values go up
 	 */
@@ -81,10 +83,28 @@ public class Point2D {
 	 * 		a unqiue copy
 	 * 
 	 */
-	public static Point2D of(Point2D other) { return new Point2D(other.x(), other.y() ); }
+	public static Point2D of(Point2D other) { return new Point2D(other.precisionX(), other.precisionY() ); }
 	
 	public static Point2D of(final int x, final int y) { return new Point2D((double)x, (double)y); }
 	public static Point2D of(final double x, final double y) { return new Point2D(x, y); }
 	
-	
+	/**
+	 * 
+	 * Copies the values of a valid point object to create a new instance of this object (a mutable point). The resulting
+	 * object can not be used to modify the immutable object.
+	 * <p/>
+	 * Due to the immutable point storing values as integers, a point transformed into an immutable point, and then back
+	 * again, will lose precision.
+	 * 
+	 * @param point
+	 * 		the other point, possibly an immutable point
+	 * 
+	 * @return
+	 * 		a new, unique instance of this object initialised to the values in the corresponding other point.
+	 * 
+	 */
+	public static Point2D from(final IPoint2D point) {
+		return of(point.x(), point.y() );
+	}
+
 }

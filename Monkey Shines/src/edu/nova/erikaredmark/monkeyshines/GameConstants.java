@@ -54,13 +54,13 @@ public class GameConstants {
 	
 	public static int directionLeftTheScreen(final Point2D loc, final int width, final int height) {
 		// Check to see if it is in bounds. If so, return -1.
-		if (loc.x() < 0)
+		if (loc.precisionX() < 0)
 			return LEFT;
-		else if (loc.y() < 0)
+		else if (loc.precisionY() < 0)
 			return UP;
-		else if (loc.x() + width > SCREEN_WIDTH )
+		else if (loc.precisionX() + width > SCREEN_WIDTH )
 			return RIGHT;
-		else if (loc.y() + height > SCREEN_HEIGHT)
+		else if (loc.precisionY() + height > SCREEN_HEIGHT)
 			return DOWN;
 		else
 			return CENTRE;
@@ -68,9 +68,9 @@ public class GameConstants {
 	
 	// Takes any location and velocity vector, and adds the velocity to the location
 	public static void moveUnit(final Point2D location, final Point2D velocity) {
-		location.translateXFine(velocity.x() );
+		location.translateXFine(velocity.precisionX() );
 		//using minus, because otherwise positive numbers go down and that makes no sense.
-		location.translateYFine(-velocity.y() );
+		location.translateYFine(-velocity.precisionY() );
 	}
 	
 	// Helper method for parsing XML
@@ -94,10 +94,10 @@ public class GameConstants {
 	// TODO Refactor responsibility to ClippingRegion!! That's what is is there for!
 	// Check for bounding box collision given a two points and widths of the sprites
 	public static boolean checkBoundingBoxCollision(Point2D victim, Point2D target, int victimWidth, int victimHeight, int targetWidth, int targetHeight) {
-		if (victim.x() + victimWidth > target.x() && 
-				victim.x() < target.x() + targetWidth && 
-				victim.y() + victimHeight > target.y() && 
-				victim.y() < target.y() + targetWidth)
+		if (victim.precisionX() + victimWidth > target.precisionX() && 
+				victim.precisionX() < target.precisionX() + targetWidth && 
+				victim.precisionY() + victimHeight > target.precisionY() && 
+				victim.precisionY() < target.precisionY() + targetWidth)
 			return true;
 		return false;
 	}
