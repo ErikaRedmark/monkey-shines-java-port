@@ -26,16 +26,19 @@ import edu.nova.erikaredmark.monkeyshines.Tile;
 public final class EncodedLevelScreen {
 	
 	private final int id;
+	private final int backgroundId;
 	private final EncodedTile[][] tiles;
 	private final EncodedSprite[] sprites;
 	private final ImmutablePoint2D bonzoLocation;
 	
-	private EncodedLevelScreen(final int id, final EncodedTile[][] tiles, final EncodedSprite[] sprites, final ImmutablePoint2D bonzoLocation) {
-		this.id = id; this.tiles = tiles; this.sprites = sprites; this.bonzoLocation = bonzoLocation;
+	private EncodedLevelScreen(final int id, final int backgroundId, final EncodedTile[][] tiles, final EncodedSprite[] sprites, final ImmutablePoint2D bonzoLocation) {
+		this.id = id; this.backgroundId = backgroundId; this.tiles = tiles; this.sprites = sprites; this.bonzoLocation = bonzoLocation;
 	}
 	
 	public static EncodedLevelScreen from(LevelScreen level) {
 		final int _id = level.getId();
+		
+		final int _backgroundId = level.getBackgroundId();
 		
 		final Tile[][] tiles =
 			level.internalGetTiles();
@@ -53,7 +56,13 @@ public final class EncodedLevelScreen {
 		
 		final ImmutablePoint2D _bonzoLocation = level.getBonzoStartingLocation();
 		
-		return new EncodedLevelScreen(_id, _tiles, _sprites, _bonzoLocation);
+		return new EncodedLevelScreen(_id, _backgroundId, _tiles, _sprites, _bonzoLocation);
 	}
+
+	public int getId() { return id; }
+	public int getBackgroundId() { return backgroundId; }
+	public EncodedTile[][] getTiles() { return tiles; }
+	public EncodedSprite[] getSprites() { return sprites; }
+	public ImmutablePoint2D getBonzoLocation() { return bonzoLocation; }
 
 }

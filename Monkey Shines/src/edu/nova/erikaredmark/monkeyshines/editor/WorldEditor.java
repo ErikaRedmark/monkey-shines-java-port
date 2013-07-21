@@ -120,8 +120,8 @@ public final class WorldEditor {
 	 * @param goodieId
 	 * 		id of the actual goodie (apple, orange, gray key, etc...)
 	 */
-	public void addGoodie(int i, int j, int id, int goodieId) {
-		world.addGoodie(i, j, id, goodieId);
+	public void addGoodie(int i, int j, int id, Goodie.Type goodieType) {
+		world.addGoodie(i, j, id, goodieType);
 		
 		
 	}
@@ -144,5 +144,6 @@ public final class WorldEditor {
 	/** Forwarding call to {@link World#getLevelScreens() } 															
 	 *  Unless encoding, clients should stick with LevelScreenEditor objects.											*/
 	public Map<Integer, LevelScreen> getLevelScreens() { return world.getLevelScreens(); }
+	
 	
 }

@@ -151,6 +151,17 @@ public class Bonzo {
 		return -1;
 	}
 	
+	/**
+	 * 
+	 * Checks if there is a solid block at the given x co-ordinate, that would interfere with bonzo's movement if he was
+	 * to try to move there
+	 * 
+	 * @param newX
+	 * 
+	 * @return
+	 * 		{@code true} if there is a solid block in that position, {@code false} if otherwise		
+	 * 
+	 */
 	public boolean solidToSide(final int newX) {
 		LevelScreen currentScreen = worldPointer.getCurrentScreen();
 		if (currentScreen.checkForTile(newX, currentLocation.y() ) ||

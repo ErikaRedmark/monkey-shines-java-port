@@ -117,7 +117,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		currentWorldEditor.addGoodie(x / GameConstants.GOODIE_SIZE_X, 
 				y / GameConstants.GOODIE_SIZE_Y, 
 				currentScreenEditor.getId(), 
-				currentGoodieId);
+				Goodie.Type.byValue(currentGoodieId) );
 	}
 	
 	

@@ -24,15 +24,15 @@ import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 public final class EncodedGoodie implements Serializable {
 	private static final long serialVersionUID = 198L;
 	
-	final int goodieId;
-	final int screenId;
-	final ImmutablePoint2D location;
+	private final Goodie.Type goodieType;
+	private final int screenId;
+	private final ImmutablePoint2D location;
 	
-	private EncodedGoodie(final int goodieId,
+	private EncodedGoodie(final Goodie.Type goodieType,
 					      final int screenId,
 					      final ImmutablePoint2D location) {
 		
-		this.goodieId = goodieId;
+		this.goodieType = goodieType;
 		this.screenId = screenId;
 		this.location = location;
 	}
@@ -46,10 +46,15 @@ public final class EncodedGoodie implements Serializable {
 	 * 		encoded goodie maintaing static intiailisation state of the target goodie
 	 */
 	public static EncodedGoodie from(Goodie goodie) {
-		final int _goodieId = goodie.getGoodieID();
+		final Goodie.Type _goodieType = goodie.getGoodieType();
 		final int _screenId = goodie.getScreenID();
-		final ImmutablePoint2D _location = ImmutablePoint2D.from(goodie.getLocation() );
+		final ImmutablePoint2D _location = goodie.getLocation();
 		
-		return new EncodedGoodie(_goodieId, _screenId, _location);
+		return new EncodedGoodie(_goodieType, _screenId, _location);
 	}
+
+	public Goodie.Type getGoodieType() { return goodieType; }
+	public int getScreenId() { return screenId; }
+	public ImmutablePoint2D getLocation() { return location; }
+	
 }

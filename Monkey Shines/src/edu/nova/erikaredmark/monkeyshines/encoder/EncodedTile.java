@@ -24,7 +24,6 @@ import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
 public final class EncodedTile {
 	
 	private final int id;
-	/* Enums are OKAY to serialize.	*/
 	private final TileType type;
 	private final ImmutablePoint2D location;
 	
@@ -46,5 +45,9 @@ public final class EncodedTile {
 		
 		return new EncodedTile(_id, _type, _location);
 	}
+
+	public int getId() { return id; }
+	public TileType getType() { return type; }
+	public ImmutablePoint2D getLocation() {	return location; }
 	
 }

@@ -3,6 +3,8 @@ package edu.nova.erikaredmark.monkeyshines;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
+import edu.nova.erikaredmark.monkeyshines.encoder.EncodedSprite;
+
 /** TODO
  * 
  * I have to make sure every graphic used is loaded once, and these sprites contain pointers to the sheet, and not
@@ -12,85 +14,50 @@ import java.awt.image.BufferedImage;
 
 public class Sprite {
 
-	// Images
-	private final BufferedImage spriteSheet;
+	// Initial state information
+	private final ImmutablePoint2D   startLocation;
+	private final ImmutableRectangle boundingBox;
+	private final int				 id;
+	private final int 				 initialSpeedX;
+	private final int			     initialSpeedY;
 	
-	// Do I even need these clipping rectangles?
-//	private final ClippingRectangle leftFace;
-//	private final ClippingRectangle rightFace;
-	
-	private ClippingRectangle currentClip;
 	
 	// Movement: Classic Monkeyshines bounding box movement
+	// Realtime state movement
 	private       Point2D currentLocation;
-	private final ImmutablePoint2D startLocation;
-	private final ImmutableRectangle boundingBox;
 	private       int speedX;
 	private       int speedY;
 	
-	private final boolean twoWayFacing;
-	
-	/**
-	 * Constructs a new sprite with the given sprite sheet, location, speed, and a bound box. At no point will any of the
-	 * sprites clipping region leaving the designated bounding box.
-	 * <p/>
-	 * The sprite is not 'spawned' yet. It needs to be added to a screen first.
-	 * <p/>
-	 * All properties are deep copied. That means that anything passed into this constructor may be re-used; the new
-	 * instance stores no references to any objects passed to this constructor
-	 * 
-	 * @param spriteSheet
-	 * 		the graphics for the sprite. A sprite sheet must be of proper dimensions
-	 * 
-	 * @param currentLocation
-	 * 		the current location for the sprite. This is its spawn location.		
-	 * 
-	 * @param speedX
-	 * 		speed in the horizontal direction
-	 * 
-	 * @param speedY
-	 * 		speed in the verticle direction
-	 * 
-	 * @param boundingBox
-	 * 		sprite will confined to this box. As it hits different sides of the box, it reverse direction, thus 'bouncing'
-	 * 		within the box. If the sprite is spawned outside of this box, it will be unable to move at all
-	 */
-	public Sprite(final BufferedImage spriteSheet, 
-				  final Point2D currentLocation, 
-				  final int speedX, 
-				  final int speedY, 
-				  final ImmutableRectangle boundingBox) {
-		
-		this.spriteSheet = spriteSheet;
-		currentClip = ClippingRectangle.of(GameConstants.SPRITE_SIZE_X, GameConstants.SPRITE_SIZE_Y);
-		
-		twoWayFacing = (spriteSheet.getHeight() > GameConstants.SPRITE_SIZE_Y);
-		// If this sprite sheet has more than one row, Set seperate left/right face directions
-		
-//		final int spriteSheetWidth = GameConstants.SPRITE_SIZE_X * GameConstants.SPRITES_IN_ROW;
-//		/* Regardless if whether it is a two way or one-way sprite, the right facing clipping is always the first row	*/
-//		rightFace = ClippingRectangle.of(spriteSheetWidth,
-//										 GameConstants.SPRITE_SIZE_Y);
-//		
-//		/* If sprite sheet is a double sheet, leftFace is identical to right face, and since they don't change we can
-//		 * assign by reference. Otherwise, use a new instance that points to the second row.
-//		 */
-//		leftFace = (spriteSheet.getHeight() > 81) ?	// > 81 means two-row sprite sheet
-//				   ClippingRectangle.of(spriteSheetWidth, GameConstants.SPRITE_SIZE_Y, 0, GameConstants.SPRITE_SIZE_Y * 2) :
-//				   rightFace;
+	// Images
+	private       BufferedImage spriteSheet;
+	private ClippingRectangle currentClip;
 
+	// this boolean will be set dynamically depending on the size of the graphics context. Graphics that have
+	// two rows of sprites are automatically considered two way facing.
+	private       boolean twoWayFacing;
+	
+	public static Sprite inflateFrom(EncodedSprite encodedSprite) {
+		final int id = encodedSprite.getId();
+		final ImmutablePoint2D startLocation = encodedSprite.getLocation();
+		final ImmutableRectangle boundingBox = encodedSprite.getBoundingBox();
+		final int initialSpeedX = encodedSprite.getInitialSpeedX();
+		final int initialSpeedY = encodedSprite.getInitialSpeedY();
 		
+		return new Sprite(id, startLocation, boundingBox, initialSpeedX, initialSpeedY);
+	}
+	
+	private Sprite(final int id, final ImmutablePoint2D startLocation, final ImmutableRectangle boundingBox, final int initialSpeedX, final int initialSpeedY) {
+		this.id = id;
+		this.startLocation = startLocation;
 		this.boundingBox = boundingBox;
-		this.startLocation = ImmutablePoint2D.from(currentLocation);
-		this.currentLocation = Point2D.of(currentLocation);
-		this.speedX = speedX;
-		this.speedY = speedY;
+		this.initialSpeedX = initialSpeedX;
+		this.initialSpeedY = initialSpeedY;
 		
-		// If the sprite starts moving to the right (speed x is positve) we need to set current clipping region to 
-		// the bottom sprite sheet row.
-		if (twoWayFacing && speedX >= 0) {
-			this.currentClip.setY(GameConstants.SPRITE_SIZE_Y);
-		}
+		// State information
+		this.speedX = initialSpeedX;
+		this.speedY = initialSpeedY;
+		this.currentLocation = Point2D.from(startLocation);
+		
 	}
 	
 	/**
@@ -177,5 +144,9 @@ public class Sprite {
 	
 	
 	private void reverseY() { speedY = -speedY; }
+
+	public int getId() { return id; }
+	public int getInitialSpeedX() { return initialSpeedX; }
+	public int getInitialSpeedY() {	return initialSpeedY; }
 	
 }

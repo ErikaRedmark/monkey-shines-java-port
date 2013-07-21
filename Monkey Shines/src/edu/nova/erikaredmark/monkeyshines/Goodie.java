@@ -7,41 +7,24 @@ import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
+import edu.nova.erikaredmark.monkeyshines.encoder.EncodedGoodie;
+
 public class Goodie {
 	/**
 	 * MAJOR TODO
 	 * Must fix the fact that goodies appear on all screens.
 	 */
 
+	// These values indicate starting information for object construction
+	final Type goodieType;
+	final int screenID;
+	final ImmutablePoint2D location;	
+	
 	// The sheet that contains all the goodies
 	public static BufferedImage goodieSheet;
 	public static BufferedImage yumSheet;
-	public static final int RED_KEY = 0;
-	public static final int BLUE_KEY = 1;
-	public static final int APPLE = 2;
-	public static final int ORANGE = 3;
-	public static final int PEAR = 4;
-	public static final int PURPLE_GRAPES = 5;
-	public static final int BLUE_GRAPES = 6;
-	public static final int BANANA = 7;
-	public static final int ENERGY = 8;
-	public static final int X2MULTIPLIER = 9;
-	public static final int WHITE_MELRODE_WINGS = 10;
-	public static final int WINGS = 10;
-	public static final int SHEILD = 11;
-	public static final int EXTRA_LIFE = 12;
-	public static final int X3MULTIPLIER = 13;
-	public static final int X4MULTIPLIER = 14;
-	// The id of the goodie
 	
-	final int goodieId;
-	
-	// The world xml file stores where on the screens the goodies are, because since screens are reconstructed as is
-	// and goodies must dissapear, this is needed.
-	
-	final int screenID;
-	final Point2D location;	
-	
+	// These values represent game state information
 	// Taken means gone but animating the YUM. Dead means gone.
 	boolean taken;
 	boolean dead;
@@ -53,16 +36,14 @@ public class Goodie {
 	int drawX;
 	int drawY;
 	
-	// Pointer to world. Needed for comparing against Bonzo's inventory
-	World worldPointer;
-	
 	// Static initialisation: Goodie sheet is shared by all Goodie objects, and only one instance should exist.
 	static {
-		try {
-			InputStream goodiePath = "".getClass().getResourceAsStream("/resources/graphics/objects.gif");
-			InputStream yumPath = "".getClass().getResourceAsStream("/resources/graphics/yummies.gif");
+		try (InputStream goodiePath = "".getClass().getResourceAsStream("/resources/graphics/objects.gif");
+		     InputStream yumPath = "".getClass().getResourceAsStream("/resources/graphics/yummies.gif") ) {
+			
 		    goodieSheet = ImageIO.read(goodiePath);
 		    yumSheet = ImageIO.read(yumPath);
+		    
 		} catch (IOException e) {
 			System.out.println("Quand est la bien?");
 		}
@@ -73,24 +54,38 @@ public class Goodie {
 	 * 
 	 * @param worldPointer
 	 * @param type
-	 * @param currentLocation
+	 * @param location
 	 * @param screenID
 	 */
-	public Goodie(final World worldPointer, final int type, final Point2D currentLocation, final int screenID) {
+	public Goodie(final Type type, final ImmutablePoint2D location, final int screenID) {
 		// Type refers to both where in the sprite sheet this powerup is, and for what it does. These elements are hardcoded.
 		this.screenID = screenID;
-		this.location = Point2D.of(currentLocation);
-		goodieId = type;
+		this.location = location;
+		goodieType = type;
 		taken = false;
 		dead = false;
 		yumSprite = -1; // The yumsprite will be set to zero before any drawing goes. This insures the first frame is not skipped.
 		
 		
-		drawToX = (int)currentLocation.precisionX() * GameConstants.GOODIE_SIZE_X;
-		drawToY = (int)currentLocation.precisionY() * GameConstants.GOODIE_SIZE_Y;
+		drawToX = (int)location.x() * GameConstants.GOODIE_SIZE_X;
+		drawToY = (int)location.y() * GameConstants.GOODIE_SIZE_Y;
 		
-		drawX = type * GameConstants.GOODIE_SIZE_X;
-		drawY = 0;
+		drawX = type.getDrawX();
+		drawY = type.getDrawY();
+	}
+	
+
+	/**
+	 * 
+	 * Creates an instance of this object from its encoded for.
+	 * 
+	 * @param value
+	 * 
+	 * @return
+	 * 
+	 */
+	public static Goodie inflateFrom(EncodedGoodie value) {
+		return new Goodie(value.getGoodieType(), value.getLocation(), value.getScreenId() );
 	}
 	
 	// Very simple animation.
@@ -141,20 +136,70 @@ public class Goodie {
 	}
 
 	/**
-	 * Returns the id of this goodie, representing what kind of goodie it is
+	 * Returns the type of this goodie, representing what kind of goodie it is
 	 * 
 	 * @return
 	 * 		goodie id
 	 */
-	public int getGoodieID() { return goodieId; }
+	public Type getGoodieType() { return goodieType; }
 
 	/**
-	 * Returns a copy of the goodie's location. Modifications to the returned object will not affect the goodie in
-	 * any way.
+	 * Returns this goodie's location
 	 * 
 	 * @return
-	 * 		a new {@code Point2D} initialised at the location the goodie is on the screen.
+	 * 		the location this goodie resides on whatever level it is on
 	 */
-	public Point2D getLocation() { return Point2D.of(location); }
+	public ImmutablePoint2D getLocation() { return location; }
+
+
+	
+	public enum Type {
+		RED_KEY(0),
+		BLUE_KEY(1),
+		APPLE(2),
+		ORANGE(3),
+		PEAR(4),
+		PURPLE_GRAPES(5),
+		BLUE_GRAPES(6),
+		BANANA(7),
+		ENERGY(8),
+		X2MULTIPLIER(9),
+		WHITE_MELRODE_WINGS(10),
+		SHIELD(11),
+		EXTRA_LIFE(12),
+		X3MULTIPLIER(13),
+		X4MULTIPLIER(14);
+		
+		private final int xOffset;
+		
+		private Type(final int xOffset) {
+			this.xOffset = xOffset;
+		}
+		
+		/**
+		 * 
+		 * Returns the x position in the sprite sheet that goodies of this type draw from.
+		 * 
+		 * @return
+		 */
+		public int getDrawX() { return xOffset * GameConstants.GOODIE_SIZE_X; }
+		
+		/**
+		 * 
+		 * Returns the y position in the sprite sheet that goodies of this type draw from
+		 * 
+		 * @return
+		 */
+		public int getDrawY() { return 0; }
+		
+		// TODO intended to be removed. Allows old XML parse code to still work.
+		@Deprecated
+		public static Type byValue(int val) {
+			for (Type g : Type.values() ) {
+				if (g.xOffset == val) return g;
+			}
+			throw new IllegalArgumentException("Value out of range");
+		}
+	}
 	
 }

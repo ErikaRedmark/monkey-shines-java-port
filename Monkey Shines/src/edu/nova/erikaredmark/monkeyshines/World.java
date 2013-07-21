@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilder;
@@ -21,6 +22,10 @@ import org.xml.sax.SAXException;
 import com.google.common.collect.ImmutableMap;
 
 import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
+import edu.nova.erikaredmark.monkeyshines.encoder.EncodedGoodie;
+import edu.nova.erikaredmark.monkeyshines.encoder.EncodedLevelScreen;
+import edu.nova.erikaredmark.monkeyshines.encoder.EncodedWorld;
+import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
 
 /**
  * Holds all information about the entire world.
@@ -55,9 +60,7 @@ import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
 public class World {
 	private final String worldName;
 	/* Whilst not final due to initialisation rules, references should not be changed within the class.					*/
-	private       BufferedImage solidTiles;
-	private       BufferedImage thruTiles;
-	private       BufferedImage sceneTiles;
+	private WorldResource rsrc;
 	
 	// Backgrounds: We will know how many from the XML file. So keep as standard array.
 //	private       BufferedImage[] backgrounds;
@@ -71,23 +74,82 @@ public class World {
 	// That way, Bonzo just checks four places by making a string and checking the hash. Although strings are slower, this means
 	// that no matter how many objects, it will take the same amount of time to detect collisions; won't need to loop and see if anything
 	// is at that point
-	private final HashMap<String, Goodie> goodiesInWorld;
+	private final Map<String, Goodie> goodiesInWorld;
 	
 	// Screens: Hashmap. That way, when moving across screens, take the levelid and add/subtract a value, check it in hash,
 	// and quickly get the screen we need. It is fast and I believe the designers of the original did the same thing.
-	private final HashMap<Integer, LevelScreen> worldScreens;
+	private final Map<Integer, LevelScreen> worldScreens;
 	private       int currentScreen;
 	
-	public World(final String worldName) {
-		currentScreen = 1000;
+	/**
+	 * 
+	 * Creates a new, fresh copy of a world based on the encoded world (typically from restoring from a file). The passed 
+	 * object may be reused any number of times with this method. This method will always generate a world that is distinct
+	 * from any other world generated in terms of data sharing.
+	 * 
+	 * @param world
+	 * 		the encoded world to create this world from
+	 * 	
+	 * @return
+	 * 		a new world, ready for bonzo to inhabit
+	 * 
+	 */
+	public static World inflateFrom(EncodedWorld world) {
+		// TODO method stub
+		final String worldName = world.getName();
+		final Map<String, Goodie> goodiesInWorld = new HashMap<>();
+		for (Entry<String, EncodedGoodie> goodie : world.getGoodies().entrySet() ) {
+			goodiesInWorld.put(goodie.getKey(), Goodie.inflateFrom(goodie.getValue() ) );
+		}
+		
+		final Map<Integer, LevelScreen> worldScreens = new HashMap<>();
+		for (Entry<Integer, EncodedLevelScreen> screen : world.getLevels().entrySet() ) {
+			worldScreens.put(screen.getKey(), LevelScreen.inflateFrom(screen.getValue() ) );
+		}
+			
+		return new World(worldName, goodiesInWorld, worldScreens);	
+	}
+	
+	/**
+	 * 
+	 * Sets the graphics resources this worlds will use when any of its parts, be it tiles, sprites, etc are drawn.
+	 * 
+	 * @param rsrc
+	 * 
+	 */
+	public skin(WorldResource rsrc) {
+		
+	}
+	
+	/**
+	 * 
+	 * Explicitly sets the modifiable data values of the world. Does not set the graphics resources, which must be done through a call to
+	 * {@code skin}
+	 * <p/>
+	 * Only static factories call this method. No defensive copying; static factory must make sure there is no data sharing.
+	 * 
+	 * @param worldName
+	 * @param goodiesInWorld
+	 * @param worldScreens
+	 */
+	private World(final String worldName, 
+				  final Map<String, Goodie> goodiesInWorld, 
+				  final Map<Integer, LevelScreen> worldScreens) {
+		
+		/* Variable data		*/
 		this.worldName = worldName;
+		this.goodiesInWorld = goodiesInWorld;
+		this.worldScreens = worldScreens;
 		
+		/* Constant data		*/
+		this.currentScreen = 1000;
 		
-		// DEBUG: Load up screen 1000 for now. Later, check which screens exist in this world and load them.
-		worldScreens = new HashMap<Integer, LevelScreen>();
-		goodiesInWorld = new HashMap<String, Goodie>();
-		parseXMLworldFile(worldName);
-		//worldScreens.put(1000, new LevelScreen(this, 1000) );
+		/* Not initialised yet	*/
+		// TODO initialise to blank graphic contexts?
+		this.solidTiles = null;
+		this.thruTiles = null;
+		this.sceneTiles = null;
+		this.sprites = null;
 	}
 	
 	/**
@@ -145,7 +207,7 @@ public class World {
 	}
 	
 	/**
-	 * Get the world name (for knowing which folder in the resources folder to enter.
+	 * Get the world name 
 	 */
 	public String getWorldName() {
 		return this.worldName;
@@ -258,7 +320,7 @@ public class World {
 						int screenID = GameConstants.getIntValue(goodieEl, "screenID");
 	
 						String checker = "" + screenID + "X" + col + "," + row;
-						goodiesInWorld.put(checker, new Goodie(this, type, Point2D.of(col, row), screenID) );
+						goodiesInWorld.put(checker, new Goodie(Goodie.Type.byValue(type), ImmutablePoint2D.of(col, row), screenID) );
 					}
 				}
 					
@@ -420,12 +482,12 @@ public class World {
 	}
 	
 	// Reminder: Form is like "1000X4,3"
-	public void addGoodie(final int x, final int y, final int screenId, final int type) {
+	public void addGoodie(final int x, final int y, final int screenId, final Goodie.Type type) {
 		String checker = collisionCheckerForGoodie(x, y, screenId);
 		// If goodie already exists, take out and replace
 		if (goodiesInWorld.get(checker) != null)
 			goodiesInWorld.remove(checker);
-		goodiesInWorld.put(checker, new Goodie(this, type, Point2D.of(x, y), screenId) );
+		goodiesInWorld.put(checker, new Goodie(type, ImmutablePoint2D.of(x, y), screenId) );
 	}
 	
 	/**

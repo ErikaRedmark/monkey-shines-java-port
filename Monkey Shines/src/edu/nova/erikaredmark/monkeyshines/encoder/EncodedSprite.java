@@ -12,6 +12,7 @@ import edu.nova.erikaredmark.monkeyshines.Sprite;
  * <li> Id of the sprite. This indicates which sprite sheet to load </li>
  * <li> Starting location </li>
  * <li> Bounding box </li>
+ * <li> Initial speed in both axis </li>
  * </ul>
  * <strong> Only these proxy classes are serialised.</strong>. The regular classes are free to evolve as long as no
  * changes are made to the static contents of the level.
@@ -22,23 +23,29 @@ import edu.nova.erikaredmark.monkeyshines.Sprite;
  */
 public class EncodedSprite {
 	
-	private int id;
-	private ImmutablePoint2D location;
-	private ImmutableRectangle boundingBox;
+	private final int id;
+	private final ImmutablePoint2D location;
+	private final ImmutableRectangle boundingBox;
+	private final int initialSpeedX;
+	private final int initialSpeedY;
 	
-	private EncodedSprite(final int id, final ImmutablePoint2D location, final ImmutableRectangle boundingBox) {
+	private EncodedSprite(final int id, final ImmutablePoint2D location, final ImmutableRectangle boundingBox, final int initialSpeedX, final int initialSpeedY) {
 		this.id = id;
 		this.location = location;
 		this.boundingBox = boundingBox;
+		this.initialSpeedX = initialSpeedX;
+		this.initialSpeedY = initialSpeedY;
 	}
 	
 	public static EncodedSprite from(final Sprite s) {
-		int _id = 0; // TODO need to incorperate new refactorings to move graphics responsibility away from Sprite.
+		int _id = s.getId(); // TODO need to incorperate new refactorings to move graphics responsibility away from Sprite.
 					 // TODO for now, all sprites are bees.
 		ImmutablePoint2D _location = s.getStaringLocation();
 		ImmutableRectangle _boundingBox = s.getBoundingBox();
+		int _initialSpeedX = s.getInitialSpeedX();
+		int _initialSpeedY = s.getInitialSpeedY();
 		
-		return new EncodedSprite(_id, _location, _boundingBox);
+		return new EncodedSprite(_id, _location, _boundingBox, _initialSpeedX, _initialSpeedY);
 	}
 	
 	/**
@@ -47,7 +54,9 @@ public class EncodedSprite {
 	 * corresponding array of encoded sprites.
 	 * 
 	 * @param s
+	 * 
 	 * @return
+	 * 
 	 */
 	public static EncodedSprite[] fromAll(final Sprite[] sArr) {
 		EncodedSprite[] returnSprites =
@@ -59,5 +68,11 @@ public class EncodedSprite {
 		
 		return returnSprites;
 	}
+
+	public int getId() { return id; }
+	public ImmutablePoint2D getLocation() { return location; }
+	public ImmutableRectangle getBoundingBox() { return boundingBox; }
+	public int getInitialSpeedX() { return initialSpeedX; }
+	public int getInitialSpeedY() { return initialSpeedY; }
 	
 }

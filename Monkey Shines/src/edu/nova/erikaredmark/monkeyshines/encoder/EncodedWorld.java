@@ -26,6 +26,7 @@ import edu.nova.erikaredmark.monkeyshines.editor.WorldEditor;
  * Instances of this class are immutable.
  * 
  * @author Erika Redmark
+ * 
  */
 public class EncodedWorld implements Serializable {
 	private static final long serialVersionUID = 264L;
@@ -87,5 +88,9 @@ public class EncodedWorld implements Serializable {
 		return new EncodedWorld(_name, _goodies, _levels);
 		
 	}
+
+	public String getName() { return name; }
+	public Map<String, EncodedGoodie> getGoodies() { return goodies; }
+	public Map<Integer, EncodedLevelScreen> getLevels() { return levels; }
 	
 }

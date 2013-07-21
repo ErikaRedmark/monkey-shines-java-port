@@ -18,6 +18,10 @@ import org.xml.sax.SAXException;
 import com.google.common.base.Optional;
 
 import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
+import edu.nova.erikaredmark.monkeyshines.encoder.EncodedLevelScreen;
+import edu.nova.erikaredmark.monkeyshines.encoder.EncodedSprite;
+import edu.nova.erikaredmark.monkeyshines.encoder.EncodedTile;
+import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
 
 /**
  * Improving the screen-by-screen architecture is NOT something I will be doing.
@@ -36,199 +40,84 @@ import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
  * 
  */
 public class LevelScreen {
-	private final int screenID;
+	
+	// Initialisation datas for a level screen
+	private final int screenId;
+	private final int backgroundId;
 	private final Tile screenTiles[][]; // 32 width by 20 height
+	private final ImmutablePoint2D bonzoStart; // TODO Make final when map format changes
+	private final Sprite spritesOnScreen[];    // TODO make final when map format changes
 	
-	// These are all pointers to what is stored in world.
-	private final BufferedImage solidTiles;
-	private final BufferedImage thruTiles;
-	private final BufferedImage sceneTiles;
-	
-	// A loaded image
-	private       BufferedImage background;
-	
-	// Sprites from world
-	private final BufferedImage spritePointer[];
-	private       Sprite spritesOnScreen[];
-	//boolean justOnce; // every time a screen is reloaded,
-	
-	// Bonzo's starting location. Never changes
-	private       ImmutablePoint2D bonzoStart;
-	// Bonzo's starting location when entered from another screen. Set by the World, set to null when bonzo leaves.
+	// state information for the screen
 	private       Point2D bonzoCameFrom;
+
+	// Graphics
+	// These are all pointers to what is stored in world.
+	private WorldResource rsrc;
+	private boolean isSkinned = false;
+	
+	// Background to get
+
 	
 	/**
-	 * Constructs a new level screen, using the supplied screenName and ID. Only the {@link World} should construct these
-	 * objects, as it has the required graphics pointers the level screen needs to know how to draw itself
-	 * <p/>
-	 * TODO hardcoded to load from XML. Needs redesign.
 	 * 
-	 * @param screenID
-	 * @param screenName
-	 * @param spritePointer
-	 * @param solidTiles
-	 * @param thruTiles
-	 * @param sceneTiles
+	 * Creates an instance of this object from its encoded for.
+	 * 
+	 * @param value
+	 * 
+	 * @return
 	 * 
 	 */
-	public LevelScreen(final int screenID, 
-					   final String screenName, 
-					   final BufferedImage[] spritePointer, 
-					   final World		   worldPointer) {
+	public static LevelScreen inflateFrom(EncodedLevelScreen screen) {
+		final int screenId = screen.getId();
+		final int backgroundId = screen.getBackgroundId();
+		final ImmutablePoint2D bonzoStart = screen.getBonzoLocation();
 		
-		this.spritePointer = spritePointer;
-		this.screenID = screenID;
-		screenTiles = new Tile[20][32]; // 20 rows, 32 cols
-		// DEBUG: initialise solidTiles TODO
+		final Tile[][] screenTiles = new Tile[20][30];
+		final EncodedTile[][] encodedTiles = screen.getTiles();
+		for (int i = 0; i < screenTiles.length; i++) {
+			for (int j = 0; j < screenTiles[i].length; j++) {
+				screenTiles[i][j] = Tile.inflateFrom(encodedTiles[i][j]);
+			}
+		}
 		
-		this.solidTiles = worldPointer.getTileSheetSolid();
-		this.thruTiles = worldPointer.getTileSheetThru();
-		this.sceneTiles = worldPointer.getTileSheetScene();
+		final EncodedSprite[] encodedSprites = screen.getSprites();
+		final Sprite[] spritesOnScreen = new Sprite[encodedSprites.length];
+		for (int i = 0; i < encodedSprites.length; i++) {
+			spritesOnScreen[i] = Sprite.inflateFrom(encodedSprites[i]);
+		}
 		
-		parseXmlScreen("" + screenName + screenID + ".xml", worldPointer);
+		return new LevelScreen(screenId, backgroundId, screenTiles, bonzoStart, spritesOnScreen);
 		
 	}
+	
+
+	
+	private LevelScreen(final int screenId, 
+						final int backgroundId,
+						final Tile[][] screenTiles, 
+						final ImmutablePoint2D bonzoStart, 
+						final Sprite[] spritesOnScreen) {
+		
+		this.screenId = screenId;
+		this.backgroundId = backgroundId;
+		this.screenTiles = screenTiles;
+		this.bonzoStart = bonzoStart;
+		this.spritesOnScreen = spritesOnScreen;
+	}
+	
+	public void skin(final WorldResource rsrc) {
+		
+		isSkinned = true;
+	}
+	
+	public boolean isSkinned() { return isSkinned; }
 	
 	/** Returns the screen id of this screen																			*/
-	public int getId() { return this.screenID; }
+	public int getId() { return this.screenId; }
 	
-	private void parseXmlScreen(String name, World worldPointer){
-		//get the factory
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		Document dom;
-		try {
-
-			//Using factory get an instance of document builder
-			DocumentBuilder db = dbf.newDocumentBuilder();
-
-			//parse using builder to get DOM representation of the XML file
-			InputStream xmlFile = getClass().getResourceAsStream("/resources/worlds/" 
-					+ worldPointer.getWorldName() + "/" + name);
-			dom = db.parse(xmlFile);
-		
-			Element docEle = dom.getDocumentElement();
-
-			// Put tiles
-			NodeList nl = docEle.getElementsByTagName("tile");
-			if(nl != null && nl.getLength() > 0) {
-				for(int i = 0 ; i < nl.getLength();i++) {
-
-					//get the employee element
-					Element el = (Element)nl.item(i);
-
-					// Send the tile element to addTile for processing.
-					addTile(el);
-				}
-			}
-			
-			// Bonzo
-			nl = docEle.getElementsByTagName("bonzo");
-			if (nl != null && nl.getLength() > 0) {
-				Element bonzoEl = (Element)nl.item(0);
-				
-				bonzoStart = ImmutablePoint2D.of(GameConstants.getIntValue(bonzoEl, "x"),
-						                GameConstants.getIntValue(bonzoEl, "y" ) );
-				
-				/* Bonzo's initial entry into this current screen will be from the starting point.						*/
-				if (bonzoCameFrom != null) throw new IllegalStateException("Screen can not have 'cameFrom' data before bonzo's starting location is loaded");
-				bonzoCameFrom = Point2D.from(bonzoStart);
-			}
-			
-			// Sprites
-			nl = docEle.getElementsByTagName("sprite");
-			if (nl != null && nl.getLength() > 0) {
-				spritesOnScreen = new Sprite[nl.getLength() ];
-				for (int i = 0; i < nl.getLength(); i++) {
-					Element spriteEl = (Element)nl.item(i);
-				
-					ImmutableRectangle boundingBox = ImmutableRectangle.of(
-							GameConstants.getIntValue(spriteEl, "bound1x") ,
-							GameConstants.getIntValue(spriteEl, "bound1y"),
-							GameConstants.getIntValue(spriteEl, "width"),
-							GameConstants.getIntValue(spriteEl, "height") );
-				
-					Point2D spriteLocation = Point2D.of(
-							GameConstants.getIntValue(spriteEl, "startx"),
-							GameConstants.getIntValue(spriteEl, "starty") );
-				
-					int speedx = GameConstants.getIntValue(spriteEl, "speedx");
-					int speedy = GameConstants.getIntValue(spriteEl, "speedy");
-					
-					// Tells which sprite sheet to use.
-					int id = GameConstants.getIntValue(spriteEl, "id");
-					
-					spritesOnScreen[i] = new Sprite(spritePointer[id], spriteLocation, speedx, speedy, boundingBox);
-				}
-				
-				//public Sprite(final BufferedImage spriteSheet, final Point2D currentLocation, 
-				//final int speedX, final int speedY, final ClippingRectangle boundingBox)
-				/*<uniqueid>0</uniqueid>
-				<id>2</id>
-				<type>0</type>*/
-			}
-			
-			// Background
-			
-			nl = docEle.getElementsByTagName("screeninfo");
-			if (nl != null && nl.getLength() > 0) {
-				Element backgroundEl = (Element)nl.item(0);
-				
-				try {
-					InputStream temp = getClass().getResourceAsStream("/resources/graphics/" 
-							+ worldPointer.getWorldName() + "/" 
-							+ GameConstants.getTextValue(backgroundEl, "background") );
-				    background = ImageIO.read(temp);
-				} catch (IOException e) {
-					System.out.println("Quand est la affiche?");
-				}
-			}
-
-			
-
-		}catch(ParserConfigurationException pce) {
-			pce.printStackTrace();
-		}catch(SAXException se) {
-			se.printStackTrace();
-		}catch(IOException ioe) {
-			ioe.printStackTrace();
-		}
-		
-		// Now that we have got a document, let's extract the elements and create all the tiles and sprites where they need be.
-		
-		
-	}
-	
-	public void addTile(Element tileEl) {
-
-		//for each <tile> value, get the locationX, locationY, and the tile type
-		int tileLocX = GameConstants.getIntValue(tileEl, "locationX");
-		int tileLocY = GameConstants.getIntValue(tileEl, "locationY");
-		int tileid = GameConstants.getIntValue(tileEl, "tileid");
-		int tiletype = GameConstants.getIntValue(tileEl, "tiletype");
-
-		// add the tile
-		BufferedImage sheetPointer = getCorrectSheet(TileType.fromId(tiletype) );
-		screenTiles[tileLocY][tileLocX] = new Tile(sheetPointer, tileLocY, tileLocX, tileid, TileType.fromId(tiletype) );
-	}
-	
-	// Helper method. Takes a tile type and returns what it's sheet should be
-	private BufferedImage getCorrectSheet(final TileType tileType) {
-		BufferedImage sheetPointer;
-		switch(tileType) {
-		case SOLID:
-			sheetPointer = solidTiles;
-			break;
-		case THRU:
-			sheetPointer = thruTiles;
-			break;
-		case SCENE:
-			sheetPointer = sceneTiles;
-			break;
-		default:
-			throw new RuntimeException("Bad enum type: " + tileType.toString() );
-		}
-		return sheetPointer;
-	}
+	/** Returns the background id. This indicates which background to display for the screen.							*/
+	public int getBackgroundId() { return backgroundId; }
 	
 	/**
 	 * 
@@ -356,15 +245,29 @@ public class LevelScreen {
 	
 	/**
 	 * Sets the tile at tileX, tileY, to the indicated tile.
+	 * 
 	 * @param tileX x location, terms of grid, not pixels.
+	 * 
 	 * @param tileY y location, terms of grid, not pixels.
+	 * 
 	 * @param tileType Whether this is a Solid, Thru, or scenery tile.
+	 * 
 	 * @param tileId  the ID of the tile, which is basically the graphic to use when rendering.
+	 * 
+	 * @throws 
+	 * 		IllegalArgumentException
+	 * 			if the given x or y coordinate is outside of the range {@code (32[x] by 20[y]) }
+	 * 		IllegalStateException
+	 * 			if the screen has not been skinned yet. Tiles can not be added until there is a graphics
+	 * 			resource ready
 	 */
 	public void setTile(int tileX, int tileY, TileType tileType, int tileId) {
+		if (tileX > 31 || tileX < 0) throw new IllegalArgumentException(tileX + " outside of X range [0, 31]");
+		if (tileY > 20 || tileY < 0) throw new IllegalArgumentException(tileY + " outside of Y range [0, 19]");
+		if (isSkinned == false) throw new IllegalStateException("LevelScreen " + this + " not skinned yet");
+		
 		screenTiles[tileY][tileX] = null;
-		BufferedImage sheetPointer = getCorrectSheet(tileType);
-		screenTiles[tileY][tileX] = new Tile(sheetPointer, tileY, tileX, tileId, tileType );
+		screenTiles[tileY][tileX] = Tile.newTile(ImmutablePoint2D.of(tileX, tileY), tileId, tileType, rsrc);
 	}
 	
 	/**
@@ -384,8 +287,7 @@ public class LevelScreen {
 	 * @param g2d
 	 */
 	public void paint(Graphics2D g2d) {
-		if (background != null)
-			g2d.drawImage(background, 0, 0, null);
+		g2d.drawImage(rsrc.getBackground(this.backgroundId), 0, 0, null);
 		for (int i = 0; i < GameConstants.TILES_IN_COL; i++) { // for every tile in the row
 			for (int j = 0; j < GameConstants.TILES_IN_ROW; j++) {
 				if (screenTiles[i][j] != null)
@@ -409,4 +311,6 @@ public class LevelScreen {
 	 * 		2d array of tiles. Changes to the array <strong> will cause issues. Do not modify</strong>
 	 */
 	public Tile[][] internalGetTiles() { return this.screenTiles; }
+
+
 }
