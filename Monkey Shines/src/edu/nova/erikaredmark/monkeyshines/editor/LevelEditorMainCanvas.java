@@ -36,27 +36,27 @@ import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
 public final class LevelEditorMainCanvas extends JPanel implements ActionListener, MouseListener, MouseMotionListener {
 
 	// Point2D of the mouse position
-	Point2D mousePosition;
+	private Point2D mousePosition;
 	
 	// Information about what clicking something will do
-	int currentTileID;
-	int currentSpriteID;
-	int currentGoodieId;
+	private int currentTileID;
+	private int currentSpriteID;
+	private int currentGoodieId;
 	
 	// Current overlay graphic
-	BufferedImage currentTileSheet;
+	private BufferedImage currentTileSheet;
 	
+	// THESE MAY BE NULL!
+	private LevelScreenEditor currentScreenEditor;
+	private WorldEditor currentWorldEditor;
 	
-	LevelScreenEditor currentScreenEditor;
-	WorldEditor currentWorldEditor;
+	private Timer editorFakeGameTimer;
+	private Dimension windowSize;
 	
-	Timer editorFakeGameTimer;
-	Dimension windowSize;
+	private KeyboardInput keys;
 	
-	KeyboardInput keys;
-	
-	PaintbrushType currentTileType;
-	EditorState    currentState;
+	private PaintbrushType currentTileType;
+	private EditorState    currentState;
 	
 	public LevelEditorMainCanvas(final KeyboardInput keys) {
 		super();
@@ -64,15 +64,9 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		currentGoodieId = 0;
 		currentSpriteID = 0;
 		currentTileType = PaintbrushType.SOLIDS;
-		currentState = EditorState.PLACING_TILES;
+		currentState = EditorState.NO_WORLD_LOADED;
 		this.keys=keys;
 		setVisible(true);
-		
-
-		
-		// Allow this to be changeable TODO
-		currentWorldEditor = WorldEditor.fromName("spooked");
-		currentScreenEditor = currentWorldEditor.getLevelScreenEditor(1000);
 		
 		// Set the Keyboard Input
 		this.addKeyListener(keys);
@@ -94,13 +88,21 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 
 	}
 	
+//	public loadWorld(final World world) {
+//		currentWorldEditor = WorldEditor.
+//		currentScreenEditor = currentWorldEditor.getLevelScreenEditor(1000);
+//	}
+	
 	/**
 	 * Resolves the location the person clicked and places the currently selected tile
-	 * on the map
+	 * on the map. Does nothing if there is no screen editor loaded.
+	 * 
 	 * @param mouseX mouse click location X co-ord
 	 * @param mouseY mouse click location Y co-ord
 	 */
 	public void addTile(final int mouseX, final int mouseY) {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		
 		currentScreenEditor.setTile(mouseX / GameConstants.TILE_SIZE_X,
 				mouseY / GameConstants.TILE_SIZE_Y,
 				paintbrush2TileType(currentTileType),
@@ -114,6 +116,8 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	 * @param y
 	 */
 	public void addGoodie(final int x, final int y) {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		
 		currentWorldEditor.addGoodie(x / GameConstants.GOODIE_SIZE_X, 
 				y / GameConstants.GOODIE_SIZE_Y, 
 				currentScreenEditor.getId(), 
@@ -135,6 +139,10 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	public void actionPerformed(ActionEvent e) {
 		// Poll Keyboard
 		keys.poll();
+		
+		// Do not allow state changes if no world is loaded!
+		
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		// When person hits spacebar, bring up the sprite sheet at 0,0, and next click
 		// selected the tile depending on the position clicked vs the sprites.
 		if (keys.keyDown(KeyEvent.VK_SPACE) ) {
@@ -155,38 +163,54 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	
 	/** User action to set state to placing solids																		*/
 	public void actionPlacingSolids() {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		
 		currentTileType = PaintbrushType.SOLIDS;
 		currentState = EditorState.PLACING_TILES;
 	}
 	
 	/** User action to set state to placing thrus																		*/
 	public void actionPlacingThrus() {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		
 		currentTileType = PaintbrushType.THRUS;
 		currentState = EditorState.PLACING_TILES;
 	}
 	
 	public void actionPlacingScenes() {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		
 		currentTileType = PaintbrushType.SCENES;
 		currentState = EditorState.PLACING_TILES;
 	}
 	
 	public void actionPlacingSprites() {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		
 		currentState = EditorState.PLACING_SPRITES;
 	}
 	
 	public void actionPlacingGoodies() {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		
 		currentState = EditorState.PLACING_GOODIES;
 	}
 	
 	public void actionSelectingTiles() {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		
 		currentState = EditorState.SELECTING_TILES;
 	}
 	
 	public void actionSelectingGoodies() {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		
 		currentState = EditorState.SELECTING_GOODIES;
 	}
 	
 	public void actionChangeScreen(Integer screenId) {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		
 		currentScreenEditor = currentWorldEditor.getLevelScreenEditor(screenId);
 		currentWorldEditor.changeCurrentScreen(currentScreenEditor);
 	}
@@ -210,8 +234,9 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		return tileId;
 	}
 
-	@Override
-	public void mouseClicked(MouseEvent e) {
+	@Override public void mouseClicked(MouseEvent e) {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		
 		if (currentState == EditorState.PLACING_TILES)
 			addTile(e.getX(), e.getY() );
 		else if (currentState == EditorState.PLACING_GOODIES)
@@ -230,7 +255,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 			//}
 			
 		} else if (currentState == EditorState.SELECTING_GOODIES) {
-			int goodieId = resolveObjectId(Goodie.getGoodieSheet(), e.getX(), e.getY() );
+			int goodieId = resolveObjectId(currentWorldEditor.getWorldResource().getGoodieSheet(), e.getX(), e.getY() );
 			
 			currentGoodieId = goodieId;
 			currentState = EditorState.PLACING_GOODIES;
@@ -238,32 +263,12 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		
 	}
 
-	@Override
-	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
+	@Override public void mouseEntered(MouseEvent e) { }
+	@Override public void mouseExited(MouseEvent e) { }
+	@Override public void mousePressed(MouseEvent e) { }
+	@Override public void mouseReleased(MouseEvent e) { }
 
-	@Override
-	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void mousePressed(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void mouseDragged(MouseEvent e) {
+	@Override public void mouseDragged(MouseEvent e) {
 		mousePosition.setX(e.getX() );
 		mousePosition.setY(e.getY() );
 		if (currentState == EditorState.PLACING_TILES)
@@ -271,8 +276,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 
 	}
 
-	@Override
-	public void mouseMoved(MouseEvent e) {
+	@Override public void mouseMoved(MouseEvent e) {
 		// set the mouse position.
 		mousePosition.setX(e.getX() );
 		mousePosition.setY(e.getY() );
@@ -283,7 +287,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		Graphics2D g2d = (Graphics2D) g;
 
 		/* If the current world is null, there is no data to load. Draw a white screen*/
-		if (currentWorldEditor == null) {
+		if (currentState == EditorState.NO_WORLD_LOADED) {
 			g2d.setColor(Color.WHITE);
 			g2d.fillRect(0, 0, GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_HEIGHT);
 			
@@ -299,10 +303,10 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 
 			// If we are selecting a tile, draw the whole sheet to the side.
 			if (currentState == EditorState.SELECTING_TILES) {
-				currentTileSheet = currentWorldEditor.getTileSheetByType(paintbrush2TileType(currentTileType) );
+				currentTileSheet = currentWorldEditor.getWorldResource().getTilesheetFor(paintbrush2TileType(currentTileType) );
 				g2d.drawImage(currentTileSheet, 0, 0, currentTileSheet.getWidth(), currentTileSheet.getHeight(), null );
 			} else if (currentState == EditorState.SELECTING_GOODIES) {
-				BufferedImage goodieSheet = Goodie.getGoodieSheet(); // This contains their animation, so chop it in half.
+				BufferedImage goodieSheet = currentWorldEditor.getWorldResource().getGoodieSheet(); // This contains their animation, so chop it in half.
 				g2d.drawImage(goodieSheet, 0, 0, goodieSheet.getWidth(), goodieSheet.getHeight() / 2, // Destination
 						0, 0, goodieSheet.getWidth(), goodieSheet.getHeight() / 2, // Source
 						null);
@@ -333,12 +337,22 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	
 	public enum PaintbrushType { SOLIDS, THRUS, SCENES, SPRITES, GOODIES; }
 	
-	public enum EditorState { PLACING_TILES, SELECTING_TILES, PLACING_GOODIES, SELECTING_GOODIES, PLACING_SPRITES, SELECTING_SPRITES; }
+	/**
+	 * 
+	 * Represents the current state of the editor, like what is being placed. Note: If no world is loaded, many functions will
+	 * not work, and state change will not be possible until a world is loaded.
+	 * 
+	 * @author Erika Redmark
+	 *
+	 */
+	public enum EditorState { PLACING_TILES, SELECTING_TILES, PLACING_GOODIES, SELECTING_GOODIES, PLACING_SPRITES, SELECTING_SPRITES, NO_WORLD_LOADED; }
 
 	/**
-	 * Returns the visible screen editor. 
+	 * Returns the visible screen editor. Note that this may return {@code null} if no world is loaded!
 	 * 
 	 * @return
+	 * 		the current screen editor, or {@code null} if no world is loaded
+	 * 
 	 */
 	public LevelScreenEditor getVisibleScreenEditor() {
 		return this.currentScreenEditor;

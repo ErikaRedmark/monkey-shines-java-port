@@ -1,5 +1,7 @@
 package edu.nova.erikaredmark.monkeyshines.encoder;
 
+import java.util.List;
+
 import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.LevelScreen;
 import edu.nova.erikaredmark.monkeyshines.Tile;
@@ -28,10 +30,10 @@ public final class EncodedLevelScreen {
 	private final int id;
 	private final int backgroundId;
 	private final EncodedTile[][] tiles;
-	private final EncodedSprite[] sprites;
+	private final List<EncodedSprite> sprites;
 	private final ImmutablePoint2D bonzoLocation;
 	
-	private EncodedLevelScreen(final int id, final int backgroundId, final EncodedTile[][] tiles, final EncodedSprite[] sprites, final ImmutablePoint2D bonzoLocation) {
+	private EncodedLevelScreen(final int id, final int backgroundId, final EncodedTile[][] tiles, final List<EncodedSprite> sprites, final ImmutablePoint2D bonzoLocation) {
 		this.id = id; this.backgroundId = backgroundId; this.tiles = tiles; this.sprites = sprites; this.bonzoLocation = bonzoLocation;
 	}
 	
@@ -52,7 +54,7 @@ public final class EncodedLevelScreen {
 			}
 		}
 		
-		final EncodedSprite[] _sprites = EncodedSprite.fromAll(level.getSpritesOnScreen() );
+		final List<EncodedSprite> _sprites = EncodedSprite.fromAll(level.getSpritesOnScreen() );
 		
 		final ImmutablePoint2D _bonzoLocation = level.getBonzoStartingLocation();
 		
@@ -62,7 +64,7 @@ public final class EncodedLevelScreen {
 	public int getId() { return id; }
 	public int getBackgroundId() { return backgroundId; }
 	public EncodedTile[][] getTiles() { return tiles; }
-	public EncodedSprite[] getSprites() { return sprites; }
+	public List<EncodedSprite> getSprites() { return sprites; }
 	public ImmutablePoint2D getBonzoLocation() { return bonzoLocation; }
 
 }

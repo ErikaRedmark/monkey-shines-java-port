@@ -1,13 +1,17 @@
 package edu.nova.erikaredmark.monkeyshines.editor;
 
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
 import edu.nova.erikaredmark.monkeyshines.Goodie;
 import edu.nova.erikaredmark.monkeyshines.LevelScreen;
-import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
+import edu.nova.erikaredmark.monkeyshines.encoder.EncodedWorld;
+import edu.nova.erikaredmark.monkeyshines.encoder.WorldIO;
+import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
+import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import edu.nova.erikaredmark.monkeyshines.World;
 
 /**
@@ -22,11 +26,18 @@ public final class WorldEditor {
 	
 	private final World world;
 	
+	private final WorldResource rsrc;
+	
 	private Map<Integer, LevelScreenEditor> levelScreenEditors =
 		new HashMap<Integer, LevelScreenEditor>();
 	
-	private WorldEditor(final World world) {
+	private WorldEditor(final World world, final WorldResource rsrc) {
 		this.world = world;
+		this.rsrc = rsrc;
+	}
+	
+	public static WorldEditor newWorld(final String name, final WorldResource rsrc) {
+		return new WorldEditor(World.newWorld(name, rsrc), rsrc);
 	}
 	
 	/** 
@@ -40,9 +51,34 @@ public final class WorldEditor {
 	 * @return
 	 * 		a world editor for editing the world
 	 * 
+	 * @throws
+	 * 		IllegalArgumentException
+	 * 			if the given path is not a file
+	 * 
 	 */
-	public static WorldEditor fromExisting(Path existingWorld) {
-		return new WorldEditor();
+	public static WorldEditor fromExisting(final Path existingWorld) throws ResourcePackException, WorldRestoreException {
+		EncodedWorld encoded = WorldIO.restoreWorld(existingWorld);
+		// Check for resource pack
+		String worldName = existingWorld.getFileName().toString();
+		worldName = worldName.substring(0, worldName.indexOf(".") );
+		Path packFile = existingWorld.getParent().resolve(worldName + ".zip");
+		
+		WorldResource rsrc = WorldResource.fromPack(packFile);
+		
+		World world = World.inflateFrom(encoded, rsrc);
+		
+		return new WorldEditor(world, rsrc);
+	}
+	
+	/**
+	 * 
+	 * Returns the world resource this editor currently is using for the world.
+	 * 
+	 * @return
+	 * 
+	 */
+	public WorldResource getWorldResource() {
+		return this.rsrc;
 	}
 	
 	/**
@@ -84,27 +120,6 @@ public final class WorldEditor {
 	public void changeCurrentScreen(LevelScreenEditor editor) {
 		world.changeCurrentScreen(editor.getId() );
 		// TODO display dialog if there is an unknown failure? Check return type
-	}
-	
-	/**
-	 * Resolves the 'paintbrush type' to the proper tile type, and from there extracts the graphics for the tile sprite
-	 * sheet
-	 * 
-	 * @param currentTileType
-	 * 		paintbrush type selected in the edtior
-	 * 
-	 * @return
-	 * 		the sprite sheet from the world. Do not modify. If the current paintbrush is not set to a tile type, then
-	 * 		this method will throw an exception. It is client responsbility to only invoke this method on proper
-	 * 		paintbrushes
-	 * 
-	 * @throws
-	 * 		IllegalArgumentException
-	 * 			if the paintbrush type can not map to a tile type
-	 * 
-	 */
-	public BufferedImage getTileSheetByType(TileType currentTileType) {
-		return this.world.getTileSheetByType(currentTileType);
 	}
 	
 	public void paint(Graphics2D g) {

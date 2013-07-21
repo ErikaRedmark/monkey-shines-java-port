@@ -1,6 +1,8 @@
 package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics2D;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.google.common.base.Optional;
 
@@ -31,9 +33,9 @@ public class LevelScreen {
 	// Initialisation datas for a level screen
 	private final int screenId;
 	private final int backgroundId;
-	private final Tile screenTiles[][]; // 32 width by 20 height
-	private final ImmutablePoint2D bonzoStart; // TODO Make final when map format changes
-	private final Sprite spritesOnScreen[];    // TODO make final when map format changes
+	private final Tile screenTiles[][]; // 20 rows, 32 cols
+	private final ImmutablePoint2D bonzoStart;
+	private final List<Sprite> spritesOnScreen;
 	
 	// state information for the screen
 	private       Point2D bonzoCameFrom;
@@ -60,7 +62,7 @@ public class LevelScreen {
 		final int backgroundId = screen.getBackgroundId();
 		final ImmutablePoint2D bonzoStart = screen.getBonzoLocation();
 		
-		final Tile[][] screenTiles = new Tile[20][30];
+		final Tile[][] screenTiles = new Tile[20][32];
 		final EncodedTile[][] encodedTiles = screen.getTiles();
 		for (int i = 0; i < screenTiles.length; i++) {
 			for (int j = 0; j < screenTiles[i].length; j++) {
@@ -68,14 +70,39 @@ public class LevelScreen {
 			}
 		}
 		
-		final EncodedSprite[] encodedSprites = screen.getSprites();
-		final Sprite[] spritesOnScreen = new Sprite[encodedSprites.length];
-		for (int i = 0; i < encodedSprites.length; i++) {
-			spritesOnScreen[i] = Sprite.inflateFrom(encodedSprites[i]);
+		final List<EncodedSprite> encodedSprites = screen.getSprites();
+		final List<Sprite> spritesOnScreen = new ArrayList<>();
+		for (EncodedSprite encSprite : encodedSprites) {
+			spritesOnScreen.add(Sprite.inflateFrom(encSprite) );
 		}
 		
 		return new LevelScreen(screenId, backgroundId, screenTiles, bonzoStart, spritesOnScreen);
 		
+	}
+	
+	/**
+	 * 
+	 * Creates an empty level screen initialised to no tiles or sprites with a background id of 0.
+	 * 
+	 * @param screenId
+	 * 		the id of the screen, which must match with the id of the key that maps to this screen value in the world
+	 * 		hash map
+	 * 
+	 * @param rsrc
+	 * 		a graphics resource to skin this level
+	 * 
+	 * @return
+	 * 		a new level screen
+	 * 
+	 */
+	public static final LevelScreen newScreen(int screenId, WorldResource rsrc) {
+		LevelScreen screen = new LevelScreen(screenId,
+							                 0,
+							                 new Tile[20][32],
+							                 ImmutablePoint2D.of(0, 0),
+							                 new ArrayList<Sprite>() );
+		screen.skin(rsrc);
+		return screen;
 	}
 	
 
@@ -84,7 +111,7 @@ public class LevelScreen {
 						final int backgroundId,
 						final Tile[][] screenTiles, 
 						final ImmutablePoint2D bonzoStart, 
-						final Sprite[] spritesOnScreen) {
+						final List<Sprite> spritesOnScreen) {
 		
 		this.screenId = screenId;
 		this.backgroundId = backgroundId;
@@ -201,7 +228,7 @@ public class LevelScreen {
 	}
 	
 	// Careful! This is return by reference
-	public Sprite[] getSpritesOnScreen() {
+	public List<Sprite> getSpritesOnScreen() {
 		return spritesOnScreen;
 	}
 	
@@ -291,11 +318,9 @@ public class LevelScreen {
 					screenTiles[i][j].paint(g2d);
 			}
 		}
-		if (spritesOnScreen != null) {
-			for (int i = 0; i < spritesOnScreen.length; i++) {
-				spritesOnScreen[i].update();
-				spritesOnScreen[i].paint(g2d);
-			}
+		for (Sprite s : spritesOnScreen) {
+			s.update();
+			s.paint(g2d);
 		}
 	}
 

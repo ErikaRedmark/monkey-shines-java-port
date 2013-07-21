@@ -7,6 +7,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 
 import com.google.common.base.Optional;
 
@@ -79,6 +80,13 @@ public class LevelEditor extends JFrame {
 	});
 	
 	public void actionGoToScreen() {
+		if (currentWorld.getVisibleScreenEditor() == null) {
+			JOptionPane.showMessageDialog(this,
+				    "You must load a world first before being able to load a specific screen",
+				    "World Not Loaded",
+				    JOptionPane.ERROR_MESSAGE);
+		}
+		
 		Optional<Integer> screenId = GoToScreenDialog.displayAndGetId(this, currentWorld.getVisibleScreenEditor().getId() );
 		if (screenId.isPresent() ) {
 			currentWorld.actionChangeScreen(screenId.get() );

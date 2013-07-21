@@ -3,6 +3,7 @@ package edu.nova.erikaredmark.monkeyshines;
 import java.awt.Graphics2D;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -53,8 +54,7 @@ public class World {
 	private       int currentScreen;
 	
 	
-	private WorldResource rsrc;
-	private boolean isSkinned = false;
+	private final WorldResource rsrc;
 	
 	/**
 	 * 
@@ -64,12 +64,15 @@ public class World {
 	 * 
 	 * @param world
 	 * 		the encoded world to create this world from
+	 * 
+	 * @param rsrc
+	 * 		a world resource to use as graphics for the new world
 	 * 	
 	 * @return
 	 * 		a new world, ready for bonzo to inhabit
 	 * 
 	 */
-	public static World inflateFrom(EncodedWorld world) {
+	public static World inflateFrom(EncodedWorld world, WorldResource rsrc) {
 		// TODO method stub
 		final String worldName = world.getName();
 		final Map<String, Goodie> goodiesInWorld = new HashMap<>();
@@ -81,10 +84,31 @@ public class World {
 		for (Entry<Integer, EncodedLevelScreen> screen : world.getLevels().entrySet() ) {
 			worldScreens.put(screen.getKey(), LevelScreen.inflateFrom(screen.getValue() ) );
 		}
-			
-		return new World(worldName, goodiesInWorld, worldScreens);	
+		
+		return new World(worldName, goodiesInWorld, worldScreens, rsrc);	
 	}
 	
+	/**
+	 * 
+	 * Creates a new world skinned with the current resource. The new world starts with one screen (1000) which
+	 * contains no tiles, no goodies, sprites, or anything, background id 0, and bonzos starting position is in the upper right corner.
+	 * 
+	 * @param name
+	 * 		the name of the world
+	 * 
+	 * @return
+	 * 		a new world
+	 * 
+	 */
+	public static World newWorld(final String name, final WorldResource rsrc) {
+		
+		LevelScreen initialScreen = LevelScreen.newScreen(1000, rsrc);
+		
+		Map<Integer, LevelScreen> screens = new HashMap<>();
+		screens.put(1000, initialScreen);
+		
+		return new World(name, new HashMap<String, Goodie>(), screens, rsrc);
+	}
 	/**
 	 * 
 	 * Sets the graphics resources this worlds will use when any of its parts, be it tiles, sprites, etc are drawn.
@@ -92,9 +116,7 @@ public class World {
 	 * @param rsrc
 	 * 
 	 */
-	public void skin(final WorldResource rsrc) {
-		this.rsrc = rsrc;
-		
+	private void skin(final WorldResource rsrc) {
 		for (Entry<String, Goodie> goodie : goodiesInWorld.entrySet() ) {
 			goodie.getValue().skin(rsrc);
 		}
@@ -102,12 +124,7 @@ public class World {
 		for (Entry<Integer, LevelScreen> level : worldScreens.entrySet() ) {
 			level.getValue().skin(rsrc);
 		}
-		
-		this.isSkinned = true;
 	}
-	
-	public boolean isSkinned() { return isSkinned; }
-	
 	
 	/**
 	 * 
@@ -122,7 +139,8 @@ public class World {
 	 */
 	private World(final String worldName, 
 				  final Map<String, Goodie> goodiesInWorld, 
-				  final Map<Integer, LevelScreen> worldScreens) {
+				  final Map<Integer, LevelScreen> worldScreens,
+				  final WorldResource rsrc) {
 		
 		/* Variable data		*/
 		this.worldName = worldName;
@@ -131,6 +149,8 @@ public class World {
 		
 		/* Constant data		*/
 		this.currentScreen = 1000;
+		this.rsrc = rsrc;
+		skin(rsrc);
 	}
 	
 	/**
@@ -280,14 +300,12 @@ public class World {
 		}
 		
 		// A Sprite?
-		Sprite allSprites[] = getCurrentScreen().getSpritesOnScreen();
-		if (allSprites != null) {
-			for (Sprite nextSprite : allSprites) {
-				Point2D spriteLocation = nextSprite.newPointFromSpritePosition();
-				if (GameConstants.checkBoundingBoxCollision(theBonzo.currentLocation, spriteLocation,
-						Bonzo.BONZO_SIZE_X, Bonzo.BONZO_SIZE_Y, GameConstants.SPRITE_SIZE_X, GameConstants.SPRITE_SIZE_Y) ) {
-					theBonzo.kill();
-				}
+		List<Sprite> allSprites = getCurrentScreen().getSpritesOnScreen();
+		for (Sprite nextSprite : allSprites) {
+			Point2D spriteLocation = nextSprite.newPointFromSpritePosition();
+			if (GameConstants.checkBoundingBoxCollision(theBonzo.currentLocation, spriteLocation,
+					Bonzo.BONZO_SIZE_X, Bonzo.BONZO_SIZE_Y, GameConstants.SPRITE_SIZE_X, GameConstants.SPRITE_SIZE_Y) ) {
+				theBonzo.kill();
 			}
 		}
 		
@@ -334,7 +352,6 @@ public class World {
 	 * 
 	 */
 	public void addGoodie(final int x, final int y, final int screenId, final Goodie.Type type) {
-		if (isSkinned == false) throw new IllegalStateException("Can't add goodie: " + this + " not yet skinned with resource");
 		String checker = collisionCheckerForGoodie(x, y, screenId);
 		// If goodie already exists, take out and replace
 		if (goodiesInWorld.get(checker) != null)

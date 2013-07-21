@@ -1,5 +1,8 @@
 package edu.nova.erikaredmark.monkeyshines.encoder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.ImmutableRectangle;
 import edu.nova.erikaredmark.monkeyshines.Sprite;
@@ -58,15 +61,13 @@ public class EncodedSprite {
 	 * @return
 	 * 
 	 */
-	public static EncodedSprite[] fromAll(final Sprite[] sArr) {
-		EncodedSprite[] returnSprites =
-			new EncodedSprite[sArr.length];
-		
-		for (int i = 0; i < sArr.length; i++) {
-			returnSprites[i] = from(sArr[i]);
+	public static List<EncodedSprite> fromAll(final List<Sprite> spriteList) {
+		List<EncodedSprite> encoded = new ArrayList<>();
+		for (Sprite s : spriteList) {
+			encoded.add(EncodedSprite.from(s));
 		}
 		
-		return returnSprites;
+		return encoded;
 	}
 
 	public int getId() { return id; }
