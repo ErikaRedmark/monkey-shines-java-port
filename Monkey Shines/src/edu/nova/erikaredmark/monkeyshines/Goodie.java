@@ -1,13 +1,9 @@
 package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
-
-import javax.imageio.ImageIO;
 
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedGoodie;
+import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
 
 public class Goodie {
 	/**
@@ -16,50 +12,56 @@ public class Goodie {
 	 */
 
 	// These values indicate starting information for object construction
-	final Type goodieType;
-	final int screenID;
-	final ImmutablePoint2D location;	
+	private final Type goodieType;
+	private final int screenID;
+	private final ImmutablePoint2D location;	
 	
 	// The sheet that contains all the goodies
-	public static BufferedImage goodieSheet;
-	public static BufferedImage yumSheet;
+
 	
 	// These values represent game state information
 	// Taken means gone but animating the YUM. Dead means gone.
-	boolean taken;
-	boolean dead;
-	int yumSprite;
+	private boolean taken;
+	private boolean dead;
+	private int yumSprite;
 	
 	// Drawing info
-	int drawToX;
-	int drawToY;
-	int drawX;
-	int drawY;
+	private int drawToX;
+	private int drawToY;
+	private int drawX;
+	private int drawY;
+	
+	private WorldResource rsrc;
+	private boolean isSkinned = false;
 	
 	// Static initialisation: Goodie sheet is shared by all Goodie objects, and only one instance should exist.
-	static {
-		try (InputStream goodiePath = "".getClass().getResourceAsStream("/resources/graphics/objects.gif");
-		     InputStream yumPath = "".getClass().getResourceAsStream("/resources/graphics/yummies.gif") ) {
-			
-		    goodieSheet = ImageIO.read(goodiePath);
-		    yumSheet = ImageIO.read(yumPath);
-		    
-		} catch (IOException e) {
-			System.out.println("Quand est la bien?");
-		}
-	}
+//	static {
+//		try (InputStream goodiePath = "".getClass().getResourceAsStream("/resources/graphics/objects.gif");
+//		     InputStream yumPath = "".getClass().getResourceAsStream("/resources/graphics/yummies.gif") ) {
+//			
+//		    goodieSheet = ImageIO.read(goodiePath);
+//		    yumSheet = ImageIO.read(yumPath);
+//		    
+//		} catch (IOException e) {
+//			System.out.println("Quand est la bien?");
+//		}
+//	}
 	
 	/**
 	 * Creates a goodie for the specified screen, for the specified world. 
-	 * 
-	 * @param worldPointer
+	 *
 	 * @param type
 	 * @param location
 	 * @param screenID
 	 */
-	public Goodie(final Type type, final ImmutablePoint2D location, final int screenID) {
-		// Type refers to both where in the sprite sheet this powerup is, and for what it does. These elements are hardcoded.
-		this.screenID = screenID;
+	public static Goodie newGoodie(final Type type, final ImmutablePoint2D location, final int screenID, final WorldResource rsrc) {
+		Goodie g = new Goodie(type, location, screenID);
+		g.skin(rsrc);
+		return g;
+	}
+	
+	private Goodie(final Type type, final ImmutablePoint2D location, final int screenId) {
+		this.screenID = screenId;
 		this.location = location;
 		goodieType = type;
 		taken = false;
@@ -88,6 +90,13 @@ public class Goodie {
 		return new Goodie(value.getGoodieType(), value.getLocation(), value.getScreenId() );
 	}
 	
+	public void skin(final WorldResource rsrc) {
+		this.rsrc = rsrc;
+		isSkinned = true;
+	}
+	
+	public boolean isSkinned() { return isSkinned; }
+	
 	// Very simple animation.
 	public void update() {
 		if (!taken && !dead) {
@@ -111,23 +120,14 @@ public class Goodie {
 		return screenID;
 	}
 	
-	/**
-	 * Editor Functions
-	 * @param g2d
-	 */
-	
-	public static BufferedImage getGoodieSheet() {
-		return goodieSheet;
-	}
-	
 	public void paint(Graphics g2d) {
 		if (!taken && !dead)
-			g2d.drawImage(goodieSheet, drawToX , drawToY, // Destination 1
+			g2d.drawImage(rsrc.getGoodieSheet(), drawToX , drawToY, // Destination 1
 					drawToX + GameConstants.GOODIE_SIZE_X, drawToY + GameConstants.GOODIE_SIZE_Y, // Destination 2
 					drawX, drawY, drawX + GameConstants.GOODIE_SIZE_X, drawY + GameConstants.GOODIE_SIZE_Y,
 					null);
 		else if (taken && !dead) {
-			g2d.drawImage(yumSheet, drawToX , drawToY, // Destination 1
+			g2d.drawImage(rsrc.getYumSheet(), drawToX , drawToY, // Destination 1
 					drawToX + GameConstants.GOODIE_SIZE_X, drawToY + GameConstants.GOODIE_SIZE_Y, // Destination 2
 					yumSprite * GameConstants.GOODIE_SIZE_X, 0, // Source 1
 					yumSprite * GameConstants.GOODIE_SIZE_X + GameConstants.GOODIE_SIZE_X, GameConstants.GOODIE_SIZE_Y, // Source 2

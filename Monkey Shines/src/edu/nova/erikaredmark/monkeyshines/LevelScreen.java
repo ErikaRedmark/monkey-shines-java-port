@@ -1,19 +1,6 @@
 package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
-
-import javax.imageio.ImageIO;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import com.google.common.base.Optional;
 
@@ -107,6 +94,16 @@ public class LevelScreen {
 	}
 	
 	public void skin(final WorldResource rsrc) {
+		this.rsrc = rsrc;
+		for (Sprite s : spritesOnScreen) {
+			s.skin(rsrc);
+		}
+		
+		for (Tile[] tileArray : screenTiles) {
+			for (Tile t : tileArray) {
+				t.skin(rsrc);
+			}
+		}
 		
 		isSkinned = true;
 	}

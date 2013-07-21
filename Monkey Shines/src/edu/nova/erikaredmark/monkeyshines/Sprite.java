@@ -1,9 +1,9 @@
 package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
 
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedSprite;
+import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
 
 /** TODO
  * 
@@ -29,12 +29,14 @@ public class Sprite {
 	private       int speedY;
 	
 	// Images
-	private       BufferedImage spriteSheet;
 	private ClippingRectangle currentClip;
 
 	// this boolean will be set dynamically depending on the size of the graphics context. Graphics that have
 	// two rows of sprites are automatically considered two way facing.
 	private       boolean twoWayFacing;
+	
+	private WorldResource rsrc;
+	private boolean isSkinned = false;
 	
 	public static Sprite inflateFrom(EncodedSprite encodedSprite) {
 		final int id = encodedSprite.getId();
@@ -60,6 +62,18 @@ public class Sprite {
 		
 	}
 	
+	public void skin(final WorldResource rsrc) {
+		this.rsrc = rsrc;
+		currentClip = ClippingRectangle.of(GameConstants.SPRITE_SIZE_X, GameConstants.SPRITE_SIZE_Y);
+		twoWayFacing = (rsrc.getSpritesheetFor(this.id).getHeight() > GameConstants.SPRITE_SIZE_Y);
+		if (twoWayFacing && speedX >= 0) {
+			this.currentClip.setY(GameConstants.SPRITE_SIZE_Y);
+		}
+		this.isSkinned = true;
+	}
+	
+	public boolean isSkinned() { return isSkinned; }
+	
 	/**
 	 * 
 	 * Returns the starting location of this sprite. The returned object is immutable.
@@ -79,29 +93,21 @@ public class Sprite {
 	 */
 	public Point2D newPointFromSpritePosition() { return Point2D.of(currentLocation); }
 	
-//	/**
-//	 * 
-//	 * <strong> Warning: Method returns direct reference to this object's mutable location </strong>
-//	 * <p/>
-//	 * Returns the underlying mutable point representing the sprite's location on the screen. Intended only for drawing
-//	 * functions that need fast access repeatedly to this object's location.
-//	 * 
-//	 * @return
-//	 * 		underlying point for this sprite
-//	 * 
-//	 */
-//	public Point2D getSpritePosition() { return this.currentLocation; }
-//	
 	public void resetSpritePosition() { currentLocation = Point2D.from(startLocation); }
 	
 	public void paint(Graphics2D g2d) {
-			g2d.drawImage(spriteSheet, currentLocation.x(), currentLocation.y(), 
+			g2d.drawImage(rsrc.getSpritesheetFor(this.id), currentLocation.x(), currentLocation.y(), 
 					currentLocation.x() + GameConstants.SPRITE_SIZE_X, 
 					currentLocation.y() + GameConstants.SPRITE_SIZE_Y,
 					currentClip.x(), currentClip.y(), currentClip.width() + currentClip.x(),
 					currentClip.height() + currentClip.y(),  null  );
 	}
 	
+	/**
+	 * 
+	 * This method, whilst it does no drawing, should not be run until this has been skinned with a resource.
+	 * 
+	 */
 	public void update() {
 		// Update position on screen
 		currentLocation.translateXFine(speedX);
@@ -109,7 +115,7 @@ public class Sprite {
 		
 		// Update Animation
 		currentClip.translateX(GameConstants.SPRITE_SIZE_X);
-		if (currentClip.x() >= spriteSheet.getWidth() )
+		if (currentClip.x() >= rsrc.getSpritesheetFor(this.id).getWidth() )
 			currentClip.setX(0);
 		
 		

@@ -31,12 +31,18 @@ public final class WorldEditor {
 	
 	/** 
 	 * 
-	 * Creates a world editor based on a world loaded from the given name.
-	 * @param name
+	 * Creates a world editor based on a world already existing. The world file must not be corrupt, and the resource
+	 * pack must be present in the same directory
+	 * 
+	 * @param existingWorld
+	 * 		a path to the actual .world file
+	 * 
 	 * @return
+	 * 		a world editor for editing the world
+	 * 
 	 */
-	public static WorldEditor fromName(String name) {
-		return new WorldEditor(new World(name) );
+	public static WorldEditor fromExisting(Path existingWorld) {
+		return new WorldEditor();
 	}
 	
 	/**

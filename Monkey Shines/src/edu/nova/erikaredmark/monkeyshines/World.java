@@ -1,27 +1,13 @@
 package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.imageio.ImageIO;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
 import com.google.common.collect.ImmutableMap;
 
-import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedGoodie;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedLevelScreen;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedWorld;
@@ -34,21 +20,13 @@ import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
  * 
  * Every World is composed of the following parts, which are stored in memory
  * 
- * A sprite sheet consisting of tiles that Bonzo can not, in any way, pass. These are Solid Tiles
- * 
- * A sprite sheet consisting of tiles that Bonzo can jump through but still stand on. As such, he
- * can only jump up, not down, through these tiles. These are called Thru Tiles
- * 
- * A spirte sheet consisting of tiles that Bonzo can in no way interact with and merely exists to
- * help the atmosphere.
- * 
  * An Array of full-screen backgrounds. Please keep the number of these to a minimum and use the
  * PPAT patterns implementation to save on memory.
  * 
- * A Hashmap consisting of all the goodies in the world. The theoritical limit is infinite. Unlike in
+ * A Map consisting of all the goodies in the world. The theoritical limit is infinite. Unlike in
  * the original, the limit of the number of goodies is governed by the memory used.
  * 
- * The hashmap of the world screens. The reason this is a hashmap is simple. In the original game, level
+ * The Map of the world screens. The reason this is a hashmap is simple. In the original game, level
  * ID's, as seen by the editor, were given an integer value. Moving left or right incremented or decremented
  * by one, moving up or down incremented/decremented by 100. This means that if some worlds have levels that
  * are too horizontal, there can be a potential for collision. The new implementation is based on the same
@@ -56,17 +34,10 @@ import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
  * size is unlikely to get to; already it is huge.
  * 
  * The integer value of the current screen.
+ * 
  */
 public class World {
 	private final String worldName;
-	/* Whilst not final due to initialisation rules, references should not be changed within the class.					*/
-	private WorldResource rsrc;
-	
-	// Backgrounds: We will know how many from the XML file. So keep as standard array.
-//	private       BufferedImage[] backgrounds;
-	
-	// Sprites for the map: We will also know how many from the xml file.
-	private       BufferedImage[] sprites;
 	
 	// Goodies. Store as a hashmap. Why? For speed in collision detection.
 	// The screen string, concatenated with "X", and then the the tile co-ordinates. . .
@@ -80,6 +51,10 @@ public class World {
 	// and quickly get the screen we need. It is fast and I believe the designers of the original did the same thing.
 	private final Map<Integer, LevelScreen> worldScreens;
 	private       int currentScreen;
+	
+	
+	private WorldResource rsrc;
+	private boolean isSkinned = false;
 	
 	/**
 	 * 
@@ -117,9 +92,22 @@ public class World {
 	 * @param rsrc
 	 * 
 	 */
-	public skin(WorldResource rsrc) {
+	public void skin(final WorldResource rsrc) {
+		this.rsrc = rsrc;
 		
+		for (Entry<String, Goodie> goodie : goodiesInWorld.entrySet() ) {
+			goodie.getValue().skin(rsrc);
+		}
+		
+		for (Entry<Integer, LevelScreen> level : worldScreens.entrySet() ) {
+			level.getValue().skin(rsrc);
+		}
+		
+		this.isSkinned = true;
 	}
+	
+	public boolean isSkinned() { return isSkinned; }
+	
 	
 	/**
 	 * 
@@ -143,13 +131,6 @@ public class World {
 		
 		/* Constant data		*/
 		this.currentScreen = 1000;
-		
-		/* Not initialised yet	*/
-		// TODO initialise to blank graphic contexts?
-		this.solidTiles = null;
-		this.thruTiles = null;
-		this.sceneTiles = null;
-		this.sprites = null;
 	}
 	
 	/**
@@ -224,120 +205,6 @@ public class World {
 		this.worldScreens.put(screen.getId(), screen);
 	}
 	
-	/**
-	 * Verifies the format of the XML world file, and then uses the file to load up every screen's data into memory.
-	 * Given today's (March 5th, 2012) machines with large amounts of memory, the small memory footprint of a nicely 
-	 * sized world is unlikely to be unable to be stored in memory.
-	 * @param name the name of the .xml file.
-	 */
-	public void parseXMLworldFile(final String name) {
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		Document dom;
-		
-		String filename = name + ".xml";
-		InputStream xmlFile = getClass().getResourceAsStream("/resources/worlds/" + name + "/" + filename);
-		
-		try {
-			DocumentBuilder db = dbf.newDocumentBuilder();
-			dom = db.parse(xmlFile);
-		
-			Element docEle = dom.getDocumentElement();
-
-			NodeList nl = docEle.getElementsByTagName("worldinfo");
-			//NodeList nl = docEle.get
-			if(nl != null && nl.getLength() > 0) {
-					// Get the single level parameters
-				Element el = (Element)nl.item(0);
-					
-				String tilename = GameConstants.getTextValue(el, "baseTileName");
-				String screenName = GameConstants.getTextValue(el, "baseScreenName");
-				NodeList specifics = el.getElementsByTagName("screen");
-				NodeList spritesNl = el.getElementsByTagName("sprite");
-				
-				// Load graphics data BEFORE screens
-				/* The XML file tells what prefix to look for. */
-				try {
-					InputStream solidTilesFile = getClass().getResourceAsStream("/resources/graphics/" 
-							+ name + "/" + tilename + "tilesolid.gif");
-					InputStream thruTilesFile = getClass().getResourceAsStream("/resources/graphics/"
-							+ name + "/" + tilename + "tilesthru.gif"); 
-					InputStream sceneTilesFile = getClass().getResourceAsStream("/resources/graphics/"
-							+ name + "/" + tilename + "tilesscene.gif");
-				    solidTiles = ImageIO.read(solidTilesFile);
-				    thruTiles = ImageIO.read(thruTilesFile);
-				    sceneTiles = ImageIO.read(sceneTilesFile);
-				    
-				    //sceneTiles = ImageIO.read(new File("" + tilename + "tilesscene.gif") );
-					    
-				} catch (IOException e) {
-					System.out.println("Quand est ce tile?");
-				}
-				
-				// Load Sprite data also before screens
-				
-				if (spritesNl != null && spritesNl.getLength() > 0) {
-					sprites = new BufferedImage[spritesNl.getLength() ];
-					for (int i = 0; i < spritesNl.getLength(); i++) {
-						Element spriteEl = (Element)spritesNl.item(i);
-						
-						int spriteId = GameConstants.getIntValue(spriteEl, "id");
-						String imageLocation = GameConstants.getTextValue(spriteEl, "imagefile");
-						
-						try {
-							InputStream temp = getClass().getResourceAsStream("/resources/graphics/"
-									+ name + "/" + imageLocation);
-						    sprites[spriteId] = ImageIO.read(temp);
-							    
-						} catch (IOException e) {
-							System.out.println("Quand est ce sprite?");
-						}
-					}
-				}
-				/*<sprite>
-				<id>2</id>
-				<imagefile>bee.gif</imagefile>
-			</sprite>*/
-				
-				// Load all the screens and let them know where their XML data is so they can parse their's.
-				if (specifics != null && specifics.getLength() > 0) {
-					for (int i = 0; i < specifics.getLength(); i++) {
-						Element screenEl = (Element)specifics.item(i);
-						
-						int id = GameConstants.getIntValue(screenEl, "id");
-						worldScreens.put(id, new LevelScreen(id, screenName, sprites, this) );
-					}
-				}
-				
-				// Set the goodies
-				specifics = el.getElementsByTagName("goodie");
-				if (specifics != null && specifics.getLength() > 0) {
-					for (int i = 0; i < specifics.getLength(); i++) {
-						Element goodieEl = (Element)specifics.item(i);
-						
-						int type = GameConstants.getIntValue(goodieEl, "type");
-						int row = GameConstants.getIntValue(goodieEl, "row");
-						int col = GameConstants.getIntValue(goodieEl, "col");
-						int screenID = GameConstants.getIntValue(goodieEl, "screenID");
-	
-						String checker = "" + screenID + "X" + col + "," + row;
-						goodiesInWorld.put(checker, new Goodie(Goodie.Type.byValue(type), ImmutablePoint2D.of(col, row), screenID) );
-					}
-				}
-					
-				
-			}
-			
-		}catch(ParserConfigurationException pce) {
-			pce.printStackTrace();
-		}catch(SAXException se) {
-			se.printStackTrace();
-		}catch(IOException ioe) {
-			ioe.printStackTrace();
-		} 
-		
-		
-		
-	}
 	
 	/**
 	 * Sets the current screen for the world. This should be used sparingly (instead relying on screenChange for most cases)
@@ -450,44 +317,29 @@ public class World {
 		}
 	}
 	
-	/**
-	 * These functions are used for the level editor
-	 * None of the changes these make will remain unless the level is saved.
-	 * @param g2d
-	 */
-	
-	public BufferedImage getTileSheetByType(final TileType type) {
-		switch(type) {
-		case SOLID:
-			return getTileSheetSolid();
-		case THRU:
-			return getTileSheetThru();
-		case SCENE:
-			return getTileSheetScene();
-		default:
-			throw new RuntimeException("TileType Enum is improper! No such type as " + type.toString() );
-		}
-	}
-	
-	public BufferedImage getTileSheetSolid() {
-		return solidTiles;
-	}
-	
-	public BufferedImage getTileSheetThru() {
-		return thruTiles;
-	}
-	
-	public BufferedImage getTileSheetScene() {
-		return sceneTiles;
-	}
-	
 	// Reminder: Form is like "1000X4,3"
+	/**
+	 * 
+	 * Adds a goodie to the given world, typically only used by level editor.
+	 * <p/>
+	 * This world must already be skinned
+	 * 
+	 * @param x
+	 * @param y
+	 * @param screenId
+	 * @param type
+	 * 
+	 * @throws IllegalStateException
+	 * 		if the world has not yet been skinned
+	 * 
+	 */
 	public void addGoodie(final int x, final int y, final int screenId, final Goodie.Type type) {
+		if (isSkinned == false) throw new IllegalStateException("Can't add goodie: " + this + " not yet skinned with resource");
 		String checker = collisionCheckerForGoodie(x, y, screenId);
 		// If goodie already exists, take out and replace
 		if (goodiesInWorld.get(checker) != null)
 			goodiesInWorld.remove(checker);
-		goodiesInWorld.put(checker, new Goodie(type, ImmutablePoint2D.of(x, y), screenId) );
+		goodiesInWorld.put(checker, Goodie.newGoodie(type, ImmutablePoint2D.of(x, y), screenId, rsrc) );
 	}
 	
 	/**

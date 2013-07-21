@@ -43,23 +43,26 @@ public class GameWindow extends JPanel implements ActionListener {
 		this.keys=keys;
 		setVisible(true);
 		
-		currentWorld = new World("spooked");
 		
-		// Set the Keyboard Input
 		
-		this.addKeyListener(keys);
-		
-		// Put a Bonzo on the board
-		bonzo = new Bonzo(currentWorld);
-		
-		//. Optimisations
-		setDoubleBuffered(true);
-		windowSize = getSize();
-		
-		// Main timer for game
-		// 30
-		gameTimer = new Timer(30, this);
-		gameTimer.start();
+//		// TODO better world laoding
+//		currentWorld = World.demoWorld("Demo");
+//		
+//		// Set the Keyboard Input
+//		
+//		this.addKeyListener(keys);
+//		
+//		// Put a Bonzo on the board
+//		bonzo = new Bonzo(currentWorld);
+//		
+//		//. Optimisations
+//		setDoubleBuffered(true);
+//		windowSize = getSize();
+//		
+//		// Main timer for game
+//		// 30
+//		gameTimer = new Timer(30, this);
+//		gameTimer.start();
 	}
 
 	/**
