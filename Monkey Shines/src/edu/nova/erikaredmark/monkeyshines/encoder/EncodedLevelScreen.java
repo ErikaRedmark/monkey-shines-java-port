@@ -1,5 +1,7 @@
 package edu.nova.erikaredmark.monkeyshines.encoder;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
@@ -25,7 +27,8 @@ import edu.nova.erikaredmark.monkeyshines.Tile;
  * 
  * @author Erika Redmark
  */
-public final class EncodedLevelScreen {
+public final class EncodedLevelScreen implements Serializable {
+	private static final long serialVersionUID = 4408117657277863512L;
 	
 	private final int id;
 	private final int backgroundId;
@@ -60,11 +63,31 @@ public final class EncodedLevelScreen {
 		
 		return new EncodedLevelScreen(_id, _backgroundId, _tiles, _sprites, _bonzoLocation);
 	}
+	
+	/**
+	 * 
+	 * Creates an empty encoded level screen with the given id. Differs from {@link LevelScreen#newScreen(int, WorldResource)}
+	 * since there is no need for a graphics resource to skin the level as it is created in a saveable encoded form
+	 * 
+	 * @param id
+	 * 		the id of the screen. For creating new worlds from scratch, this should generally be id 1000
+	 * 
+	 * @return
+	 * 		fresh, empty encoded level with the given id.
+	 * 
+	 */
+	public static EncodedLevelScreen fresh(int id) {
+		// Note: cannot use Collections.emptyList, as that list is an empty 'immutable' list, not a fresh list
+		// 		 that new things can be added to, which is what this screen will need.
+		return new EncodedLevelScreen(id, 0, EncodedTile.freshTiles(), new ArrayList<EncodedSprite>(), ImmutablePoint2D.of(0, 0) );
+	}
 
 	public int getId() { return id; }
 	public int getBackgroundId() { return backgroundId; }
 	public EncodedTile[][] getTiles() { return tiles; }
 	public List<EncodedSprite> getSprites() { return sprites; }
 	public ImmutablePoint2D getBonzoLocation() { return bonzoLocation; }
+
+
 
 }

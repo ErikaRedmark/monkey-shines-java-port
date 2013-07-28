@@ -2,6 +2,8 @@ package edu.nova.erikaredmark.monkeyshines.editor.dialog;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SpringLayout;
 import javax.swing.JLabel;
@@ -15,8 +17,13 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 
 import javax.swing.JCheckBox;
+
+import edu.nova.erikaredmark.monkeyshines.encoder.WorldIO;
 
 
 /**
@@ -54,22 +61,38 @@ public class NewWorldDialog extends JPanel implements LaunchableDialog {
 			}
 		};
 		
-	private final Action okayAction =
-		new AbstractAction("Okay") {
+	private final Action saveAction =
+		new AbstractAction("Save") {
 			private static final long serialVersionUID = 3229707262753672755L;
 			@Override public void actionPerformed(ActionEvent e) {
-				// TODO offload model to world generator and close dialog
-			}
-		};
-		
-	private final Action cancelAction =
-		new AbstractAction("Cancel") {
-			private static final long serialVersionUID = -7231610038298935644L;
-			@Override public void actionPerformed(ActionEvent e) {
-				// TODO close dialog forget everything
+				JFileChooser fileChooser = new JFileChooser();
+				if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+					File file = fileChooser.getSelectedFile();
+					Path savePath = file.toPath();
+					String worldName = model.getWorldName();
+					try {
+						if (model.isUseDefaultPack() ) {
+							WorldIO.newWorldWithDefault(savePath, worldName);
+						} else {
+							JOptionPane.showMessageDialog(null, "Feature not implemented: Choose the default resource pack option");
+						}
+					} catch (IOException ex) {
+						JOptionPane.showMessageDialog(null,
+						    "Unable to save due to " + ex.getMessage(),
+						    "Saving Error",
+						    JOptionPane.ERROR_MESSAGE);
+						ex.printStackTrace();
+					}
+				}
+
 			}
 		};
 
+	/**
+	 * 
+	 * Creates a new instance of this dialog and allows the user to create a new world.
+	 * 
+	 */
 	public NewWorldDialog() {
 		SpringLayout springLayout = new SpringLayout();
 		setLayout(springLayout);
@@ -87,7 +110,7 @@ public class NewWorldDialog extends JPanel implements LaunchableDialog {
 		add(lblResourcePack);
 		
 		txtWorldName = new JTextField();
-		springLayout.putConstraint(SpringLayout.NORTH, txtWorldName, 10, SpringLayout.NORTH, this);
+		springLayout.putConstraint(SpringLayout.NORTH, txtWorldName, 0, SpringLayout.NORTH, lblWorldName);
 		springLayout.putConstraint(SpringLayout.WEST, txtWorldName, 6, SpringLayout.EAST, lblWorldName);
 		springLayout.putConstraint(SpringLayout.EAST, txtWorldName, 236, SpringLayout.EAST, lblWorldName);
 		add(txtWorldName);
@@ -103,14 +126,14 @@ public class NewWorldDialog extends JPanel implements LaunchableDialog {
 		});
 		
 		txtResourcePack = new JTextField();
-		springLayout.putConstraint(SpringLayout.NORTH, txtResourcePack, 24, SpringLayout.SOUTH, txtWorldName);
+		springLayout.putConstraint(SpringLayout.NORTH, txtResourcePack, 0, SpringLayout.NORTH, lblResourcePack);
 		springLayout.putConstraint(SpringLayout.WEST, txtResourcePack, 6, SpringLayout.EAST, lblResourcePack);
 		springLayout.putConstraint(SpringLayout.EAST, txtResourcePack, 236, SpringLayout.EAST, lblResourcePack);
 		add(txtResourcePack);
 		txtResourcePack.setColumns(10);
 		
 		JButton btnBrowseResourcePack = new JButton(btnResourcePackAction);
-		springLayout.putConstraint(SpringLayout.NORTH, btnBrowseResourcePack, 51, SpringLayout.NORTH, this);
+		springLayout.putConstraint(SpringLayout.NORTH, btnBrowseResourcePack, 0, SpringLayout.NORTH, txtResourcePack);
 		springLayout.putConstraint(SpringLayout.WEST, btnBrowseResourcePack, 6, SpringLayout.EAST, txtResourcePack);
 		springLayout.putConstraint(SpringLayout.EAST, btnBrowseResourcePack, -10, SpringLayout.EAST, this);
 		btnBrowseResourcePack.addActionListener(new ActionListener() {
@@ -121,24 +144,19 @@ public class NewWorldDialog extends JPanel implements LaunchableDialog {
 		
 		chckbxUseDefaultPack = new JCheckBox(useDefaultAction);
 		springLayout.putConstraint(SpringLayout.NORTH, chckbxUseDefaultPack, 6, SpringLayout.SOUTH, txtResourcePack);
-		springLayout.putConstraint(SpringLayout.WEST, chckbxUseDefaultPack, 0, SpringLayout.WEST, btnBrowseResourcePack);
+		springLayout.putConstraint(SpringLayout.WEST, chckbxUseDefaultPack, 372, SpringLayout.WEST, this);
 		add(chckbxUseDefaultPack);
 		
-		JButton btnOkay = new JButton(okayAction);
-		springLayout.putConstraint(SpringLayout.SOUTH, btnOkay, -10, SpringLayout.SOUTH, this);
-		add(btnOkay);
-		
-		JButton btnCancel = new JButton(cancelAction);
-		springLayout.putConstraint(SpringLayout.WEST, btnOkay, -76, SpringLayout.WEST, btnCancel);
-		springLayout.putConstraint(SpringLayout.EAST, btnOkay, -6, SpringLayout.WEST, btnCancel);
-		springLayout.putConstraint(SpringLayout.SOUTH, btnCancel, -10, SpringLayout.SOUTH, this);
-		springLayout.putConstraint(SpringLayout.EAST, btnCancel, 0, SpringLayout.EAST, btnBrowseResourcePack);
-		add(btnCancel);
+		JButton btnSave = new JButton(saveAction);
+		springLayout.putConstraint(SpringLayout.WEST, btnSave, 420, SpringLayout.WEST, this);
+		springLayout.putConstraint(SpringLayout.SOUTH, btnSave, -10, SpringLayout.SOUTH, this);
+		springLayout.putConstraint(SpringLayout.EAST, btnSave, 0, SpringLayout.EAST, btnBrowseResourcePack);
+		add(btnSave);
 
 		model = NewWorldDialogModel.newInstance();
 		controller = new Controller(model);
 		
-		setPreferredSize(new Dimension(500, 200) );
+		setPreferredSize(new Dimension(500, 158) );
 		setSize(500, 200);
 		
 		// TODO remove listeners on dispose action

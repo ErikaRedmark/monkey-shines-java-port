@@ -1,11 +1,16 @@
 package edu.nova.erikaredmark.monkeyshines.encoder;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 
 import edu.nova.erikaredmark.monkeyshines.editor.WorldEditor;
@@ -65,6 +70,96 @@ public final class WorldIO {
 		}
 		
 		
+	}
+	
+	/**
+	 * 
+	 * Creates a new world folder at the given location with the given name. The default resources pack is used by copying
+	 * it to that location and renaming it to the given world name. Additionally, a clean-slate 'worldName'.world file is
+	 * created with empty content ready for the editor.
+	 * <p/>
+	 * This method is guaranteed to have created the folder if it does not throw an exception.
+	 * 
+	 * @param newWorldFolder
+	 * 		the location to create the new world folder. This location's parent must exist, but the actually folder should
+	 * 		not as this method will create a new one
+	 * 
+	 * @param worldName
+	 * 		the name of the world, which will be the name of the .world file as well as the name of the resource pack
+	 * @throws IOException 
+	 * 
+	 * @throws
+	 * 		IllegalArgumentException	
+	 * 			if the path to the new world folder already exists, or if the parent of the path (all folders leading up)
+	 * 			do not exist
+	 * 		IOException
+	 * 			if something occurs during folder and/or file creation that prevents the full creation of this world
+	 * 
+	 */
+	public static void newWorldWithDefault(Path newWorldFolder, String worldName) throws IOException {
+	    // Don't create the world data until we first verify the resource pack is valid
+		InputStream resourceSource = WorldIO.class.getResourceAsStream("/resources/standard/default.zip");
+	    if (resourceSource == null) throw new RuntimeException("Bad .jar file, default resource pack unavailable");
+	    
+		newWorldData(newWorldFolder, worldName);
+		
+		// Copy resources and create <worldName>.zip file
+
+	    Path resourceDestination = newWorldFolder.resolve(worldName + ".zip");
+	    Files.copy(resourceSource, resourceDestination);
+	    
+	    // No exceptions = done!
+	}
+	
+	/**
+	 * 
+	 * Creates a new world folder at the given location with the given name, copying the contents of the resource pack
+	 * pointed to to the new folder with the world.
+	 * <p/>
+	 * This method is guaranteed to have created the folder if it does not throw an exception.
+	 * 
+	 * @param newWorldFolder
+	 * 		the location to create the new world folder. This location's parent must exist, but the actually folder should
+	 * 		not as this method will create a new one
+	 * 
+	 * @param worldName
+	 * 		the name of the world, which will be the name of the .world file as well as the name of the resource pack
+	 * 
+	 * @throws IOException 
+	 * 
+	 * @throws
+	 * 		IllegalArgumentException	
+	 * 			if the path to the new world folder already exists, or if the parent of the path (all folders leading up)
+	 * 			do not exist, or if the given resource pack does not exist
+	 * 		IOException
+	 * 			if something occurs during folder and/or file creation that prevents the full creation of this world
+	 * 
+	 */
+	public static void newWorldWithResources(Path newWorldFolder, String worldName, Path rsrcPack) throws IOException {
+		checkArgument(Files.exists(rsrcPack, LinkOption.NOFOLLOW_LINKS) );
+		newWorldData(newWorldFolder, worldName);
+		
+		// Copy resources from target into <worldName>.zip file
+		InputStream resourceSource = new FileInputStream(rsrcPack.toFile() );
+	    Path resourceDestination = newWorldFolder.resolve(worldName + ".zip");
+	    Files.copy(resourceSource, resourceDestination, StandardCopyOption.COPY_ATTRIBUTES);
+	    
+	    // No exceptions = done!
+	}
+	
+	/** Common code to both newWorldYYY functions. Makes the .world file, does not handle resources.					*/
+	private static void newWorldData(Path newWorldFolder, String worldName) throws IOException {
+		checkArgument(Files.exists(newWorldFolder, LinkOption.NOFOLLOW_LINKS) == false );    // child must not exist
+		checkArgument(Files.exists(newWorldFolder.getParent(), LinkOption.NOFOLLOW_LINKS) ); // ... but parent must
+		
+		Files.createDirectory(newWorldFolder);
+	    
+		// Create .world file
+		EncodedWorld newWorld = EncodedWorld.fresh(worldName);
+		Path worldLocation = newWorldFolder.resolve(worldName + WorldIO.WORLD_EXTENSION);
+		try (ObjectOutputStream os = new ObjectOutputStream(Files.newOutputStream(worldLocation, StandardOpenOption.CREATE) ) ) {
+			os.writeObject(newWorld);
+		}
 	}
 	
 	/**

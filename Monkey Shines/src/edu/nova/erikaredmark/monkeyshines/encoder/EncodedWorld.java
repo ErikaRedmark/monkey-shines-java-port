@@ -1,8 +1,10 @@
 package edu.nova.erikaredmark.monkeyshines.encoder;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import com.google.common.collect.ImmutableMap;
 
 import edu.nova.erikaredmark.monkeyshines.Goodie;
@@ -88,9 +90,35 @@ public class EncodedWorld implements Serializable {
 		return new EncodedWorld(_name, _goodies, _levels);
 		
 	}
+	
+
+	/**
+	 * 
+	 * Creates a new world that is empty. The newly created world will have the given name and a single screen of id 1000.
+	 * 
+	 * @param name
+	 * 		the name of the new world
+	 * 
+	 * @return
+	 * 		an empty encoded world
+	 * 
+	 */
+	public static EncodedWorld fresh(String name) {
+		// Set up empty screen
+		EncodedLevelScreen emptyScreen = EncodedLevelScreen.fresh(1000);
+		Map<Integer, EncodedLevelScreen> screens = new HashMap<>();
+		screens.put(1000, emptyScreen);
+		
+		// Set up empty goodie map
+		Map<String, EncodedGoodie> goodies = new HashMap<>();
+		
+		// Return new empty world
+		return new EncodedWorld(name, goodies, screens);
+	}
 
 	public String getName() { return name; }
 	public Map<String, EncodedGoodie> getGoodies() { return goodies; }
 	public Map<Integer, EncodedLevelScreen> getLevels() { return levels; }
+
 	
 }

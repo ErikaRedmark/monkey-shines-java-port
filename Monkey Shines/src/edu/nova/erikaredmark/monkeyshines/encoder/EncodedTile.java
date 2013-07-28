@@ -45,6 +45,18 @@ public final class EncodedTile {
 		
 		return new EncodedTile(_id, _type, _location);
 	}
+	
+	/**
+	 * 
+	 * Creates an empty encoded tile array, indicating no tiles present on the entire screen. All entries are initialised
+	 * to null.
+	 * 
+	 * @return
+	 * 
+	 */
+	public static EncodedTile[][] freshTiles() {
+		return new EncodedTile[20][32];
+	}
 
 	public int getId() { return id; }
 	public TileType getType() { return type; }
