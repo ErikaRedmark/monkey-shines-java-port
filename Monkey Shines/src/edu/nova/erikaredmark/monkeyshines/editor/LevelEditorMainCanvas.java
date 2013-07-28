@@ -20,6 +20,8 @@ import edu.nova.erikaredmark.monkeyshines.Goodie;
 import edu.nova.erikaredmark.monkeyshines.KeyboardInput;
 import edu.nova.erikaredmark.monkeyshines.Point2D;
 import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
+import edu.nova.erikaredmark.monkeyshines.editor.dialog.DialogLauncher;
+import edu.nova.erikaredmark.monkeyshines.editor.dialog.NewWorldDialog;
 
 
 /**
@@ -357,5 +359,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	public LevelScreenEditor getVisibleScreenEditor() {
 		return this.currentScreenEditor;
 	}
+
+
 
 }

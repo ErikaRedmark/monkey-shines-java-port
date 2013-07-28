@@ -12,7 +12,9 @@ import javax.swing.JOptionPane;
 import com.google.common.base.Optional;
 
 import edu.nova.erikaredmark.monkeyshines.*;
+import edu.nova.erikaredmark.monkeyshines.editor.dialog.DialogLauncher;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.GoToScreenDialog;
+import edu.nova.erikaredmark.monkeyshines.editor.dialog.NewWorldDialog;
 
 
 /*
@@ -28,6 +30,37 @@ public class LevelEditor extends JFrame {
 	private KeyboardInput keys;
 	// Main menu Bar
 	private JMenuBar mainMenuBar = new JMenuBar();
+	
+	// Menu: File operations
+	private JMenu fileMenu = new JMenu("File");
+	/* --------------------------- MENU ITEM NEW WORLD ---------------------------- */
+	private final JMenuItem newWorld = new JMenuItem("New World..."); // Can't be defined yet due to requiring enclosing instance of JFrame
+	
+	/* -------------------------- MENU ITEM LOAD WORLD ---------------------------- */
+	private JMenuItem loadWorld = new JMenuItem(new AbstractAction("Load World...") {
+		private static final long serialVersionUID = 1L;
+		@Override public void actionPerformed(ActionEvent e) {
+			// TODO load world dialog
+		}
+	});
+	
+	/* -------------------------- MENU ITEM SAVE WORLD ---------------------------- */
+	private JMenuItem saveWorld = new JMenuItem(new AbstractAction("Save World...") {
+		private static final long serialVersionUID = 1L;
+		@Override public void actionPerformed(ActionEvent e) {
+			// TODO save world
+		}
+	});
+	
+	/* ----------------------------- MENU ITEM QUIT ------------------------------- */
+	private JMenuItem quit = new JMenuItem(new AbstractAction("Quit") {
+		private static final long serialVersionUID = 1L;
+		@Override public void actionPerformed(ActionEvent e) {
+			// TODO better way of quitting: Also ask for save changes
+			System.exit(0);
+		}
+	});
+	
 	// Menu: Place Stuff
 	private JMenu placeTiles = new JMenu("Place Objects");
 	/* -------------------------- MENU ITEM PLACE SOLIDS -------------------------- */
@@ -94,11 +127,32 @@ public class LevelEditor extends JFrame {
 	}
 	
 	public static void main(String[] args) {
-		new LevelEditor();
+		newInstance();
 
 	}
 	
-	public LevelEditor() {
+	/**
+	 * 
+	 * Constructs a new instance of the level editor and assigns all the required actions that could not be assigned in the constructor
+	 * 
+	 * @return
+	 * 		new instance of this object
+	 * 
+	 */
+	public static LevelEditor newInstance() {
+		final LevelEditor editor = new LevelEditor();
+		
+		editor.newWorld.setAction(new AbstractAction("New World...") {
+			private static final long serialVersionUID = 1L;
+			@Override public void actionPerformed(ActionEvent e) {
+				DialogLauncher.launch(editor, "New World...", new NewWorldDialog() );
+			}
+		});
+		
+		return editor;
+	}
+	
+	private LevelEditor() {
 		keys = new KeyboardInput();
 		currentWorld = new LevelEditorMainCanvas(keys);
 		// Must add to both.
@@ -109,6 +163,12 @@ public class LevelEditor extends JFrame {
 		setSize(GameConstants.SCREEN_WIDTH, 
 				GameConstants.SCREEN_HEIGHT);
 		setLocationRelativeTo(null); // Why even set this?
+		
+		fileMenu.add(newWorld);
+		fileMenu.add(loadWorld);
+		fileMenu.add(saveWorld);
+		
+		mainMenuBar.add(fileMenu);
 		
 		placeTiles.add(placeSolids);
 		placeTiles.add(placeThrus);
