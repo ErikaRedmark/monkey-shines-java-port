@@ -1,7 +1,6 @@
 package edu.nova.erikaredmark.monkeyshines.editor.dialog;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.Point;
 
 import javax.swing.JComponent;

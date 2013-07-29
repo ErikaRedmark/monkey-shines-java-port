@@ -1,5 +1,7 @@
 package edu.nova.erikaredmark.monkeyshines.encoder;
 
+import java.io.Serializable;
+
 import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.Tile;
 import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
@@ -21,11 +23,14 @@ import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
  * 
  * @author Erika Redmark
  */
-public final class EncodedTile {
+public final class EncodedTile implements Serializable {
+	private static final long serialVersionUID = -8382685431682699547L;
 	
 	private final int id;
 	private final TileType type;
 	private final ImmutablePoint2D location;
+	
+	private static final EncodedTile NO_TILE = new EncodedTile(0, TileType.NONE, ImmutablePoint2D.of(0, 0) );
 	
 	private EncodedTile(final int id, final TileType type, final ImmutablePoint2D location) {
 		this.id = id; this.type = type; this.location = location;
@@ -49,13 +54,19 @@ public final class EncodedTile {
 	/**
 	 * 
 	 * Creates an empty encoded tile array, indicating no tiles present on the entire screen. All entries are initialised
-	 * to null.
+	 * to empty tiles
 	 * 
 	 * @return
 	 * 
 	 */
 	public static EncodedTile[][] freshTiles() {
-		return new EncodedTile[20][32];
+		EncodedTile[][] tiles = new EncodedTile[20][32];
+		for (int i = 0; i < 20; i++) {
+			for (int j = 0; j < 32; j++) {
+				tiles[i][j] = NO_TILE;
+			}
+		}
+		return tiles;
 	}
 
 	public int getId() { return id; }

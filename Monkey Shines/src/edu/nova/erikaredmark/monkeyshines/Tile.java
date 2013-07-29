@@ -32,6 +32,8 @@ public class Tile {
 	private WorldResource rsrc;
 	private boolean isSkinned = false;
 	
+	private static final Tile NO_TILE = new Tile(ImmutablePoint2D.of(0, 0), 0, TileType.NONE);
+	
 	/**
 	 * 
 	 * Creates an instance of this object from its encoded for.
@@ -42,12 +44,14 @@ public class Tile {
 	 * 
 	 */
 	public static Tile inflateFrom(EncodedTile encodedTile) {
-		return new Tile(encodedTile.getLocation(), encodedTile.getId(), encodedTile.getType() );
+		// Check if the encoded tile is no tile, and if so set to singleton. Otherwise, return a new tile of the right type
+		if (encodedTile.getType() == TileType.NONE) return NO_TILE;
+		else return new Tile(encodedTile.getLocation(), encodedTile.getId(), encodedTile.getType() );
 	}
 	
 	private Tile(final ImmutablePoint2D point, final int tileId, final TileType type) {
-		this.tileX = point.x();
-		this.tileY = point.y();
+		this.tileX = point.x() * GameConstants.TILE_SIZE_X;
+		this.tileY = point.y() * GameConstants.TILE_SIZE_X;
 		this.tileId = tileId;
 		this.type = type;	
 	}
@@ -59,13 +63,17 @@ public class Tile {
 	 * <p/>
 	 * <strong>This method must be called if there are any changes to the graphics of the resource!</strong>. Computations
 	 * based on blitting locations are done once and cached for speed. If the dimensions of any images changes without an
-	 * explicit reskin there WILL be non-determisitic graphical glitches!
+	 * explicit reskin there WILL be non-determisitic graphical glitches.
+	 * <p/>
+	 * Does nothing if the tile in question is not drawable (is of type {@code TileType.NONE} )
 	 * 
 	 * @param rsrc
 	 * 		graphics resource to reskin this tile with
 	 * 
 	 */
 	public void skin(final WorldResource rsrc) {
+		if (this.type == TileType.NONE) return;
+		
 		this.rsrc = rsrc;
 		BufferedImage tileSpriteSheet = rsrc.getTilesheetFor(this.type);
 		sheetCols = tileSpriteSheet.getWidth() / GameConstants.TILE_SIZE_X;
@@ -93,6 +101,9 @@ public class Tile {
 	public TileType getType() { return this.type; };
 
 	public void paint(Graphics2D g2d) {
+		// No drawing for empty tiles
+		if (this.type == TileType.NONE) return;
+		
 		g2d.drawImage(rsrc.getTilesheetFor(this.type), tileX, tileY, tileX + GameConstants.TILE_SIZE_X, tileY + GameConstants.TILE_SIZE_Y, //DEST
 				tileDrawCol, tileDrawRow, tileDrawCol + GameConstants.TILE_SIZE_X, tileDrawRow + GameConstants.TILE_SIZE_Y, // SOURCE
 				null); // OBS
@@ -117,11 +128,13 @@ public class Tile {
 	 * <li> Thru: Bonzo may stand on it, but if he is walking through it on the side it will not impede his movement.
 	 * 		He may not, however, go down through it (it is standable only)</li>
 	 * <li> Scene: Has no effect on Bonzo. Has no effect on anything. Merely a stand-in for graphics. </li>
+	 * <li> None: No tile. Acts as a null-safe way of simply saying "no tile" </li>
+	 * </ul>
 	 * 
 	 * @author Erika Redmark
 	 *
 	 */
-	public enum TileType {SOLID(0), THRU(1), SCENE(2); 
+	public enum TileType {SOLID(0), THRU(1), SCENE(2), NONE(99); 
 		private int id;
 		private static Map<Integer, TileType> int2Type=
 			new HashMap<Integer, TileType>();
@@ -163,6 +176,51 @@ public class Tile {
 		Tile tile = new Tile(location, id, tileType);
 		tile.skin(rsrc);
 		return tile;
+	}
+
+	/** 
+	 * 
+	 * Creates an empty map of tiles, all initialised to a tile type of {@code None}. The 2D array is always generated
+	 * to the proper size and no entries are null
+	 * 
+	 * @return
+	 * 		a new 2d array of tiles
+	 * 
+	 */
+	public static Tile[][] createBlankTileMap() {
+		Tile[][] tiles = new Tile[20][32];
+		for (int i = 0; i < 20; i++) {
+			for (int j = 0; j < 32; j++) {
+				tiles[i][j] = NO_TILE;
+			}
+		}
+		return tiles;
+	}
+
+	/**
+	 * 
+	 * Determines if this tile space is simply empty space and does not contain any real tile data
+	 * 
+	 * @return
+	 * 		{@code true} if the tile type is NONE and there is no tile here, {@code false} if otherwise
+	 * 
+	 */
+	public boolean isEmpty() {
+		return this.type == TileType.NONE;
+	}
+
+	/** 
+	 * 
+	 * Returns an empty tile instance. This is instance controlled: There is only one immutable singleton representing
+	 * an empty tile. Tile maps should NEVER contain null. In the absence of a tile, they should be set to this
+	 * null object.
+	 * 
+	 * @return
+	 * 		an empty tile
+	 * 
+	 */
+	public static Tile emptyTile() {
+		return NO_TILE;
 	}
 
 }

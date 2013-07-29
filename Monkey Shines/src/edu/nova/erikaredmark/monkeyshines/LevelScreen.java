@@ -98,7 +98,7 @@ public class LevelScreen {
 	public static final LevelScreen newScreen(int screenId, WorldResource rsrc) {
 		LevelScreen screen = new LevelScreen(screenId,
 							                 0,
-							                 new Tile[20][32],
+							                 Tile.createBlankTileMap(),
 							                 ImmutablePoint2D.of(0, 0),
 							                 new ArrayList<Sprite>() );
 		screen.skin(rsrc);
@@ -218,8 +218,7 @@ public class LevelScreen {
 		if (tileX < 0 || tileX >= GameConstants.TILES_IN_ROW || tileY < 0 || tileY >= GameConstants.TILES_IN_COL)
 			return false;
 		// if there is no tile, well, false
-		if (screenTiles[tileY][tileX] == null) {
-			//System.out.println("No Tile");
+		if (screenTiles[tileY][tileX].isEmpty() ) {
 			return false;
 		}
 		if (screenTiles[tileY][tileX].getType() == TileType.SOLID )
@@ -250,7 +249,7 @@ public class LevelScreen {
 		if (tileX < 0 || tileX >= GameConstants.TILES_IN_ROW || tileY < 0 || tileY >= GameConstants.TILES_IN_COL)
 			return Optional.absent();
 		// if there is no tile, well, false
-		if (screenTiles[tileY][tileX] == null) {
+		if (screenTiles[tileY][tileX].isEmpty() ) {
 			return Optional.absent();
 		}
 		
@@ -290,7 +289,6 @@ public class LevelScreen {
 		if (tileY > 20 || tileY < 0) throw new IllegalArgumentException(tileY + " outside of Y range [0, 19]");
 		if (isSkinned == false) throw new IllegalStateException("LevelScreen " + this + " not skinned yet");
 		
-		screenTiles[tileY][tileX] = null;
 		screenTiles[tileY][tileX] = Tile.newTile(ImmutablePoint2D.of(tileX, tileY), tileId, tileType, rsrc);
 	}
 	
@@ -301,7 +299,7 @@ public class LevelScreen {
 	 */
 	
 	public void eraseTile(int tileX, int tileY) {
-		screenTiles[tileY][tileX] =  null;
+		screenTiles[tileY][tileX] = Tile.emptyTile();
 	}
 	
 	/**

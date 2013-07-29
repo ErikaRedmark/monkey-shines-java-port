@@ -1,5 +1,6 @@
 package edu.nova.erikaredmark.monkeyshines.encoder;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +25,8 @@ import edu.nova.erikaredmark.monkeyshines.Sprite;
  * 
  * @author Erika Redmark
  */
-public class EncodedSprite {
+public class EncodedSprite implements Serializable {
+	private static final long serialVersionUID = -1525719562281301274L;
 	
 	private final int id;
 	private final ImmutablePoint2D location;

@@ -20,8 +20,8 @@ import edu.nova.erikaredmark.monkeyshines.Goodie;
 import edu.nova.erikaredmark.monkeyshines.KeyboardInput;
 import edu.nova.erikaredmark.monkeyshines.Point2D;
 import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
-import edu.nova.erikaredmark.monkeyshines.editor.dialog.DialogLauncher;
-import edu.nova.erikaredmark.monkeyshines.editor.dialog.NewWorldDialog;
+import edu.nova.erikaredmark.monkeyshines.encoder.EncodedWorld;
+import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
 
 
 /**
@@ -90,10 +90,19 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 
 	}
 	
-//	public loadWorld(final World world) {
-//		currentWorldEditor = WorldEditor.
-//		currentScreenEditor = currentWorldEditor.getLevelScreenEditor(1000);
-//	}
+	/**
+	 * 
+	 * Decodes a living instance of the encoded world into the editor.
+	 * 
+	 * @param world
+	 * 		the encoded world to load into the editor and start editing
+	 * 
+	 */
+	public void loadWorld(final EncodedWorld world, final WorldResource rsrc) {
+		currentWorldEditor = WorldEditor.fromEncoded(world, rsrc);
+		currentScreenEditor = currentWorldEditor.getLevelScreenEditor(1000);
+		currentState = EditorState.PLACING_TILES;
+	}
 	
 	/**
 	 * Resolves the location the person clicked and places the currently selected tile

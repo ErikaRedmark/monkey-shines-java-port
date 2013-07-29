@@ -109,7 +109,8 @@ public final class WorldResource {
 	 * 
 	 */
 	public static WorldResource fromPack(final Path packFile) throws ResourcePackException {
-		if (packFile.getFileName().endsWith(".zip") == false ) throw new IllegalArgumentException("not a zipfile: " + packFile);
+		// TODO replace with reading magic number http://www.coderanch.com/t/381509/java/java/check-file-zip-file-java
+		//if (packFile.getFileName().endsWith(".zip") == false ) throw new IllegalArgumentException("not a zipfile: " + packFile);
 		
 		// Declare non final versions of instance data. However, we enforce only replacing null in other ways in the below code.
 		// Once they are added to the world resource object they will become final.
@@ -158,13 +159,19 @@ public final class WorldResource {
 					int index = indexFromName(entry.getName() );
 					// BACKGROUNDS
 					if (entry.getName().matches("^background[0-9]+\\.gif$") ) {
-						if (backgrounds.get(index) != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
+						// Index out of bounds exception if we check and the array isn't big enough. If index is greater than size, then
+						// there was no previous anyway. If it isn't, make sure it is null
+						if (backgrounds.size() > index) {
+							if (backgrounds.get(index) != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
+						}
 						if (index > maxBackgroundIndex) maxBackgroundIndex = index;
 						BufferedImage tempBackground = ImageIO.read(zipFile.getInputStream(entry) );
 						backgrounds.add(index, tempBackground);
 					// SPRITES
 					} else if (entry.getName().matches("^sprite[0-9]+\\.gif$") ) {
-						if (sprites.get(index) != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
+						if (sprites.size() > index) {
+							if (sprites.get(index) != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
+						}
 						if (index > maxSpriteIndex) maxSpriteIndex = index;
 						BufferedImage tempSprite = ImageIO.read(zipFile.getInputStream(entry) );
 						sprites.add(index, tempSprite);
@@ -205,8 +212,11 @@ public final class WorldResource {
 	 * @param name
 	 * @return
 	 */
-	private static int indexFromName(final String name) {
+	private static int indexFromName(final String name) throws ResourcePackException {
 		Matcher matcher = INDEX_PATTERN.matcher(name);
+		boolean match = matcher.matches();
+		if (match == false) throw new ResourcePackException(Type.NO_INDEX_NUMBER, name + " should contain an index number before .gif");
+		
 		String integer = matcher.group(1);
 		return Integer.parseInt(integer);
 	}
@@ -239,6 +249,7 @@ public final class WorldResource {
 		case SOLID: return solidTiles;
 		case THRU : return thruTiles;
 		case SCENE: return sceneTiles;
+		case NONE: throw new IllegalArgumentException("No tilesheet for NONE tiles");
 		default: throw new IllegalArgumentException("Unknown tile type " + type);
 		}
 	}

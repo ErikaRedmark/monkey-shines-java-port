@@ -1,17 +1,13 @@
 package edu.nova.erikaredmark.monkeyshines.editor;
 
 import java.awt.Graphics2D;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
 import edu.nova.erikaredmark.monkeyshines.Goodie;
 import edu.nova.erikaredmark.monkeyshines.LevelScreen;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedWorld;
-import edu.nova.erikaredmark.monkeyshines.encoder.WorldIO;
-import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
-import edu.nova.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import edu.nova.erikaredmark.monkeyshines.World;
 
 /**
@@ -42,29 +38,20 @@ public final class WorldEditor {
 	
 	/** 
 	 * 
-	 * Creates a world editor based on a world already existing. The world file must not be corrupt, and the resource
-	 * pack must be present in the same directory
+	 * Creates a world editor based on a world already existing, and inflates the world with the given graphics resource pack
+	 * and assigns it to a new level editor instance
 	 * 
-	 * @param existingWorld
-	 * 		a path to the actual .world file
+	 * @param encoded
+	 * 		the encoded world file
+	 * 
+	 * @param rsrc
+	 * 		the graphics resource
 	 * 
 	 * @return
 	 * 		a world editor for editing the world
 	 * 
-	 * @throws
-	 * 		IllegalArgumentException
-	 * 			if the given path is not a file
-	 * 
 	 */
-	public static WorldEditor fromExisting(final Path existingWorld) throws ResourcePackException, WorldRestoreException {
-		EncodedWorld encoded = WorldIO.restoreWorld(existingWorld);
-		// Check for resource pack
-		String worldName = existingWorld.getFileName().toString();
-		worldName = worldName.substring(0, worldName.indexOf(".") );
-		Path packFile = existingWorld.getParent().resolve(worldName + ".zip");
-		
-		WorldResource rsrc = WorldResource.fromPack(packFile);
-		
+	public static WorldEditor fromEncoded(EncodedWorld encoded, WorldResource rsrc) {
 		World world = World.inflateFrom(encoded, rsrc);
 		
 		return new WorldEditor(world, rsrc);
@@ -165,6 +152,7 @@ public final class WorldEditor {
 	/** Forwarding call to {@link World#getLevelScreens() } 															
 	 *  Unless encoding, clients should stick with LevelScreenEditor objects.											*/
 	public Map<Integer, LevelScreen> getLevelScreens() { return world.getLevelScreens(); }
+
 	
 	
 }

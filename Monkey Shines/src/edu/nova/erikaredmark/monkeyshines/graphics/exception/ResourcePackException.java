@@ -41,6 +41,9 @@ public class ResourcePackException extends Exception {
 		 *  values from 0 to some maximum value.
 		 */
 		NON_CONTIGUOUS("Non-contiguous resource numbering: "),
+		/** For things like backgrounds and sprites, if an index number is expected but not encountered, this will be fired.
+		 */
+		NO_INDEX_NUMBER("Index number expected for resource, but none encountered: "),
 		
 		/** Indicates an exception occurred.
 		 */

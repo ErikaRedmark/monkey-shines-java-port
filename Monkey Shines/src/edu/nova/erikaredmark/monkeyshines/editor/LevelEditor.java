@@ -1,8 +1,11 @@
 package edu.nova.erikaredmark.monkeyshines.editor;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.nio.file.Path;
 
 import javax.swing.AbstractAction;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -15,6 +18,11 @@ import edu.nova.erikaredmark.monkeyshines.*;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.DialogLauncher;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.GoToScreenDialog;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.NewWorldDialog;
+import edu.nova.erikaredmark.monkeyshines.encoder.EncodedWorld;
+import edu.nova.erikaredmark.monkeyshines.encoder.WorldIO;
+import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
+import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 
 
 /*
@@ -37,12 +45,7 @@ public class LevelEditor extends JFrame {
 	private final JMenuItem newWorld = new JMenuItem("New World..."); // Can't be defined yet due to requiring enclosing instance of JFrame
 	
 	/* -------------------------- MENU ITEM LOAD WORLD ---------------------------- */
-	private JMenuItem loadWorld = new JMenuItem(new AbstractAction("Load World...") {
-		private static final long serialVersionUID = 1L;
-		@Override public void actionPerformed(ActionEvent e) {
-			// TODO load world dialog
-		}
-	});
+	private JMenuItem loadWorld = new JMenuItem("Load World..."); 
 	
 	/* -------------------------- MENU ITEM SAVE WORLD ---------------------------- */
 	private JMenuItem saveWorld = new JMenuItem(new AbstractAction("Save World...") {
@@ -146,6 +149,35 @@ public class LevelEditor extends JFrame {
 			private static final long serialVersionUID = 1L;
 			@Override public void actionPerformed(ActionEvent e) {
 				DialogLauncher.launch(editor, "New World...", new NewWorldDialog() );
+			}
+		});
+		
+		editor.loadWorld.setAction(new AbstractAction("Load World...") {
+			private static final long serialVersionUID = 1L;
+			@Override public void actionPerformed(ActionEvent e) {
+				JFileChooser fileChooser = new JFileChooser();
+				if (fileChooser.showOpenDialog(editor) == JFileChooser.APPROVE_OPTION) {
+					File worldFile = fileChooser.getSelectedFile();
+					
+					try {
+						EncodedWorld world = WorldIO.restoreWorld(worldFile.toPath() );
+						// Try to load the resource pack
+						String worldName = world.getName();
+						Path packFile = worldFile.toPath().getParent().resolve(worldName + ".zip");
+						WorldResource rsrc = WorldResource.fromPack(packFile);
+						editor.currentWorld.loadWorld(world, rsrc);
+					} catch (WorldRestoreException ex) {
+						JOptionPane.showMessageDialog(editor,
+						    "Cannot load world: Possibly corrupt or not a world file: " + ex.getMessage(),
+						    "Loading Error",
+						    JOptionPane.ERROR_MESSAGE);
+					} catch (ResourcePackException ex) {
+						JOptionPane.showMessageDialog(editor,
+						    "Resource pack not found: " + ex.getMessage(),
+						    "Loading Error",
+						    JOptionPane.ERROR_MESSAGE);
+					}
+				}
 			}
 		});
 		
