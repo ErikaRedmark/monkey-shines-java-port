@@ -52,7 +52,7 @@ public final class EncodedLevelScreen implements Serializable {
 			new EncodedTile[tiles.length][tiles[0].length];
 		
 		for (int i = 0; i < tiles.length; i++) {
-			for (int j = 0; j < tiles[0].length; i++) {
+			for (int j = 0; j < tiles[0].length; j++) {
 				_tiles[i][j] = EncodedTile.from(tiles[i][j]);
 			}
 		}

@@ -15,12 +15,14 @@ import javax.swing.JOptionPane;
 import com.google.common.base.Optional;
 
 import edu.nova.erikaredmark.monkeyshines.*;
+import edu.nova.erikaredmark.monkeyshines.editor.LevelEditorMainCanvas.EditorState;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.DialogLauncher;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.GoToScreenDialog;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.NewWorldDialog;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import edu.nova.erikaredmark.monkeyshines.encoder.WorldIO;
 import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
+import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
 import edu.nova.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 
@@ -35,6 +37,9 @@ public class LevelEditor extends JFrame {
 	 */
 	private static final long serialVersionUID = -1004295925422699855L;
 	private LevelEditorMainCanvas currentWorld;
+	/* Only set during loading a world, and only used during saving.	*/
+	private File defaultSaveLocation;
+	
 	private KeyboardInput keys;
 	// Main menu Bar
 	private JMenuBar mainMenuBar = new JMenuBar();
@@ -48,12 +53,7 @@ public class LevelEditor extends JFrame {
 	private JMenuItem loadWorld = new JMenuItem("Load World..."); 
 	
 	/* -------------------------- MENU ITEM SAVE WORLD ---------------------------- */
-	private JMenuItem saveWorld = new JMenuItem(new AbstractAction("Save World...") {
-		private static final long serialVersionUID = 1L;
-		@Override public void actionPerformed(ActionEvent e) {
-			// TODO save world
-		}
-	});
+	private JMenuItem saveWorld = new JMenuItem("Save World...");
 	
 	/* ----------------------------- MENU ITEM QUIT ------------------------------- */
 	private JMenuItem quit = new JMenuItem(new AbstractAction("Quit") {
@@ -166,6 +166,8 @@ public class LevelEditor extends JFrame {
 						Path packFile = worldFile.toPath().getParent().resolve(worldName + ".zip");
 						WorldResource rsrc = WorldResource.fromPack(packFile);
 						editor.currentWorld.loadWorld(world, rsrc);
+						editor.defaultSaveLocation = worldFile;
+						editor.manipulationFunctions(true);
 					} catch (WorldRestoreException ex) {
 						JOptionPane.showMessageDialog(editor,
 						    "Cannot load world: Possibly corrupt or not a world file: " + ex.getMessage(),
@@ -181,9 +183,57 @@ public class LevelEditor extends JFrame {
 			}
 		});
 		
+		editor.saveWorld.setAction(new AbstractAction("Save World...") {
+			private static final long serialVersionUID = 1L;
+			@Override public void actionPerformed(ActionEvent e) {
+				if (editor.currentWorld.getState() == EditorState.NO_WORLD_LOADED) 
+					throw new IllegalStateException("Save should not be enabled when a world is not loaded");
+					
+				Path saveTo;
+				if (editor.defaultSaveLocation != null) saveTo = editor.defaultSaveLocation.toPath();
+				else {
+					// TODO save as
+					System.out.println("Save as not implemented yet");
+					saveTo = null;
+				}
+				try {
+					editor.currentWorld.saveWorld(saveTo);
+				} catch (WorldSaveException ex) {
+					JOptionPane.showMessageDialog(editor,
+					    "Cannot Save World: " + ex.getMessage(),
+					    "Saving Error",
+					    JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		}); 
+		
+		// Disable all editor manipulation functions since no world is loaded by default
+		editor.manipulationFunctions(false);
+		
 		return editor;
 	}
 	
+
+	/**
+	 * 
+	 * Enables or disables menu items in the editor that require a world to be loaded. When no world is loaded, menu 
+	 * functions manipulating the world should be disabled. Otherwise, they should be enabled. Any state changes the user
+	 * makes to load/unload a world should produce a state change here to enable/disable the proper menus.
+	 * 
+	 * @param enable
+	 */
+	private void manipulationFunctions(boolean enable) {
+		saveWorld.setEnabled(enable);
+		placeTiles.setEnabled(enable);
+		screenMenu.setEnabled(enable);
+//		placeThrus.setEnabled(enable);
+//		placeScenes.setEnabled(enable);
+//		placeSprites.setEnabled(enable);
+//		placeGoodies.setEnabled(enable);
+//		gotoScreen.setEnabled(enable);
+		
+	}
+
 	private LevelEditor() {
 		keys = new KeyboardInput();
 		currentWorld = new LevelEditorMainCanvas(keys);

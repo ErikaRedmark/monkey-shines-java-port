@@ -11,6 +11,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
+import java.nio.file.Path;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -21,6 +22,8 @@ import edu.nova.erikaredmark.monkeyshines.KeyboardInput;
 import edu.nova.erikaredmark.monkeyshines.Point2D;
 import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedWorld;
+import edu.nova.erikaredmark.monkeyshines.encoder.WorldIO;
+import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
 
 
@@ -102,6 +105,31 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		currentWorldEditor = WorldEditor.fromEncoded(world, rsrc);
 		currentScreenEditor = currentWorldEditor.getLevelScreenEditor(1000);
 		currentState = EditorState.PLACING_TILES;
+	}
+	
+	/**
+	 * 
+	 * Saves the current state of the world in the editor to the given file
+	 * 
+	 * @param location
+	 * 		the location to save to
+	 * 
+	 * @throws
+	 * 		WorldSaveException
+	 * 			if an error is occurred saving this editors state to the given file
+	 * 
+	 */
+	public void saveWorld(final Path location)  throws WorldSaveException {
+		WorldIO.saveOnlyWorld(this.currentWorldEditor, location);
+	}
+	
+	/**
+	 * 
+	 * Returns the current state of this object.
+	 * 
+	 */
+	public EditorState getState() {
+		return this.currentState;
 	}
 	
 	/**

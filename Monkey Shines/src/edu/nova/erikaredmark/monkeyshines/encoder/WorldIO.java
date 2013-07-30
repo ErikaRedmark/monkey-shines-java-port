@@ -30,6 +30,7 @@ public final class WorldIO {
 	private static final String WORLD_EXTENSION = ".world";
 	
 	/**
+	 * 
 	 * Takes a world editor and translates the underlying world, and ALL data making it up into a persistable format.
 	 * This only saves the logical level data (placement of tiles and their underlying types and data) and does not hold
 	 * any resource data.
@@ -44,10 +45,6 @@ public final class WorldIO {
 	 * 		a location to save the world to. The encoder will generate the save format at that location. This does not include
 	 * 		the file name, and should point to a folder
 	 * 
-	 * @return
-	 * 		an encoded object representing the world, whose contents can be written out to a file and then
-	 * 		decoded later
-	 * 
 	 * @throws 
 	 * 		IlegalArgumentException
 	 * 			if the given path points to anything other than a valid folder
@@ -58,7 +55,7 @@ public final class WorldIO {
 	 */
 	public static void saveWorld( WorldEditor worldEditor, Path path ) throws WorldSaveException {
 		if (Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS) == false)
-			throw new IllegalArgumentException("Path " + path + " must point to a valid folder.");
+			throw new IllegalArgumentException("Path " + path + " must point to a valid folder");
 		
 		EncodedWorld encoded = EncodedWorld.from(worldEditor);
 		final Path outputPath = path.resolve(worldEditor.getWorldName() + WorldIO.WORLD_EXTENSION);
@@ -70,6 +67,40 @@ public final class WorldIO {
 		}
 		
 		
+	}
+	
+	/**
+	 * 
+	 * Takes the world editor's underlying world ONLY and saves that to the file pointed to by path. This method differs
+	 * from the basic {@link #saveWorld(WorldEditor, Path)} in that it only updates the .world file and leaves the 
+	 * resource pack as is. This is the default operation for when the user is saving changes to the world in the basic
+	 * editor.
+	 * 
+	 * @param worldEditor
+	 * 		a world editor that needs to be encoded
+	 * 
+	 * @param path
+	 * 		a location to save the world to. Unlike the other save method, this must point to an existing file in which
+	 * 		to overwrite (the original world)
+	 * 
+	 * @throws 
+	 * 		IlegalArgumentException
+	 * 			if the given path points to anything other than a valid file
+	 * 		WorldSaveException
+	 * 			if an error occurs during saving the world. Clients must recover gracefully from this error by alerting the 
+	 * 			user of all relevant details
+	 * 
+	 */
+	public static void saveOnlyWorld( WorldEditor worldEditor, Path path ) throws WorldSaveException {
+		if (Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS) == false)
+			throw new IllegalArgumentException("Path " + path + " must point to the .world file to overwrite");
+		
+		EncodedWorld encoded = EncodedWorld.from(worldEditor);
+		try (ObjectOutputStream os = new ObjectOutputStream(Files.newOutputStream(path, StandardOpenOption.CREATE) ) ) {
+			os.writeObject(encoded);
+		} catch (IOException e) {
+			throw new WorldSaveException(e);
+		}
 	}
 	
 	/**
