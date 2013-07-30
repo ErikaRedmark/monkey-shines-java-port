@@ -1,5 +1,6 @@
 package edu.nova.erikaredmark.monkeyshines.editor;
 
+import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.LevelScreen;
 import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
 
@@ -26,10 +27,8 @@ public class LevelScreenEditor {
 		// TODO store change
 	}
 
-	/** Forwarding call to {@link LevelScreen#getId() }																	*/
-	public int getId() {
-		return screen.getId();
-	}
+	public int getId() { return screen.getId(); }
+	public ImmutablePoint2D getBonzoStartingLocation() { return screen.getBonzoStartingLocation(); }
 
 	/**
 	 * Creates a new level screen editor based on an existing level screen
@@ -43,5 +42,7 @@ public class LevelScreenEditor {
 	public static LevelScreenEditor from(LevelScreen screen) {
 		return new LevelScreenEditor(screen);
 	}
+
+
 	
 }

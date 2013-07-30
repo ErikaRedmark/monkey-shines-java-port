@@ -115,6 +115,16 @@ public class LevelEditor extends JFrame {
 		}
 	});
 	
+	// Special
+	private JMenu specialMenu = new JMenu("Special");
+	/* -------------------------- MENU ITEM PLACE BONZO --------------------------- */
+	private JMenuItem placeBonzo = new JMenuItem(new AbstractAction("Place Bonzo") {
+		private static final long serialVersionUID = 1L;
+		@Override public void actionPerformed(ActionEvent e) {
+			currentWorld.actionPlaceBonzo();
+		}
+	});
+	
 	public void actionGoToScreen() {
 		if (currentWorld.getVisibleScreenEditor() == null) {
 			JOptionPane.showMessageDialog(this,
@@ -235,6 +245,7 @@ public class LevelEditor extends JFrame {
 		saveWorld.setEnabled(enable);
 		placeTiles.setEnabled(enable);
 		screenMenu.setEnabled(enable);
+		specialMenu.setEnabled(enable);
 //		placeThrus.setEnabled(enable);
 //		placeScenes.setEnabled(enable);
 //		placeSprites.setEnabled(enable);
@@ -258,6 +269,7 @@ public class LevelEditor extends JFrame {
 		fileMenu.add(newWorld);
 		fileMenu.add(loadWorld);
 		fileMenu.add(saveWorld);
+		fileMenu.add(quit);
 		
 		mainMenuBar.add(fileMenu);
 		
@@ -273,6 +285,10 @@ public class LevelEditor extends JFrame {
 		screenMenu.add(gotoScreen);
 		
 		mainMenuBar.add(screenMenu);
+		
+		specialMenu.add(placeBonzo);
+		
+		mainMenuBar.add(specialMenu);
 		
 		// Set up menus
 		setJMenuBar(mainMenuBar);

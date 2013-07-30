@@ -18,12 +18,14 @@ import javax.swing.Timer;
 
 import edu.nova.erikaredmark.monkeyshines.GameConstants;
 import edu.nova.erikaredmark.monkeyshines.Goodie;
+import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.KeyboardInput;
 import edu.nova.erikaredmark.monkeyshines.Point2D;
 import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import edu.nova.erikaredmark.monkeyshines.encoder.WorldIO;
 import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
+import edu.nova.erikaredmark.monkeyshines.graphics.CoreResource;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
 
 
@@ -104,7 +106,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	public void loadWorld(final EncodedWorld world, final WorldResource rsrc) {
 		currentWorldEditor = WorldEditor.fromEncoded(world, rsrc);
 		currentScreenEditor = currentWorldEditor.getLevelScreenEditor(1000);
-		currentState = EditorState.PLACING_TILES;
+		changeState(EditorState.PLACING_TILES);
 	}
 	
 	/**
@@ -183,6 +185,20 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 				Goodie.Type.byValue(currentGoodieId) );
 	}
 	
+	/** 
+	 *
+	 * Sets bonzos starting location on the currently loaded screen. This method accepts pixel mouse coordinates, and will
+	 * automatically snap them to the right tile. The tile clicked becomes the upper-left tile of bonzos 2 by 2 character.
+	 *
+	 * @param x
+	 * 		x location, in pixels
+	 * 
+	 * @param y
+	 * 		y location, in pixels
+	 */
+	public void setBonzo(final int x, final int y) {
+		currentWorldEditor.setBonzo(snapMouseX(x) / GameConstants.TILE_SIZE_X, snapMouseY(y) / GameConstants.TILE_SIZE_Y, currentScreenEditor.getId() );
+	}
 	
 	// Snap the mouse cursor to the square. For example, 125 and 135 should all go down to 120
 	public int snapMouseX(final int X) {
@@ -225,7 +241,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
 		currentTileType = PaintbrushType.SOLIDS;
-		currentState = EditorState.PLACING_TILES;
+		changeState(EditorState.PLACING_TILES);
 	}
 	
 	/** User action to set state to placing thrus																		*/
@@ -233,38 +249,54 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
 		currentTileType = PaintbrushType.THRUS;
-		currentState = EditorState.PLACING_TILES;
+		changeState(EditorState.PLACING_TILES);
 	}
 	
 	public void actionPlacingScenes() {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
 		currentTileType = PaintbrushType.SCENES;
-		currentState = EditorState.PLACING_TILES;
+		changeState(EditorState.PLACING_TILES);
 	}
 	
 	public void actionPlacingSprites() {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
-		currentState = EditorState.PLACING_SPRITES;
+		changeState(EditorState.PLACING_SPRITES);
 	}
 	
 	public void actionPlacingGoodies() {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
-		currentState = EditorState.PLACING_GOODIES;
+		changeState(EditorState.PLACING_GOODIES);
 	}
 	
 	public void actionSelectingTiles() {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
-		currentState = EditorState.SELECTING_TILES;
+		changeState(EditorState.SELECTING_TILES);
 	}
 	
 	public void actionSelectingGoodies() {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
-		currentState = EditorState.SELECTING_GOODIES;
+		changeState(EditorState.SELECTING_GOODIES);
+	}
+
+	public void actionPlaceBonzo() {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		
+		changeState(EditorState.PLACING_BONZO);
+	}
+	
+	/**
+	 * 
+	 * Changes the internal state of the editor from one state to the other, making any additional updates as needed.
+	 * 
+	 * @param newState
+	 */
+	private void changeState(EditorState newState) {
+		currentState = newState;
 	}
 	
 	public void actionChangeScreen(Integer screenId) {
@@ -305,28 +337,31 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 			
 			int tileId = resolveObjectId(currentTileSheet, e.getX(), e.getY() );
 			
-			//if (tileId < tilesPerRow * tilesPerCol) {
 			currentTileID = tileId;
-			currentState = EditorState.PLACING_TILES;
-			//} else {
-				// TODO better error here
-				//System.out.println("Tile " + tileId + " doesn't exist.");
-			//}
+			changeState(EditorState.PLACING_TILES);
 			
 		} else if (currentState == EditorState.SELECTING_GOODIES) {
 			int goodieId = resolveObjectId(currentWorldEditor.getWorldResource().getGoodieSheet(), e.getX(), e.getY() );
 			
 			currentGoodieId = goodieId;
-			currentState = EditorState.PLACING_GOODIES;
+			changeState(EditorState.PLACING_GOODIES);
 		}
 		
 	}
 
 	@Override public void mouseEntered(MouseEvent e) { }
 	@Override public void mouseExited(MouseEvent e) { }
-	@Override public void mousePressed(MouseEvent e) { }
 	@Override public void mouseReleased(MouseEvent e) { }
 
+	@Override public void mousePressed(MouseEvent e) { 
+		mousePosition.setX(e.getX() );
+		mousePosition.setY(e.getY() );
+		if (currentState == EditorState.PLACING_TILES) 
+			addTile(mousePosition.x(), mousePosition.y() );
+		else if (currentState == EditorState.PLACING_BONZO)
+			setBonzo(mousePosition.x(), mousePosition.y() );
+	}
+	
 	@Override public void mouseDragged(MouseEvent e) {
 		mousePosition.setX(e.getX() );
 		mousePosition.setY(e.getY() );
@@ -360,6 +395,17 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 						 snapMouseY(mousePosition.y() ), 
 						 GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y);
 
+			// BELOW: Additional overlays that are not part of the actual world
+			
+			// Draw bonzo starting location of screen
+			final BufferedImage bonz = CoreResource.INSTANCE.getTransparentBonzo();
+			final ImmutablePoint2D start = this.currentScreenEditor.getBonzoStartingLocation();
+			final int startX = start.x() * GameConstants.TILE_SIZE_X;
+			final int startY = start.y() * GameConstants.TILE_SIZE_Y;
+			g2d.drawImage(bonz, startX, startY, startX + bonz.getWidth(), startY + bonz.getHeight(),
+					0, 0, bonz.getWidth(), bonz.getHeight(),
+					null);
+			
 			// If we are selecting a tile, draw the whole sheet to the side.
 			if (currentState == EditorState.SELECTING_TILES) {
 				currentTileSheet = currentWorldEditor.getWorldResource().getTilesheetFor(paintbrush2TileType(currentTileType) );
@@ -404,7 +450,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	 * @author Erika Redmark
 	 *
 	 */
-	public enum EditorState { PLACING_TILES, SELECTING_TILES, PLACING_GOODIES, SELECTING_GOODIES, PLACING_SPRITES, SELECTING_SPRITES, NO_WORLD_LOADED; }
+	public enum EditorState { PLACING_TILES, SELECTING_TILES, PLACING_GOODIES, SELECTING_GOODIES, PLACING_SPRITES, SELECTING_SPRITES, PLACING_BONZO, NO_WORLD_LOADED; }
 
 	/**
 	 * Returns the visible screen editor. Note that this may return {@code null} if no world is loaded!
@@ -416,6 +462,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	public LevelScreenEditor getVisibleScreenEditor() {
 		return this.currentScreenEditor;
 	}
+
 
 
 

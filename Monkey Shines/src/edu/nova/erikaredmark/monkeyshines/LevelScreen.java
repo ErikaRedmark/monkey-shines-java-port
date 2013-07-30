@@ -34,7 +34,8 @@ public class LevelScreen {
 	private final int screenId;
 	private final int backgroundId;
 	private final Tile screenTiles[][]; // 20 rows, 32 cols
-	private final ImmutablePoint2D bonzoStart;
+	// Whilst this is generally final in gameplay, it is left non-final here so it may be modified by the level editor.
+	private       ImmutablePoint2D bonzoStart;
 	private final List<Sprite> spritesOnScreen;
 	
 	// state information for the screen
@@ -147,6 +148,8 @@ public class LevelScreen {
 	 * 
 	 * Gets the starting position of Bonzo in the level. The returned point is immutable: Use {@code Point2D#from(ImmutablePoint2D)}
 	 * to get a mutable version
+	 * <p/>
+	 * This location is in <strong>Tile Coordinates</strong>, not pixel coordinates!
 	 * 
 	 * @return
 	 * 		the location bonzo starts on this level. Never {@code null}
@@ -302,6 +305,19 @@ public class LevelScreen {
 		screenTiles[tileY][tileX] = Tile.emptyTile();
 	}
 	
+
+	/**
+	 * 
+	 * Sets bonzos starting position on this screen to be somewhere else. Should only be called by level editor.
+	 * 
+	 * @param point
+	 * 		bonzos new starting location
+	 * 
+	 */
+	public void setBonzoStartingLocation(ImmutablePoint2D point) {
+		this.bonzoStart = point;
+	}
+	
 	/**
 	 * Draw background, tiles, and sprites in one swoop.
 	 * TODO draws entire screen. May require a more intelligent algorithm to run on slower
@@ -331,6 +347,7 @@ public class LevelScreen {
 	 * 		2d array of tiles. Changes to the array <strong> will cause issues. Do not modify</strong>
 	 */
 	public Tile[][] internalGetTiles() { return this.screenTiles; }
+
 
 
 }

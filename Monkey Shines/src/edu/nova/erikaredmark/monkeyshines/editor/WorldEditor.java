@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import edu.nova.erikaredmark.monkeyshines.Goodie;
+import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.LevelScreen;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
@@ -130,8 +131,30 @@ public final class WorldEditor {
 	 */
 	public void addGoodie(int i, int j, int id, Goodie.Type goodieType) {
 		world.addGoodie(i, j, id, goodieType);
-		
-		
+	}
+	
+	/**
+	 * 
+	 * Sets bonzo to be starting at the given x/y tile location on the screen enumerated by the given id. These co-ordindates
+	 * refer to tiles, not pixels. Bonzo is a 2 by 2 tile size, and this location is the upper-left location he will start.
+	 * 
+	 * @param x
+	 * 		bonzo x starting location, tile number
+	 * 
+	 * @param y
+	 * 		bonzo y starting location, number
+	 * 
+	 * @param id
+	 * 		id of the screen. This screen must already exist
+	 * 
+	 * @throws
+	 * 		IllegalArgumentException
+	 * 			if no screen by the given id exists
+	 * 
+	 */
+	public void setBonzo(int xTile, int yTile, int id) {
+		if (world.screenIdExists(id) == false) throw new IllegalArgumentException("Screen id " + id + " does not exist");
+		world.getScreenByID(id).setBonzoStartingLocation(ImmutablePoint2D.of(xTile, yTile) );
 	}
 
 	/** Forwarding call to {@link World#getWorldName() } 																*/
@@ -164,6 +187,8 @@ public final class WorldEditor {
 	public boolean screenExists(int id) {
 		return world.screenIdExists(id);
 	}
+
+
 
 	
 	
