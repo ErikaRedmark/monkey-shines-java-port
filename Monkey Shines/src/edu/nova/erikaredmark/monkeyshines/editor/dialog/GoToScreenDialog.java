@@ -45,6 +45,7 @@ public final class GoToScreenDialog {
 	 * 
 	 * @return
 	 * 		the id of the screen the user asked for. If the user cancels, it returns nothing
+	 * 
 	 */
 	public static Optional<Integer> displayAndGetId(Frame parent, int currentId) {
 		GoToScreenDialog d = new GoToScreenDialog();

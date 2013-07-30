@@ -91,9 +91,9 @@ public final class WorldEditor {
 		}
 		
 		// Create a new, empty screen for the level
-		
-		// TODO code
-		throw new UnsupportedOperationException("Still need to code adding new screens! Can't create screen " + id);
+		LevelScreen newScreen = LevelScreen.newScreen(id, getWorldResource() );
+		world.addScreen(newScreen);
+		return LevelScreenEditor.from(newScreen);
 	}
 	
 	/**
@@ -152,6 +152,18 @@ public final class WorldEditor {
 	/** Forwarding call to {@link World#getLevelScreens() } 															
 	 *  Unless encoding, clients should stick with LevelScreenEditor objects.											*/
 	public Map<Integer, LevelScreen> getLevelScreens() { return world.getLevelScreens(); }
+
+	/**
+	 * 
+	 * @param id
+	 * 
+	 * @return
+	 * 		{@code true} if the screen by the given id already exists, {@code false} if otherwise
+	 * 
+	 */
+	public boolean screenExists(int id) {
+		return world.screenIdExists(id);
+	}
 
 	
 	

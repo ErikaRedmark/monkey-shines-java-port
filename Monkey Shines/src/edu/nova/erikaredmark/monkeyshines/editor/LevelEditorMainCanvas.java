@@ -133,6 +133,26 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	}
 	
 	/**
+	 * 
+	 * Determines if the screen pointed to by the id exists
+	 * 
+	 * @param id
+	 * 		id of screen to check for
+	 * 
+	 * @return
+	 * 		{@code true} if the	screen exists by that id, {@code false} if otherwise
+	 * 
+	 * @throws
+	 * 		IllegalStateException
+	 * 			if no world is loaded in the editor
+	 * 
+	 */
+	public boolean screenExists(int id) {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) throw new IllegalArgumentException("No world loaded");
+		return this.currentWorldEditor.screenExists(id);
+	}
+	
+	/**
 	 * Resolves the location the person clicked and places the currently selected tile
 	 * on the map. Does nothing if there is no screen editor loaded.
 	 * 
@@ -396,6 +416,8 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	public LevelScreenEditor getVisibleScreenEditor() {
 		return this.currentScreenEditor;
 	}
+
+
 
 
 
