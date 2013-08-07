@@ -1,5 +1,9 @@
 package edu.nova.erikaredmark.monkeyshines.bounds;
 
+import java.io.Serializable;
+
+import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
+
 /**
  * 
  * Note: Had this been Scala, this would be a trait.
@@ -17,7 +21,10 @@ package edu.nova.erikaredmark.monkeyshines.bounds;
  * @author Erika Redmark
  *
  */
-public abstract class Boundable {
+public abstract class Boundable implements Serializable {
+	/* Safe to use default serialized form. The idea of a 'rectangle' isn't going to change.
+	 */
+	private static final long serialVersionUID = 157L;
 	
 	/** The location of the boundable. May be any implementation of a point.	*/
 	protected IPoint2D location;
@@ -89,8 +96,15 @@ public abstract class Boundable {
 	 * @return
 	 */
 	public boolean intersect(Boundable other) {
-		// TODO method stub
-		return false;
+		// Check if any of the four corners are within this bounds
+		IPoint2D upLeft = other.location;
+		IPoint2D upRight = ImmutablePoint2D.of(other.location.x() + other.size.x(), other.location.y() );
+		IPoint2D downLeft = ImmutablePoint2D.of(other.location.x(), other.location.y() + other.size.y() );
+		IPoint2D downRight = ImmutablePoint2D.of(other.location.x() + other.size.x(), other.location.y() + other.size.y() );
+		return   inBounds(upLeft)
+			  || inBounds(upRight)
+			  || inBounds(downLeft)
+			  || inBounds(downRight);
 	}
 
 }

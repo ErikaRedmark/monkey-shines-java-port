@@ -234,6 +234,56 @@ public class LevelScreen {
 		return spritesOnScreen;
 	}
 	
+
+	/**
+	 * Adds a sprite to the screen. Typically reserved for level editor.
+	 * 
+	 * @param sprite
+	 * 		the sprite to add. The sprite MUST have been skinned with a valid graphics resource first
+	 */
+	public void addSprite(Sprite sprite) {
+		this.spritesOnScreen.add(sprite);
+	}
+	
+	/**
+	 * 
+	 * Removes the given sprite off the screen. Typically reserved for level editor.
+	 * 
+	 * @param sprite
+	 * 		the sprite to remove
+	 * 
+	 */
+	public void remove(Sprite sprite) {
+		this.spritesOnScreen.remove(sprite);
+	}
+	
+	/**
+	 * Returns a list of sprites within the given area. This is typically designed for the level editor.
+	 * <p/>
+	 * A rectangle, whose centre is 'point' and whose distance from the centre to a side is 'size', is drawn as a collision
+	 * rectangle to find sprites in the area. Hence, the 'size' field is half the length and width of the final rectangle. Any
+	 * sprites in which 'ANY' part of their 40x40 graphic touches within this rectangle will be returned.
+	 * 
+	 * @param point
+	 * 		centre of rectangle
+	 * 
+	 * @param size
+	 * 		distance from centre to a side of the rectangle
+	 * 
+	 * @return
+	 * 		a list of sprites in the area. This may return an empty list if there is none, but never {@code null}
+	 */
+	public List<Sprite> getSpritesWithin(ImmutablePoint2D point, int size) {
+		// Convert centre point into upper left point.
+		final ImmutableRectangle box = ImmutableRectangle.of(point.x() - (size / 2), point.y() - (size / 2), size, size);
+		final List<Sprite> returnList = new ArrayList<>();
+		for (Sprite s : spritesOnScreen) {
+			final ImmutableRectangle rect = s.getCurrentBounds();
+			if (box.intersect(rect) ) returnList.add(s);
+		}
+		return returnList;
+	}
+	
 	/**
 	 * Returns either nothing if there is no tile (or a non-solid tile). Otherwise, returns the TileType of the solid tile
 	 * 
@@ -347,6 +397,7 @@ public class LevelScreen {
 	 * 		2d array of tiles. Changes to the array <strong> will cause issues. Do not modify</strong>
 	 */
 	public Tile[][] internalGetTiles() { return this.screenTiles; }
+
 
 
 

@@ -19,9 +19,13 @@ import javax.swing.Timer;
 import edu.nova.erikaredmark.monkeyshines.GameConstants;
 import edu.nova.erikaredmark.monkeyshines.Goodie;
 import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
+import edu.nova.erikaredmark.monkeyshines.ImmutableRectangle;
 import edu.nova.erikaredmark.monkeyshines.KeyboardInput;
 import edu.nova.erikaredmark.monkeyshines.Point2D;
 import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
+import edu.nova.erikaredmark.monkeyshines.editor.dialog.DialogLauncher;
+import edu.nova.erikaredmark.monkeyshines.editor.dialog.SpritePropertiesDialog;
+import edu.nova.erikaredmark.monkeyshines.editor.dialog.SpritePropertiesModel;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import edu.nova.erikaredmark.monkeyshines.encoder.WorldIO;
 import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
@@ -185,6 +189,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 				Goodie.Type.byValue(currentGoodieId) );
 	}
 	
+
 	/** 
 	 *
 	 * Sets bonzos starting location on the currently loaded screen. This method accepts pixel mouse coordinates, and will
@@ -211,7 +216,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		return Y - takeAwayY;
 	}
 
-	public void actionPerformed(ActionEvent e) {
+	@Override public void actionPerformed(ActionEvent e) {
 		// Poll Keyboard
 		keys.poll();
 		
@@ -235,6 +240,8 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		
 		repaint();
 	}
+	
+	/* These actions are called from user input.																		*/
 	
 	/** User action to set state to placing solids																		*/
 	public void actionPlacingSolids() {
@@ -326,57 +333,29 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	}
 
 	@Override public void mouseClicked(MouseEvent e) {
-		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
-		
-		if (currentState == EditorState.PLACING_TILES)
-			addTile(e.getX(), e.getY() );
-		else if (currentState == EditorState.PLACING_GOODIES)
-			addGoodie(e.getX(), e.getY() );
-		else if (currentState == EditorState.SELECTING_TILES) {
-			
-			
-			int tileId = resolveObjectId(currentTileSheet, e.getX(), e.getY() );
-			
-			currentTileID = tileId;
-			changeState(EditorState.PLACING_TILES);
-			
-		} else if (currentState == EditorState.SELECTING_GOODIES) {
-			int goodieId = resolveObjectId(currentWorldEditor.getWorldResource().getGoodieSheet(), e.getX(), e.getY() );
-			
-			currentGoodieId = goodieId;
-			changeState(EditorState.PLACING_GOODIES);
-		}
-		
+		mousePosition.setX(e.getX() );
+		mousePosition.setY(e.getY() );
+		currentState.defaultClickAction(this);
 	}
 
 	@Override public void mouseEntered(MouseEvent e) { }
 	@Override public void mouseExited(MouseEvent e) { }
 	@Override public void mouseReleased(MouseEvent e) { }
-
-	@Override public void mousePressed(MouseEvent e) { 
-		mousePosition.setX(e.getX() );
-		mousePosition.setY(e.getY() );
-		if (currentState == EditorState.PLACING_TILES) 
-			addTile(mousePosition.x(), mousePosition.y() );
-		else if (currentState == EditorState.PLACING_BONZO)
-			setBonzo(mousePosition.x(), mousePosition.y() );
-	}
+	@Override public void mousePressed(MouseEvent e) { }
 	
 	@Override public void mouseDragged(MouseEvent e) {
 		mousePosition.setX(e.getX() );
 		mousePosition.setY(e.getY() );
-		if (currentState == EditorState.PLACING_TILES)
-			addTile(mousePosition.x(), mousePosition.y() );
+		currentState.defaultDragAction(this);
 
 	}
 
 	@Override public void mouseMoved(MouseEvent e) {
-		// set the mouse position.
 		mousePosition.setX(e.getX() );
 		mousePosition.setY(e.getY() );
 	}
 	
-	public void paint(Graphics g) {
+	@Override public void paint(Graphics g) {
 		super.paint(g);
 		Graphics2D g2d = (Graphics2D) g;
 
@@ -442,15 +421,110 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	
 	public enum PaintbrushType { SOLIDS, THRUS, SCENES, SPRITES, GOODIES; }
 	
+	
+	/**
+	 * 
+	 * Interface implemented only by EditorState. Intended to allow action information to be included in the state object itself
+	 * to prevent instanceof bugs.
+	 * <p/>
+	 * Mouse location and all other editor properties must be set before calling the state methods.
+	 * 
+	 */
+	private interface EditorStateAction {
+		/** Action for the editor in this state during a mouse click
+		 */
+		public void defaultClickAction(LevelEditorMainCanvas editor);
+		
+		/** Action for the editor in this state during a mouse drag
+		 */
+		public void defaultDragAction(LevelEditorMainCanvas editor);
+	}
+	
 	/**
 	 * 
 	 * Represents the current state of the editor, like what is being placed. Note: If no world is loaded, many functions will
 	 * not work, and state change will not be possible until a world is loaded.
+	 * <p/>
+	 * No states need check for nulls because client code will make sure state changes only occur when allowed
 	 * 
 	 * @author Erika Redmark
 	 *
 	 */
-	public enum EditorState { PLACING_TILES, SELECTING_TILES, PLACING_GOODIES, SELECTING_GOODIES, PLACING_SPRITES, SELECTING_SPRITES, PLACING_BONZO, NO_WORLD_LOADED; }
+	public enum EditorState implements EditorStateAction { 
+		PLACING_TILES {
+			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
+				editor.addTile(editor.mousePosition.x(), editor.mousePosition.y() );
+			}
+			@Override public void defaultDragAction(LevelEditorMainCanvas editor) {
+				defaultClickAction(editor);
+			}
+		}, 
+		
+		/* Click actions on this type will always produce a state change to PLACING_TILES */
+		SELECTING_TILES {
+			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
+				int tileId = editor.resolveObjectId(editor.currentTileSheet, editor.mousePosition.x(), editor.mousePosition.y() );
+				
+				editor.currentTileID = tileId;
+				editor.changeState(EditorState.PLACING_TILES);
+			}
+			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { 
+				/* No Drag Action */
+			}
+		}, 
+		
+		PLACING_GOODIES {
+			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
+				editor.addGoodie(editor.mousePosition.x(), editor.mousePosition.y() );
+			}
+			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { 
+				defaultClickAction(editor);
+			}
+		}, 
+		
+		/* Click actions on this type will always produce a state change to PLACING_GOODIES */
+		SELECTING_GOODIES {
+			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
+				
+				
+				int goodieId = editor.resolveObjectId(editor.currentWorldEditor.getWorldResource().getGoodieSheet(), editor.mousePosition.x(), editor.mousePosition.y() );
+				
+				editor.currentGoodieId = goodieId;
+				editor.changeState(EditorState.PLACING_GOODIES);
+			}
+			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { 
+				/* No Drag Action */
+			}
+		}, 
+		
+		PLACING_SPRITES {
+			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
+				SpritePropertiesModel model = SpritePropertiesDialog.launch(editor, editor.currentWorldEditor.getWorldResource(), ImmutablePoint2D.of(editor.mousePosition.x(), editor.mousePosition.y() ) );
+				if (model.isOkay() ) {
+					editor.currentScreenEditor.addSprite(model.getSpriteId(), model.getSpriteStartingLocation(), model.getSpriteBoundingBox(), model.getSpriteVelocity(), editor.currentWorldEditor.getWorldResource() );
+				}
+			}
+			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { }
+		}, 
+		
+		SELECTING_SPRITES {
+			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { }
+			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { }
+		}, 
+		
+		PLACING_BONZO {
+			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
+				editor.setBonzo(editor.mousePosition.x(), editor.mousePosition.y() );
+			}
+			@Override public void defaultDragAction(LevelEditorMainCanvas editor) {
+				defaultClickAction(editor);
+			}
+		}, 
+		
+		NO_WORLD_LOADED {
+			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { }
+			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { }
+		}; }
 
 	/**
 	 * Returns the visible screen editor. Note that this may return {@code null} if no world is loaded!
@@ -462,6 +536,8 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	public LevelScreenEditor getVisibleScreenEditor() {
 		return this.currentScreenEditor;
 	}
+
+
 
 
 

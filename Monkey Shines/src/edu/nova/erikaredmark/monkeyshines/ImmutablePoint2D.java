@@ -28,12 +28,17 @@ public final class ImmutablePoint2D implements Serializable, IPoint2D {
 	private transient int x;
 	private transient int y;
 	
+	private transient static final ImmutablePoint2D ZERO_POINT = new ImmutablePoint2D(0, 0);
+	
 	@Override public int x() {return x;}
 	@Override public int y() {return y;}
 	
 	private ImmutablePoint2D(final int x, final int y) {this.x = x; this.y = y; }
 	
-	public static ImmutablePoint2D of(final int x, final int y) { return new ImmutablePoint2D(x, y); }
+	public static ImmutablePoint2D of(final int x, final int y) { 
+		if (x == 0 && y == 0) return ZERO_POINT;
+		else return new ImmutablePoint2D(x, y); 
+	}
 	
 	/**
 	 * 
@@ -52,8 +57,39 @@ public final class ImmutablePoint2D implements Serializable, IPoint2D {
 	 *
 	 */
 	public static ImmutablePoint2D from(final Point2D point) {
-		return new ImmutablePoint2D(point.x(), point.y() );
+		return of(point.x(), point.y() );
 	}
+	
+	/**
+	 * 
+	 * Returns a point that represents this point with only the x-coordinate change to the given value
+	 * 
+	 * @param x
+	 * 		new coordinate
+	 * 
+	 * @return
+	 * 		point representing new location
+	 * 
+	 */
+	public ImmutablePoint2D newX(int x) {
+		return of(x, this.y() );
+	}
+	
+	/**
+	 * 
+	 * Returns a point that represents this point with only the y-coordinate change to the given value
+	 * 
+	 * @param y
+	 * 		new coordinate
+	 * 
+	 * @return
+	 * 		point representing new location
+	 * 
+	 */
+	public ImmutablePoint2D newY(int y) {
+		return of(this.x(), y);
+	}
+	
 	
 	/**
 	 * 
@@ -93,5 +129,5 @@ public final class ImmutablePoint2D implements Serializable, IPoint2D {
 		result += result * 31 + y;
 		return result;
 	}
-	
+
 }

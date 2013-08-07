@@ -15,7 +15,10 @@ import edu.nova.erikaredmark.monkeyshines.bounds.Boundable;
  *
  */
 public final class ImmutableRectangle extends Boundable {
-	
+	/* Safe to use default serialized form. The idea of a 'rectangle' isn't going to change.
+	 */
+	private static final long serialVersionUID = 157L;
+
 	private ImmutableRectangle(final int x, final int y, final int width, final int height) {
 		super.location = ImmutablePoint2D.of(x, y);
 		super.size = ImmutablePoint2D.of(width, height);
@@ -36,5 +39,50 @@ public final class ImmutableRectangle extends Boundable {
 		return new ImmutableRectangle(x, y, width, height);
 	}
 
+	/** 
+	 * 
+	 * Returns a new rectangle that is the same as this rectangle but with the new given top left co-ordinate 
+	 *
+	 * @param point
+	 * 		new point
+	 * 
+	 * @return
+	 * 		new rectangle
+	 *
+	 */
+	public ImmutableRectangle newTopLeft(ImmutablePoint2D point) {
+		return ImmutableRectangle.of(point.x(), point.y(), this.size.x(), this.size.y() );
+	}
+	
+	/**
+	 * 
+	 * Returns a new rectangle that is the same as this rectangle but with the new given lower right co-oridnate
+	 * 
+	 * @param point
+	 * 		new point
+	 * 
+	 * @return
+	 * 		new rectangle
+	 * 
+	 */
+	public ImmutableRectangle newBottomRight(ImmutablePoint2D point) {
+		return ImmutableRectangle.of(this.location.x(), this.location.y(), this.location.x() - point.x(), this.location.y() - point.y() );
+	}
+	
+	/**
+	 * 
+	 * Returns a new rectangle that is the same as this rectangle but with the new given size
+	 * 
+	 * @param size
+	 * 		new size
+	 * 
+	 * @return
+	 * 		new rectangle
+	 * 
+	 */
+	public ImmutableRectangle newSize(ImmutablePoint2D size) {
+		return ImmutableRectangle.of(this.location.x(), this.location.y(), size.x(), size.y() );
+	}
+	
 	
 }

@@ -14,6 +14,7 @@ import java.util.zip.ZipEntry;
 import javax.imageio.ImageIO;
 
 
+
 import edu.nova.erikaredmark.monkeyshines.Tile;
 import edu.nova.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import edu.nova.erikaredmark.monkeyshines.graphics.exception.ResourcePackException.Type;
@@ -311,5 +312,17 @@ public final class WorldResource {
 	 */
 	public BufferedImage getBackground(int id) {
 		return backgrounds[id];
+	}
+
+	/**
+	 * 
+	 * Returns the number of unique sprite graphics present in this world resource.
+	 * 
+	 * @return
+	 * 		number of unique sprites for world
+	 * 
+	 */
+	public int getSpritesCount() {
+		return sprites.length;
 	}
 }

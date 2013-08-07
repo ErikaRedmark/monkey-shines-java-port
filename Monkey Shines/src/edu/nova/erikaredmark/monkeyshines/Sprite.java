@@ -1,6 +1,7 @@
 package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics2D;
+import java.io.ObjectInputStream.GetField;
 
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedSprite;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
@@ -47,6 +48,50 @@ public class Sprite {
 		
 		return new Sprite(id, startLocation, boundingBox, initialSpeedX, initialSpeedY);
 	}
+	
+	/** 
+	 * 
+	 * Creates a new unmoving sprite with the given and resource pack. The sprite starts at 0,0, has no bounding box to
+	 * move in, and has no velocity at all.
+	 * 
+	 * @return
+	 * 		a new instance of this class
+	 */
+	public static Sprite newUnmovingSprite(int id, WorldResource rsrc) {
+		Sprite s = new Sprite(id, ImmutablePoint2D.of(0, 0), ImmutableRectangle.of(0, 0, 0, 0), 0, 0);
+		s.skin(rsrc);
+		return s;
+	}
+	
+	/**
+	 * 
+	 * Creates a new sprite with the given properties. The properties will define all the requirements for a sprite to be
+	 * saved and loaded from a world file, and for the game engine to take over and give it life.
+	 * <p/>
+	 * The sprite must be added to a {@code LevelScreen} before it will become an official part of a given world.
+	 * 
+	 * @param spriteId
+	 * 		the id of the sprite, for graphics only
+	 * 	
+	 * @param spriteStartingLocation
+	 * 		location sprite will start	
+	 * 
+	 * @param spriteBoundingBox
+	 * 		bounding box for sprite
+	 * 
+	 * @param spriteVelocity
+	 * 		initial velocity in x and y direction. Positive values for right and down, negative for left and up
+	 * 
+	 * @param rsrc
+	 * 		graphics resource for giving the sprite a proper graphics context
+	 * 
+	 */
+	public static Sprite newSprite(int spriteId, ImmutablePoint2D spriteStartingLocation, ImmutableRectangle spriteBoundingBox, ImmutablePoint2D spriteVelocity, WorldResource rsrc) {
+		Sprite s = new Sprite(spriteId, spriteStartingLocation, spriteBoundingBox, spriteVelocity.x(), spriteVelocity.y() );
+		s.skin(rsrc);
+		return s;
+	}
+	
 	
 	private Sprite(final int id, final ImmutablePoint2D startLocation, final ImmutableRectangle boundingBox, final int initialSpeedX, final int initialSpeedY) {
 		this.id = id;
@@ -95,6 +140,27 @@ public class Sprite {
 	
 	public void resetSpritePosition() { currentLocation = Point2D.from(startLocation); }
 	
+	/**
+	 * 
+	 * Returns the bounding rectangle of the sprite. The returned rectangle is a frozen copy of the rectangle of the current
+	 * bounds of the sprite at the time of the call.
+	 * <p/>
+	 * This differs from {@link #getBoundingBox()} in that it is the 40x40 area and point where the sprite is at the time
+	 * of the call, not its defined bounds that it bounces in.
+	 * 
+	 */
+	public ImmutableRectangle getCurrentBounds() {
+		return ImmutableRectangle.of(this.currentLocation.x(), this.currentLocation.y(), GameConstants.SPRITE_SIZE_X, GameConstants.SPRITE_SIZE_Y);
+	}
+	
+	/**
+	 * 
+	 * Draws the sprite to the given graphics context. The sprite will draw itself to the right location at the right frame of
+	 * animation as long as each 'paint' is accompanied by an 'update'
+	 * 
+	 * @param g2d
+	 * 
+	 */
 	public void paint(Graphics2D g2d) {
 			g2d.drawImage(rsrc.getSpritesheetFor(this.id), currentLocation.x(), currentLocation.y(), 
 					currentLocation.x() + GameConstants.SPRITE_SIZE_X, 
@@ -154,5 +220,7 @@ public class Sprite {
 	public int getId() { return id; }
 	public int getInitialSpeedX() { return initialSpeedX; }
 	public int getInitialSpeedY() {	return initialSpeedY; }
-	
+
+
+
 }

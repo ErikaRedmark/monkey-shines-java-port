@@ -1,8 +1,11 @@
 package edu.nova.erikaredmark.monkeyshines.editor;
 
 import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
+import edu.nova.erikaredmark.monkeyshines.ImmutableRectangle;
 import edu.nova.erikaredmark.monkeyshines.LevelScreen;
+import edu.nova.erikaredmark.monkeyshines.Sprite;
 import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
+import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
 
 /**
  * This object forwards changes to the level screen, but for every change made stores it and provides functionality to write
@@ -43,6 +46,39 @@ public class LevelScreenEditor {
 		return new LevelScreenEditor(screen);
 	}
 
+	/**
+	 * 
+	 * Creates a sprite and adds it to the given world.
+	 * 
+	 * @param spriteId
+	 * 		the id of the sprite, for graphics only
+	 * 	
+	 * @param spriteStartingLocation
+	 * 		starting location of sprite
+	 * 
+	 * @param spriteBoundingBox
+	 * 		bounding box of sprite
+	 * 
+	 * @param spriteVelocity
+	 * 		speed and direction of sprite
+	 * 
+	 * @param rsrc
+	 * 		graphics resource for skinning
+	 * 
+	 */
+	public void addSprite(final int spriteId,
+						  final ImmutablePoint2D spriteStartingLocation,
+						  final ImmutableRectangle spriteBoundingBox,
+						  final ImmutablePoint2D spriteVelocity,
+						  final WorldResource rsrc) {
+		
+		Sprite s =
+			Sprite.newSprite(spriteId, spriteStartingLocation, spriteBoundingBox, spriteVelocity, rsrc);
+		
+		screen.addSprite(s);
+		
+	}
+	
 
 	
 }
