@@ -25,6 +25,8 @@ import java.beans.PropertyChangeListener;
 import javax.swing.SpinnerNumberModel;
 
 import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
+import edu.nova.erikaredmark.monkeyshines.ImmutableRectangle;
+import edu.nova.erikaredmark.monkeyshines.Sprite;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
 
 public class SpritePropertiesDialog extends JDialog {
@@ -44,6 +46,7 @@ public class SpritePropertiesDialog extends JDialog {
 	private JLabel lblStartY;
 	private JTextField txtStartX;
 	private JTextField txtStartY;
+	private JSpinner spriteIdSpinner;
 	
 	private final WorldResource rsrc;
 	
@@ -208,7 +211,7 @@ public class SpritePropertiesDialog extends JDialog {
 			}
 		});
 		
-		final JSpinner spriteIdSpinner = new JSpinner();
+		spriteIdSpinner = new JSpinner();
 		spriteIdSpinner.setModel(new SpinnerNumberModel(0, 0, rsrc.getSpritesCount(), 1));
 		springLayout.putConstraint(SpringLayout.WEST, spriteIdSpinner, 0, SpringLayout.WEST, lblTopleftx);
 		springLayout.putConstraint(SpringLayout.SOUTH, spriteIdSpinner, 0, SpringLayout.SOUTH, spriteDrawCanvas);
@@ -266,6 +269,47 @@ public class SpritePropertiesDialog extends JDialog {
 		dialog.setVisible(true);
 		
 		// Dialog is over at this point. Set model based on how it was exited to tell client.
+		dialog.model.setOkay(dialog.okay);
+		
+		return dialog.model;
+	}
+	
+	/**
+	 * 
+	 * Blocking method: Launches the dialog and auto fills in the model and view with the values of the selected sprite,
+	 * 
+	 * @param parent
+	 * 
+	 * @param rsrc
+	 * 		for displaying the sprite graphics in the selector as well as knowing how many sprites are available and setting
+	 * 		the bounding constraints for the JSpinner
+	 * 
+	 * @param sprite
+	 * 		the sprite whose properties to use to fill dialog
+	 * 
+	 * @return
+	 */
+	public static SpritePropertiesModel launch(JComponent parent, WorldResource rsrc, Sprite sprite) {
+		SpritePropertiesDialog dialog = new SpritePropertiesDialog(rsrc, sprite.getStaringLocation() );
+		dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		dialog.setModal(true);
+		dialog.setLocation(parent.getLocation() );
+		dialog.setSize(450, 260);
+		
+		// initialise parts
+		// Changed listeners will properly parse the value after we set the text and update the model
+		// Starting location already set by constructor
+		ImmutableRectangle bounding = sprite.getBoundingBox();
+		dialog.txtTopLeftX.setText(String.valueOf(bounding.getLocation().x() ) );
+		dialog.txtTopLeftY.setText(String.valueOf(bounding.getLocation().y() ) );
+		dialog.txtWidth.setText(String.valueOf(bounding.getSize().x() ) );
+		dialog.txtHeight.setText(String.valueOf(bounding.getSize().y() ) );
+		dialog.txtVelocityX.setText(String.valueOf(sprite.getInitialSpeedX() ) );
+		dialog.txtVelocityY.setText(String.valueOf(sprite.getInitialSpeedY() ) );
+		dialog.spriteIdSpinner.setValue(sprite.getId() );
+		// Show
+		dialog.setVisible(true);
+		// Return
 		dialog.model.setOkay(dialog.okay);
 		
 		return dialog.model;

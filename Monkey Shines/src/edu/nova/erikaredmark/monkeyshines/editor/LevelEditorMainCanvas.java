@@ -12,9 +12,12 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
+import java.util.List;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;
+
+import com.google.common.base.Optional;
 
 import edu.nova.erikaredmark.monkeyshines.GameConstants;
 import edu.nova.erikaredmark.monkeyshines.Goodie;
@@ -22,8 +25,10 @@ import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.ImmutableRectangle;
 import edu.nova.erikaredmark.monkeyshines.KeyboardInput;
 import edu.nova.erikaredmark.monkeyshines.Point2D;
+import edu.nova.erikaredmark.monkeyshines.Sprite;
 import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.DialogLauncher;
+import edu.nova.erikaredmark.monkeyshines.editor.dialog.SpriteChooserDialog;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.SpritePropertiesDialog;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.SpritePropertiesModel;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedWorld;
@@ -272,6 +277,19 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		changeState(EditorState.PLACING_SPRITES);
 	}
 	
+	public void actionEditingSprites() {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		
+		changeState(EditorState.EDITING_SPRITES);
+	}
+	
+
+	public void actionDeletingSprites() {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		
+		changeState(EditorState.DELETING_SPRITES);
+	}
+	
 	public void actionPlacingGoodies() {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
@@ -330,6 +348,28 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		tileId += tilesPerRow * tileClickedY;
 		
 		return tileId;
+	}
+	
+	/**
+	 * 
+	 * Gets the sprite at the given location, bringing up a popup dialog to select between multiple if there are multiple
+	 * in the given location.
+	 * 
+	 * @param location
+	 * 		the location to resolve the sprites
+	 * 	
+	 * @return
+	 * 		a single sprite at the given location, or no sprite it none such exist
+	 * 
+	 */
+	public Optional<Sprite> resolveSpriteAtLocation(ImmutablePoint2D location) {
+		List<Sprite> sprites = currentScreenEditor.getSpritesWithin(location, 3);
+		switch(sprites.size() ) {
+		case 0: return Optional.absent();
+		case 1: return Optional.of(sprites.get(0) );
+		// Most complex, requires dialog.
+		default: return SpriteChooserDialog.launch(this, sprites, this.currentWorldEditor.getWorldResource() );
+		}
 	}
 
 	@Override public void mouseClicked(MouseEvent e) {
@@ -505,7 +545,31 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 				}
 			}
 			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { }
-		}, 
+		},
+		
+		EDITING_SPRITES {
+			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
+				Optional<Sprite> selected = editor.resolveSpriteAtLocation(ImmutablePoint2D.from(editor.mousePosition) );
+				if (selected.isPresent() ) {
+					// Open properties editor for sprite
+					SpritePropertiesModel model = SpritePropertiesDialog.launch(editor, editor.currentWorldEditor.getWorldResource(), selected.get() );
+					// Remove sprite from screen, create a new one with new properties.
+					editor.currentScreenEditor.removeSprite(selected.get() );
+					editor.currentScreenEditor.addSprite(model.getSpriteId(), model.getSpriteStartingLocation(), model.getSpriteBoundingBox(), model.getSpriteVelocity(), editor.currentWorldEditor.getWorldResource() );
+				}
+			}
+			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { }
+		},
+		
+		DELETING_SPRITES {
+			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
+				Optional<Sprite> selected = editor.resolveSpriteAtLocation(ImmutablePoint2D.from(editor.mousePosition) );
+				if (selected.isPresent() ) {
+					editor.currentScreenEditor.removeSprite(selected.get() );
+				}
+			}
+			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { }
+		},
 		
 		SELECTING_SPRITES {
 			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { }
@@ -536,6 +600,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	public LevelScreenEditor getVisibleScreenEditor() {
 		return this.currentScreenEditor;
 	}
+
 
 
 

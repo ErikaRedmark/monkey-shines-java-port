@@ -118,7 +118,6 @@ public class Sprite {
 	}
 	
 	public boolean isSkinned() { return isSkinned; }
-	
 	/**
 	 * 
 	 * Returns the starting location of this sprite. The returned object is immutable.

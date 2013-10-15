@@ -1,5 +1,7 @@
 package edu.nova.erikaredmark.monkeyshines.editor;
 
+import java.util.List;
+
 import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.ImmutableRectangle;
 import edu.nova.erikaredmark.monkeyshines.LevelScreen;
@@ -45,6 +47,12 @@ public class LevelScreenEditor {
 	public static LevelScreenEditor from(LevelScreen screen) {
 		return new LevelScreenEditor(screen);
 	}
+	
+	/** Forwarding call to wrapped {@code LevelEditor}
+	 */
+	public List<Sprite> getSpritesWithin(ImmutablePoint2D point, int size) {
+		return this.screen.getSpritesWithin(point, size);
+	}
 
 	/**
 	 * 
@@ -77,6 +85,11 @@ public class LevelScreenEditor {
 		
 		screen.addSprite(s);
 		
+	}
+
+	
+	public void removeSprite(Sprite sprite) {
+		screen.remove(sprite);
 	}
 	
 

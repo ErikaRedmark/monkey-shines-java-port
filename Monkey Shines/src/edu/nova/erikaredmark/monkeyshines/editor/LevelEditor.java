@@ -98,10 +98,26 @@ public class LevelEditor extends JFrame {
 		}
 	});
 	/* ------------------------- MENU ITEM PLACE SPRITES -------------------------- */
-	private JMenuItem placeSprites =  new JMenuItem(new AbstractAction("Sprites") { 
+	private JMenuItem placeSprites =  new JMenuItem(new AbstractAction("Place Sprites") { 
 		private static final long serialVersionUID = 1L;
 		@Override public void actionPerformed(ActionEvent e) {
 			currentWorld.actionPlacingSprites();
+		}
+	});
+	
+	/* ------------------------- MENU ITEM EDIT SPRITES --------------------------- */
+	private JMenuItem editSprites = new JMenuItem(new AbstractAction("Edit Sprites") {
+		private static final long serialVersionUID = 1L;
+		@Override public void actionPerformed(ActionEvent e) {
+			currentWorld.actionEditingSprites();
+		}
+	});
+	
+	/* ------------------------- MENU ITEM EDIT SPRITES --------------------------- */
+	private JMenuItem deleteSprites = new JMenuItem(new AbstractAction("Delete Sprites") {
+		private static final long serialVersionUID = 1L;
+		@Override public void actionPerformed(ActionEvent e) {
+			currentWorld.actionDeletingSprites();
 		}
 	});
 	
@@ -279,6 +295,8 @@ public class LevelEditor extends JFrame {
 		placeTiles.addSeparator();
 		placeTiles.add(placeGoodies);
 		placeTiles.add(placeSprites);
+		placeTiles.add(editSprites);
+		placeTiles.add(deleteSprites);
 		
 		mainMenuBar.add(placeTiles);
 		
