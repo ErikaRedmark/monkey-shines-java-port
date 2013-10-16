@@ -1,17 +1,20 @@
 package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
-
-import javax.imageio.ImageIO;
 
 import com.google.common.base.Optional;
 
 import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
+import edu.nova.erikaredmark.monkeyshines.graphics.CoreResource;
 
-public class Bonzo {
+/**
+ * 
+ * Represents the main character. Object can draw itself and has awareness to the world capable of handling collision detection
+ * 
+ * @author Erika Redmark
+ *
+ */
+public final class Bonzo {
 	
 	// Constants for bonzo
 	public static final int BONZO_SIZE_X = 40;
@@ -36,74 +39,63 @@ public class Bonzo {
 	private static final int DEATH_COLS = 8;
 	private static final int DEATH_START_Y = 120;
 	
-	private static final int TERMINAL_VELOCITY = 8;
-	
-	
-	
 	// Sprite Info
-	int walkingDirection; // used during walking for determing what to blit.
-	int currentSprite; // used everywhere for whatever sprite he is on for animation
+	private int walkingDirection; // used during walking for determing what to blit.
+	private int currentSprite; // used everywhere for whatever sprite he is on for animation
 	
-	int currentScreenID;
-	Point2D currentLocation;
-	
-	// Keep the actual graphic, since there is only one bonzo
-	BufferedImage bonzoSprite;
+	private int currentScreenID;
+	private Point2D currentLocation;
 	
 	// Velocity applied to bonzo. Affected by the keyboard and falls.
-	Point2D currentVelocity;
+	private Point2D currentVelocity;
 	
 	// when :up: is hit, velocity is applied upwards. As long as jumping is yes and he has positive velocity and does NOT
 	// have a jetpack, slowly decrease it until it reachs the max limit (MAX_FALL_SPEED)
 	// Once there is ground below bonzo, stop jumping
-	boolean isJumping;
+	private boolean isJumping;
 	
 	// When dying, everything is overridden, and bonzo is reset.
-	boolean isDying;
+	private boolean isDying;
 	
 	// Use a pointer to the current world to get information such as the screen, and then from there where bonzo
 	// is relative to the screen.
-	World worldPointer;
+	private World worldPointer;
 	
 	public Bonzo(final World worldPointer) {
 		this.worldPointer = worldPointer;
 		currentScreenID = 1000; // Always 1000. Everything starts on 1000
+		final LevelScreen currentScreen = worldPointer.getScreenByID(currentScreenID);
 		
 		// Initialise Variables
 		walkingDirection = 0;
 		currentSprite = 0;
 		
-		// Hardcoded for now. Change later based on current Screen
-		currentLocation = Point2D.of(160, 160);
+		// Initialise starting points
+		ImmutablePoint2D start = currentScreen.getBonzoStartingLocation().multiply(GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y);
+		currentLocation = Point2D.from(start);
+		currentScreen.setBonzoCameFrom(start);
 		
 		currentVelocity = Point2D.of(0, 0);
-		// THIS WILL ALWAYS BE HARDCODED!
-		try {
-			InputStream ape = getClass().getResourceAsStream("/resources/graphics/thebonz.gif");
-		    bonzoSprite = ImageIO.read(ape);
-		} catch (IOException e) {
-			System.out.println("Quand est le ape?");
-		}
 		
-		isJumping = false;
-		
-		restartBonzoOnScreen();
+		restartBonzoOnScreen(worldPointer.getScreenByID(currentScreenID) );
 		
 	}
 	
 	// The World events take care of moving Bonzo around, and Bonzo has methods to swap his position
 	// on screen when moving between them. restartBonzoOnScreen uses either bonzoStart, or, if not null,
 	// the location bonzo entered this screen from.
-	public void restartBonzoOnScreen() {
-		LevelScreen currentScreen = worldPointer.getScreenByID(currentScreenID);
-		
+	public void restartBonzoOnScreen(final LevelScreen screen) {
 		Point2D newLocation;
-		if ( (newLocation = currentScreen.newPointFromWhereBonzoCame() ) != null ) {
+		if ( (newLocation = screen.newPointFromWhereBonzoCame() ) != null ) {
 			currentLocation = newLocation;
 			return;
 		}
 		// Good thing this returns a COPY
-		currentLocation = Point2D.from(currentScreen.getBonzoStartingLocation() );
+		currentLocation = Point2D.from(screen.getBonzoStartingLocation() );
+		
+		// When bonzo is restarted, he is not dead or jumping
+		isDying = false;
+		isJumping = false;
 	}
 	
 	public void changeScreen(final int newScreen) {
@@ -316,7 +308,7 @@ public class Bonzo {
 		if (isDying) {
 			int yOffset = DEATH_START_Y + (BONZO_DEATH_SIZE_Y * (currentSprite / 8) );
 			int xOffset = BONZO_DEATH_SIZE_X * (currentSprite % 8);
-			g2d.drawImage(bonzoSprite, currentLocation.x(), currentLocation.y(),  //DEST
+			g2d.drawImage(CoreResource.INSTANCE.getBonzoSheet(), currentLocation.x(), currentLocation.y(),  //DEST
 						  currentLocation.x() + BONZO_DEATH_SIZE_X, currentLocation.y() + BONZO_DEATH_SIZE_Y, // DEST2
 						  xOffset, yOffset, xOffset + BONZO_DEATH_SIZE_X, yOffset + BONZO_DEATH_SIZE_Y,
 						  null);
@@ -325,7 +317,7 @@ public class Bonzo {
 		// if walking right
 		int takeFromX = currentSprite * BONZO_SIZE_X;
 		if (!isJumping) {
-			g2d.drawImage(bonzoSprite, currentLocation.x(), currentLocation.y(),  //DEST
+			g2d.drawImage(CoreResource.INSTANCE.getBonzoSheet(), currentLocation.x(), currentLocation.y(),  //DEST
 						  currentLocation.x() + BONZO_SIZE_X, currentLocation.y() + BONZO_SIZE_Y, // DEST2
 						  takeFromX, walkingDirection * 40, takeFromX + BONZO_SIZE_X, (walkingDirection * 40) + 40,
 						  null);
@@ -333,11 +325,36 @@ public class Bonzo {
 			// if we are jumping to the left, we have to go 8 * 40 to the right to get to the right sprite level
 			if (walkingDirection == 1)
 				takeFromX += JUMP_LEFT_X;
-			g2d.drawImage(bonzoSprite, currentLocation.x(), currentLocation.y(),  //DEST
+			g2d.drawImage(CoreResource.INSTANCE.getBonzoSheet(), currentLocation.x(), currentLocation.y(),  //DEST
 						  currentLocation.x() + BONZO_SIZE_X, (int)currentLocation.y() + BONZO_SIZE_Y, // DEST2
 						  takeFromX, JUMP_Y, takeFromX + BONZO_SIZE_X, JUMP_Y + 40,
 						  null);
 		}
+	}
+
+	/**
+	 * 
+	 * Returns a point representing where bonzo is currently on the screen. The returned point is immutable and
+	 * represents a snapshot of where he was when the method was called.
+	 * 
+	 * @return
+	 * 		immutable point indicating where bonzo is on the screen at the time of the call
+	 * 
+	 */
+	public ImmutablePoint2D getCurrentLocation() {
+		return ImmutablePoint2D.from(currentLocation);
+	}
+
+	/**
+	 * 
+	 * Returns the region that bonzo currently occupies on the screen
+	 * 
+	 * @return
+	 * 		immutable rectangle for the occupied region
+	 * 
+	 */
+	public ImmutableRectangle getCurrentBounds() {
+		return ImmutableRectangle.of(this.currentLocation.x(), this.currentLocation.y(), BONZO_SIZE_X, BONZO_SIZE_Y);
 	}
 	
 	

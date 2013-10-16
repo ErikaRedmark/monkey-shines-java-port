@@ -39,7 +39,7 @@ public class LevelScreen {
 	private final List<Sprite> spritesOnScreen;
 	
 	// state information for the screen
-	private       Point2D bonzoCameFrom;
+	private       ImmutablePoint2D bonzoCameFrom;
 
 	// Graphics
 	// These are all pointers to what is stored in world.
@@ -169,25 +169,25 @@ public class LevelScreen {
 	 * 
 	 */
 	public Point2D newPointFromWhereBonzoCame() {
-		return Point2D.of(bonzoCameFrom);
+		return Point2D.from(bonzoCameFrom);
 	}
 	
 	/**
 	 * Called when Bonzo enters the screen from another Screen. Sets the location he came from so if he dies on this screen, 
-	 * he can return to that position. A copy of the passed point is made, so that object may be re-used.
+	 * he can return to that position. 
 	 * 
 	 * @param bonzoCameFrom 
 	 * 		the location Bonzo entered the screen from
 	 */
-	public void setBonzoCameFrom(final Point2D bonzoCameFrom) {
-		this.bonzoCameFrom = Point2D.of(bonzoCameFrom);
+	public void setBonzoCameFrom(final ImmutablePoint2D bonzoCameFrom) {
+		this.bonzoCameFrom = bonzoCameFrom;
 	}
 	
 	/**
 	 * If, for some reason, the location Bonzo Came from becomes invalid, this resets it.
 	 */
 	public void resetBonzoCameFrom() {
-		this.bonzoCameFrom = Point2D.from(bonzoStart);
+		this.bonzoCameFrom = bonzoStart;
 	}
 	
 	// Sprites

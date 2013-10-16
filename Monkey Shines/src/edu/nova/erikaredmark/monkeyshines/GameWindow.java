@@ -6,9 +6,19 @@ import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.io.File;
+import java.nio.file.Path;
 
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
+
+import edu.nova.erikaredmark.monkeyshines.encoder.EncodedWorld;
+import edu.nova.erikaredmark.monkeyshines.encoder.WorldIO;
+import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
+import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 
 /**
  * Initialises a JPanel that holds the game window. This window is where all the action and
@@ -40,29 +50,48 @@ public class GameWindow extends JPanel implements ActionListener {
 	 */
 	public GameWindow(final KeyboardInput keys) {
 		super();
-		this.keys=keys;
+		this.keys = keys;
+		
+		// TODO DEBUG jump straight to file browser to select a world. Obviously a better menu
+		// system should be in place 
+		JFileChooser fileChooser = new JFileChooser();
+		if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+			File worldFile = fileChooser.getSelectedFile();
+			
+			try {
+				EncodedWorld world = WorldIO.restoreWorld(worldFile.toPath() );
+				// Try to load the resource pack
+				String worldName = world.getName();
+				Path packFile = worldFile.toPath().getParent().resolve(worldName + ".zip");
+				WorldResource rsrc = WorldResource.fromPack(packFile);
+				currentWorld = World.inflateFrom(world, rsrc);
+			} catch (WorldRestoreException ex) {
+				JOptionPane.showMessageDialog(this,
+				    "Cannot load world: Possibly corrupt or not a world file: " + ex.getMessage(),
+				    "Loading Error",
+				    JOptionPane.ERROR_MESSAGE);
+			} catch (ResourcePackException ex) {
+				JOptionPane.showMessageDialog(this,
+				    "Resource pack not found: " + ex.getMessage(),
+				    "Loading Error",
+				    JOptionPane.ERROR_MESSAGE);
+			}
+		} else {
+			// No world chosen, no graphics loaded, nothing to do. Quit
+			System.exit(0);
+		}
+		
+		this.addKeyListener(keys);
+		
+		bonzo = new Bonzo(currentWorld);
+		setDoubleBuffered(true);
+		windowSize = getSize();
+		
+		gameTimer = new Timer(GameConstants.GAME_SPEED, this);
+		
 		setVisible(true);
 		
-		
-		
-//		// TODO better world laoding
-//		currentWorld = World.demoWorld("Demo");
-//		
-//		// Set the Keyboard Input
-//		
-//		this.addKeyListener(keys);
-//		
-//		// Put a Bonzo on the board
-//		bonzo = new Bonzo(currentWorld);
-//		
-//		//. Optimisations
-//		setDoubleBuffered(true);
-//		windowSize = getSize();
-//		
-//		// Main timer for game
-//		// 30
-//		gameTimer = new Timer(30, this);
-//		gameTimer.start();
+		gameTimer.start();
 	}
 
 	/**

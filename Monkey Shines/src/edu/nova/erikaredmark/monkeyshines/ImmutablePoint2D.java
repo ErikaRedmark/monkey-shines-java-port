@@ -93,6 +93,26 @@ public final class ImmutablePoint2D implements Serializable, IPoint2D {
 	
 	/**
 	 * 
+	 * Applies a multiplication to both x and y of this point and returns a new point. This is generally for scaling 
+	 * points between different co-ordinate systems (such as tile co-ordinates vs pixel co-ordinates)
+	 * 
+	 * @param scaleX
+	 * 		scale factour for x size
+	 * 
+	 * @param scaleY
+	 * 		scale factour for y size
+	 * 
+	 * @return
+	 * 		point that represents the original whose components are multiplied by the given parameters
+	 * 
+	 */
+	public ImmutablePoint2D multiply(int scaleX, int scaleY) {
+		return of(this.x() * scaleX, this.y() * scaleY);
+	}
+
+	
+	/**
+	 * 
 	 * Serialize this {@code ImmutablePoint2D} instance.
 	 * 
 	 * @serialData the x co-ordinate (int) and then the y co-ordinate (int)

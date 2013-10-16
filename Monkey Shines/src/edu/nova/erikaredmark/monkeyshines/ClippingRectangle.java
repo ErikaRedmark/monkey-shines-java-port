@@ -16,6 +16,7 @@ import edu.nova.erikaredmark.monkeyshines.bounds.IPoint2D;
  *
  */
 public class ClippingRectangle extends Boundable {
+	private static final long serialVersionUID = 5968393238329112512L;
 	
 	private ClippingRectangle(final int x, final int y, final int width, final int height) {
 		super.location = Point2D.of(x, y);

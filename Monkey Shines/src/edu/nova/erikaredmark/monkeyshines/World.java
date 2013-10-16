@@ -201,9 +201,7 @@ public class World {
 	 * @param theBonzo
 	 */
 	public void restartBonzo(Bonzo theBonzo) {
-		theBonzo.currentLocation = getCurrentScreen().newPointFromWhereBonzoCame();
-		theBonzo.isDying = false;
-		theBonzo.isJumping = false;
+		theBonzo.restartBonzoOnScreen(getCurrentScreen() );
 		getCurrentScreen().resetSprites();
 	}
 	
@@ -273,7 +271,8 @@ public class World {
 	// TODO Design: Should it return to Bonzo a special object specifying the results?
 	public void checkCollisions(Bonzo theBonzo) {
 		// Another Screen?
-		int dir = GameConstants.directionLeftTheScreen(theBonzo.currentLocation, Bonzo.BONZO_SIZE_X, Bonzo.BONZO_SIZE_Y);
+		ImmutablePoint2D currentLocation = theBonzo.getCurrentLocation();
+		int dir = GameConstants.directionLeftTheScreen(currentLocation, Bonzo.BONZO_SIZE_X, Bonzo.BONZO_SIZE_Y);
 		if (dir != GameConstants.CENTRE) {
 			// Clear the previous screen, so that he starts from original location.
 			getCurrentScreen().resetBonzoCameFrom();
@@ -296,24 +295,20 @@ public class World {
 				theBonzo.screenChangeDown();
 				break;
 			}
-			getCurrentScreen().setBonzoCameFrom(theBonzo.currentLocation);
+			getCurrentScreen().setBonzoCameFrom(currentLocation);
 		}
 		
 		// A Sprite?
 		List<Sprite> allSprites = getCurrentScreen().getSpritesOnScreen();
+		ImmutableRectangle bonzoBounding = theBonzo.getCurrentBounds();
 		for (Sprite nextSprite : allSprites) {
-			Point2D spriteLocation = nextSprite.newPointFromSpritePosition();
-			if (GameConstants.checkBoundingBoxCollision(theBonzo.currentLocation, spriteLocation,
-					Bonzo.BONZO_SIZE_X, Bonzo.BONZO_SIZE_Y, GameConstants.SPRITE_SIZE_X, GameConstants.SPRITE_SIZE_Y) ) {
+			if (nextSprite.getCurrentBounds().intersect(bonzoBounding) ) {
 				theBonzo.kill();
 			}
 		}
 		
-		
-		// Assume that Java automatically optimises these with a StringBuilder. If it doesn't
-		// we will manually add that feature.
-		int topLeftX = (theBonzo.currentLocation.x() + (GameConstants.GOODIE_SIZE_X / 2) ) / GameConstants.GOODIE_SIZE_X;
-		int topLeftY = (theBonzo.currentLocation.y() + (GameConstants.GOODIE_SIZE_Y / 2) )/ GameConstants.GOODIE_SIZE_Y;
+		int topLeftX = (currentLocation.x() + (GameConstants.GOODIE_SIZE_X / 2) ) / GameConstants.GOODIE_SIZE_X;
+		int topLeftY = (currentLocation.y() + (GameConstants.GOODIE_SIZE_Y / 2) )/ GameConstants.GOODIE_SIZE_Y;
 		
 		String topLeftQuad = "" + (currentScreen) + "X" + topLeftX + "," + topLeftY;
 		String topRightQuad = "" + (currentScreen) + "X" + (topLeftX + 1) + "," + topLeftY;

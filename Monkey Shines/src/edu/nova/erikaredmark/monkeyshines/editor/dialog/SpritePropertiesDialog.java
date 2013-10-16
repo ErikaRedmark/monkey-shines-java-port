@@ -2,12 +2,10 @@ package edu.nova.erikaredmark.monkeyshines.editor.dialog;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JPanel;
 import javax.swing.SpringLayout;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
-import java.awt.Canvas;
 import java.awt.Rectangle;
 
 import javax.swing.JSpinner;

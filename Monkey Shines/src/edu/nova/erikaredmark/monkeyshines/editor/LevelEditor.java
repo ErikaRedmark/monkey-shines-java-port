@@ -190,6 +190,7 @@ public class LevelEditor extends JFrame {
 		editor.loadWorld.setAction(new AbstractAction("Load World...") {
 			private static final long serialVersionUID = 1L;
 			@Override public void actionPerformed(ActionEvent e) {
+				
 				JFileChooser fileChooser = new JFileChooser();
 				if (fileChooser.showOpenDialog(editor) == JFileChooser.APPROVE_OPTION) {
 					File worldFile = fileChooser.getSelectedFile();

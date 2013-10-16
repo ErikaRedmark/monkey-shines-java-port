@@ -16,12 +16,19 @@ public enum CoreResource {
 	INSTANCE;
 	
 	private final BufferedImage transparentBonzo;
+	private final BufferedImage bonzoSprite;
 	
 	private CoreResource() {
 		try {
 			transparentBonzo = ImageIO.read(this.getClass().getResourceAsStream("/resources/graphics/transbonzo.gif") );
 		} catch (IOException e) {
 			throw new RuntimeException("Missing resource: transparent bonzo: " + e.getMessage(), e);
+		}
+		
+		try {
+			bonzoSprite = ImageIO.read(this.getClass().getResourceAsStream("/resources/graphics/thebonz.gif") );
+		} catch (IOException e) {
+			throw new RuntimeException("Missing resource: bonzo sprite sheet: " + e.getMessage(), e);
 		}
 	}
 	
@@ -36,5 +43,17 @@ public enum CoreResource {
 	 */
 	public BufferedImage getTransparentBonzo() {
 		return transparentBonzo;
+	}
+	
+	/**
+	 * 
+	 * This is the entire sprite sheet of all animations for Bonzo
+	 * 
+	 * @return
+	 * 		bonzo's sprite sheet
+	 * 
+	 */
+	public BufferedImage getBonzoSheet() {
+		return bonzoSprite;
 	}
 }

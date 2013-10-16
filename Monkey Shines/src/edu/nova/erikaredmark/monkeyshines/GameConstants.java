@@ -3,7 +3,20 @@ package edu.nova.erikaredmark.monkeyshines;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-public class GameConstants {
+import edu.nova.erikaredmark.monkeyshines.bounds.IPoint2D;
+
+/**
+ * 
+ * Repository of game constants used by the engine for drawing and running the game.
+ * 
+ * TODO Over time, refactor constants/logic into appropriate classes.
+ * 
+ * @author Erika Redmark
+ *
+ */
+public final class GameConstants {
+	
+	private GameConstants() { }
 	/*
 	 * Items that are made final are hard coded into the engine and would disrupt the game if they were changed
 	 */
@@ -32,14 +45,6 @@ public class GameConstants {
 	public static final int WINDOW_WIDTH = 640;
 	public static final int WINDOW_HEIGHT = 480;
 	
-	/*public static final int INFORMATION_DRAW_Y = ;
-	
-	public static final int SCORE_DRAW_X = ;
-	public static final int ENERGY_DRAW_X = ;
-	public static final int POWERUP_DRAW_X = ;
-	public static final int BONUS_DRAW_X = ;
-	public static final int LIVES_DRAW_X = ;*/
-	
 	public static final int SCREEN_DRAW_X = 0;
 	public static final int SCREEN_DRAW_Y = 0;
 	public static final int SCREEN_WIDTH = TILE_SIZE_X * TILES_IN_ROW;
@@ -52,15 +57,18 @@ public class GameConstants {
 	public static final int DOWN = 4;
 	public static final int CENTRE = -1;
 	
-	public static int directionLeftTheScreen(final Point2D loc, final int width, final int height) {
+	// Speed
+	public static final int GAME_SPEED = 30;
+	
+	public static int directionLeftTheScreen(final IPoint2D loc, final int width, final int height) {
 		// Check to see if it is in bounds. If so, return -1.
-		if (loc.precisionX() < 0)
+		if (loc.x() < 0)
 			return LEFT;
-		else if (loc.precisionY() < 0)
+		else if (loc.y() < 0)
 			return UP;
-		else if (loc.precisionX() + width > SCREEN_WIDTH )
+		else if (loc.x() + width > SCREEN_WIDTH )
 			return RIGHT;
-		else if (loc.precisionY() + height > SCREEN_HEIGHT)
+		else if (loc.y() + height > SCREEN_HEIGHT)
 			return DOWN;
 		else
 			return CENTRE;
@@ -90,15 +98,5 @@ public class GameConstants {
 
 		return textVal;
 	}
-	
-	// TODO Refactor responsibility to ClippingRegion!! That's what is is there for!
-	// Check for bounding box collision given a two points and widths of the sprites
-	public static boolean checkBoundingBoxCollision(Point2D victim, Point2D target, int victimWidth, int victimHeight, int targetWidth, int targetHeight) {
-		if (victim.precisionX() + victimWidth > target.precisionX() && 
-				victim.precisionX() < target.precisionX() + targetWidth && 
-				victim.precisionY() + victimHeight > target.precisionY() && 
-				victim.precisionY() < target.precisionY() + targetWidth)
-			return true;
-		return false;
-	}
+
 }
