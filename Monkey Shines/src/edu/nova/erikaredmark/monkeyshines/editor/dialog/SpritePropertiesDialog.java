@@ -57,8 +57,12 @@ public class SpritePropertiesDialog extends JDialog {
 	public SpritePropertiesDialog(WorldResource rsrc, ImmutablePoint2D startingLocation) {
 		this.rsrc = rsrc;
 		model = SpritePropertiesModel.newModelWithDefaults();
+		
+		// Give some intelligent auto-complete based on selection
 		model.setSpriteLocationX(startingLocation.x() );
 		model.setSpriteLocationY(startingLocation.y() );
+		model.setSpriteBoundingBoxTopLeftX(startingLocation.x() );
+		model.setSpriteBoundingBoxTopLeftY(startingLocation.y() );
 		
 		SpringLayout springLayout = new SpringLayout();
 		getContentPane().setLayout(springLayout);
@@ -212,7 +216,7 @@ public class SpritePropertiesDialog extends JDialog {
 		});
 		
 		spriteIdSpinner = new JSpinner();
-		spriteIdSpinner.setModel(new SpinnerNumberModel(0, 0, rsrc.getSpritesCount(), 1));
+		spriteIdSpinner.setModel(new SpinnerNumberModel(0, 0, rsrc.getSpritesCount() - 1, 1));
 		springLayout.putConstraint(SpringLayout.WEST, spriteIdSpinner, 0, SpringLayout.WEST, lblTopleftx);
 		springLayout.putConstraint(SpringLayout.SOUTH, spriteIdSpinner, 0, SpringLayout.SOUTH, spriteDrawCanvas);
 		springLayout.putConstraint(SpringLayout.EAST, spriteIdSpinner, 0, SpringLayout.EAST, lblTopleftx);
@@ -240,6 +244,19 @@ public class SpritePropertiesDialog extends JDialog {
 		});
 		
 		getContentPane().add(btnNewButton);
+		
+		// Sync the model with the view to create initial population of values.
+		final ImmutableRectangle initialBoundingBox = model.getSpriteBoundingBox();
+		txtTopLeftX.setText(String.valueOf(initialBoundingBox.getLocation().x() ) );
+		txtTopLeftY.setText(String.valueOf(initialBoundingBox.getLocation().y() ) );
+		txtWidth.setText(String.valueOf(initialBoundingBox.getSize().x() ) );
+		txtHeight.setText(String.valueOf(initialBoundingBox.getSize().y() ) );
+		
+		txtStartX.setText(String.valueOf(model.getSpriteStartingLocation().x() ) );
+		txtStartY.setText(String.valueOf(model.getSpriteStartingLocation().y() ) );
+		
+		txtVelocityX.setText(String.valueOf(model.getSpriteVelocity().x() ) );
+		txtVelocityY.setText(String.valueOf(model.getSpriteVelocity().y() ) );
 	}
 	
 	/**

@@ -316,7 +316,8 @@ public final class WorldResource {
 
 	/**
 	 * 
-	 * Returns the number of unique sprite graphics present in this world resource.
+	 * Returns the number of unique sprite graphics present in this world resource. Note that for indexing purposes in the
+	 * sprite array, the last index of the sprite graphic is one less than this value.
 	 * 
 	 * @return
 	 * 		number of unique sprites for world
