@@ -10,11 +10,29 @@ import edu.nova.erikaredmark.monkeyshines.bounds.IPoint2D;
  *
  */
 public enum ScreenDirection {
-	LEFT(-1),
-	UP(100),
-	RIGHT(1),
-	DOWN(-100),
-	CURRENT(0);
+	LEFT(-1) {
+		@Override public void transferLocation(Point2D location, IPoint2D size) {
+			location.setX(GameConstants.SCREEN_WIDTH - size.x() );
+		}
+	},
+	UP(100) {
+		@Override public void transferLocation(Point2D location, IPoint2D size) {
+			location.setY(GameConstants.SCREEN_HEIGHT - size.y() );
+		}
+	},
+	RIGHT(1) {
+		@Override public void transferLocation(Point2D location, IPoint2D size) {
+			location.setX(0);
+		}
+	},
+	DOWN(-100) {
+		@Override public void transferLocation(Point2D location, IPoint2D size) {
+			location.setY(0);
+		}
+	},
+	CURRENT(0) {
+		@Override public void transferLocation(Point2D location, IPoint2D size) { /* No op */ }
+	};
 	
 	private final int idDelta;
 	
@@ -37,6 +55,21 @@ public enum ScreenDirection {
 	public int getNextScreenId(int currentScreenId) {
 		return currentScreenId + idDelta;
 	}
+	
+	/**
+	 * 
+	 * Takes a mutable point and translates the location such that where it would be on the next screen. For example,
+	 * if bonzo walks to the left, his close to 0 x location must be transformed to almost the screen width since he
+	 * is now on the right side of the screen. This method works with any location.
+	 * 
+	 * @param location
+	 * 		the location to modify
+	 * 
+	 * @param size
+	 * 		the size of the object. This affects calculations to prevent it from being drawn off the screen
+	 * 
+	 */
+	public abstract void transferLocation(Point2D location, IPoint2D size);
 	
 	/**
 	 * 

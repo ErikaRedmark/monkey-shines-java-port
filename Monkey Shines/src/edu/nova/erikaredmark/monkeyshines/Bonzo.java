@@ -18,6 +18,8 @@ public final class Bonzo {
 	
 	// Constants for bonzo
 	public static final ImmutablePoint2D BONZO_SIZE = ImmutablePoint2D.of(40, 40);
+	
+	// private constants
 	private static final int BONZO_DEATH_SIZE_X = 80;
 	private static final int BONZO_DEATH_SIZE_Y = 40;
 	private static final int BONZO_BEE_SIZE_X = 40;
@@ -225,23 +227,6 @@ public final class Bonzo {
 		this.isJumping = jumping;
 	}
 	
-	// These four functions swap bonzo's position on the screen for when he moves from one screen to another.
-	public void screenChangeLeft() {
-		currentLocation.setX(GameConstants.SCREEN_WIDTH - BONZO_SIZE.x() - 1);
-	}
-	
-	public void screenChangeRight() {
-		currentLocation.setX(1);
-	}
-	
-	public void screenChangeUp() {
-		currentLocation.setY(GameConstants.SCREEN_HEIGHT - BONZO_SIZE.y() - 1);
-	}
-	
-	public void screenChangeDown() {
-		currentLocation.setY(1);
-	}
-	
 	// We don't increment the sprite unless we are jumping or dying.
 	public void update() {
 		// If we are dying, animate the sprite and do nothing else
@@ -347,6 +332,17 @@ public final class Bonzo {
 	 */
 	public ImmutablePoint2D getCurrentLocation() {
 		return ImmutablePoint2D.from(currentLocation);
+	}
+	
+	/**
+	 * 
+	 * Returns the actual mutable point representing Bonzo's position. This method should be used with care in the smallest
+	 * possible scope. Clients should never hold a reference to the returned point.
+	 * 
+	 * @return
+	 */
+	public Point2D getMutableCurrentLocation() {
+		return this.currentLocation;
 	}
 
 	/**

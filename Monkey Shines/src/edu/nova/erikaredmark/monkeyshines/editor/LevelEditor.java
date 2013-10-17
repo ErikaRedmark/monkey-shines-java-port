@@ -151,14 +151,15 @@ public class LevelEditor extends JFrame {
 		
 		Optional<Integer> screenId = GoToScreenDialog.displayAndGetId(this, currentWorld.getVisibleScreenEditor().getId() );
 		if (screenId.isPresent() ) {
-			if (currentWorld.screenExists(screenId.get() ) ) {
-				currentWorld.actionChangeScreen(screenId.get() );
+			int goToScreenId = screenId.get();
+			if (currentWorld.screenExists(goToScreenId ) ) {
+				currentWorld.actionChangeScreen(goToScreenId);
 			} else {
 				// Confirm the user wishes to add a new screen if one is not already present before we jump to the
 				// new screen code
-				int result = JOptionPane.showConfirmDialog(this, "This screen does not yet exist. Create screen " + screenId + "?");
+				int result = JOptionPane.showConfirmDialog(this, "This screen does not yet exist. Create screen " + goToScreenId + "?");
 				if (result == JOptionPane.YES_OPTION) {
-					currentWorld.actionChangeScreen(screenId.get() );
+					currentWorld.actionChangeScreen(goToScreenId );
 				}
 			}
 		}

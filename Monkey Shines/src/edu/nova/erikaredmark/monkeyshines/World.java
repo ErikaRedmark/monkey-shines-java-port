@@ -252,10 +252,17 @@ public class World {
 		// Another Screen?
 		ImmutablePoint2D currentLocation = theBonzo.getCurrentLocation();
 		ScreenDirection dir = ScreenDirection.fromLocation(currentLocation, Bonzo.BONZO_SIZE);
-		changeCurrentScreen(dir.getNextScreenId(this.currentScreen) );
-		// Update the new screen with data about where we came from so deaths bring us to the same place
-		getCurrentScreen().setBonzoCameFrom(currentLocation);
-		
+		if (dir != ScreenDirection.CURRENT) {
+			int newId = dir.getNextScreenId(this.currentScreen);
+			changeCurrentScreen(newId);
+			// Update bonzos location to the new screen location
+			theBonzo.changeScreen(newId);
+			dir.transferLocation(theBonzo.getMutableCurrentLocation(), Bonzo.BONZO_SIZE);
+			// Update the new screen with data about where we came from so deaths bring us to the same place
+			getCurrentScreen().setBonzoCameFrom(currentLocation);
+			// Ignore any other collisions for now.
+			return;
+		}
 		// A Sprite?
 		List<Sprite> allSprites = getCurrentScreen().getSpritesOnScreen();
 		ImmutableRectangle bonzoBounding = theBonzo.getCurrentBounds();
