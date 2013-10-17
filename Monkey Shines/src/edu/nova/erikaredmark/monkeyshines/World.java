@@ -247,56 +247,14 @@ public class World {
 		}
 	}
 	
-	/** Attempts to change the screen in the given direction. Returns false if there is no such screen in that direction.
-	 *  Otherwise, modifies the current screen and returns true.														*/
-	public boolean screenChange(final int direction) {
-		int tempScreen = -1;
-		switch (direction) {
-			case (GameConstants.LEFT):
-				tempScreen = currentScreen - 1;
-				break;
-			case (GameConstants.UP):
-				tempScreen = currentScreen - 100;
-				break;
-			case (GameConstants.RIGHT):
-				tempScreen = currentScreen + 1;
-				break;
-			case (GameConstants.DOWN):
-				tempScreen = currentScreen + 100;
-				break;
-		}
-		return changeCurrentScreen(tempScreen);
-	}
-	
 	// TODO Design: Should it return to Bonzo a special object specifying the results?
 	public void checkCollisions(Bonzo theBonzo) {
 		// Another Screen?
 		ImmutablePoint2D currentLocation = theBonzo.getCurrentLocation();
-		int dir = GameConstants.directionLeftTheScreen(currentLocation, Bonzo.BONZO_SIZE_X, Bonzo.BONZO_SIZE_Y);
-		if (dir != GameConstants.CENTRE) {
-			// Clear the previous screen, so that he starts from original location.
-			getCurrentScreen().resetBonzoCameFrom();
-			getCurrentScreen().resetSprites();
-			switch(dir) {
-			case (GameConstants.LEFT):
-				screenChange(GameConstants.LEFT);
-				theBonzo.screenChangeLeft();
-				break;
-			case (GameConstants.UP):
-				screenChange(GameConstants.UP);
-				theBonzo.screenChangeUp();
-				break;
-			case (GameConstants.RIGHT):
-				screenChange(GameConstants.RIGHT);
-				theBonzo.screenChangeRight();
-				break;
-			case (GameConstants.DOWN):
-				screenChange(GameConstants.DOWN);
-				theBonzo.screenChangeDown();
-				break;
-			}
-			getCurrentScreen().setBonzoCameFrom(currentLocation);
-		}
+		ScreenDirection dir = ScreenDirection.fromLocation(currentLocation, Bonzo.BONZO_SIZE);
+		changeCurrentScreen(dir.getNextScreenId(this.currentScreen) );
+		// Update the new screen with data about where we came from so deaths bring us to the same place
+		getCurrentScreen().setBonzoCameFrom(currentLocation);
 		
 		// A Sprite?
 		List<Sprite> allSprites = getCurrentScreen().getSpritesOnScreen();

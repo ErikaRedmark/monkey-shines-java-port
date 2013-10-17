@@ -1,9 +1,5 @@
 package edu.nova.erikaredmark.monkeyshines;
 
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
-import edu.nova.erikaredmark.monkeyshines.bounds.IPoint2D;
 
 /**
  * 
@@ -59,37 +55,6 @@ public final class GameConstants {
 	
 	// Speed
 	public static final int GAME_SPEED = 30;
-	
-	public static int directionLeftTheScreen(final IPoint2D loc, final int width, final int height) {
-		// Check to see if it is in bounds. If so, return -1.
-		if (loc.x() < 0)
-			return LEFT;
-		else if (loc.y() < 0)
-			return UP;
-		else if (loc.x() + width > SCREEN_WIDTH )
-			return RIGHT;
-		else if (loc.y() + height > SCREEN_HEIGHT)
-			return DOWN;
-		else
-			return CENTRE;
-	}
-	
-	// Helper method for parsing XML
-	public static int getIntValue(Element ele, String tagName) {
-		//in production application you would catch the exception
-		return Integer.parseInt(getTextValue(ele,tagName));
-	}
-	
-	// Helper method for the helper method!!!
-	public static String getTextValue(Element ele, String tagName) {
-		String textVal = null;
-		NodeList nl = ele.getElementsByTagName(tagName);
-		if(nl != null && nl.getLength() > 0) {
-			Element el = (Element)nl.item(0);
-			textVal = el.getFirstChild().getNodeValue();
-		}
 
-		return textVal;
-	}
 
 }

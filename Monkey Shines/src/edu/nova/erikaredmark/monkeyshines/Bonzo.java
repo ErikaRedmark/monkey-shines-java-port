@@ -17,8 +17,7 @@ import edu.nova.erikaredmark.monkeyshines.graphics.CoreResource;
 public final class Bonzo {
 	
 	// Constants for bonzo
-	public static final int BONZO_SIZE_X = 40;
-	public static final int BONZO_SIZE_Y = 40;
+	public static final ImmutablePoint2D BONZO_SIZE = ImmutablePoint2D.of(40, 40);
 	private static final int BONZO_DEATH_SIZE_X = 80;
 	private static final int BONZO_DEATH_SIZE_Y = 40;
 	private static final int BONZO_BEE_SIZE_X = 40;
@@ -32,7 +31,7 @@ public final class Bonzo {
 	private static final int JUMP_SPRITES = 8;
 	private static final int JUMP_Y = 80;
 	private static final int JUMP_RIGHT_X = 0;
-	private static final int JUMP_LEFT_X = JUMP_SPRITES * BONZO_SIZE_X;
+	private static final int JUMP_LEFT_X = JUMP_SPRITES * BONZO_SIZE.x();
 	
 	private static final int DEATH_SPRITES = 16;
 	private static final int DEATH_ROWS = 2;
@@ -112,10 +111,10 @@ public final class Bonzo {
 			return -1;
 		
 		LevelScreen currentScreen = worldPointer.getCurrentScreen();
-		int bonzoOneBelowFeetY = (currentLocation.y() + BONZO_SIZE_Y) + 1;
+		int bonzoOneBelowFeetY = (currentLocation.y() + BONZO_SIZE.y() ) + 1;
 		Optional<TileType> onGroundLeft = currentScreen.checkForGroundTile(currentLocation.x(), bonzoOneBelowFeetY);
 		Optional<TileType> onGroundMiddle = currentScreen.checkForGroundTile(currentLocation.x() + (GameConstants.TILE_SIZE_X), bonzoOneBelowFeetY);
-		Optional<TileType> onGroundRight = currentScreen.checkForGroundTile(currentLocation.x() + BONZO_SIZE_X, bonzoOneBelowFeetY );
+		Optional<TileType> onGroundRight = currentScreen.checkForGroundTile(currentLocation.x() + BONZO_SIZE.x(), bonzoOneBelowFeetY );
 		
 		// If at least part of him is on a thru tile.
 		if ( (onGroundLeft.isPresent() && onGroundLeft.get() == TileType.THRU)     || 
@@ -152,8 +151,8 @@ public final class Bonzo {
 	public boolean solidToSide(final int newX) {
 		LevelScreen currentScreen = worldPointer.getCurrentScreen();
 		if (currentScreen.checkForTile(newX, currentLocation.y() ) ||
-				currentScreen.checkForTile(newX, currentLocation.y() + BONZO_SIZE_Y - 1) ||
-				currentScreen.checkForTile(newX, currentLocation.y() + (BONZO_SIZE_Y / 2) ) ) {
+				currentScreen.checkForTile(newX, currentLocation.y() + BONZO_SIZE.y() - 1) ||
+				currentScreen.checkForTile(newX, currentLocation.y() + (BONZO_SIZE.y() / 2) ) ) {
 			return true;
 		}
 		return false;
@@ -162,8 +161,8 @@ public final class Bonzo {
 	public boolean solidToUp(final int newY) {
 		LevelScreen currentScreen = worldPointer.getCurrentScreen();
 		if (currentScreen.checkForTile(currentLocation.x(), newY) ||
-				currentScreen.checkForTile(currentLocation.x() + (BONZO_SIZE_X - 1), newY ) ||
-				currentScreen.checkForTile(currentLocation.x() + (BONZO_SIZE_X / 2), newY ) ) {
+				currentScreen.checkForTile(currentLocation.x() + (BONZO_SIZE.x() - 1), newY ) ||
+				currentScreen.checkForTile(currentLocation.x() + (BONZO_SIZE.x() / 2), newY ) ) {
 			return true;
 		}
 		return false;
@@ -193,7 +192,7 @@ public final class Bonzo {
 			if (!solidToSide(newX) )
 				currentLocation.setX(newX);
 		} else {
-			int rightSide = currentLocation.x() + Bonzo.BONZO_SIZE_X + (int)( velocity * GameConstants.BONZO_SPEED_MULTIPLIER);
+			int rightSide = currentLocation.x() + Bonzo.BONZO_SIZE.x() + (int)( velocity * GameConstants.BONZO_SPEED_MULTIPLIER);
 			walkingDirection = 0;
 			if (!solidToSide(rightSide) ) {
 				currentLocation.setX(newX);
@@ -228,7 +227,7 @@ public final class Bonzo {
 	
 	// These four functions swap bonzo's position on the screen for when he moves from one screen to another.
 	public void screenChangeLeft() {
-		currentLocation.setX(GameConstants.SCREEN_WIDTH - BONZO_SIZE_X - 1);
+		currentLocation.setX(GameConstants.SCREEN_WIDTH - BONZO_SIZE.x() - 1);
 	}
 	
 	public void screenChangeRight() {
@@ -236,7 +235,7 @@ public final class Bonzo {
 	}
 	
 	public void screenChangeUp() {
-		currentLocation.setY(GameConstants.SCREEN_HEIGHT - BONZO_SIZE_Y - 1);
+		currentLocation.setY(GameConstants.SCREEN_HEIGHT - BONZO_SIZE.y() - 1);
 	}
 	
 	public void screenChangeDown() {
@@ -320,19 +319,19 @@ public final class Bonzo {
 			return;
 		}
 		// if walking right
-		int takeFromX = currentSprite * BONZO_SIZE_X;
+		int takeFromX = currentSprite * BONZO_SIZE.x();
 		if (!isJumping) {
 			g2d.drawImage(CoreResource.INSTANCE.getBonzoSheet(), currentLocation.x(), currentLocation.y(),  //DEST
-						  currentLocation.x() + BONZO_SIZE_X, currentLocation.y() + BONZO_SIZE_Y, // DEST2
-						  takeFromX, walkingDirection * 40, takeFromX + BONZO_SIZE_X, (walkingDirection * 40) + 40,
+						  currentLocation.x() + BONZO_SIZE.x(), currentLocation.y() + BONZO_SIZE.y(), // DEST2
+						  takeFromX, walkingDirection * 40, takeFromX + BONZO_SIZE.x(), (walkingDirection * 40) + 40,
 						  null);
 		} else if (isJumping) {
 			// if we are jumping to the left, we have to go 8 * 40 to the right to get to the right sprite level
 			if (walkingDirection == 1)
 				takeFromX += JUMP_LEFT_X;
 			g2d.drawImage(CoreResource.INSTANCE.getBonzoSheet(), currentLocation.x(), currentLocation.y(),  //DEST
-						  currentLocation.x() + BONZO_SIZE_X, (int)currentLocation.y() + BONZO_SIZE_Y, // DEST2
-						  takeFromX, JUMP_Y, takeFromX + BONZO_SIZE_X, JUMP_Y + 40,
+						  currentLocation.x() + BONZO_SIZE.x(), (int)currentLocation.y() + BONZO_SIZE.y(), // DEST2
+						  takeFromX, JUMP_Y, takeFromX + BONZO_SIZE.x(), JUMP_Y + 40,
 						  null);
 		}
 	}
@@ -359,7 +358,7 @@ public final class Bonzo {
 	 * 
 	 */
 	public ImmutableRectangle getCurrentBounds() {
-		return ImmutableRectangle.of(this.currentLocation.x(), this.currentLocation.y(), BONZO_SIZE_X, BONZO_SIZE_Y);
+		return ImmutableRectangle.of(this.currentLocation.x(), this.currentLocation.y(), BONZO_SIZE.x(), BONZO_SIZE.y());
 	}
 	
 	
