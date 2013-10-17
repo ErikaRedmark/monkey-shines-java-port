@@ -74,13 +74,6 @@ public final class GameConstants {
 			return CENTRE;
 	}
 	
-	// Takes any location and velocity vector, and adds the velocity to the location
-	public static void moveUnit(final Point2D location, final Point2D velocity) {
-		location.translateXFine(velocity.precisionX() );
-		//using minus, because otherwise positive numbers go down and that makes no sense.
-		location.translateYFine(-velocity.precisionY() );
-	}
-	
 	// Helper method for parsing XML
 	public static int getIntValue(Element ele, String tagName) {
 		//in production application you would catch the exception

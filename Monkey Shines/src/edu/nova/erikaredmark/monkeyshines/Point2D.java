@@ -107,4 +107,22 @@ public class Point2D implements IPoint2D {
 		return of(point.x(), point.y() );
 	}
 
+	/**
+	 * 
+	 * Adds to this point another point, where the second point's x and y values represent a velocity. This point
+	 * instance is mutated by this function.
+	 * <p/>
+	 * The x component represented by velocity is added to the point, and the y component is subtracted from this point.
+	 * This is because positive velocities intuitively should go up, and negative ones should go down.
+	 * 
+	 * @param velocity
+	 * 		the 'velocity' to add to this point. 
+	 * 
+	 */
+	public void applyVelocity(Point2D velocity) {
+		this.translateXFine(velocity.precisionX() );
+		//using minus, because otherwise positive numbers go down and that makes no sense.
+		this.translateYFine(-velocity.precisionY() );
+	}
+
 }

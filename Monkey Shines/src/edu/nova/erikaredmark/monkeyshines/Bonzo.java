@@ -85,17 +85,12 @@ public final class Bonzo {
 	// on screen when moving between them. restartBonzoOnScreen uses either bonzoStart, or, if not null,
 	// the location bonzo entered this screen from.
 	public void restartBonzoOnScreen(final LevelScreen screen) {
-		Point2D newLocation;
-		if ( (newLocation = screen.newPointFromWhereBonzoCame() ) != null ) {
-			currentLocation = newLocation;
-			return;
-		}
-		// Good thing this returns a COPY
-		currentLocation = Point2D.from(screen.getBonzoStartingLocation() );
+		Point2D newLocation = screen.newPointFromWhereBonzoCame();
+		currentLocation = newLocation;
 		
 		// When bonzo is restarted, he is not dead or jumping
-		isDying = false;
-		isJumping = false;
+		setDying(false);
+		setJumping(false);
 	}
 	
 	public void changeScreen(final int newScreen) {
@@ -178,7 +173,7 @@ public final class Bonzo {
 		currentVelocity.setX(0);
 		currentVelocity.setY(0);
 		currentSprite = 0;
-		isDying = true;
+		setDying(true);
 	}
 	
 	public void move(double velocity) {
@@ -206,7 +201,7 @@ public final class Bonzo {
 		}
 	}
 	
-	// Add some jump to the velocity, and set the animation to jumping. Animation sto
+	// Add some jump to the velocity, and set the animation to jumping.
 	public void jump(double velocity) {
 		// Only allow jumping if on the ground and velocity going up is zero. And not already in the middle of a jump
 		if (isJumping)
@@ -214,13 +209,22 @@ public final class Bonzo {
 		int onGround = onGround();
 		if (onGround != -1 && (currentVelocity.y() == 0)  ) {
 			currentVelocity.setY(-(velocity * GameConstants.BONZO_JUMP_MULTIPLIER) );
-			isJumping = true;
+			setJumping(true);
 			currentSprite = 0;
 		}
 	}
 	
 	public void stopMoving() {
 		currentVelocity.setX(0);
+	}
+	
+	public void setDying(boolean dying) {
+		System.out.println("Setting dying to " + dying);
+		this.isDying = dying;
+	}
+	
+	public void setJumping(boolean jumping) {
+		this.isJumping = jumping;
 	}
 	
 	// These four functions swap bonzo's position on the screen for when he moves from one screen to another.
@@ -245,12 +249,14 @@ public final class Bonzo {
 		// If we are dying, animate the sprite and do nothing else
 		if (isDying) {
 			currentSprite++;
-			if (currentSprite >= 15)
+			if (currentSprite >= 15) {
+				// Death animation over. Restart bonzo. Also update drawing data
 				worldPointer.restartBonzo(this);
+			}
 			return;
 		}
 		
-		GameConstants.moveUnit(currentLocation, currentVelocity);
+		currentLocation.applyVelocity(currentVelocity);
 		// If velocity is down, apply it. Else, wait until later to check before applying.
 		
 		// Give all collisions to World
@@ -298,7 +304,7 @@ public final class Bonzo {
 				currentLocation.translateY(onGround);
 			if (isJumping)
 				currentSprite = 3;
-			isJumping = false;
+			setJumping(false);
 		} 
 		
 	}
