@@ -219,7 +219,6 @@ public final class Bonzo {
 	}
 	
 	public void setDying(boolean dying) {
-		System.out.println("Setting dying to " + dying);
 		this.isDying = dying;
 	}
 	
