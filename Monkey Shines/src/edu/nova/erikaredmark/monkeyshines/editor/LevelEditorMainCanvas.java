@@ -53,7 +53,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	
 	// Information about what clicking something will do
 	private int currentTileID;
-	private int currentGoodieId;
+	private Goodie.Type currentGoodieType;
 	
 	// Current overlay graphic
 	private BufferedImage currentTileSheet;
@@ -72,7 +72,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	public LevelEditorMainCanvas(final KeyboardInput keys) {
 		super();
 		currentTileID = 0;
-		currentGoodieId = 0;
+		currentGoodieType = Goodie.Type.BANANA; // Need to pick something for default. Bananas are good.
 		currentTileType = PaintbrushType.SOLIDS;
 		currentState = EditorState.NO_WORLD_LOADED;
 		this.keys=keys;
@@ -181,7 +181,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		currentWorldEditor.addGoodie(x / GameConstants.GOODIE_SIZE_X, 
 				y / GameConstants.GOODIE_SIZE_Y, 
 				currentScreenEditor.getId(), 
-				Goodie.Type.byValue(currentGoodieId) );
+				currentGoodieType );
 	}
 	
 	/**
@@ -588,7 +588,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 				// do nothing if click is out of bounds
 				if (goodieId == -1)  return;
 				
-				editor.currentGoodieId = goodieId;
+				editor.currentGoodieType = Goodie.Type.byValue(goodieId);
 				editor.changeState(EditorState.PLACING_GOODIES);
 			}
 			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { 

@@ -192,8 +192,24 @@ public class Goodie {
 		 */
 		public int getDrawY() { return 0; }
 		
-		// TODO intended to be removed. Allows old XML parse code to still work. new version should serialise enum
-		@Deprecated
+		/**
+		 * 
+		 * Returns a goodie type based on the given index value. Goodies are numbered 0-14, and when reference in the
+		 * sprite sheet their 'id' is effectively their 'x offset' for drawing purposes. This method only exists for
+		 * the purpose of the level editor in selecting a goodie from the sprite sheet to translate a selection into
+		 * a type... it is not intended currently to be used anywhere else; use actual type objects instead.
+		 * 
+		 * @param val
+		 * 		the integer value
+		 * 
+		 * @return
+		 * 		the goodie type for this id
+		 * 
+		 * @throws
+		 * 		IllegalArgumentException
+		 * 			if the given id is not within the 0-14 bounds
+		 * 
+		 */
 		public static Type byValue(int val) {
 			for (Type g : Type.values() ) {
 				if (g.xOffset == val) return g;
