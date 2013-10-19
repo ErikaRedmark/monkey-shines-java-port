@@ -31,8 +31,17 @@ public class LevelScreenEditor {
 		this.screen.setTile(tileX, tileY, tileType, tileId);
 		// TODO store change
 	}
+	
+	/**
+	 * Forwards call to the wrapped {@link LevelScreen}, and stores the change.
+	 */
+	public void eraseTile(int i, int j) {
+		this.screen.eraseTile(i, j);
+		// TODO store change
+	}
 
 	public int getId() { return screen.getId(); }
+	
 	public ImmutablePoint2D getBonzoStartingLocation() { return screen.getBonzoStartingLocation(); }
 
 	/**
@@ -91,7 +100,5 @@ public class LevelScreenEditor {
 	public void removeSprite(Sprite sprite) {
 		screen.remove(sprite);
 	}
-	
 
-	
 }

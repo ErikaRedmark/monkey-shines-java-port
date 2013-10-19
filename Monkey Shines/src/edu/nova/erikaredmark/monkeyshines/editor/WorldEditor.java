@@ -134,6 +134,13 @@ public final class WorldEditor {
 	}
 	
 	/**
+	 * Forwarding call to {@link World#removeGoodie(int, int, int) }
+	 */
+	public void removeGoodie(int row, int col, int screenId) {
+		world.removeGoodie(row, col, screenId);
+	}
+	
+	/**
 	 * 
 	 * Sets bonzo to be starting at the given x/y tile location on the screen enumerated by the given id. These co-ordindates
 	 * refer to tiles, not pixels. Bonzo is a 2 by 2 tile size, and this location is the upper-left location he will start.
@@ -189,7 +196,4 @@ public final class WorldEditor {
 	}
 
 
-
-	
-	
 }

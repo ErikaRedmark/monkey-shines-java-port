@@ -97,6 +97,13 @@ public class LevelEditor extends JFrame {
 			currentWorld.actionSelectingGoodies();
 		}
 	});
+	/* ---------------------------- MENU ITEM ERASER ------------------------------ */
+	private JMenuItem eraser = new JMenuItem(new AbstractAction("Eraser") {
+		private static final long serialVersionUID = 1L;
+		@Override public void actionPerformed(ActionEvent e) {
+			currentWorld.actionEraser();
+		}
+	});
 	/* ------------------------- MENU ITEM PLACE SPRITES -------------------------- */
 	private JMenuItem placeSprites =  new JMenuItem(new AbstractAction("Place Sprites") { 
 		private static final long serialVersionUID = 1L;
@@ -294,6 +301,7 @@ public class LevelEditor extends JFrame {
 		placeTiles.add(placeSolids);
 		placeTiles.add(placeThrus);
 		placeTiles.add(placeScenes);
+		placeTiles.add(eraser);
 		placeTiles.addSeparator();
 		placeTiles.add(placeGoodies);
 		placeTiles.add(placeSprites);

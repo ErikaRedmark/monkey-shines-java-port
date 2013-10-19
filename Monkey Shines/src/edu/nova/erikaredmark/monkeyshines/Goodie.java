@@ -192,7 +192,7 @@ public class Goodie {
 		 */
 		public int getDrawY() { return 0; }
 		
-		// TODO intended to be removed. Allows old XML parse code to still work.
+		// TODO intended to be removed. Allows old XML parse code to still work. new version should serialise enum
 		@Deprecated
 		public static Type byValue(int val) {
 			for (Type g : Type.values() ) {

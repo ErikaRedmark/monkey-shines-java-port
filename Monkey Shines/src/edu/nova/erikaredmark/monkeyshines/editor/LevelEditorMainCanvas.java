@@ -1,7 +1,6 @@
 package edu.nova.erikaredmark.monkeyshines.editor;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
@@ -161,7 +160,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	 * @param mouseX mouse click location X co-ord
 	 * @param mouseY mouse click location Y co-ord
 	 */
-	public void addTile(final int mouseX, final int mouseY) {
+	private void addTile(final int mouseX, final int mouseY) {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
 		currentScreenEditor.setTile(mouseX / GameConstants.TILE_SIZE_X,
@@ -176,13 +175,32 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	 * @param x 
 	 * @param y
 	 */
-	public void addGoodie(final int x, final int y) {
-		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+	private void addGoodie(final int x, final int y) {
+		if (this.currentState == EditorState.NO_WORLD_LOADED)  return;
 		
 		currentWorldEditor.addGoodie(x / GameConstants.GOODIE_SIZE_X, 
 				y / GameConstants.GOODIE_SIZE_Y, 
 				currentScreenEditor.getId(), 
 				Goodie.Type.byValue(currentGoodieId) );
+	}
+	
+	/**
+	 * 
+	 * Erases both tile and goodie data at the specified position
+	 * 
+	 * @param mouseX
+	 * @param mouseY
+	 * 
+	 */
+	private void eraseAt(final int mouseX, final int mouseY) {
+		if (this.currentState == EditorState.NO_WORLD_LOADED)  return;
+		
+		int row = mouseX / GameConstants.TILE_SIZE_X;
+		int col = mouseY / GameConstants.TILE_SIZE_Y;
+		
+		currentScreenEditor.eraseTile(row, col);
+		
+		currentWorldEditor.removeGoodie(row, col, currentScreenEditor.getId() );
 	}
 	
 
@@ -305,11 +323,18 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		changeState(EditorState.PLACING_BONZO);
 	}
 	
+	public void actionEraser() {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		
+		changeState(EditorState.ERASING_TILES);
+	}
+	
 	/**
 	 * 
 	 * Changes the internal state of the editor from one state to the other, making any additional updates as needed.
 	 * 
 	 * @param newState
+	 * 
 	 */
 	private void changeState(EditorState newState) {
 		currentState = newState;
@@ -539,10 +564,10 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		 */
 		ERASING_TILES {
 			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
-				
+				editor.eraseAt(editor.mousePosition.x(), editor.mousePosition.y() );
 			}
 			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { 
-				
+				defaultClickAction(editor);
 			}
 		},
 		
@@ -634,13 +659,6 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	public LevelScreenEditor getVisibleScreenEditor() {
 		return this.currentScreenEditor;
 	}
-
-
-
-
-
-
-
 
 
 }
