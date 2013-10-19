@@ -25,7 +25,10 @@ public final class GameConstants {
 	public static final int TILES_IN_COL = 20; // every coloum has 20 rows
 	public static final int GOODIE_SIZE_X = 20;
 	public static final int GOODIE_SIZE_Y = 20;
-	public static double MAX_FALL_SPEED = -7; // THIS MUST BE NEGATIVE
+	
+	/* Terminal velocity must be at least one minus the verticle tile size, or hit ground collision calculations will fail.
+	 */
+	public static double TERMINAL_VELOCITY = -7; // THIS MUST BE NEGATIVE
 	public static double SPEED_MULTIPLIER = 1.0; // The speed of a sprite is multiplied by this to get how fast it moves across screen.
 	public static double BONZO_SPEED_MULTIPLIER = 2.0; // The speed Bonzo dashes across the landscape
 	public static double BONZO_JUMP_MULTIPLIER = 1.6; // The force of bonzo's jump

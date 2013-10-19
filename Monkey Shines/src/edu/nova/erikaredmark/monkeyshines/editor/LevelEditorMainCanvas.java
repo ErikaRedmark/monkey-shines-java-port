@@ -1,6 +1,7 @@
 package edu.nova.erikaredmark.monkeyshines.editor;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
@@ -75,6 +76,14 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		currentGoodieType = Goodie.Type.BANANA; // Need to pick something for default. Bananas are good.
 		currentTileType = PaintbrushType.SOLIDS;
 		currentState = EditorState.NO_WORLD_LOADED;
+		
+		setMinimumSize(
+				new Dimension(GameConstants.SCREEN_WIDTH, 
+					          GameConstants.SCREEN_HEIGHT) );
+		
+		setPreferredSize(
+				new Dimension(GameConstants.SCREEN_WIDTH, 
+					          GameConstants.SCREEN_HEIGHT) );
 		this.keys=keys;
 		setVisible(true);
 		

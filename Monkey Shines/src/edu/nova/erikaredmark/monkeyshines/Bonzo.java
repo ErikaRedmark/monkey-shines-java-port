@@ -102,9 +102,16 @@ public final class Bonzo {
 	 * Determines if bonzo has hit the ground. Intended ONLY to be called if bonzo is currently in a jump state. If he
 	 * hits the ground, speed considerations may make it possible for him to go through the ground a couple units. The returned
 	 * value indicates how far to 'bump' bonzo up if he goes through the ground too far.
+	 * <p/>
+	 * <strong> The speed bonzo is falling must NOT exceed one minus the verticle size of the tile!</strong> Otherwise
+	 * he will end up being bumped up to the next tile down, being inside a solid. Terminal velocity should never reach above
+	 * that amount.
+	 * <p/>
+	 * This method does not modify any state and merely returns a value.
 	 * 
 	 * @return
-	 * 		{@code -1} if not on the ground, other a positive value indicating how deep into the ground bonzo is
+	 * 		{@code -1} if not on the ground, other a positive value indicating how deep into the ground bonzo is. This may
+	 * 		return 0... in which case bonzo is perfectly fine on the ground.
 	 * 
 	 */
 	public int onGround() {
@@ -271,34 +278,25 @@ public final class Bonzo {
 		
 		// check for floor. If none, add some points of fall to velocity until max or hitting a floor.
 		int onGround = onGround();
+		/* ------- Not on the ground, so start pulling downward ---------- */
 		if ( onGround == -1) {
-			if (currentVelocity.precisionY() <= GameConstants.MAX_FALL_SPEED);
-			else {
-				// No incrementing once bonzo hits terminal velocity.
-				// Note, bonzo's terminal velocity may be [8, 9] due to imprecision.
-				//if (currentVelocity.y() > TERMINAL_VELOCITY) {
+			if ( !(currentVelocity.precisionY() <= GameConstants.TERMINAL_VELOCITY) ) {
 				
-					// Jumps should be smoother
-					// Nitpick: Bonzo falls slower if he jumps first. Not sure if this is a good idea.
-					if (isJumping) {
-						currentVelocity.translateYFine(-0.5);
-					} else {
-						currentVelocity.translateYFine(-1);
-					}
-				
-				//}
+				// Jumps should be smoother
+				// Nitpick: Bonzo falls slower if he jumps first. Not sure if this is a good idea.
+				if (isJumping)  currentVelocity.translateYFine(-0.4);
+			    else 			currentVelocity.translateYFine(-1);
 				
 			}
-			// The Greater the absval of the current velocity the more the increase
-		// if we are falling and hit the ground, stop the jump. onGround will have returned -1 if we were rising, not falling.
+		/* --------- On the ground. Keep y Velocities at zero ---------- */
 		} else {
 			currentVelocity.setY(0);
 			// if pushing us up takes us OFF the ground, don't do it. Sloppy Kludge
 			currentLocation.translateY(-onGround); //Push back to level field.
-			if (onGround() == -1)
-				currentLocation.translateY(onGround);
-			if (isJumping)
-				currentSprite = 3;
+			if (onGround() == -1)  currentLocation.translateY(onGround);
+			
+			// If we are jumping when we land, move sprite to post-jump stage and stop jumping
+			if (isJumping)  currentSprite = 3;
 			setJumping(false);
 		} 
 		

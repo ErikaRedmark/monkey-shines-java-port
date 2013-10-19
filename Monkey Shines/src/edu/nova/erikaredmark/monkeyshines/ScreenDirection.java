@@ -61,6 +61,8 @@ public enum ScreenDirection {
 	 * Takes a mutable point and translates the location such that where it would be on the next screen. For example,
 	 * if bonzo walks to the left, his close to 0 x location must be transformed to almost the screen width since he
 	 * is now on the right side of the screen. This method works with any location.
+	 * <p/>
+	 * It is vital the screen size exactly match the exact size to fit the tiles, or this method won't work.
 	 * 
 	 * @param location
 	 * 		the location to modify

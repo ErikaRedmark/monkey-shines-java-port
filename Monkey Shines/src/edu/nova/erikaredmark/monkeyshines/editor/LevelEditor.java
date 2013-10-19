@@ -287,8 +287,14 @@ public class LevelEditor extends JFrame {
 		add(currentWorld);
 		setTitle("Monkey Shines Editor");
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setSize(GameConstants.SCREEN_WIDTH, 
-				GameConstants.SCREEN_HEIGHT);
+//		setMinimumSize(
+//			new Dimension(GameConstants.SCREEN_WIDTH, 
+//						  GameConstants.SCREEN_HEIGHT) );
+//		setPreferredSize(
+//				new Dimension(GameConstants.SCREEN_WIDTH, 
+//							  GameConstants.SCREEN_HEIGHT) );
+//		setSize(GameConstants.SCREEN_WIDTH, 
+//				GameConstants.SCREEN_HEIGHT);
 		setLocationRelativeTo(null); // Why even set this?
 		
 		fileMenu.add(newWorld);
@@ -321,6 +327,7 @@ public class LevelEditor extends JFrame {
 		// Set up menus
 		setJMenuBar(mainMenuBar);
 		
+		pack();
 		setVisible(true);
 		setResizable(false);
 	}
