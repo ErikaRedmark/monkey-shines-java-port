@@ -23,9 +23,8 @@ public class MonkeyShines extends JFrame {
 		add(currentWorld);
 		setTitle("Monkey Shines");
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setSize(GameConstants.SCREEN_WIDTH, 
-				GameConstants.SCREEN_HEIGHT);
 		setLocationRelativeTo(null); // Why even set this?
+		pack();
 		setVisible(true);
 		setResizable(false);
 	}

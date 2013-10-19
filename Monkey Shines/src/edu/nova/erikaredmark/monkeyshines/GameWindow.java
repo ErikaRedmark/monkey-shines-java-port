@@ -38,7 +38,6 @@ public class GameWindow extends JPanel implements ActionListener {
 	World currentWorld;
 	
 	Timer gameTimer;
-	Dimension windowSize;
 	
 	KeyboardInput keys;
 	
@@ -85,7 +84,8 @@ public class GameWindow extends JPanel implements ActionListener {
 		
 		bonzo = new Bonzo(currentWorld);
 		setDoubleBuffered(true);
-		windowSize = getSize();
+		setMinimumSize(new Dimension(GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT) );
+		setPreferredSize(new Dimension(GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT) );
 		
 		gameTimer = new Timer(GameConstants.GAME_SPEED, this);
 		
