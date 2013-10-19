@@ -82,6 +82,17 @@ public class Tile {
 		// No need to store id after we computed the bounds for the graphics.
 		tileDrawCol = (tileId % sheetCols) * GameConstants.TILE_SIZE_X;
 		tileDrawRow = (tileId / sheetCols) * GameConstants.TILE_SIZE_Y;
+		
+		// Sanity check: If the tileId goes out of bounds of the tile sheet, there is an issue. Print out that there
+		// is a rouge invisible tile.
+		// TODO Note: Document somehow that this DOESN'T prevent invisible tiles from accidentally being inserted by the
+		// editor. If the sheet has a fully transparent tile within the rectangle, that is technically valid. Perhaps
+		// have tilesheets fully pink everywhere else to communicate a bad-tile so this check always works?
+		int sheetRows = tileSpriteSheet.getHeight() / GameConstants.TILE_SIZE_Y;
+		if (tileId > sheetCols * sheetRows) {
+			System.out.println("" + this + ": Out of graphics range (Given sprite sheet only permits ids up to " + sheetCols * sheetRows);
+		}
+		
 		isSkinned = true;
 	}
 	
@@ -221,6 +232,21 @@ public class Tile {
 	 */
 	public static Tile emptyTile() {
 		return NO_TILE;
+	}
+	
+	
+	/**
+	 * 
+	 * String representation of the Tile. This is intended for debugging purposes, and should never be displayed to the
+	 * user in any other circumstances.
+	 * 
+	 */
+	@Override public String toString() {
+		return "Tile Id [" + tileId + "] " 
+				+ "at row " + tileX / GameConstants.TILE_SIZE_X
+				+ " col " + tileY / GameConstants.TILE_SIZE_Y 
+				+ " of type " + type
+				+ (isSkinned ? "(Skinned)" : "");
 	}
 
 }

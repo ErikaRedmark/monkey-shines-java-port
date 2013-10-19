@@ -54,7 +54,6 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	
 	// Information about what clicking something will do
 	private int currentTileID;
-	private int currentSpriteID;
 	private int currentGoodieId;
 	
 	// Current overlay graphic
@@ -65,7 +64,6 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	private WorldEditor currentWorldEditor;
 	
 	private Timer editorFakeGameTimer;
-	private Dimension windowSize;
 	
 	private KeyboardInput keys;
 	
@@ -76,7 +74,6 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		super();
 		currentTileID = 0;
 		currentGoodieId = 0;
-		currentSpriteID = 0;
 		currentTileType = PaintbrushType.SOLIDS;
 		currentState = EditorState.NO_WORLD_LOADED;
 		this.keys=keys;
@@ -87,16 +84,12 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		addMouseMotionListener(this);
 		addMouseListener(this);
 		
-		//. Optimisations
+		// Optimisations
 		setDoubleBuffered(true);
-		
-		windowSize = getSize();
-		// Main timer for game
-		// 30
 		
 		mousePosition = Point2D.of(0, 0);
 		
-		editorFakeGameTimer = new Timer(100, this);
+		editorFakeGameTimer = new Timer(GameConstants.EDITOR_SPEED, this);
 		editorFakeGameTimer.start();
 		
 
@@ -329,14 +322,41 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		currentWorldEditor.changeCurrentScreen(currentScreenEditor);
 	}
 	
-	public int resolveObjectId(final BufferedImage sheet, final int x, final int y) {
-		int width = sheet.getWidth();
+	/**
+	 * 
+	 * This is for when a sprite sheet is shown on the level editor and the user selected a row/col to select a tile. 
+	 * The method takes the sprite sheet reference itself, along with the location clicked, and attempts to determine
+	 * the id of the tile/object that was clicked, based on the location clicked and the dimensions of the sprite 
+	 * sheet under the idea that the sheet starts from the top left of the screen
+	 * <p/>
+	 * Assumptions: This is used for basic sheets that handle tile entities that are of of size {@code GameConstants.TILE_SIZE_X}
+	 * by {@code GameConstants.TILE_SIZE_Y}
+	 * 
+	 * @param sheet
+	 * 		the sprite sheet currently shown on the screen to the user
+	 * 
+	 * @param x
+	 * 		x location of mouse click
+	 * 
+	 * @param y
+	 * 		y location of mouse click
+	 * 
+	 * @return
+	 * 		the id of the object the user selected. If the selection is outside the dimensions of the sheet, then 
+	 * 		{@code -1} is returned, indicating no selection (ids can only be positive)
+	 * 
+	 */
+	private int resolveObjectId(final BufferedImage sheet, final int x, final int y) {
+		final int width = sheet.getWidth();
+		final int height = sheet.getHeight();
+		// Sanity check: Is this click within the sheet bounds?
+		if ( x > width || y > height)  return -1;
+		
 		//int height = sheet.getHeight();
 		// We need to resolve the location. Find out how many rows and cols the sheet has, and from there
 		// pick out based on where the mouse clicked what tileType we selected.
-		// Modulo to check if they are divisble TODO
+		// Precondition: click was within bounds (checked earlier)
 		int tilesPerRow = width / GameConstants.TILE_SIZE_X;
-		//int tilesPerCol = height / GameConstants.TILE_SIZE_Y;
 		
 		int tileClickedX = x / GameConstants.TILE_SIZE_X;
 		int tileClickedY = y / GameConstants.TILE_SIZE_Y;
@@ -503,13 +523,28 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
 				int tileId = editor.resolveObjectId(editor.currentTileSheet, editor.mousePosition.x(), editor.mousePosition.y() );
 				
+				// do nothing if click is out of bounds
+				if (tileId == -1)  return;
+				
 				editor.currentTileID = tileId;
 				editor.changeState(EditorState.PLACING_TILES);
 			}
 			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { 
 				/* No Drag Action */
 			}
-		}, 
+		},
+		
+		/* Erases BOTH tiles and goodies from a space (although editor should enforce that goodies never occupy the
+		 * same space as tiles)
+		 */
+		ERASING_TILES {
+			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
+				
+			}
+			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { 
+				
+			}
+		},
 		
 		PLACING_GOODIES {
 			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
@@ -523,9 +558,10 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		/* Click actions on this type will always produce a state change to PLACING_GOODIES */
 		SELECTING_GOODIES {
 			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
-				
-				
 				int goodieId = editor.resolveObjectId(editor.currentWorldEditor.getWorldResource().getGoodieSheet(), editor.mousePosition.x(), editor.mousePosition.y() );
+				
+				// do nothing if click is out of bounds
+				if (goodieId == -1)  return;
 				
 				editor.currentGoodieId = goodieId;
 				editor.changeState(EditorState.PLACING_GOODIES);

@@ -190,43 +190,47 @@ public class LevelScreen {
 		this.bonzoCameFrom = bonzoStart;
 	}
 	
-	// Sprites
 	/**
 	 * Sprites move around the screen. This makes them return to where they spawn when the screen is first entered. 
 	 * Typically called alongside resetBonzo when Bonzo dies.
 	 */
 	public void resetSprites() {
-		if (spritesOnScreen != null) {
-			for (Sprite nextSprite : spritesOnScreen) {
-				nextSprite.resetSpritePosition();
-			}
+		for (Sprite nextSprite : spritesOnScreen) {
+			nextSprite.resetSpritePosition();
 		}
 	}
 
 	
-	// TODO Refactor these functions into one. They do basically the same thing.
-	// The actual location on screen for bonzoX and Y, NOT the tile position
 	/**
 	 * 
-	 * checks
+	 * Checks if there is a tile at the given pixel position (not row/col!). The given position is out of the legal size of
+	 * the screen, this method simply returns {@code null} (no tile).
 	 * 
-	 * @param bonzoX
+	 * @param xLoc
+	 * 		x position by pixels
+	 * 	
 	 * @param bonzoY
+	 * 		y position by pixels
+	 * 
+	 * @param tileTypes
+	 * 		a set of relevant tile types
+	 * 
 	 * @return
+	 * 		A valid TileType enumeration if a tile exists at the given position, or {@code null} if there is no such tile 
+	 * 		or if the position is outside of the screen bounds
+	 * 
 	 */
-	public boolean checkForTile(int bonzoX, int bonzoY) {
+	public TileType checkForTile(int bonzoX, int bonzoY) {
 		int tileX = bonzoX / GameConstants.TILE_SIZE_X;
 		int tileY = bonzoY / GameConstants.TILE_SIZE_Y;
-		// If out of bounds, allow to slip by
+		// If out of bounds, allow to slip by. 
 		if (tileX < 0 || tileX >= GameConstants.TILES_IN_ROW || tileY < 0 || tileY >= GameConstants.TILES_IN_COL)
-			return false;
+			return null;
+		
 		// if there is no tile, well, false
-		if (screenTiles[tileY][tileX].isEmpty() ) {
-			return false;
-		}
-		if (screenTiles[tileY][tileX].getType() == TileType.SOLID )
-			return true;
-		return false;
+		if (screenTiles[tileY][tileX].isEmpty() )  return null;
+		
+		return screenTiles[tileY][tileX].getType();
 	}
 	
 	// Careful! This is return by reference

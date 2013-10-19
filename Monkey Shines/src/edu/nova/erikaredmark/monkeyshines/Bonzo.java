@@ -152,19 +152,31 @@ public final class Bonzo {
 	 */
 	public boolean solidToSide(final int newX) {
 		LevelScreen currentScreen = worldPointer.getCurrentScreen();
-		if (currentScreen.checkForTile(newX, currentLocation.y() ) ||
-				currentScreen.checkForTile(newX, currentLocation.y() + BONZO_SIZE.y() - 1) ||
-				currentScreen.checkForTile(newX, currentLocation.y() + (BONZO_SIZE.y() / 2) ) ) {
+		if (   currentScreen.checkForTile(newX, currentLocation.y() ) == TileType.SOLID 
+		    || currentScreen.checkForTile(newX, currentLocation.y() + BONZO_SIZE.y() - 1) == TileType.SOLID
+			|| currentScreen.checkForTile(newX, currentLocation.y() + (BONZO_SIZE.y() / 2) ) == TileType.SOLID) {
+			
 			return true;
 		}
 		return false;
 	}
 	
+	/**
+	 * 
+	 * Checks if there is a solid block at the given y co-ordinate, that would interfere with bonzo's jumping if he
+	 * was to try to jump
+	 * 
+	 * @param newY
+	 * 
+	 * @return
+	 * 		{@code true} if there is a solid block in that position, {@code false} if otherwise
+	 * 
+	 */
 	public boolean solidToUp(final int newY) {
 		LevelScreen currentScreen = worldPointer.getCurrentScreen();
-		if (currentScreen.checkForTile(currentLocation.x(), newY) ||
-				currentScreen.checkForTile(currentLocation.x() + (BONZO_SIZE.x() - 1), newY ) ||
-				currentScreen.checkForTile(currentLocation.x() + (BONZO_SIZE.x() / 2), newY ) ) {
+		if (   currentScreen.checkForTile(currentLocation.x(), newY) == TileType.SOLID 
+			|| currentScreen.checkForTile(currentLocation.x() + (BONZO_SIZE.x() - 1), newY ) == TileType.SOLID 
+			|| currentScreen.checkForTile(currentLocation.x() + (BONZO_SIZE.x() / 2), newY ) == TileType.SOLID) {
 			return true;
 		}
 		return false;

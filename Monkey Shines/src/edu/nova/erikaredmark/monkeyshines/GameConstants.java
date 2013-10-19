@@ -55,6 +55,8 @@ public final class GameConstants {
 	
 	// Speed
 	public static final int GAME_SPEED = 30;
+	// Editor runs at a slower rate, just enough to visualise the level mechanics to the designer
+	public static final int EDITOR_SPEED = 100;
 
 
 }
