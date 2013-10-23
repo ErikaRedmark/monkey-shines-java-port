@@ -4,8 +4,6 @@ import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.base.Optional;
-
 import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedLevelScreen;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedSprite;
@@ -289,31 +287,22 @@ public class LevelScreen {
 	}
 	
 	/**
-	 * Returns either nothing if there is no tile (or a non-solid tile). Otherwise, returns the TileType of the solid tile
+	 * Returns the tile type at the given cordinates. These are PIXEL cordinates in the screen
 	 * 
-	 * @param bonzoX
-	 * 		position of bonzo to look for tile.
-	 * 
-	 * @param bonzoY
+	 * @param x
+	 * @param y
 	 *
 	 * @return
-	 * 		a tile type if the tile exists AND is solid, or nothing if there is no solid tile as ground
+	 * 		a tile type at the given position
 	 */
-	public Optional<TileType> checkForGroundTile(int bonzoX, int bonzoY) {
-		int tileX = bonzoX / GameConstants.TILE_SIZE_X;
-		int tileY = bonzoY / GameConstants.TILE_SIZE_Y;
+	public TileType getTileAt(int x, int y) {
+		int tileX = x / GameConstants.TILE_SIZE_X;
+		int tileY = y / GameConstants.TILE_SIZE_Y;
 		// If out of bounds, allow to slip by
 		if (tileX < 0 || tileX >= GameConstants.TILES_IN_ROW || tileY < 0 || tileY >= GameConstants.TILES_IN_COL)
-			return Optional.absent();
-		// if there is no tile, well, false
-		if (screenTiles[tileY][tileX].isEmpty() ) {
-			return Optional.absent();
-		}
+			return TileType.NONE;
 		
-		TileType type = screenTiles[tileY][tileX].getType();
-		
-		if (type == TileType.SOLID || type == TileType.THRU) return Optional.of(type);
-		else return Optional.absent();
+		return screenTiles[tileY][tileX].getType();
 	}
 	
 	/*

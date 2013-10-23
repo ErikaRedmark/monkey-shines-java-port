@@ -2,12 +2,11 @@ package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics2D;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import com.google.common.collect.ImmutableMap;
 
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedGoodie;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedLevelScreen;
@@ -359,19 +358,19 @@ public class World {
 	}
 
 	/**
-	 * Returns an immutable copy of the current state of the goodies in this world. Clients can not modify the goodies
+	 * Returns an unmodifiable view of the current state of the goodies in this world. Clients can not modify the goodies
 	 * in this world through the returned map.
 	 * 
 	 * @return
 	 * 		immutable copy of the map representing the goodies in this world
 	 */
-	public Map<String, Goodie> getGoodies() { return ImmutableMap.copyOf(this.goodiesInWorld); }
+	public Map<String, Goodie> getGoodies() { return Collections.unmodifiableMap(this.goodiesInWorld); }
 
 	/**
 	 * Returns an immutable copy of all the levels in the world
 	 * 
 	 * @return
 	 */
-	public Map<Integer, LevelScreen> getLevelScreens() { return ImmutableMap.copyOf(this.worldScreens); }
+	public Map<Integer, LevelScreen> getLevelScreens() { return Collections.unmodifiableMap(this.worldScreens); }
 	
 }

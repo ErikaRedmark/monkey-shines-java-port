@@ -4,7 +4,6 @@ public class ResourcePackException extends Exception {
 	private static final long serialVersionUID = 1961864077597399970L;
 
 	private final Type type;
-	private final String extra;
 	
 	/**
 	 * 
@@ -15,7 +14,6 @@ public class ResourcePackException extends Exception {
 	public ResourcePackException(final Throwable cause) {
 		super(cause.getMessage(), cause);
 		this.type = Type.EXCEPTION;
-		this.extra = "";
 	}
 	
 	/**
@@ -24,8 +22,12 @@ public class ResourcePackException extends Exception {
 	 *
 	 */
 	public ResourcePackException(final Type type, final String extra) {
+		super(type.getMessage() + extra);
 		this.type = type;
-		this.extra = extra;
+	}
+	
+	public Type getType() {
+		return type;
 	}
 	
 	

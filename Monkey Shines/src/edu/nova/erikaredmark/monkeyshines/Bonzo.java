@@ -2,8 +2,6 @@ package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics2D;
 
-import com.google.common.base.Optional;
-
 import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
 import edu.nova.erikaredmark.monkeyshines.graphics.CoreResource;
 
@@ -22,22 +20,22 @@ public final class Bonzo {
 	// private constants
 	private static final int BONZO_DEATH_SIZE_X = 80;
 	private static final int BONZO_DEATH_SIZE_Y = 40;
-	private static final int BONZO_BEE_SIZE_X = 40;
-	private static final int BONZO_BEE_SIZE_Y = 80;
+//	private static final int BONZO_BEE_SIZE_X = 40;
+//	private static final int BONZO_BEE_SIZE_Y = 80;
 	
 	// ALL X'S HERE ARE ZERO
-	private static final int WALK_RIGHT_Y = 0;
-	private static final int WALK_SPRITES = 16;
-	private static final int WALK_LEFT_Y = 40;
+//	private static final int WALK_RIGHT_Y = 0;
+//	private static final int WALK_SPRITES = 16;
+//	private static final int WALK_LEFT_Y = 40;
 	
 	private static final int JUMP_SPRITES = 8;
 	private static final int JUMP_Y = 80;
-	private static final int JUMP_RIGHT_X = 0;
+//	private static final int JUMP_RIGHT_X = 0;
 	private static final int JUMP_LEFT_X = JUMP_SPRITES * BONZO_SIZE.x();
 	
-	private static final int DEATH_SPRITES = 16;
-	private static final int DEATH_ROWS = 2;
-	private static final int DEATH_COLS = 8;
+//	private static final int DEATH_SPRITES = 16;
+//	private static final int DEATH_ROWS = 2;
+//	private static final int DEATH_COLS = 8;
 	private static final int DEATH_START_Y = 120;
 	
 	// Sprite Info
@@ -99,6 +97,16 @@ public final class Bonzo {
 	}
 	
 	/**
+	 * 
+	 * Calls onGround(originalPositionY) with the same original position as the current location. Used from when bonzo is
+	 * just standing around and needs to know if there is ground beneath.
+	 * 
+	 */
+	public int onGround() {
+		return onGround(currentLocation.y() );
+	}
+	
+	/**
 	 * Determines if bonzo has hit the ground. Intended ONLY to be called if bonzo is currently in a jump state. If he
 	 * hits the ground, speed considerations may make it possible for him to go through the ground a couple units. The returned
 	 * value indicates how far to 'bump' bonzo up if he goes through the ground too far.
@@ -108,33 +116,47 @@ public final class Bonzo {
 	 * that amount.
 	 * <p/>
 	 * This method does not modify any state and merely returns a value.
+	 * <p/>
+	 * The parameters for original position are required to determine, for dealing with thru blocks, if bonzo fell onto
+	 * the block, or if he was already inside of it. 
+	 * 
+	 * @param originalPositionY
+	 * 		bonzo's original y position before changing. Used to determine if he fell on a block. For thrus, this means
+	 * 		preventing him from snapping on top if he just missed it and is now inside it.
 	 * 
 	 * @return
 	 * 		{@code -1} if not on the ground, other a positive value indicating how deep into the ground bonzo is. This may
 	 * 		return 0... in which case bonzo is perfectly fine on the ground.
 	 * 
 	 */
-	public int onGround() {
+	public int onGround(int originalPositionY) {
 		// If rising, not falling, no need to check for ground. In fact, we are allowed to go through certain ground.
-		if (currentVelocity.precisionY() < 0)
-			return -1;
+		if (currentVelocity.precisionY() < 0)  return -1;
 		
 		LevelScreen currentScreen = worldPointer.getCurrentScreen();
 		int bonzoOneBelowFeetY = (currentLocation.y() + BONZO_SIZE.y() ) + 1;
-		Optional<TileType> onGroundLeft = currentScreen.checkForGroundTile(currentLocation.x(), bonzoOneBelowFeetY);
-		Optional<TileType> onGroundMiddle = currentScreen.checkForGroundTile(currentLocation.x() + (GameConstants.TILE_SIZE_X), bonzoOneBelowFeetY);
-		Optional<TileType> onGroundRight = currentScreen.checkForGroundTile(currentLocation.x() + BONZO_SIZE.x(), bonzoOneBelowFeetY );
+		TileType onGroundLeft = currentScreen.getTileAt(currentLocation.x() + 3, bonzoOneBelowFeetY);
+		TileType onGroundRight = currentScreen.getTileAt(currentLocation.x() + (BONZO_SIZE.x() - 4), bonzoOneBelowFeetY );
 		
 		// If at least part of him is on a thru tile.
-		if ( (onGroundLeft.isPresent() && onGroundLeft.get() == TileType.THRU)     || 
-			 (onGroundMiddle.isPresent() && onGroundMiddle.get() == TileType.THRU) || 
-			 (onGroundRight.isPresent() && onGroundRight.get() == TileType.THRU )  ) {
+		if (    onGroundLeft == TileType.THRU
+			 || onGroundRight == TileType.THRU) {
+			// Very important! If we are inside of a thru, we do NOT bounce onto it unless bonzo's original position was
+			// ABOVE the thru. Otherwise, it is too easy for him to snap up if a jump didn't quite make it.
+			// This doesn't apply if our velocity is zero in the y case, as we would just be standing on the thru and technically
+			// we are on the ground
+			if (   currentVelocity.precisionY() > 0.1
+				&& originalPositionY / GameConstants.TILE_SIZE_Y == currentLocation.y() / GameConstants.TILE_SIZE_Y ) {
+				return -1;
+				// Effectively, if we snap the original position and the current position and we end up at the same tile, then
+				// we approached it from the side, not above.
+			}
+			
 			//We need to make sure that we are exactly on the thing, we don't budge it.
 			return ( (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y ); 
 			
-		} else if ( (onGroundLeft.isPresent() && onGroundLeft.get() == TileType.SOLID)     || 
-				    (onGroundMiddle.isPresent() && onGroundMiddle.get() == TileType.SOLID) || 
-				    (onGroundRight.isPresent() && onGroundRight.get() == TileType.SOLID) ) {
+		} else if (    onGroundLeft == TileType.SOLID
+				    || onGroundRight == TileType.SOLID) {
 			// If we are falling, and we are In the ground halfway, snap up. If further, keep falling
 			int depth = (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y;
 			if (depth < GameConstants.TILE_SIZE_Y / 2)
@@ -143,6 +165,7 @@ public final class Bonzo {
 				return -1;
 
 		}
+		
 		return -1;
 	}
 	
@@ -258,29 +281,14 @@ public final class Bonzo {
 			return;
 		}
 		
+		int originalY = currentLocation.y();
 		currentLocation.applyVelocity(currentVelocity);
-		// If velocity is down, apply it. Else, wait until later to check before applying.
-		
-		// Give all collisions to World
-		worldPointer.checkCollisions(this);
-		
-		// if we are jumping, slowly increment the sprite until we get to the end, then leave it there.
-		if (isJumping) {
-			// check for a tile above us
-			if (!solidToUp(currentLocation.y() ) ) {
-				//currentLocation.y -= currentVelocity.y;
-				if (currentSprite < 7)
-					currentSprite++;
-			} else {
-				currentVelocity.reverseY();
-			}
-		}
-		
-		// check for floor. If none, add some points of fall to velocity until max or hitting a floor.
-		int onGround = onGround();
+		// At this time, we could be inside of a block. Since by game nature velocity is only eithe
+		// upward or downward, check now to bump us out of the ground
+		int onGround = onGround(originalY);
 		/* ------- Not on the ground, so start pulling downward ---------- */
 		if ( onGround == -1) {
-			if ( !(currentVelocity.precisionY() <= GameConstants.TERMINAL_VELOCITY) ) {
+			if ( currentVelocity.precisionY() > GameConstants.TERMINAL_VELOCITY ) {
 				
 				// Jumps should be smoother
 				// Nitpick: Bonzo falls slower if he jumps first. Not sure if this is a good idea.
@@ -299,6 +307,22 @@ public final class Bonzo {
 			if (isJumping)  currentSprite = 3;
 			setJumping(false);
 		} 
+		
+		// Give all collisions to World
+		worldPointer.checkCollisions(this);
+		
+		// if we are jumping, slowly increment the sprite until we get to the end, then leave it there.
+		if (isJumping) {
+			// check for a tile above us
+			if (!solidToUp(currentLocation.y() ) ) {
+				//currentLocation.y -= currentVelocity.y;
+				if (currentSprite < 7)
+					currentSprite++;
+			} else {
+				currentVelocity.reverseY();
+			}
+		}
+
 		
 	}
 	
