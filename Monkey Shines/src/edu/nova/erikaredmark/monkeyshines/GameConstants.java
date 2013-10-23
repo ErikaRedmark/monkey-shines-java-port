@@ -28,7 +28,7 @@ public final class GameConstants {
 	
 	/* Terminal velocity must be at least one minus the verticle tile size, or hit ground collision calculations will fail.
 	 */
-	public static double TERMINAL_VELOCITY = -7; // THIS MUST BE NEGATIVE
+	public static double TERMINAL_VELOCITY = 14.0;
 	public static double SPEED_MULTIPLIER = 1.0; // The speed of a sprite is multiplied by this to get how fast it moves across screen.
 	public static double BONZO_SPEED_MULTIPLIER = 2.0; // The speed Bonzo dashes across the landscape
 	public static double BONZO_JUMP_MULTIPLIER = 1.6; // The force of bonzo's jump

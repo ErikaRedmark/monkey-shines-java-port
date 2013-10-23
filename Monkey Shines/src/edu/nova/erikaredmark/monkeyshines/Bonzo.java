@@ -288,13 +288,13 @@ public final class Bonzo {
 		int onGround = onGround(originalY);
 		/* ------- Not on the ground, so start pulling downward ---------- */
 		if ( onGround == -1) {
-			if ( currentVelocity.precisionY() > GameConstants.TERMINAL_VELOCITY ) {
+			// if the current velocity has not yet hit terminal
+			if (currentVelocity.precisionY() <= GameConstants.TERMINAL_VELOCITY ) {
 				
 				// Jumps should be smoother
 				// Nitpick: Bonzo falls slower if he jumps first. Not sure if this is a good idea.
 				if (isJumping)  currentVelocity.translateYFine(-0.4);
 			    else 			currentVelocity.translateYFine(-1);
-				
 			}
 		/* --------- On the ground. Keep y Velocities at zero ---------- */
 		} else {
