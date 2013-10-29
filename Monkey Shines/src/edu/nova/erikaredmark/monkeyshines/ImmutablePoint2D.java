@@ -149,5 +149,9 @@ public final class ImmutablePoint2D implements Serializable, IPoint2D {
 		result += result * 31 + y;
 		return result;
 	}
+	
+	@Override public String toString() {
+		return x + ", " + y;
+	}
 
 }

@@ -258,7 +258,7 @@ public class World {
 			theBonzo.changeScreen(newId);
 			dir.transferLocation(theBonzo.getMutableCurrentLocation(), Bonzo.BONZO_SIZE);
 			// Update the new screen with data about where we came from so deaths bring us to the same place
-			getCurrentScreen().setBonzoCameFrom(currentLocation);
+			getCurrentScreen().setBonzoCameFrom(theBonzo.getCurrentLocation() );
 			// Ignore any other collisions for now.
 			return;
 		}

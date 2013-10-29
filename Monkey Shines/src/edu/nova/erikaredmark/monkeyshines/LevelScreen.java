@@ -160,6 +160,8 @@ public class LevelScreen {
 	 * 
 	 * Returns a new point representing a location on the screen that bonzo entered from. The returned point may be freely
 	 * modified and assigned as-is to any object.
+	 * <p/>
+	 * The returned point is in pixel coordinates
 	 * 
 	 * @return
 	 * 		a new instance of a point that represents the location bonzo entered this screen. This initially is set to his
@@ -178,6 +180,7 @@ public class LevelScreen {
 	 * 		the location Bonzo entered the screen from
 	 */
 	public void setBonzoCameFrom(final ImmutablePoint2D bonzoCameFrom) {
+		System.out.println("Setting bonzo came from on screen " + this.screenId + " to " + bonzoCameFrom);
 		this.bonzoCameFrom = bonzoCameFrom;
 	}
 	
