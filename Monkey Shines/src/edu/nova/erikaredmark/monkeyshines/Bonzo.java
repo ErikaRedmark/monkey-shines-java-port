@@ -162,12 +162,7 @@ public final class Bonzo {
 			
 		} else if (    onGroundLeft == TileType.SOLID
 				    || onGroundRight == TileType.SOLID) {
-			// If we are falling, and we are In the ground halfway, snap up. If further, keep falling
-			int depth = (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y;
-			if (depth < GameConstants.TILE_SIZE_Y / 2)
-				return depth;
-			else
-				return -1;
+			return (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y;
 
 		}
 		
