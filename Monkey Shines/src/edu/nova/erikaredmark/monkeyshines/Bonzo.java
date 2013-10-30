@@ -141,12 +141,17 @@ public final class Bonzo {
 		// If at least part of him is on a thru tile.
 		if (    onGroundLeft == TileType.THRU
 			 || onGroundRight == TileType.THRU) {
+			// If bonzo is already exactly on the ground, everything is fine. Otherwise, we may have to fall through it.
+			int depth = (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y;
+			if (depth == 0)  return 0;
+			
 			// Very important! If we are inside of a thru, we do NOT bounce onto it unless bonzo's original position was
 			// ABOVE the thru. Otherwise, it is too easy for him to snap up if a jump didn't quite make it.
-			// This doesn't apply if our velocity is zero in the y case, as we would just be standing on the thru and technically
-			// we are on the ground
-			if (   currentVelocity.precisionY() > 0.1
-				&& originalPositionY / GameConstants.TILE_SIZE_Y == currentLocation.y() / GameConstants.TILE_SIZE_Y ) {
+			// We do not snap up at zero velocity only if bonzos original position was equal to or less than this position. 
+			// Zero velocity with identical Y position means bonzo is not falling; he is standing, so he IS on the ground
+			// exactly already.
+			if (originalPositionY / GameConstants.TILE_SIZE_Y == currentLocation.y() / GameConstants.TILE_SIZE_Y) {
+				
 				return -1;
 				// Effectively, if we snap the original position and the current position and we end up at the same tile, then
 				// we approached it from the side, not above.
@@ -283,7 +288,7 @@ public final class Bonzo {
 		
 		int originalY = currentLocation.y();
 		currentLocation.applyVelocity(currentVelocity);
-		// At this time, we could be inside of a block. Since by game nature velocity is only eithe
+		// At this time, we could be inside of a block. Since by game nature velocity is only either
 		// upward or downward, check now to bump us out of the ground
 		int onGround = onGround(originalY);
 		/* ------- Not on the ground, so start pulling downward ---------- */
@@ -302,7 +307,6 @@ public final class Bonzo {
 			// if pushing us up takes us OFF the ground, don't do it. Sloppy Kludge
 			currentLocation.translateY(-onGround); //Push back to level field.
 			if (onGround() == -1)  currentLocation.translateY(onGround);
-			
 			// If we are jumping when we land, move sprite to post-jump stage and stop jumping
 			if (isJumping)  currentSprite = 3;
 			setJumping(false);

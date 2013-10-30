@@ -180,7 +180,6 @@ public class LevelScreen {
 	 * 		the location Bonzo entered the screen from
 	 */
 	public void setBonzoCameFrom(final ImmutablePoint2D bonzoCameFrom) {
-		System.out.println("Setting bonzo came from on screen " + this.screenId + " to " + bonzoCameFrom);
 		this.bonzoCameFrom = bonzoCameFrom;
 	}
 	

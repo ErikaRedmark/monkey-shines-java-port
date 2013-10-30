@@ -25,6 +25,7 @@ public class MonkeyShines extends JFrame {
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setLocationRelativeTo(null); // Why even set this?
 		pack();
+		setLocationRelativeTo(null);
 		setVisible(true);
 		setResizable(false);
 	}

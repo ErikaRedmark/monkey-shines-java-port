@@ -124,5 +124,10 @@ public class Point2D implements IPoint2D {
 		//using minus, because otherwise positive numbers go down and that makes no sense.
 		this.translateYFine(-velocity.precisionY() );
 	}
+	
+	@Override public String toString() {
+		return x + ", " + y;
+	}
+
 
 }
