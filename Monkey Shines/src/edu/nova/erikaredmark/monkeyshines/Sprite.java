@@ -160,11 +160,11 @@ public class Sprite {
 	 * 
 	 */
 	public void paint(Graphics2D g2d) {
-			g2d.drawImage(rsrc.getSpritesheetFor(this.id), currentLocation.x(), currentLocation.y(), 
-					currentLocation.x() + GameConstants.SPRITE_SIZE_X, 
-					currentLocation.y() + GameConstants.SPRITE_SIZE_Y,
-					currentClip.x(), currentClip.y(), currentClip.width() + currentClip.x(),
-					currentClip.height() + currentClip.y(),  null  );
+		g2d.drawImage(rsrc.getSpritesheetFor(this.id), currentLocation.x(), currentLocation.y(), 
+				currentLocation.x() + GameConstants.SPRITE_SIZE_X, 
+				currentLocation.y() + GameConstants.SPRITE_SIZE_Y,
+				currentClip.x(), currentClip.y(), currentClip.width() + currentClip.x(),
+				currentClip.height() + currentClip.y(),  null  );
 	}
 	
 	/**

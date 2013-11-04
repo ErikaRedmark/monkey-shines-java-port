@@ -2,8 +2,6 @@ package edu.nova.erikaredmark.monkeyshines.bounds;
 
 import java.io.Serializable;
 
-import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
-
 /**
  * 
  * Note: Had this been Scala, this would be a trait.
@@ -90,21 +88,42 @@ public abstract class Boundable implements Serializable {
 	}
 	
 	/**
-	 * Determines if the given regions intersect.
+	 * Determines if the given regions intersect. Intersections are symmetric: If region A intersects with region B, then
+	 * region B intersects with region A
 	 * 
-	 * @param other
+	 * @param that
+	 * 		the other boundable to check for intersection
+	 * 	
 	 * @return
+	 * 		{@code true} if the two boundables intersect, {@code false} if otherwise
+	 * 
 	 */
-	public boolean intersect(Boundable other) {
-		// Check if any of the four corners are within this bounds
-		IPoint2D upLeft = other.location;
-		IPoint2D upRight = ImmutablePoint2D.of(other.location.x() + other.size.x(), other.location.y() );
-		IPoint2D downLeft = ImmutablePoint2D.of(other.location.x(), other.location.y() + other.size.y() );
-		IPoint2D downRight = ImmutablePoint2D.of(other.location.x() + other.size.x(), other.location.y() + other.size.y() );
-		return   inBounds(upLeft)
-			  || inBounds(upRight)
-			  || inBounds(downLeft)
-			  || inBounds(downRight);
+	public boolean intersect(Boundable that) {
+		// Prove that the don't intersect
+		// If we orders the X values of both the left and right points of this and that, if this appears two times 
+		// in succession, then that, or vice-versa, they are NOT intersecting.
+		int thisX1 = location.x();
+		int thisX2 = location.x() + size.x();
+		
+		int thatX1 = that.location.x();
+		int thatX2 = that.location.x() + that.size.x();
+		
+		// Check for the only two cases of non-intersecting X bounds:
+		// thisX1 < thisX2 < thatX1 < thatX2 turns into thisX2 < thatX1
+		// thatX1 < thatX2 < thisX1 < thisX2 turns into thatX2 < thisX1
+		if (thisX2 < thatX1 || thatX2 < thisX1)  return false;
+		
+		// Same thing for y
+		
+		int thisY1 = location.y();
+		int thisY2 = location.y() + size.y();
+		
+		int thatY1 = that.location.y();
+		int thatY2 = that.location.y() + that.size.y();
+		
+		if (thisY2 < thatY1 || thatY2 < thisY1)  return false;
+		
+		return true;
 	}
 
 }
