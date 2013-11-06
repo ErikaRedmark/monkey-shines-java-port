@@ -310,7 +310,6 @@ public class LevelScreen {
 	/*
 	 * Editor functions. None of these effects are saved until the level is saved.
 	 * Save often!
-	 * @param g2d
 	 *
 	 */
 	
