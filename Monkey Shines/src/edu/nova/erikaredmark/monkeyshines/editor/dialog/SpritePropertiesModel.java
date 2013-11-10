@@ -6,6 +6,7 @@ import edu.nova.erikaredmark.monkeyshines.AnimationSpeed;
 import edu.nova.erikaredmark.monkeyshines.AnimationType;
 import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.ImmutableRectangle;
+import edu.nova.erikaredmark.monkeyshines.Sprite;
 
 /**
  * 
@@ -54,6 +55,21 @@ public final class SpritePropertiesModel extends ObservableModel {
 	 */
 	public static SpritePropertiesModel newModelWithDefaults() {
 		return new SpritePropertiesModel(ImmutableRectangle.of(0, 0, 0, 0), ImmutablePoint2D.of(0, 0), ImmutablePoint2D.of(0, 0), AnimationType.INCREASING_FRAMES, AnimationSpeed.NORMAL ,0);
+	}
+	
+	/** 
+	 * 
+	 * Creates a new backing model with all parameters initialised to replicate the data of the passed sprite.
+	 * 
+	 * @param s
+	 * 		the sprite to base model off of
+	 * 
+	 * @return
+	 * 		instance of this object
+	 * 
+	 */
+	public static SpritePropertiesModel fromSprite(final Sprite s) {
+		return new SpritePropertiesModel(s.getBoundingBox(), ImmutablePoint2D.of(s.getInitialSpeedX(), s.getInitialSpeedY() ), s.getStaringLocation(), s.getAnimationType(), s.getAnimationSpeed(), s.getId() );
 	}
 	
 

@@ -1,6 +1,5 @@
 package edu.nova.erikaredmark.monkeyshines.editor.dialog;
 
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -54,14 +53,8 @@ public class SpritePropertiesDialog extends JDialog {
 	// True if user hits okay, false if otherwise
 	private boolean okay = false;
 	
-	public SpritePropertiesDialog(WorldResource rsrc, ImmutablePoint2D startingLocation) {
-		model = SpritePropertiesModel.newModelWithDefaults();
-		
-		// Give some intelligent auto-complete based on selection
-		model.setSpriteLocationX(startingLocation.x() );
-		model.setSpriteLocationY(startingLocation.y() );
-		model.setSpriteBoundingBoxTopLeftX(startingLocation.x() );
-		model.setSpriteBoundingBoxTopLeftY(startingLocation.y() );
+	private SpritePropertiesDialog(WorldResource rsrc, SpritePropertiesModel initialModel) {
+		model = initialModel;
 		
 		SpringLayout springLayout = new SpringLayout();
 		getContentPane().setLayout(springLayout);
@@ -178,7 +171,7 @@ public class SpritePropertiesDialog extends JDialog {
 		springLayout.putConstraint(SpringLayout.EAST, lblStartY, 0, SpringLayout.EAST, lblWidth);
 		getContentPane().add(lblStartY);
 		
-		txtStartX = new JTextField(String.valueOf(startingLocation.x() ) );
+		txtStartX = new JTextField(String.valueOf(model.getSpriteStartingLocation().x() ) );
 		springLayout.putConstraint(SpringLayout.NORTH, txtStartX, 0, SpringLayout.NORTH, txtVelocityX);
 		springLayout.putConstraint(SpringLayout.EAST, txtStartX, 0, SpringLayout.EAST, txtWidth);
 		getContentPane().add(txtStartX);
@@ -190,7 +183,7 @@ public class SpritePropertiesDialog extends JDialog {
 			@Override public void focusGained(FocusEvent e) { }
 		});
 		
-		txtStartY = new JTextField(String.valueOf(startingLocation.y() ) );
+		txtStartY = new JTextField(String.valueOf(model.getSpriteStartingLocation().y() ) );
 		springLayout.putConstraint(SpringLayout.NORTH, txtStartY, 0, SpringLayout.NORTH, txtVelocityY);
 		springLayout.putConstraint(SpringLayout.WEST, txtStartY, 0, SpringLayout.WEST, txtWidth);
 		getContentPane().add(txtStartY);
@@ -275,6 +268,8 @@ public class SpritePropertiesDialog extends JDialog {
 		getContentPane().add(btnNewButton);
 		
 		// Sync the model with the view to create initial population of values.
+		spriteIdSpinner.setValue(model.getSpriteId() );
+		spriteDrawCanvas.setSpriteId(model.getSpriteId() );
 		final ImmutableRectangle initialBoundingBox = model.getSpriteBoundingBox();
 		txtTopLeftX.setText(String.valueOf(initialBoundingBox.getLocation().x() ) );
 		txtTopLeftY.setText(String.valueOf(initialBoundingBox.getLocation().y() ) );
@@ -286,6 +281,9 @@ public class SpritePropertiesDialog extends JDialog {
 		
 		txtVelocityX.setText(String.valueOf(model.getSpriteVelocity().x() ) );
 		txtVelocityY.setText(String.valueOf(model.getSpriteVelocity().y() ) );
+		
+		animationType.setSelectedItem(model.getAnimationType() );
+		animationSpeed.setSelectedItem(model.getAnimationSpeed() );
 	}
 
 	
@@ -308,7 +306,14 @@ public class SpritePropertiesDialog extends JDialog {
 	 * 
 	 */
 	public static SpritePropertiesModel launch(JComponent parent, WorldResource rsrc, ImmutablePoint2D startingPoint) {
-		SpritePropertiesDialog dialog = new SpritePropertiesDialog(rsrc, startingPoint);
+		final SpritePropertiesModel model = SpritePropertiesModel.newModelWithDefaults();
+		// Give some intelligent auto-complete based on selection
+		model.setSpriteLocationX(startingPoint.x() );
+		model.setSpriteLocationY(startingPoint.y() );
+		model.setSpriteBoundingBoxTopLeftX(startingPoint.x() );
+		model.setSpriteBoundingBoxTopLeftY(startingPoint.y() );
+		
+		SpritePropertiesDialog dialog = new SpritePropertiesDialog(rsrc, model);
 		dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		dialog.setModal(true);
 		dialog.setLocation(parent.getLocation() );
@@ -316,9 +321,9 @@ public class SpritePropertiesDialog extends JDialog {
 		dialog.setVisible(true);
 		
 		// Dialog is over at this point. Set model based on how it was exited to tell client.
-		dialog.model.setOkay(dialog.okay);
+		model.setOkay(dialog.okay);
 		
-		return dialog.model;
+		return model;
 	}
 	
 	/**
@@ -337,24 +342,13 @@ public class SpritePropertiesDialog extends JDialog {
 	 * @return
 	 */
 	public static SpritePropertiesModel launch(JComponent parent, WorldResource rsrc, Sprite sprite) {
-		SpritePropertiesDialog dialog = new SpritePropertiesDialog(rsrc, sprite.getStaringLocation() );
+		SpritePropertiesModel model = SpritePropertiesModel.fromSprite(sprite);
+		SpritePropertiesDialog dialog = new SpritePropertiesDialog(rsrc, model);
 		dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		dialog.setModal(true);
 		dialog.setLocation(parent.getLocation() );
 		dialog.setSize(450, 260);
 		
-		// initialise parts
-		// Changed listeners will properly parse the value after we set the text and update the model
-		// Starting location already set by constructor
-		// TODO This doesn't work because is sets the view not the model
-		ImmutableRectangle bounding = sprite.getBoundingBox();
-		dialog.txtTopLeftX.setText(String.valueOf(bounding.getLocation().x() ) );
-		dialog.txtTopLeftY.setText(String.valueOf(bounding.getLocation().y() ) );
-		dialog.txtWidth.setText(String.valueOf(bounding.getSize().x() ) );
-		dialog.txtHeight.setText(String.valueOf(bounding.getSize().y() ) );
-		dialog.txtVelocityX.setText(String.valueOf(sprite.getInitialSpeedX() ) );
-		dialog.txtVelocityY.setText(String.valueOf(sprite.getInitialSpeedY() ) );
-		dialog.spriteIdSpinner.setValue(sprite.getId() );
 		// Show
 		dialog.setVisible(true);
 		// Return
