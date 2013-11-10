@@ -23,7 +23,6 @@ public class MonkeyShines extends JFrame {
 		add(currentWorld);
 		setTitle("Monkey Shines");
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setLocationRelativeTo(null); // Why even set this?
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);

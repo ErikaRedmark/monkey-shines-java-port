@@ -328,6 +328,7 @@ public class LevelEditor extends JFrame {
 		setJMenuBar(mainMenuBar);
 		
 		pack();
+		setLocationRelativeTo(null);
 		setVisible(true);
 		setResizable(false);
 	}

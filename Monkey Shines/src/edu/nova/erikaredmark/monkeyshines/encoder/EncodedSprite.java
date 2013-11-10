@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.nova.erikaredmark.monkeyshines.AnimationSpeed;
+import edu.nova.erikaredmark.monkeyshines.AnimationType;
 import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.ImmutableRectangle;
 import edu.nova.erikaredmark.monkeyshines.Sprite;
@@ -33,13 +35,17 @@ public class EncodedSprite implements Serializable {
 	private final ImmutableRectangle boundingBox;
 	private final int initialSpeedX;
 	private final int initialSpeedY;
+	private final AnimationType animationType;
+	private final AnimationSpeed animationSpeed;
 	
-	private EncodedSprite(final int id, final ImmutablePoint2D location, final ImmutableRectangle boundingBox, final int initialSpeedX, final int initialSpeedY) {
+	private EncodedSprite(final int id, final ImmutablePoint2D location, final ImmutableRectangle boundingBox, final int initialSpeedX, final int initialSpeedY, final AnimationType animationType, final AnimationSpeed speed) {
 		this.id = id;
 		this.location = location;
 		this.boundingBox = boundingBox;
 		this.initialSpeedX = initialSpeedX;
 		this.initialSpeedY = initialSpeedY;
+		this.animationType = animationType;
+		this.animationSpeed = speed;
 	}
 	
 	public static EncodedSprite from(final Sprite s) {
@@ -49,8 +55,10 @@ public class EncodedSprite implements Serializable {
 		ImmutableRectangle _boundingBox = s.getBoundingBox();
 		int _initialSpeedX = s.getInitialSpeedX();
 		int _initialSpeedY = s.getInitialSpeedY();
+		AnimationType _animationType = s.getAnimationType();
+		AnimationSpeed _speed = s.getAnimationSpeed();
 		
-		return new EncodedSprite(_id, _location, _boundingBox, _initialSpeedX, _initialSpeedY);
+		return new EncodedSprite(_id, _location, _boundingBox, _initialSpeedX, _initialSpeedY, _animationType, _speed);
 	}
 	
 	/**
@@ -77,5 +85,6 @@ public class EncodedSprite implements Serializable {
 	public ImmutableRectangle getBoundingBox() { return boundingBox; }
 	public int getInitialSpeedX() { return initialSpeedX; }
 	public int getInitialSpeedY() { return initialSpeedY; }
-	
+	public AnimationType getAnimationType() { return animationType; }
+	public AnimationSpeed getAnimationSpeed() { return animationSpeed; }
 }

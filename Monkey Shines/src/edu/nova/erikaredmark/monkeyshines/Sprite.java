@@ -21,12 +21,20 @@ public class Sprite {
 	private final int 				 initialSpeedX;
 	private final int			     initialSpeedY;
 	
-	
 	// Movement: Classic Monkeyshines bounding box movement
 	// Realtime state movement
 	private       Point2D currentLocation;
 	private       int speedX;
 	private       int speedY;
+	
+	private final AnimationType animationType;
+	private final AnimationSpeed animationSpeed;
+	// Update tick will go from 1->animationSpeed.getTicksToUpdate(). When it reaches that value it will reset to 1.
+	// THIS VARIABLE SHOULD ONLY BE MODIFIED AND CHECKED IN THE update() METHOD!
+	private int updateTick = 1;
+	// True means 0,1,2,3, etc.., and false means 3,2,1. This is only ever toggled to false and back if the animation type
+	// is of cycling
+	private boolean cycleDirection = true;
 	
 	// Images
 	private ClippingRectangle currentClip;
@@ -44,20 +52,33 @@ public class Sprite {
 		final ImmutableRectangle boundingBox = encodedSprite.getBoundingBox();
 		final int initialSpeedX = encodedSprite.getInitialSpeedX();
 		final int initialSpeedY = encodedSprite.getInitialSpeedY();
+		final AnimationType animationType = encodedSprite.getAnimationType();
+		final AnimationSpeed animationSpeed = encodedSprite.getAnimationSpeed();
 		
-		return new Sprite(id, startLocation, boundingBox, initialSpeedX, initialSpeedY);
+		return new Sprite(id, startLocation, boundingBox, initialSpeedX, initialSpeedY, animationType, animationSpeed);
 	}
 	
 	/** 
 	 * 
 	 * Creates a new unmoving sprite with the given and resource pack. The sprite starts at 0,0, has no bounding box to
 	 * move in, and has no velocity at all.
+	 * <p/>
+	 * A valid animation type must still be supplied
+	 * 
+	 * @param id
+	 * 		sprite id to map to sprite graphics
+	 * 
+	 * @param animationType
+	 * 		animation type for this sprite
+	 * 
+	 * @param rsrc
+	 * 		world resource for obtaining the graphics context
 	 * 
 	 * @return
 	 * 		a new instance of this class
 	 */
-	public static Sprite newUnmovingSprite(int id, WorldResource rsrc) {
-		Sprite s = new Sprite(id, ImmutablePoint2D.of(0, 0), ImmutableRectangle.of(0, 0, 0, 0), 0, 0);
+	public static Sprite newUnmovingSprite(int id, AnimationType type, AnimationSpeed speed, WorldResource rsrc) {
+		Sprite s = new Sprite(id, ImmutablePoint2D.of(0, 0), ImmutableRectangle.of(0, 0, 0, 0), 0, 0, type, speed);
 		s.skin(rsrc);
 		return s;
 	}
@@ -81,23 +102,28 @@ public class Sprite {
 	 * @param spriteVelocity
 	 * 		initial velocity in x and y direction. Positive values for right and down, negative for left and up
 	 * 
+	 * @param animationType
+	 * 		the type of animation this sprite will undergo
+	 * 
 	 * @param rsrc
 	 * 		graphics resource for giving the sprite a proper graphics context
 	 * 
 	 */
-	public static Sprite newSprite(int spriteId, ImmutablePoint2D spriteStartingLocation, ImmutableRectangle spriteBoundingBox, ImmutablePoint2D spriteVelocity, WorldResource rsrc) {
-		Sprite s = new Sprite(spriteId, spriteStartingLocation, spriteBoundingBox, spriteVelocity.x(), spriteVelocity.y() );
+	public static Sprite newSprite(int spriteId, ImmutablePoint2D spriteStartingLocation, ImmutableRectangle spriteBoundingBox, ImmutablePoint2D spriteVelocity, AnimationType animationType, AnimationSpeed speed, WorldResource rsrc) {
+		Sprite s = new Sprite(spriteId, spriteStartingLocation, spriteBoundingBox, spriteVelocity.x(), spriteVelocity.y(), animationType, speed);
 		s.skin(rsrc);
 		return s;
 	}
 	
 	
-	private Sprite(final int id, final ImmutablePoint2D startLocation, final ImmutableRectangle boundingBox, final int initialSpeedX, final int initialSpeedY) {
+	private Sprite(final int id, final ImmutablePoint2D startLocation, final ImmutableRectangle boundingBox, final int initialSpeedX, final int initialSpeedY, final AnimationType type, final AnimationSpeed speed) {
 		this.id = id;
 		this.startLocation = startLocation;
 		this.boundingBox = boundingBox;
 		this.initialSpeedX = initialSpeedX;
 		this.initialSpeedY = initialSpeedY;
+		this.animationType = type;
+		this.animationSpeed = speed;
 		
 		// State information
 		this.speedX = initialSpeedX;
@@ -127,6 +153,30 @@ public class Sprite {
 	 */
 	public ImmutablePoint2D getStaringLocation() { return this.startLocation; }
 
+	/**
+	 * 
+	 * Returns whether this sprite is in increasing frames animation or in cylcing animation. This field cannot be changed
+	 * once the sprite is created
+	 * 
+	 * @return
+	 * 		the animation type for the sprite
+	 * 
+	 */
+	public AnimationType getAnimationType() {
+		return animationType;
+	}
+	
+	/**
+	 * 
+	 * Returns the speed this sprite animates. This field cannot be changed
+	 * 
+	 * @return
+	 * 		animation speed of the sprite
+	 * 
+	 */
+	public AnimationSpeed getAnimationSpeed() {
+		return animationSpeed;
+	}
 	
 	/**
 	 * Returns a new point instance that represents the current sprite's position. This point instance may be freely modified
@@ -178,9 +228,29 @@ public class Sprite {
 		currentLocation.translateYFine(speedY);
 		
 		// Update Animation
-		currentClip.translateX(GameConstants.SPRITE_SIZE_X);
-		if (currentClip.x() >= rsrc.getSpritesheetFor(this.id).getWidth() )
-			currentClip.setX(0);
+		// If cycle directon is true, ascend. Otherwise, descend back down the sprite sheet
+		if (updateTick >= animationSpeed.getTicksToUpdate() ) {
+			int multiplier = cycleDirection ? 1 : -1;
+			currentClip.translateX(multiplier * GameConstants.SPRITE_SIZE_X);
+			if (currentClip.x() >= rsrc.getSpritesheetFor(this.id).getWidth() ) {
+				if (getAnimationType() == AnimationType.CYCLING_FRAMES) {
+					cycleDirection = !cycleDirection;
+					// Set last sprite
+					currentClip.setX( (GameConstants.SPRITES_IN_ROW - 2) * GameConstants.SPRITE_SIZE_X);
+				} else {
+					currentClip.setX(0);
+				}
+				
+			} else if (currentClip.x() < 0) {
+				// Assume cycling frames; nothing else makes sense to be less than zero
+				assert getAnimationType() == AnimationType.CYCLING_FRAMES;
+				cycleDirection = !cycleDirection;
+				currentClip.setX(GameConstants.SPRITE_SIZE_X);
+			}
+			updateTick = 1;
+		} else {
+			++updateTick;
+		}
 		
 		
 		// Update both speed and Animation row. If it leaves its bounds reverse direction
@@ -218,7 +288,5 @@ public class Sprite {
 	public int getId() { return id; }
 	public int getInitialSpeedX() { return initialSpeedX; }
 	public int getInitialSpeedY() {	return initialSpeedY; }
-
-
 
 }

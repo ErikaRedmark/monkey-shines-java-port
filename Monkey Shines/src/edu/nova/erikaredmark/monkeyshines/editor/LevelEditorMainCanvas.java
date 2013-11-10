@@ -609,7 +609,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
 				SpritePropertiesModel model = SpritePropertiesDialog.launch(editor, editor.currentWorldEditor.getWorldResource(), ImmutablePoint2D.of(editor.mousePosition.x(), editor.mousePosition.y() ) );
 				if (model.isOkay() ) {
-					editor.currentScreenEditor.addSprite(model.getSpriteId(), model.getSpriteStartingLocation(), model.getSpriteBoundingBox(), model.getSpriteVelocity(), editor.currentWorldEditor.getWorldResource() );
+					editor.currentScreenEditor.addSprite(model.getSpriteId(), model.getSpriteStartingLocation(), model.getSpriteBoundingBox(), model.getSpriteVelocity(), model.getAnimationType(), model.getAnimationSpeed(), editor.currentWorldEditor.getWorldResource() );
 				}
 			}
 			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { }
@@ -623,7 +623,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 					SpritePropertiesModel model = SpritePropertiesDialog.launch(editor, editor.currentWorldEditor.getWorldResource(), selected.get() );
 					// Remove sprite from screen, create a new one with new properties.
 					editor.currentScreenEditor.removeSprite(selected.get() );
-					editor.currentScreenEditor.addSprite(model.getSpriteId(), model.getSpriteStartingLocation(), model.getSpriteBoundingBox(), model.getSpriteVelocity(), editor.currentWorldEditor.getWorldResource() );
+					editor.currentScreenEditor.addSprite(model.getSpriteId(), model.getSpriteStartingLocation(), model.getSpriteBoundingBox(), model.getSpriteVelocity(), model.getAnimationType(), model.getAnimationSpeed(), editor.currentWorldEditor.getWorldResource() );
 				}
 			}
 			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { }

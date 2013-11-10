@@ -8,6 +8,8 @@ import java.awt.event.ActionListener;
 
 import javax.swing.Timer;
 
+import edu.nova.erikaredmark.monkeyshines.AnimationSpeed;
+import edu.nova.erikaredmark.monkeyshines.AnimationType;
 import edu.nova.erikaredmark.monkeyshines.Sprite;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
 
@@ -30,9 +32,9 @@ public class SpriteAnimationCanvas extends Canvas {
 	
 	Graphics bufferGraphics;
 	
-	public SpriteAnimationCanvas(final int spriteId, final WorldResource rsrc) {
+	public SpriteAnimationCanvas(final int spriteId, final AnimationType animationType, final AnimationSpeed speed, final WorldResource rsrc) {
 		this.rsrc = rsrc;
-		this.animatingSprite = Sprite.newUnmovingSprite(spriteId, rsrc);
+		this.animatingSprite = Sprite.newUnmovingSprite(spriteId, animationType, speed, rsrc);
 		// Make sprite animate
 		Timer animationTimer = new Timer(100, new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
@@ -45,8 +47,16 @@ public class SpriteAnimationCanvas extends Canvas {
 	}
 	
 	public void setSpriteId(int id) {
-		this.animatingSprite = Sprite.newUnmovingSprite(id, rsrc);
+		this.animatingSprite = Sprite.newUnmovingSprite(id, this.animatingSprite.getAnimationType(), this.animatingSprite.getAnimationSpeed(), rsrc);
 		this.repaint();
+	}
+	
+	public void setAnimationType(AnimationType type) {
+		this.animatingSprite = Sprite.newUnmovingSprite(this.animatingSprite.getId(), type, this.animatingSprite.getAnimationSpeed(), rsrc);
+	}
+	
+	public void setAnimationSpeed(AnimationSpeed speed) {
+		this.animatingSprite = Sprite.newUnmovingSprite(this.animatingSprite.getId(), this.animatingSprite.getAnimationType(), speed, rsrc);
 	}
 	
 	@Override public void paint(Graphics g) {

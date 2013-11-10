@@ -1,5 +1,7 @@
 package edu.nova.erikaredmark.monkeyshines.editor.dialog;
 
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.SpringLayout;
@@ -22,6 +24,8 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.SpinnerNumberModel;
 
+import edu.nova.erikaredmark.monkeyshines.AnimationSpeed;
+import edu.nova.erikaredmark.monkeyshines.AnimationType;
 import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.ImmutableRectangle;
 import edu.nova.erikaredmark.monkeyshines.Sprite;
@@ -46,14 +50,11 @@ public class SpritePropertiesDialog extends JDialog {
 	private JTextField txtStartY;
 	private JSpinner spriteIdSpinner;
 	
-	private final WorldResource rsrc;
-	
 	private final SpritePropertiesModel model;
 	// True if user hits okay, false if otherwise
 	private boolean okay = false;
 	
 	public SpritePropertiesDialog(WorldResource rsrc, ImmutablePoint2D startingLocation) {
-		this.rsrc = rsrc;
 		model = SpritePropertiesModel.newModelWithDefaults();
 		
 		// Give some intelligent auto-complete based on selection
@@ -201,7 +202,7 @@ public class SpritePropertiesDialog extends JDialog {
 			@Override public void focusGained(FocusEvent e) { }
 		});
 		
-		final SpriteAnimationCanvas spriteDrawCanvas = new SpriteAnimationCanvas(0, rsrc);
+		final SpriteAnimationCanvas spriteDrawCanvas = new SpriteAnimationCanvas(0, model.getAnimationType(), model.getAnimationSpeed(), rsrc);
 		springLayout.putConstraint(SpringLayout.WEST, spriteDrawCanvas, 0, SpringLayout.WEST, txtVelocityY);
 		spriteDrawCanvas.setBounds(new Rectangle(0, 0, 40, 40));
 		springLayout.putConstraint(SpringLayout.NORTH, spriteDrawCanvas, 20, SpringLayout.SOUTH, txtVelocityY);
@@ -231,11 +232,41 @@ public class SpritePropertiesDialog extends JDialog {
 		springLayout.putConstraint(SpringLayout.SOUTH, lblId, -6, SpringLayout.NORTH, spriteIdSpinner);
 		getContentPane().add(lblId);
 		
+		final JComboBox<AnimationType> animationType = new JComboBox<>(AnimationType.values() );
+		animationType.setSelectedItem(model.getAnimationType() );
+		animationType.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent event) {
+				final AnimationType type = (AnimationType)animationType.getSelectedItem();
+				model.setAnimationType(type);
+				spriteDrawCanvas.setAnimationType(type);
+			}
+		});
+		
+		springLayout.putConstraint(SpringLayout.WEST, animationType, 6, SpringLayout.EAST, spriteDrawCanvas);
+		springLayout.putConstraint(SpringLayout.SOUTH, animationType, -15, SpringLayout.SOUTH, spriteDrawCanvas);
+		springLayout.putConstraint(SpringLayout.EAST, animationType, 4, SpringLayout.WEST, txtWidth);
+		getContentPane().add(animationType);
+		
+		final JComboBox<AnimationSpeed> animationSpeed = new JComboBox<>(AnimationSpeed.values() );
+		animationSpeed.setSelectedItem(model.getAnimationSpeed() );
+		animationSpeed.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent event) {
+				final AnimationSpeed speed = (AnimationSpeed)animationSpeed.getSelectedItem();
+				model.setAnimationSpeed(speed);
+				spriteDrawCanvas.setAnimationSpeed(speed);
+			}
+		});
+		
+		springLayout.putConstraint(SpringLayout.WEST, animationSpeed, 6, SpringLayout.EAST, spriteDrawCanvas);
+		springLayout.putConstraint(SpringLayout.SOUTH, animationSpeed, 15, SpringLayout.SOUTH, spriteDrawCanvas);
+		springLayout.putConstraint(SpringLayout.EAST, animationSpeed, 4, SpringLayout.WEST, txtWidth);
+		getContentPane().add(animationSpeed);
+		
 		JButton btnNewButton = new JButton("Okay");
 		springLayout.putConstraint(SpringLayout.SOUTH, btnNewButton, 0, SpringLayout.SOUTH, spriteDrawCanvas);
 		springLayout.putConstraint(SpringLayout.EAST, btnNewButton, 0, SpringLayout.EAST, txtWidth);
 		btnNewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent event) {
+			@Override public void actionPerformed(ActionEvent event) {
 				okay = true;
 				setVisible(false);
 			}
@@ -256,6 +287,7 @@ public class SpritePropertiesDialog extends JDialog {
 		txtVelocityX.setText(String.valueOf(model.getSpriteVelocity().x() ) );
 		txtVelocityY.setText(String.valueOf(model.getSpriteVelocity().y() ) );
 	}
+
 	
 	/**
 	 * 
@@ -314,6 +346,7 @@ public class SpritePropertiesDialog extends JDialog {
 		// initialise parts
 		// Changed listeners will properly parse the value after we set the text and update the model
 		// Starting location already set by constructor
+		// TODO This doesn't work because is sets the view not the model
 		ImmutableRectangle bounding = sprite.getBoundingBox();
 		dialog.txtTopLeftX.setText(String.valueOf(bounding.getLocation().x() ) );
 		dialog.txtTopLeftY.setText(String.valueOf(bounding.getLocation().y() ) );

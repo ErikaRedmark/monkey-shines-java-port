@@ -2,6 +2,8 @@ package edu.nova.erikaredmark.monkeyshines.editor.dialog;
 
 import org.redmark.erika.util.ObservableModel;
 
+import edu.nova.erikaredmark.monkeyshines.AnimationSpeed;
+import edu.nova.erikaredmark.monkeyshines.AnimationType;
 import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.ImmutableRectangle;
 
@@ -24,6 +26,10 @@ public final class SpritePropertiesModel extends ObservableModel {
 	
 	private int spriteId;
 	
+	// Increasing frames jump from last frame to 0; cylcing start going back down to 0.
+	private AnimationType animationType;
+	private AnimationSpeed animationSpeed;
+	
 	/** Both old and new values will be {@code Integer}, never null
 	 */
 	public static final String PROPERTY_SPRITE_ID = "propSprite";
@@ -31,18 +37,23 @@ public final class SpritePropertiesModel extends ObservableModel {
 	private SpritePropertiesModel(final ImmutableRectangle spriteBoundingBox, 
 								  final ImmutablePoint2D spriteVelocity, 
 								  final ImmutablePoint2D spriteStartingLocation,
+								  final AnimationType 	 animationType,
+								  final AnimationSpeed   animationSpeed,
 								  final int 			 spriteId) {
 		
 		this.spriteBoundingBox = spriteBoundingBox;
 		this.spriteVelocity = spriteVelocity;
 		this.spriteStartingLocation = spriteStartingLocation;
+		this.animationType = animationType;
+		this.animationSpeed = animationSpeed;
 		this.spriteId = spriteId;
 	}
 	
-	/** Creates a new backing model with default sprite information (0, 0) for all points, sprite id 0.
+	/** Creates a new backing model with default sprite information (0, 0) for all points, sprite id 0, and increasing frames
+	 *  for animation
 	 */
 	public static SpritePropertiesModel newModelWithDefaults() {
-		return new SpritePropertiesModel(ImmutableRectangle.of(0, 0, 0, 0), ImmutablePoint2D.of(0, 0), ImmutablePoint2D.of(0, 0), 0);
+		return new SpritePropertiesModel(ImmutableRectangle.of(0, 0, 0, 0), ImmutablePoint2D.of(0, 0), ImmutablePoint2D.of(0, 0), AnimationType.INCREASING_FRAMES, AnimationSpeed.NORMAL ,0);
 	}
 	
 
@@ -50,6 +61,8 @@ public final class SpritePropertiesModel extends ObservableModel {
 	public ImmutablePoint2D getSpriteVelocity() { return spriteVelocity; }
 	public ImmutablePoint2D getSpriteStartingLocation() { return spriteStartingLocation; }
 	public int getSpriteId() { return spriteId; }
+	public AnimationType getAnimationType() { return animationType; }
+	public AnimationSpeed getAnimationSpeed() { return animationSpeed; }
 	/**
 	 * @return {@code true} if the user hit okay, {@code false} if the window was just closed or cancel was hit.
 	 */
@@ -89,6 +102,14 @@ public final class SpritePropertiesModel extends ObservableModel {
 	
 	public void setOkay(final boolean okay) {
 		this.okay = okay;
+	}
+	
+	public void setAnimationType(final AnimationType type) {
+		this.animationType = type;
+	}
+	
+	public void setAnimationSpeed(final AnimationSpeed speed) {
+		this.animationSpeed = speed;
 	}
 	
 	public void setSpriteBoundingBox(ImmutableRectangle spriteBoundingBox) { this.spriteBoundingBox = spriteBoundingBox; }

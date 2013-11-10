@@ -2,6 +2,8 @@ package edu.nova.erikaredmark.monkeyshines.editor;
 
 import java.util.List;
 
+import edu.nova.erikaredmark.monkeyshines.AnimationSpeed;
+import edu.nova.erikaredmark.monkeyshines.AnimationType;
 import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.ImmutableRectangle;
 import edu.nova.erikaredmark.monkeyshines.LevelScreen;
@@ -87,10 +89,12 @@ public class LevelScreenEditor {
 						  final ImmutablePoint2D spriteStartingLocation,
 						  final ImmutableRectangle spriteBoundingBox,
 						  final ImmutablePoint2D spriteVelocity,
+						  final AnimationType animationType,
+						  final AnimationSpeed animationSpeed,
 						  final WorldResource rsrc) {
 		
 		Sprite s =
-			Sprite.newSprite(spriteId, spriteStartingLocation, spriteBoundingBox, spriteVelocity, rsrc);
+			Sprite.newSprite(spriteId, spriteStartingLocation, spriteBoundingBox, spriteVelocity, animationType, animationSpeed, rsrc);
 		
 		screen.addSprite(s);
 		

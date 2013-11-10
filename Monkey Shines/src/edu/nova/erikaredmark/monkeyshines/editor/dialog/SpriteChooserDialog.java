@@ -26,7 +26,7 @@ public final class SpriteChooserDialog extends JDialog {
 		getContentPane().setLayout(new FlowLayout() );
 		
 		for (Sprite s : sprites) {
-			Canvas c = new SpriteAnimationCanvas(s.getId(), rsrc);
+			Canvas c = new SpriteAnimationCanvas(s.getId(), s.getAnimationType(), s.getAnimationSpeed(), rsrc);
 			c.addMouseListener(new SetSpriteMouseListener(s) );
 			getContentPane().add(c);
 		}
