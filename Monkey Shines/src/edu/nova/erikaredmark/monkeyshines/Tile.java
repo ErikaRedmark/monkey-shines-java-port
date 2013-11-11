@@ -2,8 +2,6 @@ package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.util.HashMap;
-import java.util.Map;
 
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedTile;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
@@ -145,22 +143,11 @@ public class Tile {
 	 * @author Erika Redmark
 	 *
 	 */
-	public enum TileType {SOLID(0), THRU(1), SCENE(2), NONE(99); 
-		private int id;
-		private static Map<Integer, TileType> int2Type=
-			new HashMap<Integer, TileType>();
-		
-		static {
-			for (TileType type : TileType.values()) {
-				int2Type.put(type.getId(), type);
-			}
-		}
-		
-		private TileType(final int id) { this.id = id; }
-
-		
-		public int getId() { return id; }
-		public static TileType fromId(final int id) { return int2Type.get(id); }
+	public enum TileType {
+		SOLID, 
+		THRU, 
+		SCENE, 
+		NONE; 
 	}
 
 	/**
