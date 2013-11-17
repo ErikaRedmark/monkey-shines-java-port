@@ -8,8 +8,8 @@ import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.ImmutableRectangle;
 import edu.nova.erikaredmark.monkeyshines.LevelScreen;
 import edu.nova.erikaredmark.monkeyshines.Sprite;
-import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
 
 /**
  * This object forwards changes to the level screen, but for every change made stores it and provides functionality to write

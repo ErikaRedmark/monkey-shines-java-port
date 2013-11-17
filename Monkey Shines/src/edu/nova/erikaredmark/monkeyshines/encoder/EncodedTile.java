@@ -4,7 +4,8 @@ import java.io.Serializable;
 
 import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.Tile;
-import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
+import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
+import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
 
 /**
  * A serialisable class that maintains the static state data of everything required to recreate a tile. This includes
@@ -30,7 +31,7 @@ public final class EncodedTile implements Serializable {
 	private final TileType type;
 	private final ImmutablePoint2D location;
 	
-	private static final EncodedTile NO_TILE = new EncodedTile(0, TileType.NONE, ImmutablePoint2D.of(0, 0) );
+	private static final EncodedTile NO_TILE = new EncodedTile(0, StatelessTileType.NONE, ImmutablePoint2D.of(0, 0) );
 	
 	private EncodedTile(final int id, final TileType type, final ImmutablePoint2D location) {
 		this.id = id; this.type = type; this.location = location;

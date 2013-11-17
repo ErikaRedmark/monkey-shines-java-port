@@ -25,7 +25,6 @@ import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.KeyboardInput;
 import edu.nova.erikaredmark.monkeyshines.Point2D;
 import edu.nova.erikaredmark.monkeyshines.Sprite;
-import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.SpriteChooserDialog;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.SpritePropertiesDialog;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.SpritePropertiesModel;
@@ -34,6 +33,8 @@ import edu.nova.erikaredmark.monkeyshines.encoder.WorldIO;
 import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 import edu.nova.erikaredmark.monkeyshines.graphics.CoreResource;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
+import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
 
 
 /**
@@ -495,13 +496,13 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		TileType type = null;
 		switch (paintbrush) {
 		case SOLIDS:
-			type = TileType.SOLID;
+			type = StatelessTileType.SOLID;
 			break;
 		case THRUS:
-			type = TileType.THRU;
+			type = StatelessTileType.THRU;
 			break;
 		case SCENES:
-			type = TileType.SCENE;
+			type = StatelessTileType.SCENE;
 			break;
 		default:
 			throw new IllegalArgumentException("Paintbrush type " + currentTileType.toString() + " not a valid tile type");

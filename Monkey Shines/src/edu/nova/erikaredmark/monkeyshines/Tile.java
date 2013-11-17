@@ -5,6 +5,8 @@ import java.awt.image.BufferedImage;
 
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedTile;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
+import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
 
 /**
  * 
@@ -30,7 +32,7 @@ public class Tile {
 	private WorldResource rsrc;
 	private boolean isSkinned = false;
 	
-	private static final Tile NO_TILE = new Tile(ImmutablePoint2D.of(0, 0), 0, TileType.NONE);
+	private static final Tile NO_TILE = new Tile(ImmutablePoint2D.of(0, 0), 0, StatelessTileType.NONE);
 	
 	/**
 	 * 
@@ -43,7 +45,7 @@ public class Tile {
 	 */
 	public static Tile inflateFrom(EncodedTile encodedTile) {
 		// Check if the encoded tile is no tile, and if so set to singleton. Otherwise, return a new tile of the right type
-		if (encodedTile.getType() == TileType.NONE) return NO_TILE;
+		if (encodedTile.getType() == StatelessTileType.NONE) return NO_TILE;
 		else return new Tile(encodedTile.getLocation(), encodedTile.getId(), encodedTile.getType() );
 	}
 	
@@ -70,7 +72,7 @@ public class Tile {
 	 * 
 	 */
 	public void skin(final WorldResource rsrc) {
-		if (this.type == TileType.NONE) return;
+		if (this.type == StatelessTileType.NONE) return;
 		
 		this.rsrc = rsrc;
 		BufferedImage tileSpriteSheet = rsrc.getTilesheetFor(this.type);
@@ -111,8 +113,9 @@ public class Tile {
 
 	public void paint(Graphics2D g2d) {
 		// No drawing for empty tiles
-		if (this.type == TileType.NONE) return;
+		if (this.type == StatelessTileType.NONE) return;
 		
+		// TODO for non-stateless types this will have to grab animation information!!!
 		g2d.drawImage(rsrc.getTilesheetFor(this.type), tileX, tileY, tileX + GameConstants.TILE_SIZE_X, tileY + GameConstants.TILE_SIZE_Y, //DEST
 				tileDrawCol, tileDrawRow, tileDrawCol + GameConstants.TILE_SIZE_X, tileDrawRow + GameConstants.TILE_SIZE_Y, // SOURCE
 				null); // OBS
@@ -125,30 +128,6 @@ public class Tile {
 	 * 		the tile id
 	 */
 	public int getTileId() { return this.tileId; }
-	
-	/**
-	 * 
-	 * How the tile reacts to the game world
-	 * <p/>
-	 * <ul>
-	 * <li> Solid: Can not be passed. Bonzo may stand on it, but can not otherwise go through it. There is one exception:
-	 * 		if bonzo starts a screen inside of a solid, he may move out of it (and thus through it) but not back into it
-	 * 		again.</li>
-	 * <li> Thru: Bonzo may stand on it, but if he is walking through it on the side it will not impede his movement.
-	 * 		He may not, however, go down through it (it is standable only)</li>
-	 * <li> Scene: Has no effect on Bonzo. Has no effect on anything. Merely a stand-in for graphics. </li>
-	 * <li> None: No tile. Acts as a null-safe way of simply saying "no tile" </li>
-	 * </ul>
-	 * 
-	 * @author Erika Redmark
-	 *
-	 */
-	public enum TileType {
-		SOLID, 
-		THRU, 
-		SCENE, 
-		NONE; 
-	}
 
 	/**
 	 * 
@@ -197,14 +176,15 @@ public class Tile {
 
 	/**
 	 * 
-	 * Determines if this tile space is simply empty space and does not contain any real tile data
+	 * Determines if this tile space is simply empty space. 
+	 * TODO this may need to include destroyed hazards.
 	 * 
 	 * @return
-	 * 		{@code true} if the tile type is NONE and there is no tile here, {@code false} if otherwise
+	 * 		{@code true} if there is no tile here, {@code false} if otherwise
 	 * 
 	 */
 	public boolean isEmpty() {
-		return this.type == TileType.NONE;
+		return this.type == StatelessTileType.NONE;
 	}
 
 	/** 

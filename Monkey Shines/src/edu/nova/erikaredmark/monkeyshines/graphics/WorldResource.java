@@ -13,11 +13,11 @@ import java.util.zip.ZipEntry;
 
 import javax.imageio.ImageIO;
 
-
-
-import edu.nova.erikaredmark.monkeyshines.Tile;
 import edu.nova.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import edu.nova.erikaredmark.monkeyshines.graphics.exception.ResourcePackException.Type;
+import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
+import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
+import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
 
 /**
  * 
@@ -245,14 +245,24 @@ public final class WorldResource {
 	 * 		a reference to the sprite sheet for the tiles
 	 * 
 	 */
-	public BufferedImage getTilesheetFor(final Tile.TileType type) {
-		switch(type) {
-		case SOLID: return solidTiles;
-		case THRU : return thruTiles;
-		case SCENE: return sceneTiles;
-		case NONE: throw new IllegalArgumentException("No tilesheet for NONE tiles");
-		default: throw new IllegalArgumentException("Unknown tile type " + type);
+	public BufferedImage getTilesheetFor(final TileType type) {
+		if (type instanceof StatelessTileType) {
+			switch ((StatelessTileType)type) {
+				case SOLID: return solidTiles;
+				case THRU : return thruTiles;
+				case SCENE: return sceneTiles;
+				case CONVEYER_LEFT: throw new UnsupportedOperationException("Conveyerbelt Tiles are not implemented yet");
+				case CONVEYER_RIGHT: throw new UnsupportedOperationException("Conveyerbelt Tiles are not implemented yet");
+				case NONE: throw new IllegalArgumentException("No tilesheet for NONE tiles");
+				default: throw new IllegalArgumentException("Unknown tile type " + type);
+			}
+		} else if (type instanceof HazardTile) {
+			// TODO return hazardTiles
+			throw new UnsupportedOperationException("Hazard Tiles are not implemented yet");
+		} else {
+			throw new RuntimeException("Unexpected tile type class " + type.getClass().getName() );
 		}
+
 	}
 	
 	/**

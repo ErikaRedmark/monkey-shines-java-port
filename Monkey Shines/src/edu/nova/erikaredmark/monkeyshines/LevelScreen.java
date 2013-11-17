@@ -4,11 +4,12 @@ import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedLevelScreen;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedSprite;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedTile;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
+import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
 
 /**
  * Improving the screen-by-screen architecture is NOT something I will be doing.
@@ -302,7 +303,7 @@ public class LevelScreen {
 		int tileY = y / GameConstants.TILE_SIZE_Y;
 		// If out of bounds, allow to slip by
 		if (tileX < 0 || tileX >= GameConstants.TILES_IN_ROW || tileY < 0 || tileY >= GameConstants.TILES_IN_COL)
-			return TileType.NONE;
+			return StatelessTileType.NONE;
 		
 		return screenTiles[tileY][tileX].getType();
 	}

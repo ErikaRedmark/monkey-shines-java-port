@@ -2,8 +2,9 @@ package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics2D;
 
-import edu.nova.erikaredmark.monkeyshines.Tile.TileType;
 import edu.nova.erikaredmark.monkeyshines.graphics.CoreResource;
+import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
+import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
 
 /**
  * 
@@ -139,8 +140,8 @@ public final class Bonzo {
 		TileType onGroundRight = currentScreen.getTileAt(currentLocation.x() + (BONZO_SIZE.x() - 4), bonzoOneBelowFeetY );
 		
 		// If at least part of him is on a thru tile.
-		if (    onGroundLeft == TileType.THRU
-			 || onGroundRight == TileType.THRU) {
+		if (    onGroundLeft == StatelessTileType.THRU
+			 || onGroundRight == StatelessTileType.THRU) {
 			// If bonzo is already exactly on the ground, everything is fine. Otherwise, we may have to fall through it.
 			int depth = (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y;
 			if (depth == 0)  return 0;
@@ -160,8 +161,8 @@ public final class Bonzo {
 			//We need to make sure that we are exactly on the thing, we don't budge it.
 			return ( (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y ); 
 			
-		} else if (    onGroundLeft == TileType.SOLID
-				    || onGroundRight == TileType.SOLID) {
+		} else if (    onGroundLeft == StatelessTileType.SOLID
+				    || onGroundRight == StatelessTileType.SOLID) {
 			return (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y;
 
 		}
@@ -182,9 +183,9 @@ public final class Bonzo {
 	 */
 	public boolean solidToSide(final int newX) {
 		LevelScreen currentScreen = worldPointer.getCurrentScreen();
-		if (   currentScreen.checkForTile(newX, currentLocation.y() ) == TileType.SOLID 
-		    || currentScreen.checkForTile(newX, currentLocation.y() + BONZO_SIZE.y() - 1) == TileType.SOLID
-			|| currentScreen.checkForTile(newX, currentLocation.y() + (BONZO_SIZE.y() / 2) ) == TileType.SOLID) {
+		if (   currentScreen.checkForTile(newX, currentLocation.y() ) == StatelessTileType.SOLID 
+		    || currentScreen.checkForTile(newX, currentLocation.y() + BONZO_SIZE.y() - 1) == StatelessTileType.SOLID
+			|| currentScreen.checkForTile(newX, currentLocation.y() + (BONZO_SIZE.y() / 2) ) == StatelessTileType.SOLID) {
 			
 			return true;
 		}
@@ -204,9 +205,9 @@ public final class Bonzo {
 	 */
 	public boolean solidToUp(final int newY) {
 		LevelScreen currentScreen = worldPointer.getCurrentScreen();
-		if (   currentScreen.checkForTile(currentLocation.x(), newY) == TileType.SOLID 
-			|| currentScreen.checkForTile(currentLocation.x() + (BONZO_SIZE.x() - 1), newY ) == TileType.SOLID 
-			|| currentScreen.checkForTile(currentLocation.x() + (BONZO_SIZE.x() / 2), newY ) == TileType.SOLID) {
+		if (   currentScreen.checkForTile(currentLocation.x(), newY) == StatelessTileType.SOLID 
+			|| currentScreen.checkForTile(currentLocation.x() + (BONZO_SIZE.x() - 1), newY ) == StatelessTileType.SOLID 
+			|| currentScreen.checkForTile(currentLocation.x() + (BONZO_SIZE.x() / 2), newY ) == StatelessTileType.SOLID) {
 			return true;
 		}
 		return false;
