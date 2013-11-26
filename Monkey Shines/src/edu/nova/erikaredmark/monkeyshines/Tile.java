@@ -115,6 +115,9 @@ public class Tile {
 		// No drawing for empty tiles
 		if (this.type == StatelessTileType.NONE) return;
 		
+		// TODO possible polymorphism in paint for tile type?
+		if (this.type instanceof StatelessTileType)
+		
 		// TODO for non-stateless types this will have to grab animation information!!!
 		g2d.drawImage(rsrc.getTilesheetFor(this.type), tileX, tileY, tileX + GameConstants.TILE_SIZE_X, tileY + GameConstants.TILE_SIZE_Y, //DEST
 				tileDrawCol, tileDrawRow, tileDrawCol + GameConstants.TILE_SIZE_X, tileDrawRow + GameConstants.TILE_SIZE_Y, // SOURCE

@@ -128,6 +128,24 @@ public class LevelEditor extends JFrame {
 		}
 	});
 	
+	// Menu: Hazards
+	private JMenu hazardMenu = new JMenu("Hazards");
+	/* -------------------------- MENU ITEM PLACE HAZARD -------------------------- */
+//	private JMenuItem placeHazard = new JMenuItem(new AbstractAction("Place Hazards") {
+//		private static final long serialVersionUID = 1L;
+//		@Override public void actionPerformed(ActionEvent e) {
+//			currentWorld.actionPlacingHazards();
+//		}
+//	});
+	/* ------------------------ MENU ITEM EDITING HAZARDS ------------------------- */
+	private JMenuItem editHazards = new JMenuItem(new AbstractAction("Edit Hazards...") {
+		private static final long serialVersionUID = 1L;
+		@Override public void actionPerformed(ActionEvent e) {
+			actionEditHazards();
+		}
+	});
+	
+	
 	// Menu: Screens
 	private JMenu screenMenu = new JMenu("Screens");
 	/* -------------------------- MENU ITEM GOTO SCREEN --------------------------- */
@@ -170,6 +188,15 @@ public class LevelEditor extends JFrame {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * 
+	 * Brings up the GUI editor for the list of hazards saved for that world.
+	 * 
+	 */
+	public void actionEditHazards() {
+		
 	}
 	
 	public static void main(String[] args) {
@@ -315,6 +342,10 @@ public class LevelEditor extends JFrame {
 		placeTiles.add(deleteSprites);
 		
 		mainMenuBar.add(placeTiles);
+		
+		hazardMenu.add(editHazards);
+		
+		mainMenuBar.add(hazardMenu);
 		
 		screenMenu.add(gotoScreen);
 		

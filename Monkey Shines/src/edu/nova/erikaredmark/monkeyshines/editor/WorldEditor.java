@@ -2,9 +2,11 @@ package edu.nova.erikaredmark.monkeyshines.editor;
 
 import java.awt.Graphics2D;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import edu.nova.erikaredmark.monkeyshines.Goodie;
+import edu.nova.erikaredmark.monkeyshines.Hazard;
 import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.LevelScreen;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedWorld;
@@ -138,6 +140,13 @@ public final class WorldEditor {
 	 */
 	public void removeGoodie(int row, int col, int screenId) {
 		world.removeGoodie(row, col, screenId);
+	}
+	
+	/**
+	 * Forwarding call to {@link World#getHazards() }
+	 */
+	public List<Hazard> getHazards() {
+		return world.getHazards();
 	}
 	
 	/**

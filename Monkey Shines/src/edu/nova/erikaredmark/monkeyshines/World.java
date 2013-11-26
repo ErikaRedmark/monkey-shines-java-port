@@ -1,6 +1,7 @@
 package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics2D;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,6 +51,12 @@ public class World {
 	// Screens: Hashmap. That way, when moving across screens, take the levelid and add/subtract a value, check it in hash,
 	// and quickly get the screen we need. It is fast and I believe the designers of the original did the same thing.
 	private final Map<Integer, LevelScreen> worldScreens;
+	
+	// Each hazard tile references the hazard it needs, but the hazards themselves are part of the world.
+	// Typically, a world includes hazard ids for dynamite, bombs, lightbulbs, and sometimes lava, although
+	// others may be added by the level editor, along with custom graphics in the graphics pack.
+	private final List<Hazard> hazards;
+	
 	private       int currentScreen;
 	
 	
@@ -84,7 +91,9 @@ public class World {
 			worldScreens.put(screen.getKey(), LevelScreen.inflateFrom(screen.getValue() ) );
 		}
 		
-		return new World(worldName, goodiesInWorld, worldScreens, rsrc);	
+		final List<Hazard> hazards = new ArrayList<>(world.getHazards() );
+		
+		return new World(worldName, goodiesInWorld, worldScreens, hazards, rsrc);	
 	}
 	
 	/**
@@ -106,7 +115,7 @@ public class World {
 		Map<Integer, LevelScreen> screens = new HashMap<>();
 		screens.put(1000, initialScreen);
 		
-		return new World(name, new HashMap<String, Goodie>(), screens, rsrc);
+		return new World(name, new HashMap<String, Goodie>(), screens, new ArrayList<Hazard>(), rsrc);
 	}
 	/**
 	 * 
@@ -139,12 +148,14 @@ public class World {
 	private World(final String worldName, 
 				  final Map<String, Goodie> goodiesInWorld, 
 				  final Map<Integer, LevelScreen> worldScreens,
+				  final List<Hazard> hazards,
 				  final WorldResource rsrc) {
 		
 		/* Variable data		*/
 		this.worldName = worldName;
 		this.goodiesInWorld = goodiesInWorld;
 		this.worldScreens = worldScreens;
+		this.hazards = hazards;
 		
 		/* Constant data		*/
 		this.currentScreen = 1000;
@@ -372,5 +383,15 @@ public class World {
 	 * @return
 	 */
 	public Map<Integer, LevelScreen> getLevelScreens() { return Collections.unmodifiableMap(this.worldScreens); }
+	
+	/**
+	 * Returns an immutable copy of the list of hazards in this world. This is not their locations; that is in tile data
+	 * as a {@code HazardTile}. This describes the 'types' of hazards (bombs, lava) in a world.
+	 * 
+	 * @return
+	 */
+	public List<Hazard> getHazards() {
+		return Collections.unmodifiableList(this.hazards);
+	}
 	
 }

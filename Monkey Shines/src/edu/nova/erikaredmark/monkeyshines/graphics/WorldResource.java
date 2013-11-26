@@ -336,4 +336,18 @@ public final class WorldResource {
 	public int getSpritesCount() {
 		return sprites.length;
 	}
+
+	/**
+	 * 
+	 * Returns the hazard sprite sheet for this world. There are two rows for an animating hazard, and each column is
+	 * the id of the hazard that would be using that graphic.
+	 * 
+	 * @return
+	 * 		hazard sprite sheet
+	 * 
+	 */
+	public BufferedImage getHazardSheet() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

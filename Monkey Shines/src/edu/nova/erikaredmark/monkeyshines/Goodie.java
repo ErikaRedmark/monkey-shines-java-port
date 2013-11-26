@@ -120,6 +120,14 @@ public class Goodie {
 		return screenID;
 	}
 	
+	/**
+	 * 
+	 * Paints the goodie based on state. If the goodie has not been taken yet, it just animates there. Once it is taken,
+	 * it will display the "yum" (taken && !dead) until that animation completes and it is dead, in which from there
+	 * it will not logner be painted.
+	 * 
+	 * @param g2d
+	 */
 	public void paint(Graphics g2d) {
 		if (!taken && !dead)
 			g2d.drawImage(rsrc.getGoodieSheet(), drawToX , drawToY, // Destination 1

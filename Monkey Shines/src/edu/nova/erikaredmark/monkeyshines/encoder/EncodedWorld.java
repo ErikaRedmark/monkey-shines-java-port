@@ -1,13 +1,18 @@
 package edu.nova.erikaredmark.monkeyshines.encoder;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import edu.nova.erikaredmark.monkeyshines.Goodie;
+import edu.nova.erikaredmark.monkeyshines.Hazard;
 import edu.nova.erikaredmark.monkeyshines.LevelScreen;
 import edu.nova.erikaredmark.monkeyshines.editor.WorldEditor;
 
@@ -36,13 +41,16 @@ public class EncodedWorld implements Serializable {
 	private final String name;
 	private final Map<String, EncodedGoodie> goodies;
 	private final Map<Integer, EncodedLevelScreen> levels;
+	private final List<Hazard> hazards;
 	
 	private EncodedWorld(final String name,
 					     final Map<String, EncodedGoodie> goodies,
-					     final Map<Integer, EncodedLevelScreen> levels) {
+					     final Map<Integer, EncodedLevelScreen> levels,
+					     final List<Hazard> hazards) {
 		this.name = name;
 		this.goodies = goodies;
 		this.levels = levels;
+		this.hazards = hazards;
 	}
 	
 	/**
@@ -87,7 +95,9 @@ public class EncodedWorld implements Serializable {
 		final Map<Integer, EncodedLevelScreen> _levels =
 			levelsBuilder.build();
 		
-		return new EncodedWorld(_name, _goodies, _levels);
+		final ImmutableList<Hazard> _hazards = ImmutableList.copyOf(world.getHazards() );
+		
+		return new EncodedWorld(_name, _goodies, _levels, _hazards);
 		
 	}
 	
@@ -112,13 +122,17 @@ public class EncodedWorld implements Serializable {
 		// Set up empty goodie map
 		Map<String, EncodedGoodie> goodies = new HashMap<>();
 		
+		// Set up empty hazard list
+		List<Hazard> hazards = Collections.emptyList();
+		
 		// Return new empty world
-		return new EncodedWorld(name, goodies, screens);
+		return new EncodedWorld(name, goodies, screens, hazards);
 	}
 
 	public String getName() { return name; }
 	public Map<String, EncodedGoodie> getGoodies() { return goodies; }
 	public Map<Integer, EncodedLevelScreen> getLevels() { return levels; }
+	public List<Hazard> getHazards() { return hazards; }
 
 	
 }
