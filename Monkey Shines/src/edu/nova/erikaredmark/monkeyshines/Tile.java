@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedTile;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
 
@@ -116,12 +117,14 @@ public class Tile {
 		if (this.type == StatelessTileType.NONE) return;
 		
 		// TODO possible polymorphism in paint for tile type?
-		if (this.type instanceof StatelessTileType)
-		
-		// TODO for non-stateless types this will have to grab animation information!!!
-		g2d.drawImage(rsrc.getTilesheetFor(this.type), tileX, tileY, tileX + GameConstants.TILE_SIZE_X, tileY + GameConstants.TILE_SIZE_Y, //DEST
-				tileDrawCol, tileDrawRow, tileDrawCol + GameConstants.TILE_SIZE_X, tileDrawRow + GameConstants.TILE_SIZE_Y, // SOURCE
-				null); // OBS
+		if (this.type instanceof HazardTile) {
+			// TODO animate hazards
+			((HazardTile)this.type).getHazard().paint(g2d, tileDrawCol, tileDrawRow, 0);
+		} else {
+			g2d.drawImage(rsrc.getTilesheetFor(this.type), tileX, tileY, tileX + GameConstants.TILE_SIZE_X, tileY + GameConstants.TILE_SIZE_Y, //DEST
+					tileDrawCol, tileDrawRow, tileDrawCol + GameConstants.TILE_SIZE_X, tileDrawRow + GameConstants.TILE_SIZE_Y, // SOURCE
+					null); // OBS
+		}
 	}
 	
 	/**

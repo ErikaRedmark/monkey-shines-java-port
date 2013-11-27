@@ -196,7 +196,7 @@ public class LevelEditor extends JFrame {
 	 * 
 	 */
 	public void actionEditHazards() {
-		
+		currentWorld.openEditHazards();
 	}
 	
 	public static void main(String[] args) {

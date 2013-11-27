@@ -3,6 +3,9 @@ package edu.nova.erikaredmark.monkeyshines;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
+import java.util.ArrayList;
+
+import com.google.common.collect.ImmutableList;
 
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
 
@@ -57,6 +60,47 @@ public final class Hazard implements Serializable {
 		this.explodes = explodes;
 		this.deathAnimation = deathAnimation;
 		this.hazardSheet = rsrc.getHazardSheet();
+	}
+	/**
+	 * 
+	 * Creates the initial hazards for the world based on the number of hazards to create. Each hazard defaults to being a
+	 * 'bomb'. It explodes and has the burn death animation.
+	 * <p/>
+	 * If new hazards are added to the graphics after the fact, the {@code EditHazardModel} and dialog should call this method
+	 * to add more.
+	 * <strong> It is not advisable to 'shrink' the size of a hazard sprite sheet and remove a hazard after creating the world.</strong>
+	 * This will offset the internal ids keyed to each hazards properties with how they are displayed, causing hazards to behave 
+	 * as if they were others. It would have to be manually corrected by the user if that was the case
+	 * <p/>
+	 * If assertions are enabled, this method will fail if the rsrc sprite sheet cannot support all the ids.
+	 * 
+	 * @param start
+	 * 		starting id for the set of hazards to create. If creating a batch for a new world, this is {@code 0}. If adding to an existing
+	 * 		world, this should be the id of the 'next' hazard to create (so if you have 3 hazards, id 0 - 2, and you wanted to add more, this
+	 * 		value would have to be '3'.
+	 * 
+	 * @param count
+	 * 		number of hazards to create. This is typically obtained via the graphics sprite sheet.
+	 * 
+	 * @param rsrc
+	 * 		a world resource for assigning to the newly created hazards.
+	 * 
+	 * @return
+	 * 		list of newly created hazards. The list is immutable. The list contains {@code count} elements with hazard ids ordered from {@code start}
+	 * 		to {@code start + (count - 1)}
+	 * 
+	 * 
+	 */
+	public static ImmutableList<Hazard> initialise(int start, int count, WorldResource rsrc) {
+		// Ensure that sprite sheet for hazards at time of call can actually draw up to the last id
+		assert start + (count - 1) * GameConstants.TILE_SIZE_X <= rsrc.getHazardSheet().getWidth();
+		
+		ImmutableList.Builder<Hazard> hazards = new ImmutableList.Builder<>();
+		for (int i = 0; i < count; i++) {
+			hazards.add(new Hazard(start + i, true, DeathAnimation.BURN, rsrc) );
+		}
+		
+		return hazards.build();
 	}
 	
 	/**

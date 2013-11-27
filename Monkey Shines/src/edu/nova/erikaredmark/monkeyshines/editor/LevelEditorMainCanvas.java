@@ -25,6 +25,7 @@ import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.KeyboardInput;
 import edu.nova.erikaredmark.monkeyshines.Point2D;
 import edu.nova.erikaredmark.monkeyshines.Sprite;
+import edu.nova.erikaredmark.monkeyshines.editor.dialog.EditHazardsDialog;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.SpriteChooserDialog;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.SpritePropertiesDialog;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.SpritePropertiesModel;
@@ -339,6 +340,14 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		changeState(EditorState.ERASING_TILES);
 	}
 	
+	/**
+	 * 
+	 * Blocks and opens a window for the level editor that allows editing of hazards in the map.
+	 * 
+	 */
+	public void openEditHazards() {
+		EditHazardsDialog.launch(this, currentWorldEditor.getWorldResource() );
+	}
 	/**
 	 * 
 	 * Changes the internal state of the editor from one state to the other, making any additional updates as needed.
@@ -669,6 +678,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	public LevelScreenEditor getVisibleScreenEditor() {
 		return this.currentScreenEditor;
 	}
+
 
 
 }
