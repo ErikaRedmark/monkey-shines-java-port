@@ -2,3 +2,4 @@
 *.prefs
 *.classpath
 *.DS_Store
+/bin

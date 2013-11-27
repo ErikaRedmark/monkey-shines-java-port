@@ -71,7 +71,7 @@ public class GameWindow extends JPanel implements ActionListener {
 				    JOptionPane.ERROR_MESSAGE);
 			} catch (ResourcePackException ex) {
 				JOptionPane.showMessageDialog(this,
-				    "Resource pack not found: " + ex.getMessage(),
+				    "Resource pack issues: " + ex.getMessage(),
 				    "Loading Error",
 				    JOptionPane.ERROR_MESSAGE);
 			}

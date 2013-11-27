@@ -3,7 +3,6 @@ package edu.nova.erikaredmark.monkeyshines;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
-import java.util.ArrayList;
 
 import com.google.common.collect.ImmutableList;
 

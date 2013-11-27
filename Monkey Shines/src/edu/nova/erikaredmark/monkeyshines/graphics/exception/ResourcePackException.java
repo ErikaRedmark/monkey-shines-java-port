@@ -30,8 +30,6 @@ public class ResourcePackException extends Exception {
 		return type;
 	}
 	
-	
-	
 	public enum Type {
 		/** Indicates that some resource has been defined more than once in the pack.
 		 */

@@ -246,7 +246,7 @@ public class LevelEditor extends JFrame {
 						    JOptionPane.ERROR_MESSAGE);
 					} catch (ResourcePackException ex) {
 						JOptionPane.showMessageDialog(editor,
-						    "Resource pack not found: " + ex.getMessage(),
+						    "Resource pack issues: " + ex.getMessage(),
 						    "Loading Error",
 						    JOptionPane.ERROR_MESSAGE);
 					}
@@ -297,6 +297,7 @@ public class LevelEditor extends JFrame {
 		saveWorld.setEnabled(enable);
 		placeTiles.setEnabled(enable);
 		screenMenu.setEnabled(enable);
+		hazardMenu.setEnabled(enable);
 		specialMenu.setEnabled(enable);
 //		placeThrus.setEnabled(enable);
 //		placeScenes.setEnabled(enable);

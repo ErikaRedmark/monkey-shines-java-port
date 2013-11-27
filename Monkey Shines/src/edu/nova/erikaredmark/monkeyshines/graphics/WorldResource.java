@@ -47,6 +47,9 @@ public final class WorldResource {
 	private final BufferedImage thruTiles;
 	private final BufferedImage sceneTiles;
 	
+	/* --------------------------- HAZARDS ---------------------------- */
+	private final BufferedImage hazardTiles;
+	
 	/* -------------------------- BACKGROUND -------------------------- */
 	private final BufferedImage backgrounds[];
 	
@@ -65,6 +68,7 @@ public final class WorldResource {
 	private WorldResource(final BufferedImage solidTiles,
 					      final BufferedImage thruTiles,
 					      final BufferedImage sceneTiles,
+					      final BufferedImage hazardTiles,
 					      final BufferedImage[] backgrounds,
 					      final BufferedImage[] sprites,
 					      final BufferedImage goodieSheet,
@@ -73,6 +77,7 @@ public final class WorldResource {
 		this.solidTiles = solidTiles;
 		this.thruTiles = thruTiles;
 		this.sceneTiles = sceneTiles;
+		this.hazardTiles = hazardTiles;
 		this.backgrounds = backgrounds;
 		this.sprites = sprites;
 		this.goodieSheet = goodieSheet;
@@ -87,6 +92,7 @@ public final class WorldResource {
 	 * <li>solids.gif</li>
 	 * <li>thrus.gif</li>
 	 * <li>scenes.gif</li>
+	 * <li>hazards.gif</li>
 	 * <li>background[#].gif (from 0 to some value with no breaks)</li>
 	 * <li>sprite[#] (from 0 to some value with no breaks)</li>
 	 * <li>goodies.gif</li>
@@ -102,11 +108,11 @@ public final class WorldResource {
 	 * @return
 	 * 		a resource object with the pack loaded into memory
 	 * 
-	 * @throws
-	 * 		ResourcePackException
-	 * 			if the resource pack is corrupted
-	 * 		IllegalArgumentException
-	 * 			if the given path is not even a .zip file
+	 * @throws ResourcePackException
+	 * 		if the resource pack is corrupted
+	 * 
+	 * @throws IllegalArgumentException
+	 * 		if the given path is not even a .zip file
 	 * 
 	 */
 	public static WorldResource fromPack(final Path packFile) throws ResourcePackException {
@@ -118,6 +124,7 @@ public final class WorldResource {
 		BufferedImage solidTiles 	= null;
 		BufferedImage thruTiles		= null;
 		BufferedImage sceneTiles	= null;
+		BufferedImage hazardTiles   = null;
 		// Max background index will be used to tell the validator how far to count to in the array list to confirm 
 		// contiguous entries.
 		List<BufferedImage> backgrounds = new ArrayList<>();
@@ -153,6 +160,10 @@ public final class WorldResource {
 				case "yums.gif":
 					if (yumSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "yums.gif");
 					yumSheet = ImageIO.read(zipFile.getInputStream(entry) );
+					break;
+				case "hazards.gif":
+					if (hazardTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "hazards.gif");
+					hazardTiles = ImageIO.read(zipFile.getInputStream(entry) );
 					break;
 				// SECOND: Handle background[#] and sprite[#] entries
 				default:
@@ -192,12 +203,14 @@ public final class WorldResource {
 		checkResourceNotNull(sceneTiles, "scenes.gif");
 		checkResourceNotNull(goodieSheet, "goodies.gif");
 		checkResourceNotNull(yumSheet, "yums.gif");
+		checkResourceNotNull(hazardTiles, "hazards.gif");
 		checkResourceContiguous(backgrounds, maxBackgroundIndex, "background");
 		checkResourceContiguous(sprites, maxSpriteIndex, "sprite");
 		
 		return new WorldResource(solidTiles, 
 								 thruTiles, 
-								 sceneTiles, 
+								 sceneTiles,
+								 hazardTiles,
 								 backgrounds.toArray(new BufferedImage[0]), 
 								 sprites.toArray(new BufferedImage[0]), 
 								 goodieSheet, 
@@ -347,7 +360,6 @@ public final class WorldResource {
 	 * 
 	 */
 	public BufferedImage getHazardSheet() {
-		// TODO Auto-generated method stub
-		return null;
+		return hazardTiles;
 	}
 }
