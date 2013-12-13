@@ -60,6 +60,9 @@ public final class WorldResource {
 	private final BufferedImage goodieSheet;
 	private final BufferedImage yumSheet;
 	
+	// Implementation note: Even the arrays are null (not just empty) as this is not intended for any kind of paint methods
+	private static final WorldResource EMPTY = new WorldResource(null, null, null, null, null, null, null, null);
+	
 	
 	/* -- Internal -- */
 	private static final Pattern INDEX_PATTERN = Pattern.compile("^.*?([0-9]+)\\.gif$");
@@ -219,6 +222,22 @@ public final class WorldResource {
 	
 	/**
 	 * 
+	 * Returns an empty world resource. This is intended for test methods to provide resource objects to satisfy constructors
+	 * and factories when there is no actual painting involved in the test.
+	 * <p/>
+	 * All methods from the empty resource object return {@code null}. Painting code does not expect this; do not use when the
+	 * test would involve painting code
+	 * 
+	 * @return
+	 * 		empty resource
+	 * 
+	 */
+	public static WorldResource empty() {
+		return EMPTY;
+	}
+	
+	/**
+	 * 
 	 * Regardless of the actual filename, extracts the number that appears in it. This is designed for filenames of the
 	 * type "somename135.gif, where the number appears before the .gif extension. This is for numbered images that have
 	 * an unknown number of graphics, such as sprites for a world.
@@ -362,4 +381,6 @@ public final class WorldResource {
 	public BufferedImage getHazardSheet() {
 		return hazardTiles;
 	}
+
+
 }

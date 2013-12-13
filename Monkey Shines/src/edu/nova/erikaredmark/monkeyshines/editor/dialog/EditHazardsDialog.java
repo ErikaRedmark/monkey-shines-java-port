@@ -1,8 +1,21 @@
 package edu.nova.erikaredmark.monkeyshines.editor.dialog;
 
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.AbstractAction;
+import javax.swing.AbstractListModel;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JList;
+import javax.swing.ListModel;
+import javax.swing.SpringLayout;
 
+import com.google.common.collect.ImmutableList;
+
+import edu.nova.erikaredmark.monkeyshines.Hazard;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
 
 /**
@@ -24,8 +37,43 @@ public class EditHazardsDialog extends JDialog {
 	
 	private final EditHazardsModel model;
 	
-	private EditHazardsDialog(final EditHazardsModel model) {
+	/**
+	 * 
+	 * Constructs the dialog with the diven model. The dialog is ready but not immediately visible after this construction.
+	 * 
+	 * @param model
+	 * 
+	 * @param rsrc
+	 * 
+	 */
+	private EditHazardsDialog(final EditHazardsModel model, final WorldResource rsrc) {
 		this.model = model;
+		//springLayout.putConstraint(SpringLayout.NORTH, txtVelocityY, -3, SpringLayout.NORTH, lblVelocityy);
+		final SpringLayout layout = new SpringLayout();
+		getContentPane().setLayout(layout);
+		
+		final HazardListModel hazardListModel = new HazardListModel();
+		
+		/* ------------------ Hazard list ------------------- */
+		final JList<Hazard> hazardList = new JList<Hazard>(hazardListModel);
+		// Attach to upper left of window and extend to bottom
+		layout.putConstraint(SpringLayout.NORTH, hazardList, 0, SpringLayout.NORTH, this);
+		layout.putConstraint(SpringLayout.WEST, hazardList, 0, SpringLayout.WEST, this);
+		layout.putConstraint(SpringLayout.SOUTH, hazardList, 0, SpringLayout.SOUTH, this);
+		getContentPane().add(hazardList);
+		
+		/* ------------------ New Hazard -------------------- */
+		final JButton newHazardButton = new JButton(new AbstractAction("New Hazard") {
+			@Override public void actionPerformed(ActionEvent e) {
+				// The new hazard by default will assume the id of the currently selected hazard, or the next id if no
+				// hazard is currently selected.
+				
+				
+				//Hazard.newHazardTo(hazardListModel.getCurrentHazardList(), rsrc );
+			}
+		});
+		
+		setSize(500, 200);
 	}
 
 	/**
@@ -42,8 +90,41 @@ public class EditHazardsDialog extends JDialog {
 	 * 		based on the size of the sprite sheet.
 	 * 
 	 */
-	public static void launch(JComponent parent, WorldResource rsrc) {
+	public static EditHazardsModel launch(JComponent parent, WorldResource rsrc, List<Hazard> worldHazards) {
+		final EditHazardsModel model = new EditHazardsModel(worldHazards);
+		final EditHazardsDialog dialog = new EditHazardsDialog(model, rsrc);
 		
+		dialog.setVisible(true);
+		
+		return dialog.model;
+	}
+	
+	private final class HazardListModel extends AbstractListModel<Hazard> {
+		private static final long serialVersionUID = 1L;
+		
+		List<Hazard> hazards = new ArrayList<Hazard>(model.getHazards() ); 
+		
+		@Override public Hazard getElementAt(int index) {
+			return hazards.get(index);
+		}
+
+		@Override public int getSize() {
+			return hazards.size();
+		}
+		
+		
+		/**
+		 * 
+		 * Returns a reference to the underlying list this model is working with. The returned reference is mutable and
+		 * will affect the display of the model, so be careful.
+		 * 
+		 * @return
+		 * 		hazard list for this model
+		 * 
+		 */
+		public List<Hazard> getCurrentHazardList() {
+			return hazards;
+		}
 	}
 	
 }

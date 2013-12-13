@@ -346,7 +346,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	 * 
 	 */
 	public void openEditHazards() {
-		EditHazardsDialog.launch(this, currentWorldEditor.getWorldResource() );
+		EditHazardsDialog.launch(this, currentWorldEditor.getWorldResource(), currentWorldEditor.getHazards() );
 	}
 	/**
 	 * 
