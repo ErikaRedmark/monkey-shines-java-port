@@ -64,14 +64,18 @@ public class EditHazardsDialog extends JDialog {
 		
 		/* ------------------ New Hazard -------------------- */
 		final JButton newHazardButton = new JButton(new AbstractAction("New Hazard") {
+			private static final long serialVersionUID = 1L;
+
 			@Override public void actionPerformed(ActionEvent e) {
 				// The new hazard by default will assume the id of the currently selected hazard, or the next id if no
 				// hazard is currently selected.
 				
-				
-				//Hazard.newHazardTo(hazardListModel.getCurrentHazardList(), rsrc );
+				// TODO new hazards start with next id available. Eventually make dependnet on cursor selection to put new
+				// ones in between
+				Hazard.newHazardTo(hazardListModel.getCurrentHazardList(), hazardListModel.getCurrentHazardList().size(), rsrc );
 			}
 		});
+		getContentPane().add(newHazardButton);
 		
 		setSize(500, 200);
 	}

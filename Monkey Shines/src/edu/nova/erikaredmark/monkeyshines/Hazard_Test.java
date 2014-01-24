@@ -24,6 +24,17 @@ public class Hazard_Test {
 		starterHazards.add(new Hazard(2, true, DeathAnimation.BEE, dummy) );
 	}
 	
+	
+	/**
+	 * 
+	 * Proper execution for when the hazard list doesn't contain anything
+	 * 
+	 */
+	@Test public void testAddNewHazardEmtpy() {
+		final List<Hazard> emptyHazards = new ArrayList<>();
+		Hazard.newHazardTo(emptyHazards, 0, dummy);
+		assertEquals(DeathAnimation.BURN, emptyHazards.get(0).getDeathAnimation() );
+	}
 	/**
 	 * 
 	 * Proper execution when a new hazard is added to the beginning of an existing hazard list

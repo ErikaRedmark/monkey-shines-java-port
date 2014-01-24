@@ -253,8 +253,9 @@ public final class Hazard implements Serializable, Comparable<Hazard> {
 			}
 		}
 		
-		// Sanity Check 2: If nothing was removed, id of new hazard better be exactly one more than last id
-		if (removedHazards.isEmpty() ) {
+		// Sanity Check 2: If nothing was removed, id of new hazard better be exactly one more than last id,
+		// UNLESS the array was already empty
+		if (removedHazards.isEmpty() && !(existingHazards.isEmpty() ) ) {
 			final int largestId = existingHazards.get(existingHazards.size() - 1).getId();
 			if (id != largestId + 1 )
 				throw new IllegalArgumentException("Cannot make new hazard with id " + id + " as it must be within 0 - " + largestId + 1);
