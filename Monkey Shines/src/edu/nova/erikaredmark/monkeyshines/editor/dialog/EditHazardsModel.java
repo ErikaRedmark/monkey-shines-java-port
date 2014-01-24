@@ -38,4 +38,17 @@ public class EditHazardsModel {
 		return ImmutableList.copyOf(hazards);
 	}
 	
+	/**
+	 * 
+	 * Intended only for view to modify: returns the actual backing list for direct modification. Once published to
+	 * other code and the view deconstructed this method should not be used again
+	 * 
+	 * @return
+	 * 		mutable list of hazards in model. Changes to returned list affect this object's model.
+	 * 
+	 */
+	List<Hazard> getMutableHazards() {
+		return hazards;
+	}
+	
 }

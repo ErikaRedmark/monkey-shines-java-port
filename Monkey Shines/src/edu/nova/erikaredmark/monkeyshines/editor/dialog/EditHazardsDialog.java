@@ -1,20 +1,21 @@
 package edu.nova.erikaredmark.monkeyshines.editor.dialog;
 
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
-import javax.swing.AbstractListModel;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JList;
-import javax.swing.ListModel;
+import javax.swing.JScrollPane;
 import javax.swing.SpringLayout;
 
-import com.google.common.collect.ImmutableList;
-
+import edu.nova.erikaredmark.monkeyshines.DeathAnimation;
 import edu.nova.erikaredmark.monkeyshines.Hazard;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
 
@@ -49,34 +50,54 @@ public class EditHazardsDialog extends JDialog {
 	private EditHazardsDialog(final EditHazardsModel model, final WorldResource rsrc) {
 		this.model = model;
 		//springLayout.putConstraint(SpringLayout.NORTH, txtVelocityY, -3, SpringLayout.NORTH, lblVelocityy);
-		final SpringLayout layout = new SpringLayout();
-		getContentPane().setLayout(layout);
+		getContentPane().setLayout(new GridBagLayout() );
 		
-		final HazardListModel hazardListModel = new HazardListModel();
 		
+
 		/* ------------------ Hazard list ------------------- */
+		// This list will sync changes to the underlying EditHazardsModel
+		final DefaultListModel<Hazard> hazardListModel = new DefaultListModel<>();
+		
+		// Assumption: All elements in the passed model are sorted, since they can only be actually generated from here,
+		// and all elements generated here will be sorted
+		for (Hazard h : this.model.getHazards() ) {
+			hazardListModel.addElement(h);
+		}
+		
 		final JList<Hazard> hazardList = new JList<Hazard>(hazardListModel);
 		// Attach to upper left of window and extend to bottom
-		layout.putConstraint(SpringLayout.NORTH, hazardList, 0, SpringLayout.NORTH, this);
-		layout.putConstraint(SpringLayout.WEST, hazardList, 0, SpringLayout.WEST, this);
-		layout.putConstraint(SpringLayout.SOUTH, hazardList, 0, SpringLayout.SOUTH, this);
-		getContentPane().add(hazardList);
+		final GridBagConstraints hazardListGbc = new GridBagConstraints();
+		hazardListGbc.gridx = 0;
+		hazardListGbc.gridy = 0;
+		hazardListGbc.gridheight = GridBagConstraints.REMAINDER;
+		// Embed list in Scrollable pane to allow scrollbars, but apply constraints to scrollable pane
+		JScrollPane hazardListWrapped = new JScrollPane(hazardList);
+		getContentPane().add(hazardListWrapped, hazardListGbc);
 		
 		/* ------------------ New Hazard -------------------- */
 		final JButton newHazardButton = new JButton(new AbstractAction("New Hazard") {
 			private static final long serialVersionUID = 1L;
 
 			@Override public void actionPerformed(ActionEvent e) {
-				// The new hazard by default will assume the id of the currently selected hazard, or the next id if no
-				// hazard is currently selected.
+				// Get the list, make a new hazard to it, and redo the model.
+				List<Hazard> newModel = model.getMutableHazards();
 				
-				// TODO new hazards start with next id available. Eventually make dependnet on cursor selection to put new
-				// ones in between
-				Hazard.newHazardTo(hazardListModel.getCurrentHazardList(), hazardListModel.getCurrentHazardList().size(), rsrc );
+				// newModel.size means assign the next Id. Assuming sorted list, size will always equal the next index of a new element
+				Hazard.newHazardTo(newModel, newModel.size(), rsrc );
+				
+				// Update the list model used by the view
+				hazardListModel.clear();
+				for (Hazard h : newModel) {
+					hazardListModel.addElement(h);
+				}
 			}
 		});
+		
+		final GridBagConstraints newHazardButtonGbc = new GridBagConstraints();
+		newHazardButtonGbc.weightx = 0.5;
 		getContentPane().add(newHazardButton);
 		
+		hazardList.setVisible(true);
 		setSize(500, 200);
 	}
 
@@ -101,34 +122,6 @@ public class EditHazardsDialog extends JDialog {
 		dialog.setVisible(true);
 		
 		return dialog.model;
-	}
-	
-	private final class HazardListModel extends AbstractListModel<Hazard> {
-		private static final long serialVersionUID = 1L;
-		
-		List<Hazard> hazards = new ArrayList<Hazard>(model.getHazards() ); 
-		
-		@Override public Hazard getElementAt(int index) {
-			return hazards.get(index);
-		}
-
-		@Override public int getSize() {
-			return hazards.size();
-		}
-		
-		
-		/**
-		 * 
-		 * Returns a reference to the underlying list this model is working with. The returned reference is mutable and
-		 * will affect the display of the model, so be careful.
-		 * 
-		 * @return
-		 * 		hazard list for this model
-		 * 
-		 */
-		public List<Hazard> getCurrentHazardList() {
-			return hazards;
-		}
 	}
 	
 }

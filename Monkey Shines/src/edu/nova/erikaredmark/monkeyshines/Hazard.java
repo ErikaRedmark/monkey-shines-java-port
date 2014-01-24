@@ -161,16 +161,6 @@ public final class Hazard implements Serializable, Comparable<Hazard> {
 	
 	/**
 	 * 
-	 * Returns the id of the hazard preceeded by the phrase "Hazard ". This is intended for debugging purposes only. No code should
-	 * rely on the format of the string.
-	 * 
-	 */
-	@Override public String toString() {
-		return "Hazard " + id;
-	}
-	
-	/**
-	 * 
 	 * Paints this hazard to the given graphics context at the given cordinates. This is used by {@code HazardTile}, which 
 	 * will compute and provide the position data/graphics context that this needs to draw on. The hazard object itself merely
 	 * provides the reference to the graphics pointer for the world hazards.
@@ -368,5 +358,15 @@ public final class Hazard implements Serializable, Comparable<Hazard> {
 		       && this.hazardSheet.equals(that.hazardSheet)
 		       && this.explodes == that.explodes
 		       && this.deathAnimation == that.deathAnimation;
+	}
+	
+	/**
+	 * 
+	 * Returns the id of the hazard preceeded by the phrase "Hazard ". This is intended for debugging purposes only. No code should
+	 * rely on the format of the string.
+	 * 
+	 */
+	@Override public String toString() {
+		return "Hazard " + id + ", " + (explodes ? "explodes" : "does not explode") + ", uses " + deathAnimation;
 	}
 }
