@@ -79,6 +79,13 @@ public class EditHazardsDialog extends JDialog {
 				// Get the list, make a new hazard to it, and redo the model.
 				List<Hazard> newModel = model.getMutableHazards();
 				
+				// Perform a check: We cannot add a new hazard if there is not enough space in the graphics context to 
+				// render the hazard. Number of hazards is limited by the size of our resource.
+				if (!(rsrc.canAddHazard(newModel.size() ) ) ) {
+					// TODO error message
+					return;
+				}
+				
 				// newModel.size means assign the next Id. Assuming sorted list, size will always equal the next index of a new element
 				Hazard.newHazardTo(newModel, newModel.size(), rsrc );
 				

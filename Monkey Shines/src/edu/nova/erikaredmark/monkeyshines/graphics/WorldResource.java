@@ -13,6 +13,7 @@ import java.util.zip.ZipEntry;
 
 import javax.imageio.ImageIO;
 
+import edu.nova.erikaredmark.monkeyshines.GameConstants;
 import edu.nova.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import edu.nova.erikaredmark.monkeyshines.graphics.exception.ResourcePackException.Type;
 import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
@@ -380,6 +381,25 @@ public final class WorldResource {
 	 */
 	public BufferedImage getHazardSheet() {
 		return hazardTiles;
+	}
+
+	/**
+	 * 
+	 * Determines if a hazard of the given ID may be added to the world using this graphics resource. If the hazard 
+	 * sprite sheet is too small to accommodate, this returns false.
+	 * <p/>
+	 * Note that this does NOT stop hazards having a greater ID than the resource is available to render them, as a
+	 * hazard can be created and then after the fact, the resources changed to have less hazards. This is merely a
+	 * precaution but won't guarantee every hazard in a world is renderable.
+	 * <p/>
+	 * This is currently defined as the size of the sprite sheet on the x-axis divided by the size of the hazard
+	 * sprite.
+	 * 
+	 * @param size
+	 */
+	public boolean canAddHazard(int id) {
+		int maxId = (hazardTiles.getWidth() / GameConstants.TILE_SIZE_X) - 1;
+		return id <= maxId;
 	}
 
 
