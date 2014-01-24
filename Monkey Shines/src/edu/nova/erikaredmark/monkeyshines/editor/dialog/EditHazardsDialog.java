@@ -90,9 +90,37 @@ public class EditHazardsDialog extends JDialog {
 			}
 		});
 		
+		/* ------------------ Delete Hazard ------------------- */
+		final JButton deleteHazardButton = new JButton(new AbstractAction("Delete Hazard") {
+			private static final long serialVersionUID = 1L;
+
+			@Override public void actionPerformed(ActionEvent e) {
+				// Get the list, remove the hazard currently selected in view
+				List<Hazard> newModel = model.getMutableHazards();
+				
+				Hazard hazardToRemove = hazardList.getSelectedValue();
+				
+				if (hazardToRemove != null) {
+				
+					Hazard.removeHazard(newModel, hazardToRemove);
+					
+					// update the list model used by the view
+					hazardListModel.clear();
+					for (Hazard h : newModel) {
+						hazardListModel.addElement(h);
+					}
+				
+				}
+			}
+		});
+		
 		final GridBagConstraints newHazardButtonGbc = new GridBagConstraints();
 		newHazardButtonGbc.weightx = 0.5;
 		getContentPane().add(newHazardButton);
+		
+		final GridBagConstraints deleteHazardButtonGbc = new GridBagConstraints();
+		deleteHazardButtonGbc.weightx = 0.5;
+		getContentPane().add(deleteHazardButton);
 		
 		hazardList.setVisible(true);
 		setSize(500, 200);
