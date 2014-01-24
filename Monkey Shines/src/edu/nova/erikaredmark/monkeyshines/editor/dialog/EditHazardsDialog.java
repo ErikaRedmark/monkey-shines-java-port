@@ -1,6 +1,5 @@
 package edu.nova.erikaredmark.monkeyshines.editor.dialog;
 
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -13,9 +12,7 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
-import javax.swing.SpringLayout;
 
-import edu.nova.erikaredmark.monkeyshines.DeathAnimation;
 import edu.nova.erikaredmark.monkeyshines.Hazard;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
 
@@ -119,6 +116,8 @@ public class EditHazardsDialog extends JDialog {
 		final EditHazardsModel model = new EditHazardsModel(worldHazards);
 		final EditHazardsDialog dialog = new EditHazardsDialog(model, rsrc);
 		
+		// Blocks due to dialog modality
+		dialog.setModal(true);
 		dialog.setVisible(true);
 		
 		return dialog.model;

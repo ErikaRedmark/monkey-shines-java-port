@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedGoodie;
+import edu.nova.erikaredmark.monkeyshines.encoder.EncodedHazard;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedLevelScreen;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
@@ -91,7 +92,10 @@ public class World {
 			worldScreens.put(screen.getKey(), LevelScreen.inflateFrom(screen.getValue() ) );
 		}
 		
-		final List<Hazard> hazards = new ArrayList<>(world.getHazards() );
+		final List<Hazard> hazards = new ArrayList<>();
+		for (EncodedHazard encHazard : world.getHazards() ) {
+			hazards.add(Hazard.inflateFrom(encHazard, rsrc) );
+		}
 		
 		return new World(worldName, goodiesInWorld, worldScreens, hazards, rsrc);	
 	}
@@ -392,6 +396,22 @@ public class World {
 	 */
 	public List<Hazard> getHazards() {
 		return Collections.unmodifiableList(this.hazards);
+	}
+
+	/**
+	 * 
+	 * <strong> intended only for use by level editor</strong>
+	 * <p/>
+	 * Sets the given hazards available for the world. This modifies the internal list, and does not store a reference to
+	 * the passed one.
+	 * 
+	 * @param hazards
+	 * 		new list of hazards
+	 * 
+	 */
+	public void setHazards(List<Hazard> newHazards) {
+		this.hazards.clear();
+		this.hazards.addAll(newHazards);
 	}
 	
 }

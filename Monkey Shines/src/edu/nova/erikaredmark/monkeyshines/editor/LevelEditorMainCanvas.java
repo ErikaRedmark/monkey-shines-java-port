@@ -26,6 +26,7 @@ import edu.nova.erikaredmark.monkeyshines.KeyboardInput;
 import edu.nova.erikaredmark.monkeyshines.Point2D;
 import edu.nova.erikaredmark.monkeyshines.Sprite;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.EditHazardsDialog;
+import edu.nova.erikaredmark.monkeyshines.editor.dialog.EditHazardsModel;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.SpriteChooserDialog;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.SpritePropertiesDialog;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.SpritePropertiesModel;
@@ -346,7 +347,9 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	 * 
 	 */
 	public void openEditHazards() {
-		EditHazardsDialog.launch(this, currentWorldEditor.getWorldResource(), currentWorldEditor.getHazards() );
+		EditHazardsModel model = EditHazardsDialog.launch(this, currentWorldEditor.getWorldResource(), currentWorldEditor.getHazards() );
+		// Sync any changes back to save state
+		currentWorldEditor.setHazards(model.getHazards() );
 	}
 	/**
 	 * 

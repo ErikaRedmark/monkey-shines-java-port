@@ -40,12 +40,12 @@ public class EncodedWorld implements Serializable {
 	private final String name;
 	private final Map<String, EncodedGoodie> goodies;
 	private final Map<Integer, EncodedLevelScreen> levels;
-	private final List<Hazard> hazards;
+	private final List<EncodedHazard> hazards;
 	
 	private EncodedWorld(final String name,
 					     final Map<String, EncodedGoodie> goodies,
 					     final Map<Integer, EncodedLevelScreen> levels,
-					     final List<Hazard> hazards) {
+					     final List<EncodedHazard> hazards) {
 		this.name = name;
 		this.goodies = goodies;
 		this.levels = levels;
@@ -84,19 +84,20 @@ public class EncodedWorld implements Serializable {
 		Map<Integer, LevelScreen> transientLevels =
 			world.getLevelScreens();
 		
-		ImmutableMap.Builder<Integer, EncodedLevelScreen> levelsBuilder =
+		ImmutableMap.Builder<Integer, EncodedLevelScreen> _levels =
 			new ImmutableMap.Builder<Integer, EncodedLevelScreen>();
 		
 		for (Entry<Integer, LevelScreen> entry : transientLevels.entrySet() ) {
-			levelsBuilder.put(entry.getKey(), EncodedLevelScreen.from(entry.getValue() ) );
+			_levels.put(entry.getKey(), EncodedLevelScreen.from(entry.getValue() ) );
 		}
+
 		
-		final Map<Integer, EncodedLevelScreen> _levels =
-			levelsBuilder.build();
-		
-		final ImmutableList<Hazard> _hazards = ImmutableList.copyOf(world.getHazards() );
-		
-		return new EncodedWorld(_name, _goodies, _levels, _hazards);
+		final ImmutableList.Builder<EncodedHazard> _hazards = new ImmutableList.Builder<>();
+		for (Hazard h : world.getHazards() ) {
+			_hazards.add(EncodedHazard.from(h) );
+		}
+
+		return new EncodedWorld(_name, _goodies, _levels.build(), _hazards.build() );
 		
 	}
 	
@@ -122,7 +123,7 @@ public class EncodedWorld implements Serializable {
 		Map<String, EncodedGoodie> goodies = new HashMap<>();
 		
 		// Set up empty hazard list
-		List<Hazard> hazards = Collections.emptyList();
+		List<EncodedHazard> hazards = Collections.emptyList();
 		
 		// Return new empty world
 		return new EncodedWorld(name, goodies, screens, hazards);
@@ -131,7 +132,7 @@ public class EncodedWorld implements Serializable {
 	public String getName() { return name; }
 	public Map<String, EncodedGoodie> getGoodies() { return goodies; }
 	public Map<Integer, EncodedLevelScreen> getLevels() { return levels; }
-	public List<Hazard> getHazards() { return hazards; }
+	public List<EncodedHazard> getHazards() { return hazards; }
 
 	
 }

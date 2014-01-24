@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.ImmutableList;
+
 import edu.nova.erikaredmark.monkeyshines.Goodie;
 import edu.nova.erikaredmark.monkeyshines.Hazard;
 import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
@@ -147,6 +149,13 @@ public final class WorldEditor {
 	 */
 	public List<Hazard> getHazards() {
 		return world.getHazards();
+	}
+	
+	/**
+	 * Forwarding call to {@link World#setHazards() }
+	 */
+	public void setHazards(ImmutableList<Hazard> hazards) {
+		world.setHazards(hazards);
 	}
 	
 	/**

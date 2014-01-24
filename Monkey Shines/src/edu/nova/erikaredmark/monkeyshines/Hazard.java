@@ -12,6 +12,7 @@ import java.util.ListIterator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Ints;
 
+import edu.nova.erikaredmark.monkeyshines.encoder.EncodedHazard;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
 
 
@@ -31,14 +32,12 @@ import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
  * @author Erika Redmark
  *
  */
-public final class Hazard implements Serializable, Comparable<Hazard> {
-	private static final long serialVersionUID = 8405382950872267355L;
+public final class Hazard implements Comparable<Hazard> {
 	
 	private final int id;
 	private final boolean explodes;
 	private final DeathAnimation deathAnimation;
 	
-	// We take a WorldResource for consistency, but we need only save the hazard tile sheet
 	private final BufferedImage hazardSheet;
 	
 	/**
@@ -65,6 +64,25 @@ public final class Hazard implements Serializable, Comparable<Hazard> {
 		this.explodes = explodes;
 		this.deathAnimation = deathAnimation;
 		this.hazardSheet = rsrc.getHazardSheet();
+	}
+	
+	/**
+	 * 
+	 * Creates an instance of this object by inflating the encoded form and applying the supplied resource pointer to
+	 * construct the graphics and sounds
+	 * 
+	 * @param encHazard
+	 * 		encoded hazard to inflate from
+	 * 
+	 * @param rsrc
+	 * 		world resource to initialise graphics and sounds
+	 * 
+	 * @return
+	 * 		an instance of this object
+	 * 
+	 */
+	public static Hazard inflateFrom(EncodedHazard encHazard, WorldResource rsrc) {
+		return new Hazard(encHazard.getId(), encHazard.getExplodes(), encHazard.getDeathAnimation(), rsrc);
 	}
 	
 	/**
@@ -369,4 +387,6 @@ public final class Hazard implements Serializable, Comparable<Hazard> {
 	@Override public String toString() {
 		return "Hazard " + id + ", " + (explodes ? "explodes" : "does not explode") + ", uses " + deathAnimation;
 	}
+
+
 }

@@ -270,6 +270,8 @@ public class LevelEditor extends JFrame {
 				try {
 					editor.currentWorld.saveWorld(saveTo);
 				} catch (WorldSaveException ex) {
+					// TODO send to a better logging framework
+					ex.printStackTrace();
 					JOptionPane.showMessageDialog(editor,
 					    "Cannot Save World: " + ex.getMessage(),
 					    "Saving Error",
