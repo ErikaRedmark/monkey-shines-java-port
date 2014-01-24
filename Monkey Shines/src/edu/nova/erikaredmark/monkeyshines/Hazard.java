@@ -2,7 +2,6 @@ package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -12,6 +11,7 @@ import java.util.ListIterator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Ints;
 
+import edu.nova.erikaredmark.monkeyshines.editor.HazardMutable;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedHazard;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
 
@@ -87,15 +87,29 @@ public final class Hazard implements Comparable<Hazard> {
 	
 	/**
 	 * 
-	 * Private constructor intended for automatic creation of hazards within the same other group of hazards; instead of asking
-	 * for a world resource, it asks for the actual sprite sheet (readily available in other hazards). This constructor is specialised
-	 * for only static factories that generate new hazards.
+	 * Creates a copy of this hazard that is mutable. The returned mutable object can not modify this immutable object.
+	 * 
+	 * @return
+	 * 		a mutable version of this object that can not affect the original
+	 * 
+	 */
+	public HazardMutable mutableCopy() {
+		return new HazardMutable(this.id, this.explodes, this.deathAnimation, this.hazardSheet);
+	}
+	
+	/**
+	 * 
+	 * This constructor is intended for copying between mutable and immutable hazards by constructing directly the data of
+	 * the hazard (such as not going through a resource to get the hazard sheet, as a copy would have to do if it knew not
+	 * the resource)
+	 * <p/>
+	 * Intended only for use with {@code HazardMutable}
 	 * 
 	 * @param hazardSheet
 	 * 		the sprite sheet for the hazard
 	 * 
 	 */
-	private Hazard(final int id, final boolean explodes, final DeathAnimation deathAnimation, final BufferedImage hazardSheet) {
+	public Hazard(final int id, final boolean explodes, final DeathAnimation deathAnimation, final BufferedImage hazardSheet) {
 		this.id = id;
 		this.explodes = explodes;
 		this.deathAnimation = deathAnimation;

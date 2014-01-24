@@ -11,9 +11,14 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import edu.nova.erikaredmark.monkeyshines.Hazard;
+import edu.nova.erikaredmark.monkeyshines.editor.HazardMutable;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
 
 /**
@@ -24,7 +29,7 @@ import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
  * <p/>
  * Initially all hazards start out at some default value. Since hazard sprite sheets enumerate tile sized hazards and each 
  * column is a new hazard, the number of hazard available to the user is equal to the length-wise size of the hazard sheet 
- * divided by the pixels pertile (length-wise). Since these dialogs can only be launched with valid graphics resources users
+ * divided by the pixels per tile (length-wise). Since these dialogs can only be launched with valid graphics resources users
  * cannot assign hazards to non-existent sprites.
  * 
  * @author Erika Redmark
@@ -62,7 +67,9 @@ public class EditHazardsDialog extends JDialog {
 		}
 		
 		final JList<Hazard> hazardList = new JList<Hazard>(hazardListModel);
+		hazardList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		// Attach to upper left of window and extend to bottom
+		
 		final GridBagConstraints hazardListGbc = new GridBagConstraints();
 		hazardListGbc.gridx = 0;
 		hazardListGbc.gridy = 0;
@@ -97,6 +104,11 @@ public class EditHazardsDialog extends JDialog {
 			}
 		});
 		
+		final GridBagConstraints newHazardButtonGbc = new GridBagConstraints();
+		newHazardButtonGbc.weightx = 0.5;
+		getContentPane().add(newHazardButton, newHazardButtonGbc);
+		
+		
 		/* ------------------ Delete Hazard ------------------- */
 		final JButton deleteHazardButton = new JButton(new AbstractAction("Delete Hazard") {
 			private static final long serialVersionUID = 1L;
@@ -121,16 +133,111 @@ public class EditHazardsDialog extends JDialog {
 			}
 		});
 		
-		final GridBagConstraints newHazardButtonGbc = new GridBagConstraints();
-		newHazardButtonGbc.weightx = 0.5;
-		getContentPane().add(newHazardButton);
-		
 		final GridBagConstraints deleteHazardButtonGbc = new GridBagConstraints();
 		deleteHazardButtonGbc.weightx = 0.5;
-		getContentPane().add(deleteHazardButton);
+		getContentPane().add(deleteHazardButton, deleteHazardButtonGbc);
+		
+		/* -------------------- Edit Hazard Panel --------------------- */
+		final EditSingleHazardPanel editPanel = new EditSingleHazardPanel();
+		
+		/* ----------------- Selection Listener ----------------- */
+		/* Selected hazards are under edit in the edit panel.	  */
+		/* This listener binds to the original hazard list.		  */
+		hazardList.addListSelectionListener(new ListSelectionListener() {
+			@Override public void valueChanged(ListSelectionEvent event) {
+				Hazard newHazard = hazardList.getSelectedValue();
+				if (newHazard == null)  return;
+				
+				// TODO some 'are you sure?' code if replacing an existing edit hazard context
+				editPanel.setHazardEditing(newHazard);
+			}
+		});
+		
+		final GridBagConstraints editPanelGbc = new GridBagConstraints();
+		editPanelGbc.weightx = 2.0;
+		editPanelGbc.gridwidth = GridBagConstraints.REMAINDER;
+		editPanelGbc.gridheight = GridBagConstraints.REMAINDER;
+		getContentPane().add(editPanel, editPanelGbc);
+		
+		/* ----------------------- Apply Edit ------------------------- */
+		final JButton applyEditButton = new JButton(new AbstractAction("Apply Changes") {
+			private static final long serialVersionUID = 1L;
+
+			@Override public void actionPerformed(ActionEvent e) {
+				// TODO apply changes
+			}
+		});
+		
+		final GridBagConstraints applyEditButtonGbc = new GridBagConstraints();
+		editPanelGbc.weightx = 0.5;
+		getContentPane().add(applyEditButton, applyEditButtonGbc);
 		
 		hazardList.setVisible(true);
 		setSize(500, 200);
+	}
+	
+	/**
+	 * 
+	 * Panel used by dialog that, given a specific Hazard property, alonws one to make modifications to it. Changes to
+	 * a hazard can then replace a hazard in the view, and therefore the main model, or can be discarded.
+	 * 
+	 * @author Erika Redmark
+	 *
+	 */
+	private static final class EditSingleHazardPanel extends JPanel {
+		private static final long serialVersionUID = 1L;
+		
+		// This mutable copy is never published outside of this object.
+		private HazardMutable currentlyEditingHazard;
+		
+		// The immutable id of even the mutable hazard can tell us what to replace, but for easeness we
+		// store a reference to the immutable hazard this one is derived to do equals calculations within
+		// this object (for unsaved changes and such)
+		private Hazard originalFromCurrentEdit;
+		
+		private EditSingleHazardPanel() {
+			// TODO view code
+		}
+		
+		
+		/**
+		 * 
+		 * Makes a mutable copy of the given hazard and places it under editing
+		 * 
+		 */
+		public void setHazardEditing(final Hazard hazard) {
+			this.currentlyEditingHazard = hazard.mutableCopy();
+			this.originalFromCurrentEdit = hazard;
+			// TODO update view
+		}
+		
+		/**
+		 * 
+		 * Returns an immutable copy of the hazard currently under edit. This call MAY fail with an exception if there is
+		 * no hazard under edit. Use {@code isEditingHazard() } first to confirm
+		 * 
+		 * @throws IllegalStateException
+		 * 		if called when there is no hazard being edited
+		 * 
+		 */
+		public Hazard getHazardEdited() {
+			if (currentlyEditingHazard == null)  throw new IllegalStateException("No hazard being editing");
+			return this.currentlyEditingHazard.immutableCopy();
+		}
+		
+		/**
+		 * 
+		 * Determines if this panel is currently editing a hazard or if it is not.
+		 * 
+		 * @return
+		 * 		{@code true} if editing a hazard, {@code false} if otherwise
+		 * 
+		 */
+		public boolean isEditingHazard() {
+			return currentlyEditingHazard != null;
+		}
+		
+		
 	}
 
 	/**
