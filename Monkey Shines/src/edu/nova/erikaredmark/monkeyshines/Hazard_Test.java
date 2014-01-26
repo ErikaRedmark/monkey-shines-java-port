@@ -138,5 +138,35 @@ public class Hazard_Test {
 		final Hazard elWhato = new Hazard(12, true, DeathAnimation.BURN, dummy);
 		Hazard.removeHazard(starterHazards, elWhato);
 	}
+	
+	// Test replacing hazards
+	@Test public void testReplaceStart() {
+		final Hazard toReplace = new Hazard(0, true, DeathAnimation.BURN, dummy);
+		
+		assertEquals(DeathAnimation.ELECTRIC, starterHazards.get(0).getDeathAnimation() );
+		Hazard.replaceHazard(starterHazards, toReplace);
+		assertEquals(DeathAnimation.BURN, starterHazards.get(0).getDeathAnimation() );
+	}
+	
+	@Test public void testReplaceMiddle() {
+		final Hazard toReplace = new Hazard(1, true, DeathAnimation.BURN, dummy);
+		
+		assertEquals(DeathAnimation.NORMAL, starterHazards.get(1).getDeathAnimation() );
+		Hazard.replaceHazard(starterHazards, toReplace);
+		assertEquals(DeathAnimation.BURN, starterHazards.get(1).getDeathAnimation() );
+	}
+	
+	@Test public void testReplaceEnd() {
+		final Hazard toReplace = new Hazard(2, true, DeathAnimation.BURN, dummy);
+		
+		assertEquals(DeathAnimation.BEE, starterHazards.get(2).getDeathAnimation() );
+		Hazard.replaceHazard(starterHazards, toReplace);
+		assertEquals(DeathAnimation.BURN, starterHazards.get(2).getDeathAnimation() );
+	}
+	
+	@Test(expected=IllegalArgumentException.class) public void testReplaceCant() {
+		final Hazard toReplace = new Hazard(3, true, DeathAnimation.BURN, dummy);
+		Hazard.replaceHazard(starterHazards, toReplace);
+	}
 }
 

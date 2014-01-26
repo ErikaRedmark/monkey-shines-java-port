@@ -222,6 +222,7 @@ public final class Hazard implements Comparable<Hazard> {
 					  null);
 	}
 	
+	// TODO it would be best to refactor these into an object of type HazardList and remove these from being static methods
 	/**
 	 * 
 	 * A simple way of generating a new hazard based on a list of pre-existing ones. This basically just adds a new hazard
@@ -338,11 +339,45 @@ public final class Hazard implements Comparable<Hazard> {
 			// If deleted was never set to true, the hazard never existed in this list. This is an exception
 			if (!(deleted) )  throw new IllegalArgumentException("Hazard " + hazardToRemove + " could not be removed from list as it didn't exist");
 		}
-					
-		
-		// TODO Erika you stopped here: Write this function then write test methods for both the add and remove functions
-		// for hazards, then use them with the dialog box to allow user to add/remove hazards from a world
 	}
+	
+	/**
+	 * 
+	 * Given a list of hazard in which a hazard of the same id as the replacement exists, replaces that hazard with the new replacement
+	 * hazard.
+	 * <p/>
+	 * The list must be mutable, as it will be mutated by removing a reference to whatever hazard of that id already existed and replacing
+	 * it with the replacement
+	 * 
+	 * @param existingHazards
+	 * 		original list of hazards
+	 * 
+	 * @param replacement
+	 * 		hazard to use to replace existing hazard of the same id
+	 * 		
+	 * @throws IllegalArgumentException
+	 * 		if no hazard exists of the id of the replacement
+	 * 
+	 */
+	public static void replaceHazard(List<Hazard> existingHazards, Hazard replacement) {
+		// Find index of old hazard
+		int placementIndex = -1;
+		int index = 0;
+		for (Hazard h : existingHazards) {
+			if (h.getId() == replacement.getId() ) {
+				placementIndex = index;
+				break;
+			}
+			++index;
+		}
+		
+		if (placementIndex == -1)  throw new IllegalArgumentException("No replacement hazard of id " + replacement.getId() );
+		
+		// Add replacement to same index
+		existingHazards.remove(placementIndex);
+		existingHazards.add(placementIndex, replacement);
+	}
+
 
 	/**
 	 * 

@@ -55,7 +55,7 @@ public class HazardMutable {
 		return new Hazard(id, explodes, deathAnimation, hazardSheet);
 	}
 
-	public boolean isExplodes() { return explodes; }
+	public boolean getExplodes() { return explodes; }
 	public void setExplodes(boolean explodes) {	this.explodes = explodes; }
 
 	public DeathAnimation getDeathAnimation() { return deathAnimation; }

@@ -3,13 +3,18 @@ package edu.nova.erikaredmark.monkeyshines.editor.dialog;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
 
 import javax.swing.AbstractAction;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -17,6 +22,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import edu.nova.erikaredmark.monkeyshines.DeathAnimation;
 import edu.nova.erikaredmark.monkeyshines.Hazard;
 import edu.nova.erikaredmark.monkeyshines.editor.HazardMutable;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
@@ -74,6 +80,7 @@ public class EditHazardsDialog extends JDialog {
 		hazardListGbc.gridx = 0;
 		hazardListGbc.gridy = 0;
 		hazardListGbc.gridheight = GridBagConstraints.REMAINDER;
+		hazardListGbc.weightx = 2.0;
 		// Embed list in Scrollable pane to allow scrollbars, but apply constraints to scrollable pane
 		JScrollPane hazardListWrapped = new JScrollPane(hazardList);
 		getContentPane().add(hazardListWrapped, hazardListGbc);
@@ -105,9 +112,13 @@ public class EditHazardsDialog extends JDialog {
 		});
 		
 		final GridBagConstraints newHazardButtonGbc = new GridBagConstraints();
+		newHazardButtonGbc.gridx = 2;
+		newHazardButtonGbc.gridy = 1;
 		newHazardButtonGbc.weightx = 0.5;
 		getContentPane().add(newHazardButton, newHazardButtonGbc);
 		
+		// Define edit panel here so listener for delete hazard can access it now
+		final EditSingleHazardPanel editPanel = new EditSingleHazardPanel();
 		
 		/* ------------------ Delete Hazard ------------------- */
 		final JButton deleteHazardButton = new JButton(new AbstractAction("Delete Hazard") {
@@ -123,6 +134,10 @@ public class EditHazardsDialog extends JDialog {
 				
 					Hazard.removeHazard(newModel, hazardToRemove);
 					
+					// update edit panel view since the currently selected hazard was deleted, meaning there is nothing
+					// selected anymore
+					editPanel.noHazardEditing();
+					
 					// update the list model used by the view
 					hazardListModel.clear();
 					for (Hazard h : newModel) {
@@ -134,11 +149,12 @@ public class EditHazardsDialog extends JDialog {
 		});
 		
 		final GridBagConstraints deleteHazardButtonGbc = new GridBagConstraints();
+		deleteHazardButtonGbc.gridx = 2;
+		deleteHazardButtonGbc.gridy = 2;
 		deleteHazardButtonGbc.weightx = 0.5;
 		getContentPane().add(deleteHazardButton, deleteHazardButtonGbc);
 		
 		/* -------------------- Edit Hazard Panel --------------------- */
-		final EditSingleHazardPanel editPanel = new EditSingleHazardPanel();
 		
 		/* ----------------- Selection Listener ----------------- */
 		/* Selected hazards are under edit in the edit panel.	  */
@@ -155,6 +171,8 @@ public class EditHazardsDialog extends JDialog {
 		
 		final GridBagConstraints editPanelGbc = new GridBagConstraints();
 		editPanelGbc.weightx = 2.0;
+		editPanelGbc.gridx = 3;
+		editPanelGbc.gridy = 1;
 		editPanelGbc.gridwidth = GridBagConstraints.REMAINDER;
 		editPanelGbc.gridheight = GridBagConstraints.REMAINDER;
 		getContentPane().add(editPanel, editPanelGbc);
@@ -164,12 +182,28 @@ public class EditHazardsDialog extends JDialog {
 			private static final long serialVersionUID = 1L;
 
 			@Override public void actionPerformed(ActionEvent e) {
-				// TODO apply changes
+				// Get mutable hazard from edit panel
+				if (editPanel.isEditingHazard() ) {
+					if (!(editPanel.isHazardEdited() ) )  return;
+
+					
+					Hazard editedCopy = editPanel.getHazardEdited();
+					List<Hazard> newModel = model.getMutableHazards();
+					
+					Hazard.replaceHazard(newModel, editedCopy);
+					
+					// update the list model used by the view
+					hazardListModel.clear();
+					for (Hazard h : newModel) {
+						hazardListModel.addElement(h);
+					}
+				}
 			}
 		});
 		
 		final GridBagConstraints applyEditButtonGbc = new GridBagConstraints();
-		editPanelGbc.weightx = 0.5;
+		applyEditButtonGbc.gridx = 2;
+		applyEditButtonGbc.gridy = 3;
 		getContentPane().add(applyEditButton, applyEditButtonGbc);
 		
 		hazardList.setVisible(true);
@@ -195,26 +229,86 @@ public class EditHazardsDialog extends JDialog {
 		// this object (for unsaved changes and such)
 		private Hazard originalFromCurrentEdit;
 		
+		final JCheckBox explodesBtn;
+		final JComboBox<DeathAnimation> deathAnimation;
+		
 		private EditSingleHazardPanel() {
-			// TODO view code
+			/* ------------- Function ------------- */
+			final JLabel deathAnimationLbl = new JLabel("Death Animation");
+			deathAnimation = new JComboBox<>(new DefaultComboBoxModel<>(DeathAnimation.values() ) );
+			deathAnimation.addActionListener(new ActionListener() {
+				@Override public void actionPerformed(ActionEvent evt) {
+					currentlyEditingHazard.setDeathAnimation((DeathAnimation)deathAnimation.getSelectedItem() );
+				}
+				
+			});
+			
+			explodesBtn = new JCheckBox(new AbstractAction("Explodes") {
+				private static final long serialVersionUID = 1L;
+
+				@Override public void actionPerformed(ActionEvent evt) {
+					// set mutable hazard to same exploded state as checkbox
+					currentlyEditingHazard.setExplodes(((JCheckBox)evt.getSource()).isSelected() );
+				}
+				
+			});
+			
+			/* --------------- Form ---------------- */
+			setLayout(new GridBagLayout() );
+			
+			final GridBagConstraints deathAnimationLblGbc = new GridBagConstraints();
+			deathAnimationLblGbc.gridx = 1;
+			deathAnimationLblGbc.gridy = 1;
+			add(deathAnimationLbl, deathAnimationLblGbc);
+			
+			final GridBagConstraints deathAnimationGbc = new GridBagConstraints();
+			deathAnimationGbc.gridx = 2;
+			deathAnimationGbc.gridy = 1;
+			add(deathAnimation, deathAnimationGbc);
+			
+			final GridBagConstraints explodesGbc = new GridBagConstraints();
+			explodesGbc.gridx = 1;
+			explodesGbc.gridy = 2;
+			explodesGbc.gridwidth = GridBagConstraints.REMAINDER;
+			add(explodesBtn, explodesGbc);
+			
+			// Initially, there are no hazards being edited on construction (we have no initial selection)
+			noHazardEditing();
 		}
 		
 		
 		/**
 		 * 
-		 * Makes a mutable copy of the given hazard and places it under editing
+		 * Indicates to this panel no hazard is currently selected for editing.
+		 * 
+		 */
+		public void noHazardEditing() {
+			explodesBtn.setEnabled(false);
+			deathAnimation.setEnabled(false);
+		}
+		
+		/**
+		 * 
+		 * Makes a mutable copy of the given hazard and places it under editing.
+		 * <p/>
+		 * This also enables the view if it is disabled and updates it to the properties of the hazard
 		 * 
 		 */
 		public void setHazardEditing(final Hazard hazard) {
 			this.currentlyEditingHazard = hazard.mutableCopy();
 			this.originalFromCurrentEdit = hazard;
-			// TODO update view
+			
+			explodesBtn.setEnabled(true);
+			deathAnimation.setEnabled(true);
+			
+			explodesBtn.setSelected(originalFromCurrentEdit.getExplodes() );
+			deathAnimation.setSelectedItem(originalFromCurrentEdit.getDeathAnimation() );
 		}
 		
 		/**
 		 * 
 		 * Returns an immutable copy of the hazard currently under edit. This call MAY fail with an exception if there is
-		 * no hazard under edit. Use {@code isEditingHazard() } first to confirm
+		 * no hazard under edit. Use {@code isEditingHazard() } first to confirm.
 		 * 
 		 * @throws IllegalStateException
 		 * 		if called when there is no hazard being edited
@@ -223,6 +317,25 @@ public class EditHazardsDialog extends JDialog {
 		public Hazard getHazardEdited() {
 			if (currentlyEditingHazard == null)  throw new IllegalStateException("No hazard being editing");
 			return this.currentlyEditingHazard.immutableCopy();
+		}
+		
+		/**
+		 * 
+		 * Determines if the given hazard being edited by this panel is actually different in some way from the hazard that
+		 * it started with (i.e have any changes been made). This method may also throw an exception if there is no hazard
+		 * under edit. Use {@code isEditingHazard() } first to confirm.
+		 * 
+		 * @return
+		 * 		{@code true} if the hazard is changed, {@code false} if the hazard is the same
+		 * 
+		 * @throws IllegalStateException
+		 * 		if called when there is no hazard being edited
+		 */
+		public boolean isHazardEdited() {
+			if (currentlyEditingHazard == null)  throw new IllegalStateException("No hazard being editing");
+			// Don't compare Id or resources. Those never change
+			return    currentlyEditingHazard.getDeathAnimation() != originalFromCurrentEdit.getDeathAnimation()
+				   || currentlyEditingHazard.getExplodes() != originalFromCurrentEdit.getExplodes();
 		}
 		
 		/**
