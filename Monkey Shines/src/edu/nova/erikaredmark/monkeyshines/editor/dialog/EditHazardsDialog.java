@@ -57,7 +57,6 @@ public class EditHazardsDialog extends JDialog {
 	 */
 	private EditHazardsDialog(final EditHazardsModel model, final WorldResource rsrc) {
 		this.model = model;
-		//springLayout.putConstraint(SpringLayout.NORTH, txtVelocityY, -3, SpringLayout.NORTH, lblVelocityy);
 		getContentPane().setLayout(new GridBagLayout() );
 		
 		
@@ -79,8 +78,11 @@ public class EditHazardsDialog extends JDialog {
 		final GridBagConstraints hazardListGbc = new GridBagConstraints();
 		hazardListGbc.gridx = 0;
 		hazardListGbc.gridy = 0;
+		hazardListGbc.weightx = 2;
+		hazardListGbc.weighty = 2;
 		hazardListGbc.gridheight = GridBagConstraints.REMAINDER;
-		hazardListGbc.weightx = 2.0;
+		hazardListGbc.gridwidth = 2;
+		hazardListGbc.fill = GridBagConstraints.BOTH;
 		// Embed list in Scrollable pane to allow scrollbars, but apply constraints to scrollable pane
 		JScrollPane hazardListWrapped = new JScrollPane(hazardList);
 		getContentPane().add(hazardListWrapped, hazardListGbc);
@@ -113,8 +115,7 @@ public class EditHazardsDialog extends JDialog {
 		
 		final GridBagConstraints newHazardButtonGbc = new GridBagConstraints();
 		newHazardButtonGbc.gridx = 2;
-		newHazardButtonGbc.gridy = 1;
-		newHazardButtonGbc.weightx = 0.5;
+		newHazardButtonGbc.gridy = 0;
 		getContentPane().add(newHazardButton, newHazardButtonGbc);
 		
 		// Define edit panel here so listener for delete hazard can access it now
@@ -150,8 +151,7 @@ public class EditHazardsDialog extends JDialog {
 		
 		final GridBagConstraints deleteHazardButtonGbc = new GridBagConstraints();
 		deleteHazardButtonGbc.gridx = 2;
-		deleteHazardButtonGbc.gridy = 2;
-		deleteHazardButtonGbc.weightx = 0.5;
+		deleteHazardButtonGbc.gridy = 1;
 		getContentPane().add(deleteHazardButton, deleteHazardButtonGbc);
 		
 		/* -------------------- Edit Hazard Panel --------------------- */
@@ -170,7 +170,6 @@ public class EditHazardsDialog extends JDialog {
 		});
 		
 		final GridBagConstraints editPanelGbc = new GridBagConstraints();
-		editPanelGbc.weightx = 2.0;
 		editPanelGbc.gridx = 3;
 		editPanelGbc.gridy = 1;
 		editPanelGbc.gridwidth = GridBagConstraints.REMAINDER;
@@ -203,11 +202,11 @@ public class EditHazardsDialog extends JDialog {
 		
 		final GridBagConstraints applyEditButtonGbc = new GridBagConstraints();
 		applyEditButtonGbc.gridx = 2;
-		applyEditButtonGbc.gridy = 3;
+		applyEditButtonGbc.gridy = 2;
 		getContentPane().add(applyEditButton, applyEditButtonGbc);
 		
 		hazardList.setVisible(true);
-		setSize(500, 200);
+		setSize(700, 300);
 	}
 	
 	/**
@@ -372,8 +371,11 @@ public class EditHazardsDialog extends JDialog {
 		final EditHazardsDialog dialog = new EditHazardsDialog(model, rsrc);
 		
 		// Blocks due to dialog modality
+		dialog.setLocationRelativeTo(null);
 		dialog.setModal(true);
 		dialog.setVisible(true);
+
+		
 		
 		return dialog.model;
 	}
