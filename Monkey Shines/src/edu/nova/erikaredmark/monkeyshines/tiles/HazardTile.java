@@ -11,8 +11,6 @@ import edu.nova.erikaredmark.monkeyshines.Hazard;
  *
  */
 public class HazardTile implements TileType {
-	private static final long serialVersionUID = 6837954726294938232L;
-
 	// The actual hazard that this tile represents (is this a lava hazard/bomb? Some other type for this world?)
 	// This is also the only thing serialized; everything else is state information for during gameplay
 	private final Hazard hazard;
@@ -26,12 +24,18 @@ public class HazardTile implements TileType {
 	// When this value is -1, the hazard is not drawn. Additionally, a value of -1
 	// indicates the hazard is 'dead' and can't hurt bonzo anymore.
 	private transient int animationPoint = 0;
-	private static final int maxExplodingFrames = 9;
+	
+	// When this reaches TICKS_BETWEEN_ANIMATIONS, it goes back to zero and the animationPoint is updated.
+	// This prevents quick, rapid animation.
+	private transient int timeToNextFrame = 0;
+	
+	private static final int TICKS_BETWEEN_ANIMATIONS = 5;
+	private static final int MAX_EXPLODING_FRAMES = 9;
 	
 	private HazardTile(final Hazard hazard) {
 		this.hazard = hazard;
 	}
-	
+
 	/**
 	 * 
 	 * Creates a hazard on a tile for the given hazard.
@@ -59,6 +63,32 @@ public class HazardTile implements TileType {
 		return hazard;
 	}
 	
+	public boolean isExploding() {
+		return exploding;
+	}
+	
+	/**
+	 * 
+	 * Returns the frame of animation that should be used in the current sprite sheet to draw this hazard.
+	 * <p/>
+	 * Note that if this hazard is exploding, the exploding sprite sheet should be used instead of the standard
+	 * one. The animation step is always 0 based; it is up to caller to determine which actual sprite sheet
+	 * needs to be used for drawing.
+	 * <p/>
+	 * It is an error to call this method if the hazard is destroyed (it shouldn't be drawn at all). If assertions
+	 * are disabled calling the method in this state returns -1 which has undefined behaviour.
+	 * 
+	 * @return
+	 * 		animation step for the current sprite sheet, dependent on whether this hazard is exploding or not.
+	 * 
+	 */
+	public int getAnimationStep() {
+		assert !(isDead() );
+		
+		if (exploding)  return animationPoint - 2;
+		else			return animationPoint;
+	}
+	
 	/**
 	 * 
 	 * updates animation tick for drawing
@@ -67,14 +97,40 @@ public class HazardTile implements TileType {
 	public void update() {
 		if (isDead() )  return;
 		
-		if (!exploding) {
-			// Cycle 0 to 1
-			animationPoint =   animationPoint == 0
-							 ? 1
-							 : 0;
+		if (readyToAnimate() ) {
+			
+			if (!exploding) {
+				animationPoint =   animationPoint == 0
+								 ? 1
+								 : 0;
+			} else {
+				++animationPoint;
+				if (animationPoint > MAX_EXPLODING_FRAMES)  die();
+			}
+		
+		}
+	}
+	
+	/**
+	 * 
+	 * Checks if the hazard is ready to switch to the next frame of animation. Calling this
+	 * method changes state; it checks if ready, and if not increments the ticker. As defined
+	 * in the class static final variables, a certain number of 'ticks' have to pass before 
+	 * being allowed to change the animation state.
+	 * 
+	 * @return
+	 * 		{@code true} if ready, {@code false} if otherwise. Merely calling this method
+	 * 		increments the ticker, so this should only be called in the main update method
+	 * 		on each tick.
+	 * 
+	 */
+	private boolean readyToAnimate() {
+		if (timeToNextFrame >= TICKS_BETWEEN_ANIMATIONS) {
+			timeToNextFrame = 0;
+			return true;
 		} else {
-			++animationPoint;
-			if (animationPoint > maxExplodingFrames)  die();
+			++timeToNextFrame;
+			return false;
 		}
 	}
 	

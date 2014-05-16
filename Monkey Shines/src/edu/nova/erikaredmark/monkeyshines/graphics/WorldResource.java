@@ -269,7 +269,7 @@ public final class WorldResource {
 	
 	/**
 	 * 
-	 * Returns the graphics sheet for the tiles that exist for the given tile type
+	 * Returns the graphics sheet for the tiles that exist for the given tile type.
 	 * 
 	 * @param type
 	 * 		the type of the tile
@@ -290,8 +290,7 @@ public final class WorldResource {
 				default: throw new IllegalArgumentException("Unknown tile type " + type);
 			}
 		} else if (type instanceof HazardTile) {
-			// TODO return hazardTiles
-			throw new UnsupportedOperationException("Hazard Tiles are not implemented yet");
+			return getHazardSheet();
 		} else {
 			throw new RuntimeException("Unexpected tile type class " + type.getClass().getName() );
 		}

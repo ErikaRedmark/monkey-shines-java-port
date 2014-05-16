@@ -21,6 +21,7 @@ import com.google.common.base.Optional;
 
 import edu.nova.erikaredmark.monkeyshines.GameConstants;
 import edu.nova.erikaredmark.monkeyshines.Goodie;
+import edu.nova.erikaredmark.monkeyshines.Hazard;
 import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.KeyboardInput;
 import edu.nova.erikaredmark.monkeyshines.Point2D;
@@ -35,6 +36,7 @@ import edu.nova.erikaredmark.monkeyshines.encoder.WorldIO;
 import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 import edu.nova.erikaredmark.monkeyshines.graphics.CoreResource;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
 
@@ -58,6 +60,11 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	// Information about what clicking something will do
 	private int currentTileID;
 	private Goodie.Type currentGoodieType;
+	
+	// Unlike the other properties, current hazard MAY be null. It is 100% possible for a world to not have hazards
+	private Hazard currentHazard;
+	// Changed with currentHazard, indicates the sprite sheet id the hazard is currently bound to.
+	private int hazardId;
 	
 	// Current overlay graphic
 	private BufferedImage currentTileSheet;
@@ -155,9 +162,8 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	 * @return
 	 * 		{@code true} if the	screen exists by that id, {@code false} if otherwise
 	 * 
-	 * @throws
-	 * 		IllegalStateException
-	 * 			if no world is loaded in the editor
+	 * @throws IllegalStateException
+	 * 		if no world is loaded in the editor
 	 * 
 	 */
 	public boolean screenExists(int id) {
@@ -175,10 +181,28 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	private void addTile(final int mouseX, final int mouseY) {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
-		currentScreenEditor.setTile(mouseX / GameConstants.TILE_SIZE_X,
+		currentScreenEditor.setTile(
+				mouseX / GameConstants.TILE_SIZE_X,
 				mouseY / GameConstants.TILE_SIZE_Y,
 				paintbrush2TileType(currentTileType),
 				currentTileID);
+	}
+	
+	/**
+	 * Adds the hazard to the given location. The current hazard selected in this editor is added to the given place. If 
+	 * there is no currently selected hazard (its null) this method will do nothing
+	 * <p/>
+	 * IMPORTANT: This creates a new instance of the hazard tile with the given id paired with the given hazard. if the hazard types
+	 * are rearranged and changed it won't affect any already placed. Will need to work on a solution.
+	 */
+	private void addHazard(final int mouseX, final int mouseY) {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		if (currentHazard == null)  return;
+		
+		currentScreenEditor.setTile(mouseX / GameConstants.TILE_SIZE_X,
+									mouseY / GameConstants.TILE_SIZE_Y,
+									HazardTile.forHazard(currentHazard),
+									hazardId);
 	}
 	
 	/**
@@ -191,10 +215,11 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		if (this.currentState == EditorState.NO_WORLD_LOADED)  return;
 		
 		currentWorldEditor.addGoodie(x / GameConstants.GOODIE_SIZE_X, 
-				y / GameConstants.GOODIE_SIZE_Y, 
-				currentScreenEditor.getId(), 
-				currentGoodieType );
+								 	 y / GameConstants.GOODIE_SIZE_Y, 
+									 currentScreenEditor.getId(), 
+									 currentGoodieType );
 	}
+	
 	
 	/**
 	 * 
@@ -351,6 +376,26 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		// Sync any changes back to save state
 		currentWorldEditor.setHazards(model.getHazards() );
 	}
+	
+	/*
+	 * Sets the current paintbrush for hazards, and changes state to PLACING_TILES.
+	 */
+	public void actionPlacingHazards() {
+		if (this.currentState == EditorState.NO_WORLD_LOADED)  return;
+		currentTileType = PaintbrushType.HAZARDS;
+		
+		changeState(EditorState.PLACING_TILES);
+	}
+	
+	/*
+	 * Changes state to SELECTING_HAZARDS, which will cause the hazard graphics picker to draw
+	 * and allow selection
+	 */
+	public void actionSelectingHazards() {
+		if (this.currentState == EditorState.NO_WORLD_LOADED)  return;
+		
+		changeState(EditorState.SELECTING_HAZARDS);
+	}
 	/**
 	 * 
 	 * Changes the internal state of the editor from one state to the other, making any additional updates as needed.
@@ -499,11 +544,31 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 				g2d.drawImage(goodieSheet, 0, 0, goodieSheet.getWidth(), goodieSheet.getHeight() / 2, // Destination
 						0, 0, goodieSheet.getWidth(), goodieSheet.getHeight() / 2, // Source
 						null);
+			} else if (currentState == EditorState.SELECTING_HAZARDS) {
+				BufferedImage hazardSheet = currentWorldEditor.getWorldResource().getHazardSheet();  // Like the goodie sheet, half height becomes second row has animation
+				g2d.drawImage(hazardSheet, 0, 0, hazardSheet.getWidth(), hazardSheet.getHeight() / 2, // Destination
+						0, 0, hazardSheet.getWidth(), hazardSheet.getHeight() / 2, // Source
+						null);
 			}
 		}
 		
 	}
 	
+	// This isn't a member of paintbrush type because only a few types are actually tiles.
+	/**
+	 * 
+	 * Converts the paintbrush type to a paintable tile type.
+	 * <p/>
+	 * Because some tile types have state, the return type from this method should be used to populate at most 1
+	 * tile in the world.
+	 * 
+	 * @param paintbrush
+	 * 
+	 * @return
+	 * 		a tile type that can be painted into the world. The return of this method should not be used to
+	 * 		populate more than 1 location in the world
+	 * 
+	 */
 	public TileType paintbrush2TileType(PaintbrushType paintbrush) {
 		TileType type = null;
 		switch (paintbrush) {
@@ -516,6 +581,14 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		case SCENES:
 			type = StatelessTileType.SCENE;
 			break;
+		case HAZARDS:
+			// Stateful type: Create new based on id. Properties of hazard will be based on World
+			// properties.
+			// This instance will NOT be added to the world itself!! It must be copied, or multiple hazards may
+			// end up sharing state (like hitting one bomb will blow up every other bomb painted with the same
+			// paintbrush).
+			type = HazardTile.forHazard(currentWorldEditor.getHazards().get(this.hazardId) );
+			break;
 		default:
 			throw new IllegalArgumentException("Paintbrush type " + currentTileType.toString() + " not a valid tile type");
 		}
@@ -524,7 +597,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		return type;
 	}
 	
-	public enum PaintbrushType { SOLIDS, THRUS, SCENES, SPRITES, GOODIES; }
+	public enum PaintbrushType { SOLIDS, THRUS, SCENES, HAZARDS, SPRITES, GOODIES; }
 	
 	
 	/**
@@ -618,6 +691,40 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 			}
 		}, 
 		
+		SELECTING_HAZARDS {
+			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
+				int hazardId = editor.resolveObjectId(editor.currentWorldEditor.getWorldResource().getHazardSheet(), editor.mousePosition.x(), editor.mousePosition.y() );
+				
+				// do nothing if click out of bounds
+				if (hazardId == -1)  return;
+				
+				// We may not have a defined hazard
+				List<Hazard> availableHazards = editor.currentWorldEditor.getHazards();
+				if (hazardId >= availableHazards.size() )  return;
+				
+				// We have a valid hazard reference
+				
+				editor.currentHazard = availableHazards.get(hazardId);
+				editor.hazardId = hazardId;
+				// Hazards are considered a tile
+				editor.changeState(EditorState.PLACING_TILES);
+			}
+			
+			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { 
+				defaultClickAction(editor);
+			}
+		},
+		
+		PLACING_HAZARDS {
+			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
+				editor.addHazard(editor.mousePosition.x(), editor.mousePosition.y() );
+			}
+			
+			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { 
+				defaultClickAction(editor);
+			}
+		},
+		
 		PLACING_SPRITES {
 			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
 				SpritePropertiesModel model = SpritePropertiesDialog.launch(editor, editor.currentWorldEditor.getWorldResource(), ImmutablePoint2D.of(editor.mousePosition.x(), editor.mousePosition.y() ) );
@@ -625,7 +732,9 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 					editor.currentScreenEditor.addSprite(model.getSpriteId(), model.getSpriteStartingLocation(), model.getSpriteBoundingBox(), model.getSpriteVelocity(), model.getAnimationType(), model.getAnimationSpeed(), editor.currentWorldEditor.getWorldResource() );
 				}
 			}
-			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { }
+			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { 
+				/* No Drag Action */
+			}
 		},
 		
 		EDITING_SPRITES {
@@ -681,6 +790,8 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	public LevelScreenEditor getVisibleScreenEditor() {
 		return this.currentScreenEditor;
 	}
+
+	
 
 
 

@@ -87,16 +87,17 @@ public class World {
 			goodiesInWorld.put(goodie.getKey(), Goodie.inflateFrom(goodie.getValue() ) );
 		}
 		
-		final Map<Integer, LevelScreen> worldScreens = new HashMap<>();
-		for (Entry<Integer, EncodedLevelScreen> screen : world.getLevels().entrySet() ) {
-			worldScreens.put(screen.getKey(), LevelScreen.inflateFrom(screen.getValue() ) );
-		}
 		
 		final List<Hazard> hazards = new ArrayList<>();
 		for (EncodedHazard encHazard : world.getHazards() ) {
 			hazards.add(Hazard.inflateFrom(encHazard, rsrc) );
 		}
 		
+		final Map<Integer, LevelScreen> worldScreens = new HashMap<>();
+		for (Entry<Integer, EncodedLevelScreen> screen : world.getLevels().entrySet() ) {
+			worldScreens.put(screen.getKey(), LevelScreen.inflateFrom(screen.getValue(), hazards) );
+		}
+
 		return new World(worldName, goodiesInWorld, worldScreens, hazards, rsrc);	
 	}
 	
@@ -356,12 +357,9 @@ public class World {
 		if (goodiesInWorld.get(checker) != null)
 			goodiesInWorld.remove(checker);
 	}
-	
-	//public addScreen(int screenID) 
-	
-	// Also updates the goodies. Why? Why not? They don't do much, saves on clock cycles.
-	public void paint(Graphics2D g2d) {
-		getCurrentScreen().paint(g2d);
+
+	public void paintAndUpdate(Graphics2D g2d) {
+		getCurrentScreen().paintAndUpdate(g2d);
 		
 		Collection<Goodie> goodiesVector = (Collection<Goodie>)goodiesInWorld.values();
 		for (Goodie nextGoodie : goodiesVector) {

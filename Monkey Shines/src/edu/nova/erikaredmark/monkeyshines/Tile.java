@@ -2,7 +2,10 @@ package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
+import edu.nova.erikaredmark.monkeyshines.encoder.EncodableTileType;
+import edu.nova.erikaredmark.monkeyshines.encoder.EncodedHazardTileType;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedTile;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
 import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
@@ -37,17 +40,36 @@ public class Tile {
 	
 	/**
 	 * 
-	 * Creates an instance of this object from its encoded for.
+	 * Creates an instance of this object from its encoded form.
 	 * 
-	 * @param value
+	 * @param encodedTile
+	 * 		the encoded form of the tile
+	 * 
+	 * @param worldHazards
+	 * 	    list of hazards that are part of the world. Some tiles have hazards on them so these must
+	 * 		be inflated first
 	 * 
 	 * @return
+	 * 		new instance of this class
 	 * 
 	 */
-	public static Tile inflateFrom(EncodedTile encodedTile) {
+	public static Tile inflateFrom(EncodedTile encodedTile, List<Hazard> worldHazards) {
 		// Check if the encoded tile is no tile, and if so set to singleton. Otherwise, return a new tile of the right type
-		if (encodedTile.getType() == StatelessTileType.NONE) return NO_TILE;
-		else return new Tile(encodedTile.getLocation(), encodedTile.getId(), encodedTile.getType() );
+		EncodableTileType type = encodedTile.getType();
+		if (type == StatelessTileType.NONE) return NO_TILE;
+		else {
+			if (type instanceof StatelessTileType) {
+				return new Tile(encodedTile.getLocation(), encodedTile.getId(), (StatelessTileType)encodedTile.getType() );
+			} else if (type instanceof EncodedHazardTileType) {
+				// Little more work; the list of encoded hazards, when inflated, gave a list of standard
+				// hazards, but in the same order. We use the ID here to map to the inflated versions
+				// of the hazards.
+				Hazard tileHazard = worldHazards.get(((EncodedHazardTileType)type).getHazardId() );
+				return new Tile(encodedTile.getLocation(), encodedTile.getId(), HazardTile.forHazard(tileHazard) );
+			} else {
+				throw new UnsupportedOperationException("Unknown tile type " + type.getClass().getName() );
+			}
+		}
 	}
 	
 	private Tile(final ImmutablePoint2D point, final int tileId, final TileType type) {
@@ -75,23 +97,28 @@ public class Tile {
 	public void skin(final WorldResource rsrc) {
 		if (this.type == StatelessTileType.NONE) return;
 		
-		this.rsrc = rsrc;
-		BufferedImage tileSpriteSheet = rsrc.getTilesheetFor(this.type);
-		sheetCols = tileSpriteSheet.getWidth() / GameConstants.TILE_SIZE_X;
-		
-		// Assume Integer division.
-		// No need to store id after we computed the bounds for the graphics.
-		tileDrawCol = (tileId % sheetCols) * GameConstants.TILE_SIZE_X;
-		tileDrawRow = (tileId / sheetCols) * GameConstants.TILE_SIZE_Y;
-		
-		// Sanity check: If the tileId goes out of bounds of the tile sheet, there is an issue. Print out that there
-		// is a rouge invisible tile.
-		// TODO Note: Document somehow that this DOESN'T prevent invisible tiles from accidentally being inserted by the
-		// editor. If the sheet has a fully transparent tile within the rectangle, that is technically valid. Perhaps
-		// have tilesheets fully pink everywhere else to communicate a bad-tile so this check always works?
-		int sheetRows = tileSpriteSheet.getHeight() / GameConstants.TILE_SIZE_Y;
-		if (tileId > sheetCols * sheetRows) {
-			System.out.println("" + this + ": Out of graphics range (Given sprite sheet only permits ids up to " + sheetCols * sheetRows);
+		if (this.type instanceof StatelessTileType) {
+			this.rsrc = rsrc;
+			BufferedImage tileSpriteSheet = rsrc.getTilesheetFor(this.type);
+			sheetCols = tileSpriteSheet.getWidth() / GameConstants.TILE_SIZE_X;
+			
+			// Assume Integer division.
+			// No need to store id after we computed the bounds for the graphics.
+			tileDrawCol = (tileId % sheetCols) * GameConstants.TILE_SIZE_X;
+			tileDrawRow = (tileId / sheetCols) * GameConstants.TILE_SIZE_Y;
+			
+			// Sanity check: If the tileId goes out of bounds of the tile sheet, there is an issue. Print out that there
+			// is a rouge invisible tile.
+			// TODO Note: Document somehow that this DOESN'T prevent invisible tiles from accidentally being inserted by the
+			// editor. If the sheet has a fully transparent tile within the rectangle, that is technically valid. Perhaps
+			// have tilesheets fully pink everywhere else to communicate a bad-tile so this check always works?
+			int sheetRows = tileSpriteSheet.getHeight() / GameConstants.TILE_SIZE_Y;
+			if (tileId > sheetCols * sheetRows) {
+				System.out.println("" + this + ": Out of graphics range (Given sprite sheet only permits ids up to " + sheetCols * sheetRows);
+			}
+		} else if (this.type instanceof HazardTile) {
+			// TODO currently no method of re-skinning hazards
+			System.out.println("Cannot re-skin hazard");
 		}
 		
 		isSkinned = true;
@@ -118,12 +145,34 @@ public class Tile {
 		
 		// TODO possible polymorphism in paint for tile type?
 		if (this.type instanceof HazardTile) {
-			// TODO animate hazards
-			((HazardTile)this.type).getHazard().paint(g2d, tileDrawCol, tileDrawRow, 0);
+			// This only handles basic animation: animations steps 0 and 1. Above need to delegate to
+			// the explosion sprite sheet.
+			final HazardTile hazard = (HazardTile)this.type;
+			if (hazard.isDead() )  return;
+			
+			if (!(hazard.isExploding() ) ) {
+				// tileDrawCol and row are not relevant: hazards know how to draw themselves (because they are stateful)
+				hazard.getHazard().paint(g2d, tileX, tileY, hazard.getAnimationStep() );
+			} else {
+				// TODO draw explosions
+			}
 		} else {
 			g2d.drawImage(rsrc.getTilesheetFor(this.type), tileX, tileY, tileX + GameConstants.TILE_SIZE_X, tileY + GameConstants.TILE_SIZE_Y, //DEST
 					tileDrawCol, tileDrawRow, tileDrawCol + GameConstants.TILE_SIZE_X, tileDrawRow + GameConstants.TILE_SIZE_Y, // SOURCE
 					null); // OBS
+		}
+	}
+	
+	/**
+	 * 
+	 * If this tile has any state that changes automatically between frames, this will update that state.
+	 * 
+	 */
+	public void update() {
+		if (this.type instanceof StatelessTileType)  return;
+		
+		if (this.type instanceof HazardTile) {
+			((HazardTile)this.type).update();
 		}
 	}
 	

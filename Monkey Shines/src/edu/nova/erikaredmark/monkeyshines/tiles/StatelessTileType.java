@@ -1,5 +1,7 @@
 package edu.nova.erikaredmark.monkeyshines.tiles;
 
+import edu.nova.erikaredmark.monkeyshines.encoder.EncodableTileType;
+
 
 /**
  * 
@@ -24,12 +26,12 @@ package edu.nova.erikaredmark.monkeyshines.tiles;
  * @author Erika Redmark
  *
  */
-public enum StatelessTileType implements TileType {
+public enum StatelessTileType implements TileType, EncodableTileType {
 	SOLID, 
 	THRU, 
 	SCENE,
 	CONVEYER_LEFT,
 	CONVEYER_RIGHT,
 	NONE;
-	
+
 }

@@ -87,17 +87,21 @@ public class EncodedWorld implements Serializable {
 		ImmutableMap.Builder<Integer, EncodedLevelScreen> _levels =
 			new ImmutableMap.Builder<Integer, EncodedLevelScreen>();
 		
+
+		
+		final ImmutableList.Builder<EncodedHazard> hazardsBuilder = new ImmutableList.Builder<>();
+		for (Hazard h : world.getHazards() ) {
+			hazardsBuilder.add(EncodedHazard.from(h) );
+		}
+		
+		final List<EncodedHazard> _hazards = hazardsBuilder.build();
+		
 		for (Entry<Integer, LevelScreen> entry : transientLevels.entrySet() ) {
 			_levels.put(entry.getKey(), EncodedLevelScreen.from(entry.getValue() ) );
 		}
 
-		
-		final ImmutableList.Builder<EncodedHazard> _hazards = new ImmutableList.Builder<>();
-		for (Hazard h : world.getHazards() ) {
-			_hazards.add(EncodedHazard.from(h) );
-		}
 
-		return new EncodedWorld(_name, _goodies, _levels.build(), _hazards.build() );
+		return new EncodedWorld(_name, _goodies, _levels.build(), _hazards);
 		
 	}
 	

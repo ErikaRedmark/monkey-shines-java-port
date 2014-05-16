@@ -102,7 +102,7 @@ public class GameWindow extends JPanel implements ActionListener {
 		super.paint(g);
 		Graphics2D g2d = (Graphics2D) g;
 		// Clear the screen with the world
-		currentWorld.paint(g2d);
+		currentWorld.paintAndUpdate(g2d);
 		bonzo.update();
 		bonzo.paint(g2d);
 	}

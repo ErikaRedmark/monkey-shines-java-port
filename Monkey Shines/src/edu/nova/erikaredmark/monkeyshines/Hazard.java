@@ -25,15 +25,14 @@ import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
  * Note that hazards that explode, whether killing bonzo or if he has a shield just exploding, come back after a screen is 
  * re-entered.
  * <p/>
- * Instances of this class are immutable. Hazards are comparable to other hazards by id.
+ * Instances of this class are immutable. Hazards are comparable to other hazards by id. The actual hazard on the world
+ * is controlled by {@code HazardTile}, which contains the mutable state data.
  * <p/>
- * The serialized form is the default. All data in the class correctly indicates what is requierd to be saved. 
  * 
  * @author Erika Redmark
  *
  */
 public final class Hazard implements Comparable<Hazard> {
-	
 	private final int id;
 	private final boolean explodes;
 	private final DeathAnimation deathAnimation;

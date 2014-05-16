@@ -52,12 +52,18 @@ public class LevelScreen {
 	 * 
 	 * Creates an instance of this object from its encoded for.
 	 * 
-	 * @param value
+	 * @param screen
+	 * 		the level screen to inflate
+	 * 
+	 * @param worldHazards
+	 * 		list of hazards that are part of the world. Some levels have hazards on them so these must
+	 * 		be inflated first
 	 * 
 	 * @return
+	 * 		new instance of this object
 	 * 
 	 */
-	public static LevelScreen inflateFrom(EncodedLevelScreen screen) {
+	public static LevelScreen inflateFrom(EncodedLevelScreen screen, List<Hazard> worldHazards) {
 		final int screenId = screen.getId();
 		final int backgroundId = screen.getBackgroundId();
 		final ImmutablePoint2D bonzoStart = screen.getBonzoLocation();
@@ -66,7 +72,7 @@ public class LevelScreen {
 		final EncodedTile[][] encodedTiles = screen.getTiles();
 		for (int i = 0; i < screenTiles.length; i++) {
 			for (int j = 0; j < screenTiles[i].length; j++) {
-				screenTiles[i][j] = Tile.inflateFrom(encodedTiles[i][j]);
+				screenTiles[i][j] = Tile.inflateFrom(encodedTiles[i][j], worldHazards);
 			}
 		}
 		
@@ -364,22 +370,31 @@ public class LevelScreen {
 	}
 	
 	/**
+	 * 
 	 * Draw background, tiles, and sprites in one swoop.
+	 * <p/>
+	 * As the name suggests, this doesn't merely paint; going through every entity, it run updates on
+	 * them as well. Updating is done after painting
+	 * 
 	 * TODO draws entire screen. May require a more intelligent algorithm to run on slower
 	 * machines
+	 * 
 	 * @param g2d
+	 * 
 	 */
-	public void paint(Graphics2D g2d) {
+	public void paintAndUpdate(Graphics2D g2d) {
 		g2d.drawImage(rsrc.getBackground(this.backgroundId), 0, 0, null);
 		for (int i = 0; i < GameConstants.TILES_IN_COL; i++) { // for every tile in the row
 			for (int j = 0; j < GameConstants.TILES_IN_ROW; j++) {
-				if (screenTiles[i][j] != null)
+				if (screenTiles[i][j] != null) {
 					screenTiles[i][j].paint(g2d);
+					screenTiles[i][j].update();
+				}
 			}
 		}
 		for (Sprite s : spritesOnScreen) {
-			s.update();
 			s.paint(g2d);
+			s.update();
 		}
 	}
 
