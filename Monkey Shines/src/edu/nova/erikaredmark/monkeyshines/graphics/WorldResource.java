@@ -1,7 +1,9 @@
 package edu.nova.erikaredmark.monkeyshines.graphics;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,6 +14,12 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 import edu.nova.erikaredmark.monkeyshines.GameConstants;
 import edu.nova.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
@@ -40,8 +48,6 @@ import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
  *
  */
 public final class WorldResource {
-	// TODO, Erika, you stopped here. We need to have this class hold every graphics context available. All other classes will remove all indidivual references to
-	// graphics and will ALWAYS defer to this class for graphics needs.
 	
 	/* ---------------------------- TILES ----------------------------- */
 	private final BufferedImage solidTiles;
@@ -143,8 +149,11 @@ public final class WorldResource {
 			// Java Specialists newsletter: more efficient way to do this when I have time 
 			// TODO http://www.javaspecialists.eu/archive/Issue107.html
 			for (ZipEntry entry : Collections.list(zipFile.entries() ) ) {
+				if (entry.isDirectory() )  continue; // contents of directories will be iterated over anyway.
+				final String entryName = getFilename(entry);
 				// FIRST: Handle hardcoded names that do not have continuations (numerical values from 0 to some number)
-				switch (entry.getName() ) {
+				switch (entryName ) {
+				/* --------------------------------- Graphics Other Than Sprites --------------------------------- */
 				case "solids.gif":
 					if (solidTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "solids.gif");
 					solidTiles = ImageIO.read(zipFile.getInputStream(entry) );
@@ -169,12 +178,52 @@ public final class WorldResource {
 					if (hazardTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "hazards.gif");
 					hazardTiles = ImageIO.read(zipFile.getInputStream(entry) );
 					break;
-				// SECOND: Handle background[#] and sprite[#] entries
+				/* ------------------------------------------- Sounds -------------------------------------------- */
+				case "bonzoStandardDeath.ogg":
+					loadSoundClip(zipFile, entry);
+				case "bee.ogg":
+					// TODO load sounds
+					break;
+				case "bonzoHurt.ogg":
+					// TODO load sounds
+					break;
+				case "applause.ogg":
+					// TODO load sounds
+					break;
+				case "extraLife.ogg":
+					// TODO load sounds
+					break;
+				case "lastRedKey.ogg":
+					// TODO load sounds
+					break;
+				case "levelFinishedScreen.ogg":
+					// TODO load sounds
+					break;
+				case "powerup.ogg":
+					// TODO load sounds
+					break;
+				case "powerupFade.ogg":
+					// TODO load sounds
+					break;
+				case "powerupMinor.ogg":
+					// TODO load sounds
+					break;
+				case "tick.ogg":
+					// TODO load sounds
+					break;
+				case "yumCollect.ogg":
+					// TODO load sounds
+					break;
+				case "yes.ogg":
+					// TODO load sounds
+					break;
+				/* ----------------------------------- Sprites And Backgrounds ---------------------------------------- */
+				// 
 				default:
 					// all graphic resources of this have indexes of a valid form
-					int index = indexFromName(entry.getName() );
-					// BACKGROUNDS
-					if (entry.getName().matches("^background[0-9]+\\.gif$") ) {
+					int index = indexFromName(entryName);
+					/* -------------------- Backgrounds -------------------- */
+					if (entryName.matches("^background[0-9]+\\.gif$") ) {
 						// Index out of bounds exception if we check and the array isn't big enough. If index is greater than size, then
 						// there was no previous anyway. If it isn't, make sure it is null
 						if (backgrounds.size() > index) {
@@ -183,8 +232,8 @@ public final class WorldResource {
 						if (index > maxBackgroundIndex) maxBackgroundIndex = index;
 						BufferedImage tempBackground = ImageIO.read(zipFile.getInputStream(entry) );
 						backgrounds.add(index, tempBackground);
-					// SPRITES
-					} else if (entry.getName().matches("^sprite[0-9]+\\.gif$") ) {
+					/* ---------------------- Sprites ---------------------- */
+					} else if (entryName.matches("^sprite[0-9]+\\.gif$") ) {
 						if (sprites.size() > index) {
 							if (sprites.get(index) != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
 						}
@@ -221,6 +270,87 @@ public final class WorldResource {
 								 yumSheet);
 	}
 	
+	/**
+	 * 
+	 * Resolves just the filename from an entry name. The entry name contains the path to the file relative
+	 * to the .zip, but in many cases we care only about the actual name, regardless of origin.
+	 * <p/>
+	 * This method will fail on directories (since they end with a slash)
+	 * 
+	 * @param entryName
+	 * 		entry name from the zip entry
+	 * 	
+	 * @return
+	 * 		just the filename
+	 * 
+	 * @throws IllegalArgumentException
+	 * 		if called on a directory entry
+	 * 
+	 */
+	private static String getFilename(ZipEntry entry) {
+		if (entry.isDirectory() )  throw new IllegalArgumentException("Cannot call method with directories");
+		final String entryName = entry.getName();
+		
+		int slash = entryName.lastIndexOf("/");
+		if (slash == -1)  return entryName;
+		else			  return entryName.substring(slash + 1);
+	}
+	
+	/**
+	 * 
+	 * Treats the contents of the zip as an ogg encoded sound file and loads the Entire File into memory, returning a
+	 * {@code Clip} representing the sound. Only short sound effects are loaded completely; longer sounds like music
+	 * should be streamed.
+	 * 
+	 * @param file
+	 * 		the zip file the zip entry comes from
+	 * 
+	 * @param entry
+	 * 		the zip entry containing the sound
+	 * 
+	 * @return
+	 * 		a clip of the sound. The entire sound will be stored in memory
+	 * 
+	 * @throws ResourcePackException
+	 * 		if the sound clip could not be loaded
+	 * 
+	 */
+	private static Clip loadSoundClip(ZipFile file, ZipEntry entry) throws ResourcePackException {
+		// Load the audio stream from the entry
+		// Buffered stream to allow mark/reset
+		try (InputStream bin = new BufferedInputStream(file.getInputStream(entry) );
+			AudioInputStream in = AudioSystem.getAudioInputStream(bin) ) {
+
+			AudioFormat baseFormat = in.getFormat();
+			
+			// Convert to basic PCM
+			// Decoded input stream will be closed on disposing of the WorldResource itself.
+			// Required for clip.
+			AudioFormat decodedFormat =
+			    new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,
+			                    baseFormat.getSampleRate(),
+			                    16,
+			                    baseFormat.getChannels(),
+			                    baseFormat.getChannels() * 2,
+			                    baseFormat.getSampleRate(),
+			                    false);
+			
+			AudioInputStream decodedInputStream = AudioSystem.getAudioInputStream(decodedFormat, in);
+			// Store in Clip and return
+			Clip clip = AudioSystem.getClip();
+			clip.open(decodedInputStream);
+
+			return clip;
+		
+		} catch (UnsupportedAudioFileException e) {
+			throw new ResourcePackException("Check that resources are of ogg format and that system is able to read ogg format:", e);
+		} catch (IOException e) {
+			throw new ResourcePackException(e);
+		} catch (LineUnavailableException e) {
+			throw new ResourcePackException(e);
+		}
+	}
+
 	/**
 	 * 
 	 * Returns an empty world resource. This is intended for test methods to provide resource objects to satisfy constructors

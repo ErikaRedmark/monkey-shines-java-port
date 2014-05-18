@@ -69,11 +69,13 @@ public class GameWindow extends JPanel implements ActionListener {
 				    "Cannot load world: Possibly corrupt or not a world file: " + ex.getMessage(),
 				    "Loading Error",
 				    JOptionPane.ERROR_MESSAGE);
+				ex.printStackTrace();
 			} catch (ResourcePackException ex) {
 				JOptionPane.showMessageDialog(this,
 				    "Resource pack issues: " + ex.getMessage(),
 				    "Loading Error",
 				    JOptionPane.ERROR_MESSAGE);
+				ex.printStackTrace();
 			}
 		} else {
 			// No world chosen, no graphics loaded, nothing to do. Quit

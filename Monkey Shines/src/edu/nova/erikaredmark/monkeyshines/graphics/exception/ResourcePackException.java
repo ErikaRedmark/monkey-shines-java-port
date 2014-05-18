@@ -10,9 +10,24 @@ public class ResourcePackException extends Exception {
 	 * Used when another exception causes the resource pack exception
 	 * 
 	 * @param cause
+	 * 
 	 */
 	public ResourcePackException(final Throwable cause) {
-		super(cause.getMessage(), cause);
+		this("", cause);
+	}
+	
+	/**
+	 * 
+	 * Used when another exception causes the resource pack exception
+	 * 
+	 * @param extraMessage
+	 * 		any extra information in addition to the exception that will be printed
+	 * 
+	 * @param cause
+	 * 
+	 */
+	public ResourcePackException(final String extraMessage, final Throwable cause) {
+		super(extraMessage + ": " + cause.getMessage(), cause);
 		this.type = Type.EXCEPTION;
 	}
 	
