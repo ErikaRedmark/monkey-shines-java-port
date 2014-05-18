@@ -7,7 +7,7 @@ import java.util.List;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedLevelScreen;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedSprite;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedTile;
-import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
 

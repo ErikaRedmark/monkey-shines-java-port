@@ -11,7 +11,7 @@ import javax.swing.Timer;
 import edu.nova.erikaredmark.monkeyshines.AnimationSpeed;
 import edu.nova.erikaredmark.monkeyshines.AnimationType;
 import edu.nova.erikaredmark.monkeyshines.Sprite;
-import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 
 /**
  * 

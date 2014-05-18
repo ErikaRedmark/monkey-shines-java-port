@@ -12,7 +12,7 @@ import edu.nova.erikaredmark.monkeyshines.Hazard;
 import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.LevelScreen;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedWorld;
-import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 import edu.nova.erikaredmark.monkeyshines.World;
 
 /**

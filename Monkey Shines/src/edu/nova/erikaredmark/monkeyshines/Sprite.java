@@ -3,7 +3,7 @@ package edu.nova.erikaredmark.monkeyshines;
 import java.awt.Graphics2D;
 
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedSprite;
-import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 
 /** TODO
  * 

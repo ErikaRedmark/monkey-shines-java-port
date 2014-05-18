@@ -8,7 +8,7 @@ import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.ImmutableRectangle;
 import edu.nova.erikaredmark.monkeyshines.LevelScreen;
 import edu.nova.erikaredmark.monkeyshines.Sprite;
-import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
 
 /**

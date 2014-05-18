@@ -15,7 +15,7 @@ import javax.swing.JDialog;
 import com.google.common.base.Optional;
 
 import edu.nova.erikaredmark.monkeyshines.Sprite;
-import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 
 public final class SpriteChooserDialog extends JDialog {
 	private static final long serialVersionUID = 1L;

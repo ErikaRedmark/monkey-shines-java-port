@@ -1,4 +1,4 @@
-package edu.nova.erikaredmark.monkeyshines.graphics;
+package edu.nova.erikaredmark.monkeyshines.resource;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
@@ -7,7 +7,10 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipFile;
@@ -22,6 +25,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 import edu.nova.erikaredmark.monkeyshines.GameConstants;
+import edu.nova.erikaredmark.monkeyshines.GameSoundEffect;
 import edu.nova.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import edu.nova.erikaredmark.monkeyshines.graphics.exception.ResourcePackException.Type;
 import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
@@ -40,9 +44,9 @@ import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
  * of sprite id apply here</li>
  * </ol>
  * <p/>
- * Instances of this class are immutable. Once constructed with all available graphics resources, this can not change. Otherwise, 
- * objects that cache data about the graphics may perform oddly if this was to change in mid render. To change graphics, the world
- * must be re-skinned with a new instance of this class
+ * Instances of this class are publically immutable until disposed. Once constructed with all available graphics resources, this can not change
+ * until {@code dispose() } is called. This is mainly designed to release sound resources and should be thought of as the 'destructor' of this object.
+ * Only call when about to otherwise remove references to an instance of this class.
  * 
  * @author Erika Redmark
  *
@@ -67,8 +71,16 @@ public final class WorldResource {
 	private final BufferedImage goodieSheet;
 	private final BufferedImage yumSheet;
 	
+	/* --------------------------- SOUNDS ----------------------------- */
+	// Whilst sounds are stored here, they should only be played via the
+	// SoundManager. null sounds are possible; in that case, that means
+	// that there is no sound available for a particular event.
+	private final Map<GameSoundEffect, Clip> sounds;
+	
+	private final SoundManager soundManager;
+	
 	// Implementation note: Even the arrays are null (not just empty) as this is not intended for any kind of paint methods
-	private static final WorldResource EMPTY = new WorldResource(null, null, null, null, null, null, null, null);
+	private static final WorldResource EMPTY = new WorldResource(null, null, null, null, null, null, null, null, new HashMap<GameSoundEffect, Clip>() );
 	
 	
 	/* -- Internal -- */
@@ -82,7 +94,8 @@ public final class WorldResource {
 					      final BufferedImage[] backgrounds,
 					      final BufferedImage[] sprites,
 					      final BufferedImage goodieSheet,
-					      final BufferedImage yumSheet) {
+					      final BufferedImage yumSheet,
+					      final Map<GameSoundEffect, Clip> sounds) {
 		
 		this.solidTiles = solidTiles;
 		this.thruTiles = thruTiles;
@@ -92,6 +105,12 @@ public final class WorldResource {
 		this.sprites = sprites;
 		this.goodieSheet = goodieSheet;
 		this.yumSheet = yumSheet;
+		this.sounds = sounds;
+		
+		// Generated data
+		// this pointer escapes, but no one gets a reference to the manager until construction is over
+		// and the manager constructor itself calls no methods on this class.
+		soundManager = new SoundManager(this);
 	}
 	
 	/**
@@ -144,6 +163,11 @@ public final class WorldResource {
 		BufferedImage goodieSheet	= null;
 		BufferedImage yumSheet		= null;
 		
+		// Sound clips
+		// Unlike graphics, some sounds may not exist, and that is okay. The game just won't play
+		// any sound when requested.
+		Map<GameSoundEffect, Clip> gameSounds = new IdentityHashMap<>();
+		
 		try (ZipFile zipFile = new ZipFile(packFile.toFile() ) ) {
 			// for (ZipEntry e : file.entries)
 			// Java Specialists newsletter: more efficient way to do this when I have time 
@@ -178,52 +202,11 @@ public final class WorldResource {
 					if (hazardTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "hazards.gif");
 					hazardTiles = ImageIO.read(zipFile.getInputStream(entry) );
 					break;
-				/* ------------------------------------------- Sounds -------------------------------------------- */
-				case "bonzoStandardDeath.ogg":
-					loadSoundClip(zipFile, entry);
-				case "bee.ogg":
-					// TODO load sounds
-					break;
-				case "bonzoHurt.ogg":
-					// TODO load sounds
-					break;
-				case "applause.ogg":
-					// TODO load sounds
-					break;
-				case "extraLife.ogg":
-					// TODO load sounds
-					break;
-				case "lastRedKey.ogg":
-					// TODO load sounds
-					break;
-				case "levelFinishedScreen.ogg":
-					// TODO load sounds
-					break;
-				case "powerup.ogg":
-					// TODO load sounds
-					break;
-				case "powerupFade.ogg":
-					// TODO load sounds
-					break;
-				case "powerupMinor.ogg":
-					// TODO load sounds
-					break;
-				case "tick.ogg":
-					// TODO load sounds
-					break;
-				case "yumCollect.ogg":
-					// TODO load sounds
-					break;
-				case "yes.ogg":
-					// TODO load sounds
-					break;
-				/* ----------------------------------- Sprites And Backgrounds ---------------------------------------- */
-				// 
+				// All other types are handled in default, as many different names may belong to one 'class' of things.
 				default:
-					// all graphic resources of this have indexes of a valid form
-					int index = indexFromName(entryName);
 					/* -------------------- Backgrounds -------------------- */
 					if (entryName.matches("^background[0-9]+\\.gif$") ) {
+						int index = indexFromName(entryName);
 						// Index out of bounds exception if we check and the array isn't big enough. If index is greater than size, then
 						// there was no previous anyway. If it isn't, make sure it is null
 						if (backgrounds.size() > index) {
@@ -234,12 +217,23 @@ public final class WorldResource {
 						backgrounds.add(index, tempBackground);
 					/* ---------------------- Sprites ---------------------- */
 					} else if (entryName.matches("^sprite[0-9]+\\.gif$") ) {
+						int index = indexFromName(entryName);
 						if (sprites.size() > index) {
 							if (sprites.get(index) != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
 						}
 						if (index > maxSpriteIndex) maxSpriteIndex = index;
 						BufferedImage tempSprite = ImageIO.read(zipFile.getInputStream(entry) );
 						sprites.add(index, tempSprite);
+					/* ---------------------- Sounds ----------------------- */
+					} else {
+						GameSoundEffect sound = GameSoundEffect.filenameToEnum(entryName);
+						if (sound == null) {
+							System.out.println("Information: " + entry.getName() + " not a valid resource in resource pack. Skipping.");
+							continue;
+						} else {
+							if (gameSounds.containsKey(sound) )  throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
+							gameSounds.put(sound, loadSoundClip(zipFile, entry) );
+						}
 					}
 				}
 			}
@@ -260,14 +254,21 @@ public final class WorldResource {
 		checkResourceContiguous(backgrounds, maxBackgroundIndex, "background");
 		checkResourceContiguous(sprites, maxSpriteIndex, "sprite");
 		
-		return new WorldResource(solidTiles, 
-								 thruTiles, 
-								 sceneTiles,
-								 hazardTiles,
-								 backgrounds.toArray(new BufferedImage[0]), 
-								 sprites.toArray(new BufferedImage[0]), 
-								 goodieSheet, 
-								 yumSheet);
+		// Sounds may be null
+		// No null checks
+		
+		WorldResource worldRsrc =
+			new WorldResource(solidTiles, 
+							  thruTiles, 
+							  sceneTiles,
+							  hazardTiles,
+							  backgrounds.toArray(new BufferedImage[backgrounds.size()]), 
+							  sprites.toArray(new BufferedImage[sprites.size()]),
+							  goodieSheet, 
+							  yumSheet,
+							  gameSounds);
+		
+		return worldRsrc;
 	}
 	
 	/**
@@ -339,6 +340,7 @@ public final class WorldResource {
 			// Store in Clip and return
 			Clip clip = AudioSystem.getClip();
 			clip.open(decodedInputStream);
+			System.out.println("Clip " + entry.getName() + " loaded at " + clip.getFrameLength() + " frame length");
 
 			return clip;
 		
@@ -530,6 +532,34 @@ public final class WorldResource {
 		int maxId = (hazardTiles.getWidth() / GameConstants.TILE_SIZE_X) - 1;
 		return id <= maxId;
 	}
-
+	
+	/**
+	 * 
+	 * Returns the clip for the given sound effect, or {@code null} if the sound effect has no clip. Incomplete
+	 * resource packs may not contain all sounds.
+	 * 
+	 * @param effect
+	 * 		the effect to get the sound clip for
+	 * 
+	 * @return
+	 * 		the clip itself
+	 * 
+	 */
+	Clip getSoundFor(GameSoundEffect effect) {
+		return sounds.get(effect);
+	}
+	
+	public SoundManager getSoundManager() { return this.soundManager; }
+	
+	/**
+	 * 
+	 * The 'destructor' of this object. Only call when about to otherwise remove a reference to the given
+	 * instance. Destroys all sound resources, and anything else claimed by this object that may not
+	 * be released under normal gc.
+	 * 
+	 */
+	public void dispose() {
+		for (Clip c : sounds.values() )  c.close();
+	}
 
 }

@@ -13,7 +13,7 @@ import com.google.common.primitives.Ints;
 
 import edu.nova.erikaredmark.monkeyshines.editor.HazardMutable;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedHazard;
-import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 
 
 /**

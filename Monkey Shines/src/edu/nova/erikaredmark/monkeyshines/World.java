@@ -14,7 +14,7 @@ import edu.nova.erikaredmark.monkeyshines.encoder.EncodedGoodie;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedHazard;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedLevelScreen;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedWorld;
-import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
 

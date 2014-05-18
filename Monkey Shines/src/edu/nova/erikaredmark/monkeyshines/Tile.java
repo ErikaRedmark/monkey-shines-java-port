@@ -7,7 +7,7 @@ import java.util.List;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodableTileType;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedHazardTileType;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedTile;
-import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;

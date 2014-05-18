@@ -25,7 +25,7 @@ import javax.swing.event.ListSelectionListener;
 import edu.nova.erikaredmark.monkeyshines.DeathAnimation;
 import edu.nova.erikaredmark.monkeyshines.Hazard;
 import edu.nova.erikaredmark.monkeyshines.editor.HazardMutable;
-import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 
 /**
  * 

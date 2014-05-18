@@ -1,4 +1,4 @@
-package edu.nova.erikaredmark.monkeyshines.graphics;
+package edu.nova.erikaredmark.monkeyshines.resource;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;

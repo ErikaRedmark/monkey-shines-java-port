@@ -17,8 +17,8 @@ import javax.swing.Timer;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import edu.nova.erikaredmark.monkeyshines.encoder.WorldIO;
 import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
-import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
 import edu.nova.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
+import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 
 /**
  * Initialises a JPanel that holds the game window. This window is where all the action and

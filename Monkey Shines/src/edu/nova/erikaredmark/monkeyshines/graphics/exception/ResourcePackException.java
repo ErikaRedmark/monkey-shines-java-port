@@ -59,7 +59,6 @@ public class ResourcePackException extends Exception {
 		/** For things like backgrounds and sprites, if an index number is expected but not encountered, this will be fired.
 		 */
 		NO_INDEX_NUMBER("Index number expected for resource, but none encountered: "),
-		
 		/** Indicates an exception occurred.
 		 */
 		EXCEPTION("Exception occurred: ");

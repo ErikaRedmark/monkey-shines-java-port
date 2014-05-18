@@ -2,7 +2,7 @@ package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics2D;
 
-import edu.nova.erikaredmark.monkeyshines.graphics.CoreResource;
+import edu.nova.erikaredmark.monkeyshines.resource.CoreResource;
 import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
 

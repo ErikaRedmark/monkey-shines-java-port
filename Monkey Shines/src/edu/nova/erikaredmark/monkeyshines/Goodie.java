@@ -3,7 +3,7 @@ package edu.nova.erikaredmark.monkeyshines;
 import java.awt.Graphics;
 
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedGoodie;
-import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 
 public class Goodie {
 	/**
@@ -54,7 +54,11 @@ public class Goodie {
 	 * @param location
 	 * @param screenID
 	 */
-	public static Goodie newGoodie(final Type type, final ImmutablePoint2D location, final int screenID, final WorldResource rsrc) {
+	public static Goodie newGoodie(final Type type, 
+								   final ImmutablePoint2D location, 
+								   final int screenID, 
+								   final WorldResource rsrc) {
+		
 		Goodie g = new Goodie(type, location, screenID);
 		g.skin(rsrc);
 		return g;
@@ -91,7 +95,7 @@ public class Goodie {
 	}
 	
 	public void skin(final WorldResource rsrc) {
-		this.rsrc = rsrc;
+		this.rsrc = rsrc;;
 		isSkinned = true;
 	}
 	
@@ -112,8 +116,17 @@ public class Goodie {
 		}
 	}
 	
+	/**
+	 * 
+	 * Tells the goodie that it has been taken. This starts the 'Yum' animation and plays the appropriate
+	 * sound. A goodie may only be taken once. If a goodie is already taken, this method does nothing.
+	 * 
+	 */
 	public void take() {
+		if (taken)  return;
+		
 		taken = true;
+		rsrc.getSoundManager().playOnce(GameSoundEffect.YUM_COLLECT);
 	}
 	
 	public int getScreenID() {
