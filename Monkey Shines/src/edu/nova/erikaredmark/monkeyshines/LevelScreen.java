@@ -27,7 +27,7 @@ import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
  * represents the level as it is in one-instance of the game.
  * 
  */
-public class LevelScreen {
+public final class LevelScreen {
 	
 	// Initialisation datas for a level screen
 	private final int screenId;
@@ -206,38 +206,49 @@ public class LevelScreen {
 			nextSprite.resetSpritePosition();
 		}
 	}
-
+	
+	
+	/**
+	 * Returns the tile type at the given cordinates. These are PIXEL cordinates in the screen
+	 * 
+	 * @param x
+	 * 		x location in terms of pixels
+	 * 
+	 * @param y
+	 * 		y location in terms of pixels
+	 *
+	 * @return
+	 * 		a tile type at the given position
+	 */
+	public TileType getTileAt(int x, int y) {
+		return getTile(x / GameConstants.TILE_SIZE_X, y / GameConstants.TILE_SIZE_Y);
+	}
 	
 	/**
 	 * 
-	 * Checks if there is a tile at the given pixel position (not row/col!). The given position is out of the legal size of
-	 * the screen, this method simply returns {@code null} (no tile).
+	 * Returns the tile type for the tile at the given GRID location; as in, the values passed to
+	 * this method should already be normalised as a grid location and not an absolute location
+	 * on the screen
+	 * <p/>
+	 * If the location is not valid for a tile, then {@code StatelessTileType.NONE} is returned.
 	 * 
-	 * @param xLoc
-	 * 		x position by pixels
-	 * 	
-	 * @param bonzoY
-	 * 		y position by pixels
+	 * @param x
+	 * 		x location in terms of grid index
 	 * 
-	 * @param tileTypes
-	 * 		a set of relevant tile types
+	 * @param y
+	 * 		y location in terms of grid index
 	 * 
 	 * @return
-	 * 		A valid TileType enumeration if a tile exists at the given position, or {@code null} if there is no such tile 
-	 * 		or if the position is outside of the screen bounds
+	 * 		a tile type at the given position, or {@code StatelessTileType.NONE} if the given x/y
+	 * 		grid location is out of range
 	 * 
 	 */
-	public TileType checkForTile(int bonzoX, int bonzoY) {
-		int tileX = bonzoX / GameConstants.TILE_SIZE_X;
-		int tileY = bonzoY / GameConstants.TILE_SIZE_Y;
-		// If out of bounds, allow to slip by. 
-		if (tileX < 0 || tileX >= GameConstants.TILES_IN_ROW || tileY < 0 || tileY >= GameConstants.TILES_IN_COL)
-			return null;
+	public TileType getTile(int x, int y) {
+		// If out of bounds, allow to slip by
+		if (x < 0 || x >= GameConstants.TILES_IN_ROW || y < 0 || y >= GameConstants.TILES_IN_COL)
+			return StatelessTileType.NONE;
 		
-		// if there is no tile, well, false
-		if (screenTiles[tileY][tileX].isEmpty() )  return null;
-		
-		return screenTiles[tileY][tileX].getType();
+		return screenTiles[y][x].getType();
 	}
 	
 	// Careful! This is return by reference
@@ -293,25 +304,6 @@ public class LevelScreen {
 			if (box.intersect(rect) ) returnList.add(s);
 		}
 		return returnList;
-	}
-	
-	/**
-	 * Returns the tile type at the given cordinates. These are PIXEL cordinates in the screen
-	 * 
-	 * @param x
-	 * @param y
-	 *
-	 * @return
-	 * 		a tile type at the given position
-	 */
-	public TileType getTileAt(int x, int y) {
-		int tileX = x / GameConstants.TILE_SIZE_X;
-		int tileY = y / GameConstants.TILE_SIZE_Y;
-		// If out of bounds, allow to slip by
-		if (tileX < 0 || tileX >= GameConstants.TILES_IN_ROW || tileY < 0 || tileY >= GameConstants.TILES_IN_COL)
-			return StatelessTileType.NONE;
-		
-		return screenTiles[tileY][tileX].getType();
 	}
 	
 	/*

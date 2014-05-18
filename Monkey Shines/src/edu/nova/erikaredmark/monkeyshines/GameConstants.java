@@ -21,6 +21,8 @@ public final class GameConstants {
 	public static final int SPRITES_IN_ROW = 8; // The number of sprites in the row.
 	public static final int TILE_SIZE_X = 20; // The size of a tile.
 	public static final int TILE_SIZE_Y = 20;
+	public static final int TILE_SIZE_X_HALF = TILE_SIZE_X / 2; // Used for some collision calculations
+	public static final int TILE_SIZE_Y_HALF = TILE_SIZE_Y / 2;
 	public static final int TILES_IN_ROW = 32; // every row has 32 tiles
 	public static final int TILES_IN_COL = 20; // every coloum has 20 rows
 	public static final int GOODIE_SIZE_X = 20;

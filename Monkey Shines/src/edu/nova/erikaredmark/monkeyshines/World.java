@@ -9,11 +9,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import edu.nova.erikaredmark.monkeyshines.bounds.IPoint2D;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedGoodie;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedHazard;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedLevelScreen;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
+import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
 
 /**
  * Holds all information about the entire world.
@@ -283,9 +286,14 @@ public class World {
 		ImmutableRectangle bonzoBounding = theBonzo.getCurrentBounds();
 		for (Sprite nextSprite : allSprites) {
 			if (nextSprite.getCurrentBounds().intersect(bonzoBounding) ) {
-				theBonzo.kill();
+				theBonzo.tryKill(DeathAnimation.NORMAL);
 			}
 		}
+		// A hazard?
+		hazardCollisionCheck(theBonzo);
+		
+		
+		// A goodie?
 		
 		int topLeftX = (currentLocation.x() + (GameConstants.GOODIE_SIZE_X / 2) ) / GameConstants.GOODIE_SIZE_X;
 		int topLeftY = (currentLocation.y() + (GameConstants.GOODIE_SIZE_Y / 2) )/ GameConstants.GOODIE_SIZE_Y;
@@ -308,6 +316,104 @@ public class World {
 		if ( (gotGoodie = goodiesInWorld.get(bottomRightQuad) ) != null ) {
 			gotGoodie.take();
 		}
+	}
+	
+	/**
+	 * 
+	 * Performs a check if the bonzo is on one or more 'hazard' tiles. If so, then the hazard it set
+	 * to explode (if required) and bonzo is killed based on the hazard properties.
+	 * 
+	 * @param bonzo
+	 * 
+	 */
+	private void hazardCollisionCheck(Bonzo bonzo) {
+		ImmutablePoint2D[] tilesToCheck = effectiveTiles(bonzo.getCurrentBounds() );
+		for (ImmutablePoint2D tile: tilesToCheck) {
+			TileType type = getCurrentScreen().getTile(tile.x(), tile.y() );
+			if (type instanceof HazardTile) {
+				// Still can get out of doing anything if the hazard is already gone.
+				HazardTile hazard = (HazardTile) type;
+				// MUST check isExploding. If bonzo had invincibility and lost it 1 tick after touching
+				// a bomb, the bomb is technically already no longer a hurt for Bonzo.
+				if (hazard.isDead() || hazard.isExploding() )  continue;
+				
+				hazard.hazardHit();
+				// Send a kill message to bonzo. Only invincibility will save him
+				bonzo.tryKill(hazard.getHazard().getDeathAnimation() );
+				return;
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 * Resolves a bounding box into its 'effective' four tiles it takes up. The bounding box MUST be 40x40; any
+	 * other size will have unexpected behaviour (and fire an assertion error is assertions are enabled.
+	 * <p/>
+	 * A bounding box may cover more than four tiles. However, the four chosen will be the four 'most' covered by
+	 * the box. This is a 'good enough' representation of where Bonzo is, and is typically used for things like
+	 * hazards.
+	 * <p/>
+	 * Generally, the way the system works (moving between screens) this method should rarely end up enumerating
+	 * a tile grid location that is outside of the number of actual tiles on the screen. However, fast speeds
+	 * downwards MAY cause this to happen; it is important for clients to handle the case where any of the returned
+	 * points may be out of range.
+	 * 
+	 * @param bounds
+	 * 		the bounding rectangle. MUST be 40x40
+	 * 
+	 * @return
+	 * 		array of size 4, from top-left clockwise, each 'point' that represents an x,y in the tile gride of
+	 * 		the file this bounding box occupies
+	 * 
+	 * 
+	 * @throws AssertionError
+	 * 		if assertions are enabled and the bounds are not 40x40
+	 * 
+	 */
+	static ImmutablePoint2D[] effectiveTiles(ImmutableRectangle bounds) {
+		assert bounds.getSize().x() == 40;
+		assert bounds.getSize().y() == 40;
+		// Solution: 
+		// 1) 'snap' top left x,y cordinates. Whether the x/y stays in the grid tile, or moves right/
+		//	  down depends on how close the position would be to the other.
+		// 2) Divide to get the tile x,y, then build the other three points in clockwise form
+		//
+		//  Stays in tile...
+		//  *-------*
+		//	| X-    |
+		//  | |     |
+		//  |       |
+		//  *-------*
+		// 
+		//  Snaps to right and bottom tile
+		//  *-------*
+		//	|       |
+		//  |       |
+		//  |     X-|
+		//  *-----|-*
+		
+		IPoint2D topLeft = bounds.getLocation();
+		int offsetInTileX = topLeft.x() % GameConstants.TILE_SIZE_X;
+		int offsetInTileY = topLeft.y() % GameConstants.TILE_SIZE_Y;
+		
+		// The use of > means that tile snapping favours staying within a tile 
+		// [0, TILE_SIZE_X_HALF] vs snapping (TILE_SIZE_X_HALF, TILE_SIZE_X]
+		// Division transforms absolute point to grid point
+		int newTopLeftX = (  offsetInTileX > GameConstants.TILE_SIZE_X_HALF
+						   ? (topLeft.x() / GameConstants.TILE_SIZE_X) + 1
+						   : topLeft.x() / GameConstants.TILE_SIZE_X); 
+		
+		int newTopLeftY = (  offsetInTileY > GameConstants.TILE_SIZE_Y_HALF
+						   ? (topLeft.y() / GameConstants.TILE_SIZE_Y) + 1
+						   : topLeft.y() / GameConstants.TILE_SIZE_Y);
+	
+		ImmutablePoint2D[] fourPoints = new ImmutablePoint2D[4];
+		fourPoints[0] = ImmutablePoint2D.of(newTopLeftX, newTopLeftY);
+		fourPoints[1] = ImmutablePoint2D.of(newTopLeftX + 1, newTopLeftY);
+		fourPoints[2] = ImmutablePoint2D.of(newTopLeftX, newTopLeftY + 1);
+		fourPoints[3] = ImmutablePoint2D.of(newTopLeftX + 1, newTopLeftY + 1);
+		return fourPoints;
 	}
 	
 	// Reminder: Form is like "1000X4,3"

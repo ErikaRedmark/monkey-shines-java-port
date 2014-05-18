@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import edu.nova.erikaredmark.monkeyshines.graphics.WorldResource;
 
-public class Hazard_Test {
+public final class Hazard_Test {
 
 	private static final WorldResource dummy = WorldResource.empty();
 	private List<Hazard> starterHazards;

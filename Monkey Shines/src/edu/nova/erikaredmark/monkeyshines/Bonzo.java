@@ -18,26 +18,10 @@ public final class Bonzo {
 	// Constants for bonzo
 	public static final ImmutablePoint2D BONZO_SIZE = ImmutablePoint2D.of(40, 40);
 	
-	// private constants
-	private static final int BONZO_DEATH_SIZE_X = 80;
-	private static final int BONZO_DEATH_SIZE_Y = 40;
-//	private static final int BONZO_BEE_SIZE_X = 40;
-//	private static final int BONZO_BEE_SIZE_Y = 80;
-	
-	// ALL X'S HERE ARE ZERO
-//	private static final int WALK_RIGHT_Y = 0;
-//	private static final int WALK_SPRITES = 16;
-//	private static final int WALK_LEFT_Y = 40;
-	
 	private static final int JUMP_SPRITES = 8;
 	private static final int JUMP_Y = 80;
 //	private static final int JUMP_RIGHT_X = 0;
 	private static final int JUMP_LEFT_X = JUMP_SPRITES * BONZO_SIZE.x();
-	
-//	private static final int DEATH_SPRITES = 16;
-//	private static final int DEATH_ROWS = 2;
-//	private static final int DEATH_COLS = 8;
-	private static final int DEATH_START_Y = 120;
 	
 	// Sprite Info
 	private int walkingDirection; // used during walking for determing what to blit.
@@ -56,6 +40,9 @@ public final class Bonzo {
 	
 	// When dying, everything is overridden, and bonzo is reset.
 	private boolean isDying;
+	// The current animation to use for bonzo dying. This field is only used when going through
+	// death animations and is only updated when bonzo is killed.
+	private DeathAnimation deathAnimation;
 	
 	// Use a pointer to the current world to get information such as the screen, and then from there where bonzo
 	// is relative to the screen.
@@ -89,7 +76,7 @@ public final class Bonzo {
 		currentLocation = newLocation;
 		
 		// When bonzo is restarted, he is not dead or jumping
-		setDying(false);
+		setDying(false, this.deathAnimation);
 		setJumping(false);
 	}
 	
@@ -183,9 +170,9 @@ public final class Bonzo {
 	 */
 	public boolean solidToSide(final int newX) {
 		LevelScreen currentScreen = worldPointer.getCurrentScreen();
-		if (   currentScreen.checkForTile(newX, currentLocation.y() ) == StatelessTileType.SOLID 
-		    || currentScreen.checkForTile(newX, currentLocation.y() + BONZO_SIZE.y() - 1) == StatelessTileType.SOLID
-			|| currentScreen.checkForTile(newX, currentLocation.y() + (BONZO_SIZE.y() / 2) ) == StatelessTileType.SOLID) {
+		if (   currentScreen.getTileAt(newX, currentLocation.y() ) == StatelessTileType.SOLID 
+		    || currentScreen.getTileAt(newX, currentLocation.y() + BONZO_SIZE.y() - 1) == StatelessTileType.SOLID
+			|| currentScreen.getTileAt(newX, currentLocation.y() + (BONZO_SIZE.y() / 2) ) == StatelessTileType.SOLID) {
 			
 			return true;
 		}
@@ -205,19 +192,42 @@ public final class Bonzo {
 	 */
 	public boolean solidToUp(final int newY) {
 		LevelScreen currentScreen = worldPointer.getCurrentScreen();
-		if (   currentScreen.checkForTile(currentLocation.x(), newY) == StatelessTileType.SOLID 
-			|| currentScreen.checkForTile(currentLocation.x() + (BONZO_SIZE.x() - 1), newY ) == StatelessTileType.SOLID 
-			|| currentScreen.checkForTile(currentLocation.x() + (BONZO_SIZE.x() / 2), newY ) == StatelessTileType.SOLID) {
+		if (   currentScreen.getTileAt(currentLocation.x(), newY) == StatelessTileType.SOLID 
+			|| currentScreen.getTileAt(currentLocation.x() + (BONZO_SIZE.x() - 1), newY ) == StatelessTileType.SOLID 
+			|| currentScreen.getTileAt(currentLocation.x() + (BONZO_SIZE.x() / 2), newY ) == StatelessTileType.SOLID) {
 			return true;
 		}
 		return false;
 	}
 	
-	public void kill() {
+	/**
+	 * 
+	 * Tries to kill bonzo. This takes into account if bonzo if invincible: if he is, does
+	 * nothing. Otherwise, kills bonzo.
+	 * 
+	 * @param
+	 * 		if bonzo does die, use this death animation
+	 * 
+	 */
+	public void tryKill(DeathAnimation animation) {
+		// TODO do invincibility checks. Right now this just forwards to kill()
+		kill(animation);
+	}
+	
+	/**
+	 * 
+	 * Kills bonzo. He stops moving and begins the given death animation. After effects of death (such
+	 * as level reset) are deferred until the animation finishes.
+	 * 
+	 * @param
+	 * 		uses this death animatino for bonzo
+	 * 
+	 */
+	public void kill(DeathAnimation animation) {
 		currentVelocity.setX(0);
 		currentVelocity.setY(0);
 		currentSprite = 0;
-		setDying(true);
+		setDying(true, animation);
 	}
 	
 	public void move(double velocity) {
@@ -262,8 +272,21 @@ public final class Bonzo {
 		currentVelocity.setX(0);
 	}
 	
-	public void setDying(boolean dying) {
+	/**
+	 * 
+	 * Sets bonzo to the 'dying' state. This just plays whatever animation was requested, and
+	 * after the animation is finished post-die animatino routines are run (like level reset)
+	 * 
+	 * @param dying
+	 * 		{@code true} to set to dying, {@code false} to stop dying (used after level reset)
+	 * 
+	 * @param animation
+	 * 		animation to use for death. Ignored if setting the dying to false
+	 * 
+	 */
+	private void setDying(boolean dying, DeathAnimation animation) {
 		this.isDying = dying;
+		this.deathAnimation = animation;
 	}
 	
 	public void setJumping(boolean jumping) {
@@ -329,11 +352,14 @@ public final class Bonzo {
 	public void paint(Graphics2D g2d) {
 		// If dying, that overrides everything.
 		if (isDying) {
-			int yOffset = DEATH_START_Y + (BONZO_DEATH_SIZE_Y * (currentSprite / 8) );
-			int xOffset = BONZO_DEATH_SIZE_X * (currentSprite % 8);
+			// TODO respect offset request of DeathAnimation enumeration.
+			ImmutablePoint2D deathStart = deathAnimation.deathStart();
+			ImmutablePoint2D deathSize = deathAnimation.deathSize();
+			int yOffset = deathStart.y() + (deathSize.y() * (currentSprite / deathAnimation.framesPerRow() ) );
+			int xOffset = deathSize.x() * (currentSprite % deathAnimation.framesPerRow() );
 			g2d.drawImage(CoreResource.INSTANCE.getBonzoSheet(), currentLocation.x(), currentLocation.y(),  //DEST
-						  currentLocation.x() + BONZO_DEATH_SIZE_X, currentLocation.y() + BONZO_DEATH_SIZE_Y, // DEST2
-						  xOffset, yOffset, xOffset + BONZO_DEATH_SIZE_X, yOffset + BONZO_DEATH_SIZE_Y,
+						  currentLocation.x() + deathSize.x(), currentLocation.y() + deathSize.y(), // DEST2
+						  xOffset, yOffset, xOffset + deathSize.x(), yOffset + deathSize.y(),
 						  null);
 			return;
 		}
