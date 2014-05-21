@@ -340,7 +340,9 @@ public final class WorldResource {
 			// Store in Clip and return
 			Clip clip = AudioSystem.getClip();
 			clip.open(decodedInputStream);
-			System.out.println("Clip " + entry.getName() + " loaded at " + clip.getFrameLength() + " frame length");
+			if (clip.getFrameLength() == 0) {
+				System.err.println("Clip " + entry.getName() + " has no loaded frames. There is an unknown issue decoding .ogg files of sizes less than or equal to around 6K. Please add inaudible noise to sound file to increase size");
+			}
 
 			return clip;
 		

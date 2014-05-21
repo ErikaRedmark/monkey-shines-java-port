@@ -41,7 +41,7 @@ public final class SoundManager {
 	public void playOnce(GameSoundEffect effect) {
 		Clip clip = rsrc.getSoundFor(effect);
 		if (clip != null) {
-			System.out.println("Playing Yum");
+			if (clip.isActive() )  clip.stop();
 			clip.setFramePosition(0);
 			clip.start();
 		}
