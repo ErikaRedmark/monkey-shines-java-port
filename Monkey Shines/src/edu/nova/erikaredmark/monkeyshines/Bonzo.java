@@ -229,6 +229,7 @@ public final class Bonzo {
 		currentVelocity.setY(0);
 		currentSprite = 0;
 		setDying(true, animation);
+		worldPointer.getResource().getSoundManager().playOnce(animation.soundEffect() );
 	}
 	
 	public void move(double velocity) {

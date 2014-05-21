@@ -125,6 +125,18 @@ public class World {
 		
 		return new World(name, new HashMap<String, Goodie>(), screens, new ArrayList<Hazard>(), rsrc);
 	}
+	
+	
+	/**
+	 * 
+	 * Returns the current resource skinning this worlds graphics, sounds, and music.
+	 * 
+	 * @return
+	 * 		current resource
+	 * 
+	 */
+	public WorldResource getResource() { return this.rsrc; }
+	
 	/**
 	 * 
 	 * Sets the graphics resources this worlds will use when any of its parts, be it tiles, sprites, etc are drawn.

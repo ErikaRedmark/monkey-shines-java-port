@@ -16,6 +16,7 @@ public enum DeathAnimation {
 		@Override public ImmutablePoint2D deathStart() { return start; }
 		@Override public ImmutablePoint2D deathSize() { return size; }
 		@Override public int framesPerRow() { return 8; }
+		@Override public GameSoundEffect soundEffect() { return GameSoundEffect.STANDARD_DEATH; }
 	},
 	BEE {
 		private final ImmutablePoint2D start = ImmutablePoint2D.of(0, 349);
@@ -26,6 +27,7 @@ public enum DeathAnimation {
 		@Override public ImmutablePoint2D deathSize() { return size; }
 		@Override public int framesPerRow() { return 16; }
 		@Override public ImmutablePoint2D offset() { return offset; }
+		@Override public GameSoundEffect soundEffect() { return GameSoundEffect.STANDARD_DEATH; }
 	},
 	BURN {
 		private final ImmutablePoint2D start = ImmutablePoint2D.of(0, 200);
@@ -34,6 +36,7 @@ public enum DeathAnimation {
 		@Override public ImmutablePoint2D deathStart() { return start; }
 		@Override public ImmutablePoint2D deathSize() { return size; }
 		@Override public int framesPerRow() { return 16; }
+		@Override public GameSoundEffect soundEffect() { return GameSoundEffect.BOMB_DEATH; }
 	},
 	ELECTRIC {
 		private final ImmutablePoint2D start = ImmutablePoint2D.of(0, 240);
@@ -42,6 +45,7 @@ public enum DeathAnimation {
 		@Override public ImmutablePoint2D deathStart() { return start; }
 		@Override public ImmutablePoint2D deathSize() { return size; }
 		@Override public int framesPerRow() { return 8; }
+		@Override public GameSoundEffect soundEffect() { return GameSoundEffect.ELECTRIC_DEATH; }
 	};
 	
 	
@@ -92,4 +96,14 @@ public enum DeathAnimation {
 		// Should return an immutable singleton
 		return ImmutablePoint2D.of(0, 0); 
 	}
+	
+	/**
+	 * 
+	 * The sound effect associated with this death animation
+	 * 
+	 * @return
+	 * 		sound effect to play when this animation begins
+	 * 
+	 */
+	public abstract GameSoundEffect soundEffect();
 }
