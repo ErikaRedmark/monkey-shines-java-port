@@ -185,6 +185,7 @@ public final class Bonzo {
 	 * was to try to jump
 	 * 
 	 * @param newY
+	 * 		the 'new' y level bonzo is or is going to be
 	 * 
 	 * @return
 	 * 		{@code true} if there is a solid block in that position, {@code false} if otherwise
@@ -255,11 +256,21 @@ public final class Bonzo {
 		}
 	}
 	
-	// Add some jump to the velocity, and set the animation to jumping.
+	/**
+	 * 
+	 * Jump action from player input: If there is no solid directly above Bonzo, then this will set bonzo's state to jumping
+	 * and apply some starting y velocity.
+	 * 
+	 * @param velocity
+	 * 		starting velocity to apply
+	 * 
+	 */
 	public void jump(double velocity) {
+		// Don't start a jump if there isn't enough room.
+		if (solidToUp(currentLocation.y() - 1) )  return;
+		
 		// Only allow jumping if on the ground and velocity going up is zero. And not already in the middle of a jump
-		if (isJumping)
-			return;
+		if (isJumping)  return;
 		int onGround = onGround();
 		if (onGround != -1 && (currentVelocity.y() == 0)  ) {
 			currentVelocity.setY(-(velocity * GameConstants.BONZO_JUMP_MULTIPLIER) );
@@ -289,7 +300,14 @@ public final class Bonzo {
 		this.deathAnimation = animation;
 	}
 	
-	public void setJumping(boolean jumping) {
+	/**
+	 * 
+	 * Sets bonzos state to jumping
+	 * 
+	 * @param jumping
+	 * 
+	 */
+	private void setJumping(boolean jumping) {
 		this.isJumping = jumping;
 	}
 	
@@ -310,6 +328,7 @@ public final class Bonzo {
 		// At this time, we could be inside of a block. Since by game nature velocity is only either
 		// upward or downward, check now to bump us out of the ground
 		int onGround = onGround(originalY);
+		
 		/* ------- Not on the ground, so start pulling downward ---------- */
 		if ( onGround == -1) {
 			// if the current velocity has not yet hit terminal
@@ -342,7 +361,9 @@ public final class Bonzo {
 				if (currentSprite < 7)
 					currentSprite++;
 			} else {
-				currentVelocity.reverseY();
+				// Only reverse the velocity if we are actually already going up. If we are falling and somehow still
+				// inside a solid, don't reverse again or we get bouncing through ceilings.
+				if (currentVelocity.y() < 0)  currentVelocity.reverseY();
 			}
 		}
 
