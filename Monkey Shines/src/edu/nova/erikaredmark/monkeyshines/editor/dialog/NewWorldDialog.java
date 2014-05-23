@@ -2,6 +2,7 @@ package edu.nova.erikaredmark.monkeyshines.editor.dialog;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -13,7 +14,6 @@ import javax.swing.JButton;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.awt.event.ComponentEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
@@ -35,8 +35,10 @@ import edu.nova.erikaredmark.monkeyshines.encoder.WorldIO;
  * @author TJS
  *
  */
-public class NewWorldDialog extends JPanel implements LaunchableDialog {
+public class NewWorldDialog extends JPanel {
 	private static final long serialVersionUID = 1L;
+	
+	private final JDialog parentDialog;
 	
 	private final JTextField txtWorldName;
 	private final JTextField txtResourcePack;
@@ -82,6 +84,7 @@ public class NewWorldDialog extends JPanel implements LaunchableDialog {
 						// Save the state of what the user chose (the new file) to this objects
 						// The path current doesn't point to the save file, just the folder name.
 						model.saveLocation = savePath.resolve(savePath.getFileName() + ".world");
+						parentDialog.setVisible(false);
 						// dispose();
 						// setVisible(false);
 						// Dispatch event so system knows to actually close the dialog
@@ -106,8 +109,14 @@ public class NewWorldDialog extends JPanel implements LaunchableDialog {
 	 * was saved to, if it was saved at all. Clients may wish to query the model for that and
 	 * any other state information after the dialog has been launched and closed.
 	 * 
+	 * @param parentDialog
+	 * 		the dialog object that is directly supporting this dialog (since this is
+	 * 		technically a JComponent). Used to provide early dialog closure
+	 * 
 	 */
-	public NewWorldDialog() {
+	public NewWorldDialog(final JDialog parentDialog) {
+		this.parentDialog = parentDialog;
+		
 		SpringLayout springLayout = new SpringLayout();
 		setLayout(springLayout);
 		
@@ -175,6 +184,7 @@ public class NewWorldDialog extends JPanel implements LaunchableDialog {
 		
 		// TODO remove listeners on dispose action
 	}
+
 	
 	/**
 	 * 

@@ -1,10 +1,13 @@
 package edu.nova.erikaredmark.monkeyshines.editor;
 
+import java.awt.BorderLayout;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.nio.file.Path;
 
 import javax.swing.AbstractAction;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -16,7 +19,6 @@ import com.google.common.base.Optional;
 
 import edu.nova.erikaredmark.monkeyshines.*;
 import edu.nova.erikaredmark.monkeyshines.editor.LevelEditorMainCanvas.EditorState;
-import edu.nova.erikaredmark.monkeyshines.editor.dialog.DialogLauncher;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.GoToScreenDialog;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.NewWorldDialog;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedWorld;
@@ -276,8 +278,23 @@ public class LevelEditor extends JFrame {
 		editor.newWorld.setAction(new AbstractAction("New World...") {
 			private static final long serialVersionUID = 1L;
 			@Override public void actionPerformed(ActionEvent e) {
-				NewWorldDialog theNewWorld = new NewWorldDialog();
-				DialogLauncher.launch(editor, "New World...", theNewWorld, true);
+				// Setup dialog
+				final JDialog dialog = new JDialog(editor);
+				dialog.setLayout(new BorderLayout() );
+				dialog.setTitle("New World...");
+				dialog.setModal(true);
+				// Center window
+				Point pos = editor.getLocation();
+				dialog.setLocation(pos.x + 10, pos.y + 10 );
+				
+				// Setup custom content for dialog
+				NewWorldDialog theNewWorld = new NewWorldDialog(dialog);
+				dialog.add(theNewWorld, BorderLayout.CENTER);
+				dialog.pack();
+				
+				// Launch (blocking operation)
+				dialog.setVisible(true);
+				
 				// Did the user actually create a world? If so, load it up now!
 				Path worldSave = theNewWorld.getModel().getSaveLocation();
 				if (worldSave != null) {
