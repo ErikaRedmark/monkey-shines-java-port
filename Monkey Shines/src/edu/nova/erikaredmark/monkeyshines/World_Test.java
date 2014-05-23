@@ -2,7 +2,12 @@ package edu.nova.erikaredmark.monkeyshines;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
+
+import edu.nova.erikaredmark.monkeyshines.Conveyer.Rotation;
 // Test class: Not intended to be instantiated or called outside of JUnit
 public final class World_Test {
 	
@@ -48,6 +53,52 @@ public final class World_Test {
 		
 		assertEquals(2, four[3].x() );
 		assertEquals(2, four[3].y() );
+	}
+	
+	/**
+	 * 
+	 * Generate two sets of conveyers from an empty list
+	 * 
+	 */
+	@Test public void generateConveyersEmpty() {
+		List<Conveyer> conveyers = new ArrayList<>();
+		World.generateConveyers(conveyers, 2, null);
+		assertEquals(4, conveyers.size() );
+		assertEquals(Rotation.CLOCKWISE, conveyers.get(0).getRotation() );
+		assertEquals(0, conveyers.get(0).getId() );
+		assertEquals(Rotation.ANTI_CLOCKWISE, conveyers.get(1).getRotation() );
+		assertEquals(0, conveyers.get(1).getId() );
+		assertEquals(Rotation.CLOCKWISE, conveyers.get(2).getRotation() );
+		assertEquals(1, conveyers.get(2).getId() );
+		assertEquals(Rotation.ANTI_CLOCKWISE, conveyers.get(3).getRotation() );
+		assertEquals(1, conveyers.get(3).getId() );
+	}
+	
+	/**
+	 * 
+	 * Generate two sets of conveyers from a list already containing a set
+	 * 
+	 */
+	@Test public void generateConveyersPartial() {
+		List<Conveyer> conveyers = new ArrayList<>();
+		conveyers.add(new Conveyer(0, Rotation.CLOCKWISE, null) );
+		conveyers.add(new Conveyer(0, Rotation.ANTI_CLOCKWISE, null) );
+		
+		World.generateConveyers(conveyers, 2, null);
+		
+		assertEquals(6, conveyers.size() );
+		assertEquals(Rotation.CLOCKWISE, conveyers.get(0).getRotation() );
+		assertEquals(0, conveyers.get(0).getId() );
+		assertEquals(Rotation.ANTI_CLOCKWISE, conveyers.get(1).getRotation() );
+		assertEquals(0, conveyers.get(1).getId() );
+		assertEquals(Rotation.CLOCKWISE, conveyers.get(2).getRotation() );
+		assertEquals(1, conveyers.get(2).getId() );
+		assertEquals(Rotation.ANTI_CLOCKWISE, conveyers.get(3).getRotation() );
+		assertEquals(1, conveyers.get(3).getId() );
+		assertEquals(Rotation.CLOCKWISE, conveyers.get(4).getRotation() );
+		assertEquals(2, conveyers.get(4).getId() );
+		assertEquals(Rotation.ANTI_CLOCKWISE, conveyers.get(5).getRotation() );
+		assertEquals(2, conveyers.get(5).getId() );
 	}
 	
 }

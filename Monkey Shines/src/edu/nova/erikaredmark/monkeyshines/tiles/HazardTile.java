@@ -6,6 +6,8 @@ import edu.nova.erikaredmark.monkeyshines.Hazard;
  * 
  * Indicates a hazard on the map, along with drawing and other state information. Whilst {@code Hazard} represents the 
  * information describing a type of hazard, this object represents one such type somewhere on the world
+ * <p/>
+ * As with other tiles, the actual location in the level is maintained in a tilemap, not in this object.
  * 
  * @author Erika Redmark
  *
@@ -170,4 +172,6 @@ public class HazardTile implements TileType {
 			animationPoint = 0;
 		}
 	}
+
+	@Override public boolean isThru() { return false; }
 }

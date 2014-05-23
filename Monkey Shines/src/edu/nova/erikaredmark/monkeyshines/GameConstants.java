@@ -42,6 +42,7 @@ public final class GameConstants {
 	public static int SAFE_FALL_DISTANCE = 80; // Number of pixels fall before Bonzo starts taking damage.
 	public static double FALL_DAMAGE_MULTIPLIER = 2.0; // Number of pixels of distance fell times this is the damage bonzo will take.
 	public static int BONUS_SCREEN = 10000; // The screenID of the bonus world; or where the bonus door takes one too.
+	public static int CONVEYER_SPEED = 2; // The number of pixels, per tick, to move Bonzo when he is under the effect of a conveyer belt.
 	
 	public static final int WINDOW_WIDTH = 640;
 	public static final int WINDOW_HEIGHT = 480;

@@ -143,7 +143,8 @@ public class Tile {
 		// No drawing for empty tiles
 		if (this.type == StatelessTileType.NONE) return;
 		
-		// TODO possible polymorphism in paint for tile type?
+		// TODO not sure about polymorphism but CAN put all this code into HazardTile instead
+		// of here.
 		if (this.type instanceof HazardTile) {
 			// This only handles basic animation: animations steps 0 and 1. Above need to delegate to
 			// the explosion sprite sheet.

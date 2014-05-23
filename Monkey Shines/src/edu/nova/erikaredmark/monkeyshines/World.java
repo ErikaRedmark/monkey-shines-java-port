@@ -1,6 +1,7 @@
 package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import edu.nova.erikaredmark.monkeyshines.Conveyer.Rotation;
 import edu.nova.erikaredmark.monkeyshines.bounds.IPoint2D;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedGoodie;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedHazard;
@@ -61,6 +63,16 @@ public class World {
 	// others may be added by the level editor, along with custom graphics in the graphics pack.
 	private final List<Hazard> hazards;
 	
+	// Similiar to, but less complicated than, hazards, each conveyer tile is represented by
+	// a single conveyer immutable state. In this case, this is which kind of conveyer belt it
+	// is and which direction it is moving.
+	// Populated automatically conveyers up to the greater of the two:
+	//   number of conveyer belt types in the original world file
+	//   number of conveyer belt types in the resource when being skinned.
+	// Changing the resource to have less conveyers whilst conveyer belt tiles are on the world referring
+	// to them is probably a bad idea.
+	private final List<Conveyer> conveyers;
+	
 	private       int currentScreen;
 	
 	
@@ -100,8 +112,52 @@ public class World {
 		for (Entry<Integer, EncodedLevelScreen> screen : world.getLevels().entrySet() ) {
 			worldScreens.put(screen.getKey(), LevelScreen.inflateFrom(screen.getValue(), hazards) );
 		}
+		
+		// Size of conveyers may be added to if the world is skinned with an updated
+		// resource containing new conveyers.
+		// TODO store just a NUMBER, not the actual instances, since we can easily
+		// regen our own (Conveyers are always the same, its just a question of how many
+		// to generate for a given world)
+		final List<Conveyer> conveyers = new ArrayList<>();
+		// TODO Erika you stopped here. Need to make encoded forms for saving and finish the generation
+		// of conveyers for a world.
+		for (EncodedConveyer encConveyer : world.getConveyers() ) {
+			conveyers.add(Conveyer.inflateFrom(encConveyer) );
+		}
+		
+		int conveyerCount = rsrc.getConveyerCount();
+		// More were added to the resource? Bump it up!
+		if (conveyerCount * 2 > conveyers.size() ) {
+			// Basically, convert set count into individual (both right and left count), modify by size,
+			// then divide by 2 to know how many more sets to make.
+			int moreToMake = (conveyers.size() - (conveyerCount * 2) ) / 2;
+			generateConveyers(conveyers, moreToMake, rsrc.getConveyerSheet() );
+		} else if (conveyerCount * 2 < conveyers.size() ) {
+			System.err.println("WARNING: " 
+							 +  conveyerCount 
+							 + " conveyer belt sets in resource, but " 
+							 + conveyers.size() / 2 
+							 + " sets in world. Any existing tiles in the world that used deleted conveyer belt graphics will not draw properly!");
+		}
 
 		return new World(worldName, goodiesInWorld, worldScreens, hazards, rsrc);	
+	}
+	
+	/**
+	 * 
+	 * generates 'amt' conveyer SETS. Each set is two conveyers; one clockwise and one anti-clockwise. Newly generated conveyers
+	 * are added to the end of the list.
+	 * <p/>
+	 * Because the list is mutated, it must NOT be an immutable type.
+	 * 
+	 */
+	static void generateConveyers(List<Conveyer> conveyers, int amt, BufferedImage conveyerSheet) {
+		// Two entries in the list per conveyer id. Rotation determines which one.
+		int startId = conveyers.size() / 2;
+		for (int i = 0; i < amt; i++) {
+			conveyers.add(new Conveyer(startId + i, Rotation.CLOCKWISE, conveyerSheet) );
+			conveyers.add(new Conveyer(startId + i, Rotation.ANTI_CLOCKWISE, conveyerSheet) );
+		}
 	}
 	
 	/**

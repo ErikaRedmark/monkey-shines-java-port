@@ -127,8 +127,8 @@ public final class Bonzo {
 		TileType onGroundRight = currentScreen.getTileAt(currentLocation.x() + (BONZO_SIZE.x() - 4), bonzoOneBelowFeetY );
 		
 		// If at least part of him is on a thru tile.
-		if (    onGroundLeft == StatelessTileType.THRU
-			 || onGroundRight == StatelessTileType.THRU) {
+		if (    onGroundLeft.isThru()
+			 || onGroundRight.isThru() ) {
 			// If bonzo is already exactly on the ground, everything is fine. Otherwise, we may have to fall through it.
 			int depth = (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y;
 			if (depth == 0)  return 0;

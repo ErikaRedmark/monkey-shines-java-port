@@ -28,6 +28,7 @@ import edu.nova.erikaredmark.monkeyshines.GameConstants;
 import edu.nova.erikaredmark.monkeyshines.GameSoundEffect;
 import edu.nova.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import edu.nova.erikaredmark.monkeyshines.graphics.exception.ResourcePackException.Type;
+import edu.nova.erikaredmark.monkeyshines.tiles.ConveyerTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
@@ -61,11 +62,16 @@ public final class WorldResource {
 	/* --------------------------- HAZARDS ---------------------------- */
 	private final BufferedImage hazardTiles;
 	
+	/* ----------------------- CONVERYER BELTS ------------------------ */
+	private final BufferedImage conveyerTiles;
+	
+	
 	/* -------------------------- BACKGROUND -------------------------- */
 	private final BufferedImage backgrounds[];
 	
 	/* --------------------------- SPRITES ---------------------------- */
 	private final BufferedImage sprites[];
+
 	
 	/* --------------------------- GOODIES ---------------------------- */
 	private final BufferedImage goodieSheet;
@@ -77,10 +83,12 @@ public final class WorldResource {
 	// that there is no sound available for a particular event.
 	private final Map<GameSoundEffect, Clip> sounds;
 	
+	// Generated automatically in constructor
 	private final SoundManager soundManager;
+	private int conveyerCount;
 	
 	// Implementation note: Even the arrays are null (not just empty) as this is not intended for any kind of paint methods
-	private static final WorldResource EMPTY = new WorldResource(null, null, null, null, null, null, null, null, new HashMap<GameSoundEffect, Clip>() );
+	private static final WorldResource EMPTY = new WorldResource(null, null, null, null, null, null, null, null, null, new HashMap<GameSoundEffect, Clip>() );
 	
 	
 	/* -- Internal -- */
@@ -91,6 +99,7 @@ public final class WorldResource {
 					      final BufferedImage thruTiles,
 					      final BufferedImage sceneTiles,
 					      final BufferedImage hazardTiles,
+					      final BufferedImage conveyerTiles,
 					      final BufferedImage[] backgrounds,
 					      final BufferedImage[] sprites,
 					      final BufferedImage goodieSheet,
@@ -103,6 +112,7 @@ public final class WorldResource {
 		this.hazardTiles = hazardTiles;
 		this.backgrounds = backgrounds;
 		this.sprites = sprites;
+		this.conveyerTiles = conveyerTiles;
 		this.goodieSheet = goodieSheet;
 		this.yumSheet = yumSheet;
 		this.sounds = sounds;
@@ -111,6 +121,10 @@ public final class WorldResource {
 		// this pointer escapes, but no one gets a reference to the manager until construction is over
 		// and the manager constructor itself calls no methods on this class.
 		soundManager = new SoundManager(this);
+		
+		// Height of conveyer sheet can calculate total conveyers in world
+		// Remember, a single set is both clockwise and anti-clockwise (hence times 2)
+		conveyerCount = conveyerTiles.getHeight() / (GameConstants.TILE_SIZE_Y * 2);
 	}
 	
 	/**
@@ -154,8 +168,9 @@ public final class WorldResource {
 		BufferedImage thruTiles		= null;
 		BufferedImage sceneTiles	= null;
 		BufferedImage hazardTiles   = null;
-		// Max background index will be used to tell the validator how far to count to in the array list to confirm 
-		// contiguous entries.
+		BufferedImage conveyerTiles = null;
+		// Max index will be used to tell the validator how far to count to in the array list to confirm 
+		// contiguous entries. (as in, if 'background4' exists, then 'background0, background1, etc' MUST exist.
 		List<BufferedImage> backgrounds = new ArrayList<>();
 		int maxBackgroundIndex = 0;
 		List<BufferedImage> sprites		= new ArrayList<>();
@@ -190,6 +205,10 @@ public final class WorldResource {
 					if (sceneTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "scenes.gif");
 					sceneTiles = ImageIO.read(zipFile.getInputStream(entry) );
 					break;
+				case "conveyers.gif":
+					if (conveyerTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "conveyer.gif");
+					conveyerTiles = ImageIO.read(zipFile.getInputStream(entry) );
+					break;
 				case "goodies.gif":
 					if (goodieSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "goodies.gif");
 					goodieSheet = ImageIO.read(zipFile.getInputStream(entry) );
@@ -204,6 +223,7 @@ public final class WorldResource {
 					break;
 				// All other types are handled in default, as many different names may belong to one 'class' of things.
 				default:
+					// TODO repeated code here: consider refactoring?
 					/* -------------------- Backgrounds -------------------- */
 					if (entryName.matches("^background[0-9]+\\.gif$") ) {
 						int index = indexFromName(entryName);
@@ -225,6 +245,9 @@ public final class WorldResource {
 						BufferedImage tempSprite = ImageIO.read(zipFile.getInputStream(entry) );
 						sprites.add(index, tempSprite);
 					/* ---------------------- Sounds ----------------------- */
+					// Due to the nature of graphics amounts being unknown,
+					// but types of sounds being finite, any name of any file
+					// not matching any other pattern IS a sound.
 					} else {
 						GameSoundEffect sound = GameSoundEffect.filenameToEnum(entryName);
 						if (sound == null) {
@@ -262,6 +285,7 @@ public final class WorldResource {
 							  thruTiles, 
 							  sceneTiles,
 							  hazardTiles,
+							  conveyerTiles,
 							  backgrounds.toArray(new BufferedImage[backgrounds.size()]), 
 							  sprites.toArray(new BufferedImage[sprites.size()]),
 							  goodieSheet, 
@@ -418,13 +442,13 @@ public final class WorldResource {
 				case SOLID: return solidTiles;
 				case THRU : return thruTiles;
 				case SCENE: return sceneTiles;
-				case CONVEYER_LEFT: throw new UnsupportedOperationException("Conveyerbelt Tiles are not implemented yet");
-				case CONVEYER_RIGHT: throw new UnsupportedOperationException("Conveyerbelt Tiles are not implemented yet");
 				case NONE: throw new IllegalArgumentException("No tilesheet for NONE tiles");
 				default: throw new IllegalArgumentException("Unknown tile type " + type);
 			}
 		} else if (type instanceof HazardTile) {
 			return getHazardSheet();
+		} else if (type instanceof ConveyerTile) {
+			return getConveyerSheet();
 		} else {
 			throw new RuntimeException("Unexpected tile type class " + type.getClass().getName() );
 		}
@@ -441,9 +465,8 @@ public final class WorldResource {
 	 * @return
 	 * 		a sprite sheet
 	 * 
-	 * @throws
-	 * 		ArrayIndexOutOfBoundsException
-	 * 			if the given id is more than the number of sprites this resource contains
+	 * @throws ArrayIndexOutOfBoundsException
+	 * 		if the given id is more than the number of sprites this resource contains
 	 * 
 	 */
 	public BufferedImage getSpritesheetFor(int id) {
@@ -515,6 +538,22 @@ public final class WorldResource {
 	public BufferedImage getHazardSheet() {
 		return hazardTiles;
 	}
+	
+	/**
+	 * 
+	 * Returns the sprite sheet for the conveyers. Each conveyer belt is stored as 2 rows of 5 sprites
+	 * each the size of a tile. The first row of five tiles is the first conveyer belt going clockwise.
+	 * The second row of five tiles is the first conveyer belt going anti-clockwise. This goes on and
+	 * on for as many conveyer belts exist. Because all conveyer belts come in pairs, the width will
+	 * always be {@code 5 * GameConstants.TILE_SIZE_X} and {@code 2 * GameConstants.TILE_SIZE_Y * <number of conveyers>}
+	 * 
+	 * @return
+	 * 		conveyer belt sprite sheet
+	 * 
+	 */
+	public BufferedImage getConveyerSheet() {
+		return conveyerTiles;
+	}
 
 	/**
 	 * 
@@ -563,5 +602,16 @@ public final class WorldResource {
 	public void dispose() {
 		for (Clip c : sounds.values() )  c.close();
 	}
+
+	/**
+	 * 
+	 * Returns the number of UNIQUE conveyer belts in this resource. Each 'count' includes
+	 * both the clockwise and anti-clockwise verions of a {@code Conveyer} object.
+	 * 
+	 * @return
+	 * 		number of unique conveyer belt sets
+	 * 
+	 */
+	public int getConveyerCount() { return conveyerCount; }
 
 }

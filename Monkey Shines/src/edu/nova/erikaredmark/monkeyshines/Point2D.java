@@ -110,7 +110,7 @@ public class Point2D implements IPoint2D {
 	/**
 	 * 
 	 * Adds to this point another point, where the second point's x and y values represent a velocity. This point
-	 * instance is mutated by this function.
+	 * instance is mutated by this function. The second instance is not mutated.
 	 * <p/>
 	 * The x component represented by velocity is added to the point, and the y component is subtracted from this point.
 	 * This is because positive velocities intuitively should go up, and negative ones should go down.
