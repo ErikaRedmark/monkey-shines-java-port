@@ -38,7 +38,7 @@ public class LevelEditor extends JFrame {
 	private static final long serialVersionUID = -1004295925422699855L;
 	private LevelEditorMainCanvas currentWorld;
 	/* Only set during loading a world, and only used during saving.	*/
-	private File defaultSaveLocation;
+	private Path defaultSaveLocation;
 	
 	private KeyboardInput keys;
 	// Main menu Bar
@@ -120,7 +120,7 @@ public class LevelEditor extends JFrame {
 		}
 	});
 	
-	/* ------------------------- MENU ITEM EDIT SPRITES --------------------------- */
+	/* ------------------------ MENU ITEM DELETE SPRITES --------------------------- */
 	private JMenuItem deleteSprites = new JMenuItem(new AbstractAction("Delete Sprites") {
 		private static final long serialVersionUID = 1L;
 		@Override public void actionPerformed(ActionEvent e) {
@@ -209,6 +209,61 @@ public class LevelEditor extends JFrame {
 	
 	/**
 	 * 
+	 * Loads a world from the given path. Worlds must conform to the standard; {@code <worldName>.world} for the
+	 * level data and {@code <worldName>.zip} for the resource pack with proper resources. 
+	 * 
+	 * @param path
+	 * 		level to load. This should be the .world file, NOT the resource pack
+	 * 
+	 * @throws WorldRestoreException
+	 * 		if the world cannot be loaded due to an issue with the .world file
+	 * 
+	 * @throws ResourcePackException
+	 * 		if the world cannot be loaded due to an issue with the resource pack. This is generally
+	 * 		less serious than an issue with the .world file, as the resource pack can be easily
+	 * 		modified
+	 * 
+	 */
+	public void loadWorld(final Path worldFile) throws WorldRestoreException, ResourcePackException {
+		EncodedWorld world = WorldIO.restoreWorld(worldFile);
+		// Try to load the resource pack
+		String worldName = world.getName();
+		Path packFile = worldFile.getParent().resolve(worldName + ".zip");
+		WorldResource rsrc = WorldResource.fromPack(packFile);
+		this.currentWorld.loadWorld(world, rsrc);
+		this.defaultSaveLocation = worldFile;
+		this.manipulationFunctions(true);
+	}
+	
+	/**
+	 * 
+	 * Delegates to {@code loadWorld}, catching any exceptions and printing them to the error
+	 * console in addition to showing an error message to the user.
+	 * 
+	 * @param worldFile
+	 * 		level to load. This should be the .world file, NOT the resource pack
+	 * 
+	 */
+	private void loadWorldNoisy(final Path worldFile) {
+		try {
+			loadWorld(worldFile);
+		} catch (WorldRestoreException ex) {
+			JOptionPane.showMessageDialog(this,
+			    "Cannot load world: Possibly corrupt or not a world file: " + ex.getMessage(),
+			    "Loading Error",
+			    JOptionPane.ERROR_MESSAGE);
+			ex.printStackTrace();
+		} catch (ResourcePackException ex) {
+			JOptionPane.showMessageDialog(this,
+			    "Resource pack issues: " + ex.getMessage(),
+			    "Loading Error",
+			    JOptionPane.ERROR_MESSAGE);
+			ex.printStackTrace();
+		}
+	}
+	
+	/**
+	 * 
 	 * Constructs a new instance of the level editor and assigns all the required actions that could not be assigned in the constructor
 	 * 
 	 * @return
@@ -221,7 +276,13 @@ public class LevelEditor extends JFrame {
 		editor.newWorld.setAction(new AbstractAction("New World...") {
 			private static final long serialVersionUID = 1L;
 			@Override public void actionPerformed(ActionEvent e) {
-				DialogLauncher.launch(editor, "New World...", new NewWorldDialog() );
+				NewWorldDialog theNewWorld = new NewWorldDialog();
+				DialogLauncher.launch(editor, "New World...", theNewWorld, true);
+				// Did the user actually create a world? If so, load it up now!
+				Path worldSave = theNewWorld.getModel().getSaveLocation();
+				if (worldSave != null) {
+					editor.loadWorldNoisy(worldSave);
+				}
 			}
 		});
 		
@@ -233,28 +294,7 @@ public class LevelEditor extends JFrame {
 				if (fileChooser.showOpenDialog(editor) == JFileChooser.APPROVE_OPTION) {
 					File worldFile = fileChooser.getSelectedFile();
 					
-					try {
-						EncodedWorld world = WorldIO.restoreWorld(worldFile.toPath() );
-						// Try to load the resource pack
-						String worldName = world.getName();
-						Path packFile = worldFile.toPath().getParent().resolve(worldName + ".zip");
-						WorldResource rsrc = WorldResource.fromPack(packFile);
-						editor.currentWorld.loadWorld(world, rsrc);
-						editor.defaultSaveLocation = worldFile;
-						editor.manipulationFunctions(true);
-					} catch (WorldRestoreException ex) {
-						JOptionPane.showMessageDialog(editor,
-						    "Cannot load world: Possibly corrupt or not a world file: " + ex.getMessage(),
-						    "Loading Error",
-						    JOptionPane.ERROR_MESSAGE);
-						ex.printStackTrace();
-					} catch (ResourcePackException ex) {
-						JOptionPane.showMessageDialog(editor,
-						    "Resource pack issues: " + ex.getMessage(),
-						    "Loading Error",
-						    JOptionPane.ERROR_MESSAGE);
-						ex.printStackTrace();
-					}
+					editor.loadWorldNoisy(worldFile.toPath() );
 				}
 			}
 		});
@@ -266,7 +306,7 @@ public class LevelEditor extends JFrame {
 					throw new IllegalStateException("Save should not be enabled when a world is not loaded");
 					
 				Path saveTo;
-				if (editor.defaultSaveLocation != null) saveTo = editor.defaultSaveLocation.toPath();
+				if (editor.defaultSaveLocation != null) saveTo = editor.defaultSaveLocation;
 				else {
 					// TODO save as
 					System.out.println("Save as not implemented yet");

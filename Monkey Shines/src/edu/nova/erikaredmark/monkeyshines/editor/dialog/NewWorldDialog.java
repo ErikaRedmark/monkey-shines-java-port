@@ -13,6 +13,7 @@ import javax.swing.JButton;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
@@ -76,6 +77,16 @@ public class NewWorldDialog extends JPanel implements LaunchableDialog {
 						} else {
 							JOptionPane.showMessageDialog(null, "Feature not implemented: Choose the default resource pack option");
 						}
+						
+						// Postcondition: World is saved. Dialog is no longer relevant: close it.
+						// Save the state of what the user chose (the new file) to this objects
+						// The path current doesn't point to the save file, just the folder name.
+						model.saveLocation = savePath.resolve(savePath.getFileName() + ".world");
+						// dispose();
+						// setVisible(false);
+						// Dispatch event so system knows to actually close the dialog
+						// dispatchEvent(new ComponentEvent(NewWorldDialog.this, ComponentEvent.COMPONENT_HIDDEN));
+						
 					} catch (IOException ex) {
 						JOptionPane.showMessageDialog(null,
 						    "Unable to save due to " + ex.getMessage(),
@@ -84,13 +95,16 @@ public class NewWorldDialog extends JPanel implements LaunchableDialog {
 						ex.printStackTrace();
 					}
 				}
-
 			}
 		};
 
 	/**
 	 * 
-	 * Creates a new instance of this dialog and allows the user to create a new world.
+	 * Creates a new instance of this dialog and allows the user to create a new world. This method is
+	 * NOT blocking. The dialog is initialised with its model but must be lauched. After the dialog
+	 * is closed, it will have populated a result in the model that indicates where the new world
+	 * was saved to, if it was saved at all. Clients may wish to query the model for that and
+	 * any other state information after the dialog has been launched and closed.
 	 * 
 	 */
 	public NewWorldDialog() {

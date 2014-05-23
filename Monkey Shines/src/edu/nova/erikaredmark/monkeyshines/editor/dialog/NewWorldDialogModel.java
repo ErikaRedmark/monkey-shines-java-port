@@ -19,6 +19,11 @@ public final class NewWorldDialogModel extends ObservableModel {
 	private Path selectedResourcePack;
 	private String worldName;
 	
+	// This is directly modified by the dialog itself. It is only ever changed when
+	// the dialog is closing. It fires no property event as clients activating the dialog
+	// are expected to query its state.
+	Path saveLocation;
+	
 	/** Fired when the boolean for 'using the default resource pack' is toggled. The event will be a {@code Boolean}
 	 *  that is either {@code true} for using the default pack, or {@code false} otherwise								*/
 	public static final String PROPERTY_DEFAULT_PACK = "propDefaultPack";
@@ -34,6 +39,7 @@ public final class NewWorldDialogModel extends ObservableModel {
 		this.worldName = "";
 		this.selectedResourcePack = null;
 		this.useDefaultPack = true;
+		this.saveLocation = null;
 	}
 	
 	/** 
@@ -58,6 +64,17 @@ public final class NewWorldDialogModel extends ObservableModel {
 	public boolean isUseDefaultPack() { return useDefaultPack; }
 	public Path getSelectedResourcePack() { return selectedResourcePack; }
 	public String getWorldName() { return worldName; }
+	
+	/**
+	 * 
+	 * Returns the location the new world is saved at. Until this dialog succeeds in making a world, this value
+	 * is {@code null}. It will also be {@code null} on error
+	 * 
+	 * @return
+	 * 		the location the new .world file was saved to. {@code null} if save did not complete
+	 * 
+	 */
+	public Path getSaveLocation() { return saveLocation; }
 
 	/** Sets whether the default texture pack is used and fires {@code PROPERTY_DEFAULT_PACK}							*/
 	public void setUseDefaultPack(boolean useDefaultPack) {

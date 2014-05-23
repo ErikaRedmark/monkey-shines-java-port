@@ -21,7 +21,7 @@ Game Engine
 - [x] Jump-Through Tile logic
 - [ ] Collisons (currently uses rough bounding box and is not precise enough)
 - [x] Bonzo Movement
-- [ ] Hazards (Bombs, Dynamite. . .)
+- [X] Hazards (Bombs, Dynamite. . .)
 - [ ] Conveyer Belts
 - [ ] Breakable Tiles
 - [ ] Red keys and Exit Door
@@ -49,7 +49,7 @@ Please note that the current save format uses Java serialisation. Updates may de
 - [x] Slowdown animations of sprites
 - [ ] Adding conveyer belts
 - [ ] Adding breakable tiles
-- [ ] Adding Hazards
+- [X] Adding Hazards
 
 Game Content
 Other than test worlds, no worlds will be worked on until the save file format is frozen.
