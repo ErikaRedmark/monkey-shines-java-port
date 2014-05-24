@@ -19,6 +19,7 @@ import javax.swing.Timer;
 
 import com.google.common.base.Optional;
 
+import edu.nova.erikaredmark.monkeyshines.Conveyer;
 import edu.nova.erikaredmark.monkeyshines.GameConstants;
 import edu.nova.erikaredmark.monkeyshines.Goodie;
 import edu.nova.erikaredmark.monkeyshines.Hazard;
@@ -36,6 +37,7 @@ import edu.nova.erikaredmark.monkeyshines.encoder.WorldIO;
 import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 import edu.nova.erikaredmark.monkeyshines.resource.CoreResource;
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.tiles.ConveyerTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
@@ -63,8 +65,9 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	
 	// Unlike the other properties, current hazard MAY be null. It is 100% possible for a world to not have hazards
 	private Hazard currentHazard;
-	// Changed with currentHazard, indicates the sprite sheet id the hazard is currently bound to.
-	private int hazardId;
+	// Used for hazards and conveyers. Indicates which id of conveyer/hazard to draw a new instance of, since those
+	// tile types are stateful.
+	private int specialId;
 	
 	// Current overlay graphic
 	private BufferedImage currentTileSheet;
@@ -202,7 +205,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		currentScreenEditor.setTile(mouseX / GameConstants.TILE_SIZE_X,
 									mouseY / GameConstants.TILE_SIZE_Y,
 									HazardTile.forHazard(currentHazard),
-									hazardId);
+									specialId);
 	}
 	
 	/**
@@ -294,6 +297,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	
 	/* These actions are called from user input.																		*/
 	
+	// TODO a lot of these 'changeState(EditorState.PLACING_TILES)' can probably be removed
 	/** User action to set state to placing solids																		*/
 	public void actionPlacingSolids() {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
@@ -315,6 +319,19 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		
 		currentTileType = PaintbrushType.SCENES;
 		changeState(EditorState.PLACING_TILES);
+	}
+	
+	public void actionPlacingConveyers() {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		
+		currentTileType = PaintbrushType.CONVEYERS;
+		changeState(EditorState.PLACING_TILES);
+	}
+	
+	public void actionSelectingConveyers() {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		
+		changeState(EditorState.SELECTING_CONVEYERS);
 	}
 	
 	public void actionPlacingSprites() {
@@ -342,6 +359,9 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		changeState(EditorState.PLACING_GOODIES);
 	}
 	
+	// Called by most menu actions that ask to paint such and such type of tile. The first action
+	// would specify 'start painting this type' and this action means 'show sprites on the screen
+	// for selection'
 	public void actionSelectingTiles() {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
@@ -542,13 +562,18 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 			} else if (currentState == EditorState.SELECTING_GOODIES) {
 				BufferedImage goodieSheet = currentWorldEditor.getWorldResource().getGoodieSheet(); // This contains their animation, so chop it in half.
 				g2d.drawImage(goodieSheet, 0, 0, goodieSheet.getWidth(), goodieSheet.getHeight() / 2, // Destination
-						0, 0, goodieSheet.getWidth(), goodieSheet.getHeight() / 2, // Source
-						null);
+										   0, 0, goodieSheet.getWidth(), goodieSheet.getHeight() / 2, // Source
+										   null);
 			} else if (currentState == EditorState.SELECTING_HAZARDS) {
 				BufferedImage hazardSheet = currentWorldEditor.getWorldResource().getHazardSheet();  // Like the goodie sheet, half height becomes second row has animation
 				g2d.drawImage(hazardSheet, 0, 0, hazardSheet.getWidth(), hazardSheet.getHeight() / 2, // Destination
-						0, 0, hazardSheet.getWidth(), hazardSheet.getHeight() / 2, // Source
-						null);
+										   0, 0, hazardSheet.getWidth(), hazardSheet.getHeight() / 2, // Source
+										   null);
+			} else if (currentState == EditorState.SELECTING_CONVEYERS) {
+				BufferedImage conveyerSheet = currentWorldEditor.getWorldResource().getEditorConveyerSheet();
+				g2d.drawImage(conveyerSheet, 0, 0, conveyerSheet.getWidth(), conveyerSheet.getHeight(),
+							  				 0, 0, conveyerSheet.getWidth(), conveyerSheet.getHeight(),
+							  				 null);
 			}
 		}
 		
@@ -587,7 +612,14 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 			// This instance will NOT be added to the world itself!! It must be copied, or multiple hazards may
 			// end up sharing state (like hitting one bomb will blow up every other bomb painted with the same
 			// paintbrush).
-			type = HazardTile.forHazard(currentWorldEditor.getHazards().get(this.hazardId) );
+			type = HazardTile.forHazard(currentWorldEditor.getHazards().get(this.specialId) );
+			break;
+		case CONVEYERS:
+			// Stateful type: Create new based on id. All state information is simply graphical drawing
+			// so it isn't too difficult to create.
+			// Please note: Special Id is assigned by the editor to be the INDEX in the conveyer list,
+			// which would be the actual Conveyer id times 2, plus one IF anti-clockwise.
+			type = new ConveyerTile(currentWorldEditor.getConveyers().get(specialId) );
 			break;
 		default:
 			throw new IllegalArgumentException("Paintbrush type " + currentTileType.toString() + " not a valid tile type");
@@ -597,7 +629,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		return type;
 	}
 	
-	public enum PaintbrushType { SOLIDS, THRUS, SCENES, HAZARDS, SPRITES, GOODIES; }
+	public enum PaintbrushType { SOLIDS, THRUS, SCENES, HAZARDS, SPRITES, GOODIES, CONVEYERS; }
 	
 	
 	/**
@@ -693,7 +725,9 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		
 		SELECTING_HAZARDS {
 			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
-				int hazardId = editor.resolveObjectId(editor.currentWorldEditor.getWorldResource().getHazardSheet(), editor.mousePosition.x(), editor.mousePosition.y() );
+				int hazardId = editor.resolveObjectId(editor.currentWorldEditor.getWorldResource().getHazardSheet(), 
+													  editor.mousePosition.x(), 
+													  editor.mousePosition.y() );
 				
 				// do nothing if click out of bounds
 				if (hazardId == -1)  return;
@@ -705,12 +739,39 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 				// We have a valid hazard reference
 				
 				editor.currentHazard = availableHazards.get(hazardId);
-				editor.hazardId = hazardId;
+				editor.specialId = hazardId;
 				// Hazards are considered a tile
 				editor.changeState(EditorState.PLACING_TILES);
 			}
 			
 			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { 
+				defaultClickAction(editor);
+			}
+		},
+		
+		// Displays the editor sprite sheet for conveyers, setting the specialId to be indicative of the INDEX
+		// in the conveyers list of the conveyer type selected.
+		SELECTING_CONVEYERS {
+			@Override public void defaultClickAction(LevelEditorMainCanvas editor) {
+				int conveyerId = editor.resolveObjectId(editor.currentWorldEditor.getWorldResource().getEditorConveyerSheet(),
+														editor.mousePosition.x(), 
+														editor.mousePosition.y() );
+				
+				// Editor sprite sheet takes care of this id automatically. The sprites in the sheet, each
+				// frame, map 1:1 with the index of the conveyers array. Just need to be basic house-keeping
+				// checks
+				if (conveyerId == -1)  return;
+				
+				// Check if we even have a conveyer at that index, otherwise another out of bounds click
+				List<Conveyer> conveyers = editor.currentWorldEditor.getConveyers();
+				if (conveyerId >= conveyers.size() )  return;
+				
+				// Valid conveyer. The id alone is enough
+				editor.specialId = conveyerId;
+				editor.changeState(EditorState.PLACING_TILES);
+			}
+			
+			@Override public void defaultDragAction(LevelEditorMainCanvas editor) {
 				defaultClickAction(editor);
 			}
 		},
@@ -778,7 +839,8 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		NO_WORLD_LOADED {
 			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { }
 			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { }
-		}; }
+		};
+	}
 
 	/**
 	 * Returns the visible screen editor. Note that this may return {@code null} if no world is loaded!

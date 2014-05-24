@@ -41,6 +41,7 @@ public class Tile {
 	
 	private static final Tile NO_TILE = new Tile(ImmutablePoint2D.of(0, 0), 0, StatelessTileType.NONE);
 	
+	
 	/**
 	 * 
 	 * Creates an instance of this object from its encoded form.
@@ -95,6 +96,7 @@ public class Tile {
 		this.tileX = point.x() * GameConstants.TILE_SIZE_X;
 		this.tileY = point.y() * GameConstants.TILE_SIZE_X;
 		this.tileId = tileId;
+		if (type == null)  assert false : "Null tile type passed to tile at " + tileX + ", " + tileY;
 		this.type = type;	
 	}
 	
@@ -115,6 +117,7 @@ public class Tile {
 	 */
 	public void skin(final WorldResource rsrc) {
 		if (this.type == StatelessTileType.NONE) return;
+		if (rsrc == null) throw new IllegalArgumentException("Passed Resource was Null!");
 		
 		if (this.type instanceof StatelessTileType) {
 			this.rsrc = rsrc;
@@ -136,8 +139,13 @@ public class Tile {
 				System.out.println("" + this + ": Out of graphics range (Given sprite sheet only permits ids up to " + sheetCols * sheetRows);
 			}
 		} else if (this.type instanceof HazardTile) {
-			// TODO currently no method of re-skinning hazards
-			System.out.println("Cannot re-skin hazard");
+			// Hazards are not skinned. Tiletype contains all graphics information
+			// Intentionally Empty
+		} else if (this.type instanceof ConveyerTile) {
+			// Conveyers are not skinned. Tiletype contains all graphics information
+			// Intentionally Empty
+		} else {
+			throw new RuntimeException("No drawing handling for this tile: " + toString() );
 		}
 		
 		isSkinned = true;
@@ -161,6 +169,9 @@ public class Tile {
 	public void paint(Graphics2D g2d) {
 		// No drawing for empty tiles
 		if (this.type == StatelessTileType.NONE) return;
+		if (!(isSkinned) ) {
+			System.err.println("Cant draw " + toString() + ": not skinned!");
+		}
 		
 		// TODO not sure about polymorphism but CAN put all this code into HazardTile instead
 		// of here.
@@ -176,6 +187,8 @@ public class Tile {
 			} else {
 				// TODO draw explosions
 			}
+		} else if (this.type instanceof ConveyerTile) {
+			((ConveyerTile)this.type).paint(g2d, tileX, tileY);
 		} else {
 			g2d.drawImage(rsrc.getTilesheetFor(this.type), tileX, tileY, tileX + GameConstants.TILE_SIZE_X, tileY + GameConstants.TILE_SIZE_Y, //DEST
 					tileDrawCol, tileDrawRow, tileDrawCol + GameConstants.TILE_SIZE_X, tileDrawRow + GameConstants.TILE_SIZE_Y, // SOURCE

@@ -1,5 +1,6 @@
 package edu.nova.erikaredmark.monkeyshines.resource;
 
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -64,6 +65,9 @@ public final class WorldResource {
 	
 	/* ----------------------- CONVERYER BELTS ------------------------ */
 	private final BufferedImage conveyerTiles;
+	// Special: lazily initialised (since the real game doesn't ask for
+	// it) when editor asks for selecting conveyer belts.
+	private BufferedImage editorConveyerTiles;
 	
 	
 	/* -------------------------- BACKGROUND -------------------------- */
@@ -557,6 +561,60 @@ public final class WorldResource {
 	 */
 	public BufferedImage getConveyerSheet() {
 		return conveyerTiles;
+	}
+	
+	/**
+	 * 
+	 * Designed for editor; returns the conveyer selection image that a user would use to select which
+	 * conveyer belt they want. The sprite sheet is generated to best match the dimensions for the given
+	 * amount of conveyer belts. Each 'frame' of the sheet contains the next id of conveyer clockwise, then
+	 * the same id anti-clockwise, and then repeats.
+	 * Mathmatically, the conveyer id and rotation can be deduced by determining which 'frame' the user 
+	 * clicked on (basic division and modulus based on sheet size). The 'frame' index / 2 is the conveyer
+	 * id. If the 'frame' index is odd, it is an anti-clockwise belt. Otherwise, it is clockwise.
+	 * Each 'frame' is a TILE_SIZE_X by TILE_SIZE_Y check that represents a single tile, and they are ordered
+	 * from top left to bottom right.
+	 * The generated sprite sheet may not be completely filled with conveyers. Clients must check that the
+	 * click actually is a valid conveyer for the world.
+	 * 
+	 * @return
+	 * 		sprite sheet specific for editor to show user to allow conveyer picking
+	 * 
+	 */
+	public BufferedImage getEditorConveyerSheet() {
+		// Lazy initialise; no need in creating sheet if the actual game is being played as it won't be used there
+		if (editorConveyerTiles == null) {
+			int width = conveyerTiles.getWidth() * 2;
+			// 5 frames of animation * 2 gives 10 frames. 2 frames used per 'Type' meaning that
+			// We need TILE_SIZE_Y units of height per 5 unique conveyer belts.
+			int height = (1 + (conveyerCount / 5) ) * GameConstants.TILE_SIZE_Y;
+			// Generate context for drawing
+			BufferedImage sheet = new BufferedImage(width, height, conveyerTiles.getType() );
+			
+			// Draw on sheet
+			Graphics2D graphics = sheet.createGraphics();
+			for (int i = 0; i < conveyerCount; i++) {
+				// Draw the second frame, which has a little rotation, to give user the sense
+				// of which direction the conveyer is going in.
+				int drawFromX = GameConstants.TILE_SIZE_X;
+				int drawFromY = GameConstants.TILE_SIZE_Y * i;
+				
+				// We drop down a level per 5 conveyers
+				int drawToX = (i % 5) * GameConstants.TILE_SIZE_X;
+				int drawToY = (i / 5) * GameConstants.TILE_SIZE_Y;
+				// We have the x, y for the Clockwise conveyer in both source and destination
+				graphics.drawImage(conveyerTiles, 
+					drawToX, drawToY, 
+					drawToX + GameConstants.TILE_SIZE_X, drawToY + GameConstants.TILE_SIZE_Y, 
+					drawFromX, drawFromY, 
+					drawFromX + GameConstants.TILE_SIZE_X, drawFromY + GameConstants.TILE_SIZE_Y, 
+					null);
+			}
+			
+			editorConveyerTiles = sheet;
+		}
+		
+		return editorConveyerTiles;
 	}
 
 	/**

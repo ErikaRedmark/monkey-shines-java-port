@@ -92,6 +92,14 @@ public class LevelEditor extends JFrame {
 			currentWorld.actionSelectingTiles();
 		}
 	});
+	/* ------------------------- MENU ITEM PLACE CONVEYERS ------------------------ */
+	private JMenuItem placeConveyers = new JMenuItem(new AbstractAction("Conveyer Belts") { 
+		private static final long serialVersionUID = 1L;
+		@Override public void actionPerformed(ActionEvent e) {
+			currentWorld.actionPlacingConveyers();
+			currentWorld.actionSelectingConveyers();
+		}
+	});
 	/* -------------------------- MENU ITEM PLACE GOODIES ------------------------- */
 	private JMenuItem placeGoodies = new JMenuItem(new AbstractAction("Goodies") { 
 		private static final long serialVersionUID = 1L;
@@ -391,6 +399,7 @@ public class LevelEditor extends JFrame {
 		placeTiles.add(placeSolids);
 		placeTiles.add(placeThrus);
 		placeTiles.add(placeScenes);
+		placeTiles.add(placeConveyers);
 		placeTiles.add(eraser);
 		placeTiles.addSeparator();
 		placeTiles.add(placeGoodies);
