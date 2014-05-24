@@ -4,10 +4,13 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
+import edu.nova.erikaredmark.monkeyshines.Conveyer.Rotation;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodableTileType;
+import edu.nova.erikaredmark.monkeyshines.encoder.EncodedConveyerTile;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedHazardTileType;
 import edu.nova.erikaredmark.monkeyshines.encoder.EncodedTile;
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.tiles.ConveyerTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
@@ -49,11 +52,14 @@ public class Tile {
 	 * 	    list of hazards that are part of the world. Some tiles have hazards on them so these must
 	 * 		be inflated first
 	 * 
+	 * @param conveyers
+	 * 		list of conveyers in the world, same reasoning as with hazards these must be passed
+	 * 
 	 * @return
 	 * 		new instance of this class
 	 * 
 	 */
-	public static Tile inflateFrom(EncodedTile encodedTile, List<Hazard> worldHazards) {
+	public static Tile inflateFrom(EncodedTile encodedTile, List<Hazard> worldHazards, List<Conveyer> conveyers) {
 		// Check if the encoded tile is no tile, and if so set to singleton. Otherwise, return a new tile of the right type
 		EncodableTileType type = encodedTile.getType();
 		if (type == StatelessTileType.NONE) return NO_TILE;
@@ -66,6 +72,19 @@ public class Tile {
 				// of the hazards.
 				Hazard tileHazard = worldHazards.get(((EncodedHazardTileType)type).getHazardId() );
 				return new Tile(encodedTile.getLocation(), encodedTile.getId(), HazardTile.forHazard(tileHazard) );
+			} else if (type instanceof EncodedConveyerTile) {
+				// Not as much work: id * 2 gives as the entry in the conveyer list.  Add one if the tile is Anti-Clockwise.
+				EncodedConveyerTile tileConveyer = (EncodedConveyerTile) type;
+				int conveyerIndex =   (tileConveyer.getId() * 2 ) + (  tileConveyer.getRotation() == Rotation.CLOCKWISE
+																 	 ? 0
+																	 : 1);
+				
+				if (conveyerIndex >= conveyers.size() ) {
+					System.err.println("Could not place conveyer Id " + conveyerIndex + " at " + encodedTile.getLocation() + ". Re-saving will remove tile" );
+					return NO_TILE;
+				} else {
+					return new Tile(encodedTile.getLocation(), encodedTile.getId(), new ConveyerTile(conveyers.get(conveyerIndex) ) );
+				}
 			} else {
 				throw new UnsupportedOperationException("Unknown tile type " + type.getClass().getName() );
 			}

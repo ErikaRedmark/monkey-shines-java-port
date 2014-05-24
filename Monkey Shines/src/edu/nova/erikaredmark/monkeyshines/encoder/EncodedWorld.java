@@ -41,6 +41,8 @@ public class EncodedWorld implements Serializable {
 	private final Map<String, EncodedGoodie> goodies;
 	private final Map<Integer, EncodedLevelScreen> levels;
 	private final List<EncodedHazard> hazards;
+	// Conveyers are not stored. The tile type gives all the info needed
+	// to map to an auto-generated conveyer
 	
 	private EncodedWorld(final String name,
 					     final Map<String, EncodedGoodie> goodies,
@@ -128,7 +130,7 @@ public class EncodedWorld implements Serializable {
 		
 		// Set up empty hazard list
 		List<EncodedHazard> hazards = Collections.emptyList();
-		
+
 		// Return new empty world
 		return new EncodedWorld(name, goodies, screens, hazards);
 	}

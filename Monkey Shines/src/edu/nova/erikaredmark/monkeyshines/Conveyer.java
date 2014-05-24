@@ -3,6 +3,9 @@ package edu.nova.erikaredmark.monkeyshines;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
+import edu.nova.erikaredmark.monkeyshines.encoder.EncodedConveyer;
+import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
+
 /**
  * 
  * Stores the immutable properties of a conveyer belt. Similiar to Hazards, instances of this class
@@ -25,10 +28,28 @@ public final class Conveyer {
 		this.conveyerSheet = conveyerSheet;
 	}
 	
-	/** Intended for test methods */
-	int getId() { return id; }
-	/** Intended for test methods */
-	Rotation getRotation() { return rotation; }
+	/** Intended for test methods and encoder/decoders*/
+	public int getId() { return id; }
+	/** Intended for test methods and encoder/decoders*/
+	public Rotation getRotation() { return rotation; }
+	
+	/**
+	 * 
+	 * Converts the encoded form to the in-game form
+	 * 
+	 * @param encoded
+	 * 		encoded form of conveyer belt
+	 * 
+	 * @param rsrc
+	 * 		world resource to use for conveyer graphics
+	 * 
+	 * @return
+	 * 		instance of Conveyer based off encoded form
+	 * 	
+	 */
+	public static Conveyer inflateFrom(final EncodedConveyer encoded, WorldResource rsrc) {
+		return new Conveyer(encoded.getId(), encoded.getRotation(), rsrc.getConveyerSheet() );
+	}
 	
 	private static final int CONVEYER_SET_SIZE = GameConstants.TILE_SIZE_Y * 2;
 	/**

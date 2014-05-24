@@ -57,13 +57,17 @@ public final class LevelScreen {
 	 * 
 	 * @param worldHazards
 	 * 		list of hazards that are part of the world. Some levels have hazards on them so these must
-	 * 		be inflated first
+	 * 		be inflated first. This list will not be modified
+	 * 
+	 * @param conveyers
+	 * 		list of conveyers that are part of the world. As with hazards, some levels have conveyer belts
+	 * 		that must reference a valid 'Conveyer' object for their immutable state.
 	 * 
 	 * @return
 	 * 		new instance of this object
 	 * 
 	 */
-	public static LevelScreen inflateFrom(EncodedLevelScreen screen, List<Hazard> worldHazards) {
+	public static LevelScreen inflateFrom(EncodedLevelScreen screen, List<Hazard> worldHazards, List<Conveyer> conveyers) {
 		final int screenId = screen.getId();
 		final int backgroundId = screen.getBackgroundId();
 		final ImmutablePoint2D bonzoStart = screen.getBonzoLocation();
@@ -72,7 +76,7 @@ public final class LevelScreen {
 		final EncodedTile[][] encodedTiles = screen.getTiles();
 		for (int i = 0; i < screenTiles.length; i++) {
 			for (int j = 0; j < screenTiles[i].length; j++) {
-				screenTiles[i][j] = Tile.inflateFrom(encodedTiles[i][j], worldHazards);
+				screenTiles[i][j] = Tile.inflateFrom(encodedTiles[i][j], worldHazards, conveyers);
 			}
 		}
 		

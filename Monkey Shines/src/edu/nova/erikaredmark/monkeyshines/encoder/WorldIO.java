@@ -119,12 +119,12 @@ public final class WorldIO {
 	 * 		the name of the world, which will be the name of the .world file as well as the name of the resource pack
 	 * @throws IOException 
 	 * 
-	 * @throws
-	 * 		IllegalArgumentException	
-	 * 			if the path to the new world folder already exists, or if the parent of the path (all folders leading up)
-	 * 			do not exist
-	 * 		IOException
-	 * 			if something occurs during folder and/or file creation that prevents the full creation of this world
+	 * @throws IllegalArgumentException	
+	 * 		if the path to the new world folder already exists, or if the parent of the path (all folders leading up)
+	 * 		do not exist
+	 * 
+	 * @throws IOException
+	 * 		if something occurs during folder and/or file creation that prevents the full creation of this world
 	 * 
 	 */
 	public static void newWorldWithDefault(Path newWorldFolder, String worldName) throws IOException {

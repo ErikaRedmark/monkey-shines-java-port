@@ -124,7 +124,10 @@ public final class WorldResource {
 		
 		// Height of conveyer sheet can calculate total conveyers in world
 		// Remember, a single set is both clockwise and anti-clockwise (hence times 2)
-		conveyerCount = conveyerTiles.getHeight() / (GameConstants.TILE_SIZE_Y * 2);
+		// Empty worlds, and perhaps other worlds, may have no conveyer belts
+		conveyerCount =   conveyerTiles != null
+						? conveyerTiles.getHeight() / (GameConstants.TILE_SIZE_Y * 2)
+						: 0;
 	}
 	
 	/**
@@ -274,6 +277,7 @@ public final class WorldResource {
 		checkResourceNotNull(goodieSheet, "goodies.gif");
 		checkResourceNotNull(yumSheet, "yums.gif");
 		checkResourceNotNull(hazardTiles, "hazards.gif");
+		checkResourceNotNull(conveyerTiles, "conveyers.gif");
 		checkResourceContiguous(backgrounds, maxBackgroundIndex, "background");
 		checkResourceContiguous(sprites, maxSpriteIndex, "sprite");
 		

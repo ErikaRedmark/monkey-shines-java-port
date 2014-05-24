@@ -108,39 +108,21 @@ public class World {
 			hazards.add(Hazard.inflateFrom(encHazard, rsrc) );
 		}
 		
-		final Map<Integer, LevelScreen> worldScreens = new HashMap<>();
-		for (Entry<Integer, EncodedLevelScreen> screen : world.getLevels().entrySet() ) {
-			worldScreens.put(screen.getKey(), LevelScreen.inflateFrom(screen.getValue(), hazards) );
-		}
-		
 		// Size of conveyers may be added to if the world is skinned with an updated
 		// resource containing new conveyers.
-		// TODO store just a NUMBER, not the actual instances, since we can easily
-		// regen our own (Conveyers are always the same, its just a question of how many
-		// to generate for a given world)
-		final List<Conveyer> conveyers = new ArrayList<>();
-		// TODO Erika you stopped here. Need to make encoded forms for saving and finish the generation
-		// of conveyers for a world.
-		for (EncodedConveyer encConveyer : world.getConveyers() ) {
-			conveyers.add(Conveyer.inflateFrom(encConveyer) );
-		}
+		// generate as many conveyer instances as graphics resource allows. Decoding of the
+		// actual levels with the auto-generated conveyers will handle conveyer belts.
+		List<Conveyer> conveyers = new ArrayList<>(rsrc.getConveyerCount() * 2 );
+		generateConveyers(conveyers, rsrc.getConveyerCount(), rsrc.getConveyerSheet() );
 		
-		int conveyerCount = rsrc.getConveyerCount();
-		// More were added to the resource? Bump it up!
-		if (conveyerCount * 2 > conveyers.size() ) {
-			// Basically, convert set count into individual (both right and left count), modify by size,
-			// then divide by 2 to know how many more sets to make.
-			int moreToMake = (conveyers.size() - (conveyerCount * 2) ) / 2;
-			generateConveyers(conveyers, moreToMake, rsrc.getConveyerSheet() );
-		} else if (conveyerCount * 2 < conveyers.size() ) {
-			System.err.println("WARNING: " 
-							 +  conveyerCount 
-							 + " conveyer belt sets in resource, but " 
-							 + conveyers.size() / 2 
-							 + " sets in world. Any existing tiles in the world that used deleted conveyer belt graphics will not draw properly!");
+		// Finally, all the different kinds of tiles loaded, we can load the actually tilemap that requires references
+		// to those tiles
+		final Map<Integer, LevelScreen> worldScreens = new HashMap<>();
+		for (Entry<Integer, EncodedLevelScreen> screen : world.getLevels().entrySet() ) {
+			worldScreens.put(screen.getKey(), LevelScreen.inflateFrom(screen.getValue(), hazards, conveyers) );
 		}
 
-		return new World(worldName, goodiesInWorld, worldScreens, hazards, rsrc);	
+		return new World(worldName, goodiesInWorld, worldScreens, hazards, conveyers, rsrc);	
 	}
 	
 	/**
@@ -179,7 +161,11 @@ public class World {
 		Map<Integer, LevelScreen> screens = new HashMap<>();
 		screens.put(1000, initialScreen);
 		
-		return new World(name, new HashMap<String, Goodie>(), screens, new ArrayList<Hazard>(), rsrc);
+		// Generate # of conveyers proportional to graphics context size
+		List<Conveyer> conveyers = new ArrayList<>(rsrc.getConveyerCount() * 2);
+		generateConveyers(conveyers, rsrc.getConveyerCount(), rsrc.getConveyerSheet() );
+		
+		return new World(name, new HashMap<String, Goodie>(), screens, new ArrayList<Hazard>(), conveyers, rsrc);
 	}
 	
 	
@@ -225,6 +211,7 @@ public class World {
 				  final Map<String, Goodie> goodiesInWorld, 
 				  final Map<Integer, LevelScreen> worldScreens,
 				  final List<Hazard> hazards,
+				  final List<Conveyer> conveyers,
 				  final WorldResource rsrc) {
 		
 		/* Variable data		*/
@@ -232,6 +219,7 @@ public class World {
 		this.goodiesInWorld = goodiesInWorld;
 		this.worldScreens = worldScreens;
 		this.hazards = hazards;
+		this.conveyers = conveyers;
 		
 		/* Constant data		*/
 		this.currentScreen = 1000;
@@ -561,13 +549,22 @@ public class World {
 	public Map<Integer, LevelScreen> getLevelScreens() { return Collections.unmodifiableMap(this.worldScreens); }
 	
 	/**
-	 * Returns an immutable copy of the list of hazards in this world. This is not their locations; that is in tile data
+	 * Returns an unmodifiable version of the list of hazards in this world. This is not their locations; that is in tile data
 	 * as a {@code HazardTile}. This describes the 'types' of hazards (bombs, lava) in a world.
 	 * 
 	 * @return
 	 */
 	public List<Hazard> getHazards() {
 		return Collections.unmodifiableList(this.hazards);
+	}
+	
+	/**
+	 * Returns an unmodifiable version of the list of conveyers in the world
+	 * 
+	 * @return
+	 */
+	public List<Conveyer> getConveyers() {
+		return Collections.unmodifiableList(this.conveyers);
 	}
 
 	/**

@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.Tile;
+import edu.nova.erikaredmark.monkeyshines.tiles.ConveyerTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
@@ -59,6 +60,14 @@ public final class EncodedTile implements Serializable {
 				_id, 
 				new EncodedHazardTileType(
 					((HazardTile) _type).getHazard().getId() 
+				),
+				_location);
+		} else if (_type instanceof ConveyerTile) {
+			ConveyerTile conveyerTile = (ConveyerTile) _type;
+			return new EncodedTile(
+				_id,
+				new EncodedConveyerTile(
+					conveyerTile.getConveyer().getId(), conveyerTile.getConveyer().getRotation() 
 				),
 				_location);
 		} else {
