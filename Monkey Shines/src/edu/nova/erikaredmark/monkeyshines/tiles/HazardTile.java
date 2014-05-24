@@ -96,7 +96,7 @@ public class HazardTile implements TileType {
 	 * updates animation tick for drawing
 	 * 
 	 */
-	public void update() {
+	@Override public void update() {
 		if (isDead() )  return;
 		
 		if (readyToAnimate() ) {

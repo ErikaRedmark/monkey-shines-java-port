@@ -29,14 +29,18 @@ import edu.nova.erikaredmark.monkeyshines.encoder.EncodableTileType;
 public enum StatelessTileType implements TileType, EncodableTileType {
 	SOLID {
 		@Override public boolean isThru() { return false; }
+		@Override public void update() { /* No op */ }
 	},
 	THRU {
 		@Override public boolean isThru() { return true; }
+		@Override public void update() { /* No op */ }
 	}, 
 	SCENE {
 		@Override public boolean isThru() { return false; }
+		@Override public void update() { /* No op */ }
 	},
 	NONE {
 		@Override public boolean isThru() { return false; }
+		@Override public void update() { /* No op */ }
 	};
 }

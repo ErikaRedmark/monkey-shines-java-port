@@ -27,4 +27,15 @@ public interface TileType {
 	 */
 	boolean isThru();
 	
+	/**
+	 * 
+	 * Updates the given tile type IF it has state. This method will do nothing on stateless tile
+	 * types
+	 * 
+	 */
+	void update();
+	
+	// Paint is not a method; it's signature currently depends on the tile type. 
+	// TODO may need to revise it. Any removal of instanceof calls is a good thing.
+	
 }

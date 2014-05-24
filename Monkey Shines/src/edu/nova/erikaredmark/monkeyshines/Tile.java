@@ -202,11 +202,7 @@ public class Tile {
 	 * 
 	 */
 	public void update() {
-		if (this.type instanceof StatelessTileType)  return;
-		
-		if (this.type instanceof HazardTile) {
-			((HazardTile)this.type).update();
-		}
+		this.type.update();
 	}
 	
 	/**
