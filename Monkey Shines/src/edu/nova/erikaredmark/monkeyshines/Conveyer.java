@@ -92,30 +92,35 @@ public final class Conveyer {
 	
 	public enum Rotation {
 		CLOCKWISE {
-			@Override public void move(final Point2D point) {
-				point.translateX(GameConstants.CONVEYER_SPEED);
+			@Override public int translationX() {
+				return GameConstants.CONVEYER_SPEED;
 			}
 			
 			@Override public int drawYOffset() { return 0; }
 		},
 		ANTI_CLOCKWISE {
-			@Override public void move(final Point2D point) {
-				point.translateX(-GameConstants.CONVEYER_SPEED);
+			@Override public int translationX() {
+				return -GameConstants.CONVEYER_SPEED;
 			}
 			
 			@Override public int drawYOffset() { return GameConstants.TILE_SIZE_Y; }
+		},
+		/**
+		 * Special enumeration used for Bonzo when he is on no conveyer belt. Moves him by 0
+		 * amount. Removes need for null checking and extra branching.
+		 */
+		NONE {
+			@Override public int translationX() { return 0; }
+			@Override public int drawYOffset() { throw new UnsupportedOperationException("NONE is a valid rotation type ONLY for bonzo; cannot draw a non-rotating conveyer belt"); }
 		};
 		
 		/**
 		 * 
-		 * Moves the given point by the given conveyer belt speed (a constant).
-		 * This method is intended to be called per tick if relevant.
-		 * 
-		 * @param point
-		 * 		the point to move. This object is modified by the method
+		 * Returns the number of pixels of translation that should be applied to bonzo
+		 * when on a conveyer belt of this rotation.
 		 * 	
 		 */
-		public abstract void move(Point2D point);
+		public abstract int translationX();
 		
 		/**
 		 * 

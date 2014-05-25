@@ -32,8 +32,13 @@ public final class GameConstants {
 	 */
 	public static double TERMINAL_VELOCITY = 14.0;
 	public static double SPEED_MULTIPLIER = 1.0; // The speed of a sprite is multiplied by this to get how fast it moves across screen.
-	public static double BONZO_SPEED_MULTIPLIER = 2.0; // The speed Bonzo dashes across the landscape
+	public static double BONZO_SPEED_MULTIPLIER = 3.0; // The speed Bonzo dashes across the landscape
 	public static double BONZO_JUMP_MULTIPLIER = 1.6; // The force of bonzo's jump
+	
+	// Bonzo accelerates downward until terminal velocity
+	public static double BONZO_FALL_ACCELERATION_JUMP = -0.4; // The acceleration bonzo falls during a jump. Significantly slower than normal.
+	public static double BONZO_FALL_ACCELERATION_NORMAL = -1.0; // The acceleration bonzo falls normally
+	
 	public static double FRUIT_SCORE = 10.0; // Standard score for fruit.
 	public static double YUMMY_FRUIT_SCORE = 50.0; // score for Yummy fruit.
 	public static double EXIT_KEY_SCORE = 10.0; // Score for exit key
@@ -60,8 +65,12 @@ public final class GameConstants {
 	public static final int CENTRE = -1;
 	
 	// Speed
-	public static final int GAME_SPEED = 30;
-	public static final int EDITOR_SPEED = GAME_SPEED;
+	// Number of milliseconds that make up a 'tick' of gameplay. Lower numbers mean faster gameplay and animation,
+	// and bigger numbers mean slower.
+	// Smaller numbers mean more ticks per second which means more fine control over how fast things are by allowing
+	// certain things to wait for n ticks before performing an action.
+	public static final int GAME_SPEED = 30; // 20 = 50 ticks per second
+	public static final int EDITOR_SPEED = GAME_SPEED + 30;
 
 
 }

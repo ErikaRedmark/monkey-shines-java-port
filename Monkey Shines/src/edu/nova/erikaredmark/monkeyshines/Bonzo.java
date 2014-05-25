@@ -2,7 +2,9 @@ package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics2D;
 
+import edu.nova.erikaredmark.monkeyshines.Conveyer.Rotation;
 import edu.nova.erikaredmark.monkeyshines.resource.CoreResource;
+import edu.nova.erikaredmark.monkeyshines.tiles.ConveyerTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
 
@@ -38,11 +40,22 @@ public final class Bonzo {
 	// Once there is ground below bonzo, stop jumping
 	private boolean isJumping;
 	
+	// When bonzo is on a conveyer, he is moved in one direction or the other based on which way the
+	// conveyer is rotated.
+	private Rotation affectedConveyer;
+	
 	// When dying, everything is overridden, and bonzo is reset.
 	private boolean isDying;
 	// The current animation to use for bonzo dying. This field is only used when going through
 	// death animations and is only updated when bonzo is killed.
 	private DeathAnimation deathAnimation;
+	
+	// Animation data
+	// ticks to next frame means how many ticks before advancing bonzo's sprite sheet.
+	// this is NOT the same as ticks between updates. Updates happen every tick (collisions)
+	// but advancing the sprite sheet is slower.
+	private int ticksToNextFrame;
+	private static final int TICKS_BETWEEN_FRAMES = 0;
 	
 	// Use a pointer to the current world to get information such as the screen, and then from there where bonzo
 	// is relative to the screen.
@@ -56,6 +69,7 @@ public final class Bonzo {
 		// Initialise Variables
 		walkingDirection = 0;
 		currentSprite = 0;
+		affectedConveyer = Rotation.NONE;
 		
 		// Initialise starting points
 		ImmutablePoint2D start = currentScreen.getBonzoStartingLocation().multiply(GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y);
@@ -90,7 +104,7 @@ public final class Bonzo {
 	 * just standing around and needs to know if there is ground beneath.
 	 * 
 	 */
-	public int onGround() {
+	public GroundState onGround() {
 		return onGround(currentLocation.y() );
 	}
 	
@@ -103,7 +117,8 @@ public final class Bonzo {
 	 * he will end up being bumped up to the next tile down, being inside a solid. Terminal velocity should never reach above
 	 * that amount.
 	 * <p/>
-	 * This method does not modify any state and merely returns a value.
+	 * This method does not modify any state and merely returns a value. The value contains how far bonzo must be
+	 * pushed up as well as a boolean indicating if any of the ground he landed on contained a conveyer belt.
 	 * <p/>
 	 * The parameters for original position are required to determine, for dealing with thru blocks, if bonzo fell onto
 	 * the block, or if he was already inside of it. 
@@ -117,29 +132,52 @@ public final class Bonzo {
 	 * 		return 0... in which case bonzo is perfectly fine on the ground.
 	 * 
 	 */
-	public int onGround(int originalPositionY) {
+	public GroundState onGround(int originalPositionY) {
 		// If rising, not falling, no need to check for ground. In fact, we are allowed to go through certain ground.
-		if (currentVelocity.precisionY() < 0)  return -1;
+		if (currentVelocity.precisionY() < 0)  return GroundState.RISING;
 		
 		LevelScreen currentScreen = worldPointer.getCurrentScreen();
 		int bonzoOneBelowFeetY = (currentLocation.y() + BONZO_SIZE.y() ) + 1;
 		// Four points, each point 'snaps' to a tile. We need to check two centres, otherwise it is possible for bonzo
 		// to be flanked by emptiness, be right in the middle of a solid block, and fall through.
-		TileType onGroundLeft = currentScreen.getTileAt(currentLocation.x() + 3, bonzoOneBelowFeetY);
-		TileType onGroundRight = currentScreen.getTileAt(currentLocation.x() + (BONZO_SIZE.x() - 4), bonzoOneBelowFeetY );
+		TileType[] grounds = new TileType[4];
 		int bonzoSizeXHalf = BONZO_SIZE.x() / 2;
-		TileType onGroundCentreLeft = currentScreen.getTileAt(currentLocation.x() + bonzoSizeXHalf, bonzoOneBelowFeetY);
-		TileType onGroundCentreRight = currentScreen.getTileAt(currentLocation.x() + bonzoSizeXHalf + 1, bonzoOneBelowFeetY);
+		grounds[0] = currentScreen.getTileAt(currentLocation.x() + 3, bonzoOneBelowFeetY);
+		grounds[1] = currentScreen.getTileAt(currentLocation.x() + bonzoSizeXHalf, bonzoOneBelowFeetY);
+		grounds[2] = currentScreen.getTileAt(currentLocation.x() + bonzoSizeXHalf + 1, bonzoOneBelowFeetY);
+		grounds[3] = currentScreen.getTileAt(currentLocation.x() + (BONZO_SIZE.x() - 4), bonzoOneBelowFeetY );
+
+		// State variables for later in the method. We want to loop over the tile types returned only one time.
+		Rotation onConveyer = Rotation.NONE;
+		boolean atLeastThru = false;
+		boolean atLeastGround = false;
 		
+		for (TileType t : grounds) {
+			if (t instanceof ConveyerTile) {
+				if (onConveyer == Rotation.NONE)  onConveyer = ((ConveyerTile) t).getConveyer().getRotation();
+				else {
+					// Are the rotations the same? If not, choose one to take precedence according to the
+					// following order
+					// 1) Bonzo's current conveyer rotation state variable IF NOT NONE
+					// 2) The first conveyer selected (which would be the leftmost one)
+					Rotation newRotation = ((ConveyerTile) t).getConveyer().getRotation();
+					if (onConveyer != newRotation) {
+						if (this.affectedConveyer != Rotation.NONE)  onConveyer = this.affectedConveyer;
+						// else don't change the current conveyer.
+					}
+				}
+			}
+			if (t.isThru() )  atLeastThru = true;
+			if (t == StatelessTileType.SOLID)  atLeastGround = true;
+		}
+		
+		// Check #2; bonzo may be INSIDE the ground. Determine if he is and how much to snap him up by
 		// If at least part of him is on a thru tile.
 		// Thrus differ from solids; he could jump up into a thru. We must handle that case. Solids are more simple.
-		if (    onGroundLeft.isThru()
-			 || onGroundRight.isThru() 
-			 || onGroundCentreLeft.isThru()
-			 || onGroundCentreRight.isThru() ) {
+		if (atLeastThru) {
 			// If bonzo is already exactly on the ground, everything is fine. Otherwise, we may have to fall through it.
 			int depth = (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y;
-			if (depth == 0)  return 0;
+			if (depth == 0)  return new GroundState(0, onConveyer);
 			
 			// Very important! If we are inside of a thru, we do NOT bounce onto it unless bonzo's original position was
 			// ABOVE the thru. Otherwise, it is too easy for him to snap up if a jump didn't quite make it.
@@ -148,25 +186,42 @@ public final class Bonzo {
 			// exactly already.
 			if (originalPositionY / GameConstants.TILE_SIZE_Y == currentLocation.y() / GameConstants.TILE_SIZE_Y) {
 				
-				return -1;
+				return new GroundState(-1, onConveyer);
 				// Effectively, if we snap the original position and the current position and we end up at the same tile, then
 				// we approached it from the side, not above.
 			}
 			
 			//We need to make sure that we are exactly on the thing, we don't budge it.
-			return ( (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y ); 
+			return new GroundState( (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y, onConveyer); 
 			
 		// Landing or on a solid.
-		} else if (    onGroundLeft == StatelessTileType.SOLID
-				    || onGroundRight == StatelessTileType.SOLID
-				    || onGroundCentreLeft == StatelessTileType.SOLID
-				    || onGroundCentreRight == StatelessTileType.SOLID) {
-			return (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y;
-
+		} else if (atLeastGround) {
+			return new GroundState( (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y, onConveyer);
 		}
 		
-		return -1;
+		return new GroundState(-1, onConveyer);
 	}
+	
+	/** 
+	 * 
+	 * C-style struct for returning multiple values from the onGround method.
+	 * 
+	 * @author Erika Redmark
+	 *
+	 */
+	private static final class GroundState {
+		public final int snapUpBy;
+		public final Rotation onConveyer;
+		
+		private GroundState(final int snapUpBy, final Rotation onConveyer) {
+			this.snapUpBy = snapUpBy;
+			this.onConveyer = onConveyer;
+		}
+		
+		// Immutable singleton for when bonzo is rising, not falling.
+		private static final GroundState RISING = new GroundState(-1, Rotation.NONE);
+	}
+
 	
 	/**
 	 * 
@@ -193,7 +248,11 @@ public final class Bonzo {
 	/**
 	 * 
 	 * Checks if there is a solid block at the given y co-ordinate, that would interfere with bonzo's jumping if he
-	 * was to try to jump
+	 * was to try to jump. X locations taken from state.
+	 * <p/>
+	 * This method has a special case: If bonzo hits a solid on either the left or right BUT he is a few pixels
+	 * off from jumping through an opening (at least two air tiles), this will automatically correct his X position
+	 * and return that no solid is up. This is done ONLY when he is jumping and ONLY when he is only a few pixels off.
 	 * 
 	 * @param newY
 	 * 		the 'new' y level bonzo is or is going to be
@@ -204,12 +263,47 @@ public final class Bonzo {
 	 */
 	public boolean solidToUp(final int newY) {
 		LevelScreen currentScreen = worldPointer.getCurrentScreen();
-		if (   currentScreen.getTileAt(currentLocation.x(), newY) == StatelessTileType.SOLID 
-			|| currentScreen.getTileAt(currentLocation.x() + (BONZO_SIZE.x() - 1), newY ) == StatelessTileType.SOLID 
-			|| currentScreen.getTileAt(currentLocation.x() + (BONZO_SIZE.x() / 2), newY ) == StatelessTileType.SOLID) {
+		TileType[] above = new TileType[4];
+		// The two middle points will never refer to the same tile, but may refer to different tiles
+		// from extreme edge.
+		// Two middles being Open but others showing a solid will activate the special case, snapping
+		// bonzo in place.
+		above[0] = currentScreen.getTileAt(currentLocation.x(), newY);
+		above[1] = currentScreen.getTileAt(currentLocation.x() + 2, newY );
+		above[2] = currentScreen.getTileAt(currentLocation.x() + (BONZO_SIZE.x() - 1) - 2, newY );
+		above[3] = currentScreen.getTileAt(currentLocation.x() + (BONZO_SIZE.x() - 1), newY );
+		
+		boolean atLeastSolid = false;
+		for (TileType t : above) {
+			if (t == StatelessTileType.SOLID)  atLeastSolid = true;
+		}
+		
+		// No solids no problem
+		if (!(atLeastSolid) )  return false;
+		
+		// Solids? Check our special case. If we can't use that then it is a solid wall.
+		if (   above[1] != StatelessTileType.SOLID 
+		    && above[2] != StatelessTileType.SOLID) {
+			
+			// Activate special case: Snap bonzo to nearest tile boundary, which should
+			// be enough to line him up to move up.
+			int bonzoNormalised = currentLocation.x() / GameConstants.TILE_SIZE_X;
+			int rounding = currentLocation.x() % GameConstants.TILE_SIZE_X;
+			
+			// Techincally, he can ONLY be within about 2 pixels from the side, but to be safe
+			// we just use the middle (tile size half) to determine whether to round up the
+			// normalised position or keep it truncated.
+			if (rounding > GameConstants.TILE_SIZE_X_HALF)  ++bonzoNormalised;
+			
+			// Apply change to location. remember the normalised position is a tile position!
+			currentLocation.setX(bonzoNormalised * GameConstants.TILE_SIZE_X);
+			
+			// Nothing to above now!
+			return false;
+			
+		} else {
 			return true;
 		}
-		return false;
 	}
 	
 	/**
@@ -246,21 +340,24 @@ public final class Bonzo {
 	public void move(double velocity) {
 		// If we are not jumping, increment the sprite
 		if (!isJumping) {
-			currentSprite++;
-			if (currentSprite >= 16)
-				currentSprite = 0;
+			if (readyToAnimate() ) {
+				currentSprite++;
+				if (currentSprite >= 16)
+					currentSprite = 0;
+			}
 		}
 		
 		//currentVelocity.x = velocity * GameConstants.BONZO_SPEED_MULTIPLIER;
 		//only move if not a solid tile ahead
 		
-		int newX = currentLocation.x() + (int)( velocity * GameConstants.BONZO_SPEED_MULTIPLIER );
+		double newX = (int)(currentLocation.precisionX() + ( velocity * GameConstants.BONZO_SPEED_MULTIPLIER ) );
 		if (velocity < 0) {
 			walkingDirection = 1;
-			if (!solidToSide(newX) )
+			if (!solidToSide((int)newX) )
 				currentLocation.setX(newX);
 		} else {
-			int rightSide = currentLocation.x() + Bonzo.BONZO_SIZE.x() + (int)( velocity * GameConstants.BONZO_SPEED_MULTIPLIER);
+			// Need to use right side of sprite
+			int rightSide = ((int)newX) + Bonzo.BONZO_SIZE.x();
 			walkingDirection = 0;
 			if (!solidToSide(rightSide) ) {
 				currentLocation.setX(newX);
@@ -283,16 +380,24 @@ public final class Bonzo {
 		
 		// Only allow jumping if on the ground and velocity going up is zero. And not already in the middle of a jump
 		if (isJumping)  return;
-		int onGround = onGround();
-		if (onGround != -1 && (currentVelocity.y() == 0)  ) {
+		// Conveyer state at this point is irrelevant. Update method handles that.
+		GroundState groundState = onGround();
+		if (groundState.snapUpBy != -1 && (currentVelocity.y() == 0)  ) {
 			currentVelocity.setY(-(velocity * GameConstants.BONZO_JUMP_MULTIPLIER) );
 			setJumping(true);
 			currentSprite = 0;
 		}
 	}
 	
+	/**
+	 * 
+	 * Makes bonzo stop moving in terms of velocity. If bonzo is under the effects of a conveyer
+	 * belt those effects will be removed.
+	 * 
+	 */
 	public void stopMoving() {
 		currentVelocity.setX(0);
+		setAffectedByConveyer(Rotation.NONE);
 	}
 	
 	/**
@@ -323,43 +428,64 @@ public final class Bonzo {
 		this.isJumping = jumping;
 	}
 	
+	/**
+	 * 
+	 * Sets if bonzo is under the effects of a conveyer belt. Just as in the original game,
+	 * this can overlap with jumping.
+	 * <p/>
+	 * Rotation indicates which direction bonzo moves. Rotation can be gathered from the conveyer tile
+	 * during collision detection.
+	 * 
+	 * @param affectedConveyer
+	 * 		The rotation of the conveyer belt affecting bonzo, or {@code Rotation.NONE} for no effects
+	 * 
+	 */
+	private void setAffectedByConveyer(Rotation affectedConveyer) {
+		assert affectedConveyer != null;
+		this.affectedConveyer = affectedConveyer;
+	}
+	
 	// We don't increment the sprite unless we are jumping or dying.
 	public void update() {
 		// If we are dying, animate the sprite and do nothing else
 		if (isDying) {
-			currentSprite++;
-			if (currentSprite >= 15) {
-				// Death animation over. Restart bonzo. Also update drawing data
-				worldPointer.restartBonzo(this);
+			if (readyToAnimate() ) {
+				currentSprite++;
+				if (currentSprite >= 15) {
+					// Death animation over. Restart bonzo. Also update drawing data
+					worldPointer.restartBonzo(this);
+				}
+				return;
 			}
-			return;
 		}
 		
 		int originalY = currentLocation.y();
 		currentLocation.applyVelocity(currentVelocity);
 		// At this time, we could be inside of a block. Since by game nature velocity is only either
 		// upward or downward, check now to bump us out of the ground
-		int onGround = onGround(originalY);
+		GroundState groundState = onGround(originalY);
 		
 		/* ------- Not on the ground, so start pulling downward ---------- */
-		if ( onGround == -1) {
+		// Conveyer state is MAINTAINED.
+		if ( groundState.snapUpBy == -1) {
 			// if the current velocity has not yet hit terminal
 			if (currentVelocity.precisionY() <= GameConstants.TERMINAL_VELOCITY ) {
 				
-				// Jumps should be smoother
-				// Nitpick: Bonzo falls slower if he jumps first. Not sure if this is a good idea.
-				if (isJumping)  currentVelocity.translateYFine(-0.4);
-			    else 			currentVelocity.translateYFine(-1);
+				if (isJumping)  currentVelocity.translateYFine(GameConstants.BONZO_FALL_ACCELERATION_JUMP);
+			    else 			currentVelocity.translateYFine(GameConstants.BONZO_FALL_ACCELERATION_NORMAL);
 			}
 		/* --------- On the ground. Keep y Velocities at zero ---------- */
+		// Conveyer state is modified to whatever the ground state says it should.
 		} else {
 			currentVelocity.setY(0);
 			// if pushing us up takes us OFF the ground, don't do it. Sloppy Kludge
-			currentLocation.translateY(-onGround); //Push back to level field.
-			if (onGround() == -1)  currentLocation.translateY(onGround);
+			currentLocation.translateY(-groundState.snapUpBy); //Push back to level field.
 			// If we are jumping when we land, move sprite to post-jump stage and stop jumping
 			if (isJumping)  currentSprite = 3;
 			setJumping(false);
+			
+			// Set conveyer belt state
+			setAffectedByConveyer(groundState.onConveyer);
 		} 
 		
 		// Give all collisions to World
@@ -373,13 +499,51 @@ public final class Bonzo {
 				if (currentSprite < 7)
 					currentSprite++;
 			} else {
+				// We did hit a solid
 				// Only reverse the velocity if we are actually already going up. If we are falling and somehow still
 				// inside a solid, don't reverse again or we get bouncing through ceilings.
 				if (currentVelocity.y() < 0)  currentVelocity.reverseY();
 			}
 		}
-
 		
+		// If we are affected by a conveyer, we are moved. If we are moved into a wall, we move just enough
+		// to touch it.
+		int conveyerMovement = this.affectedConveyer.translationX();
+		// required to have one loop handle two directions.
+		int conveyerMultiplier =   conveyerMovement < 0
+								 ? -1
+								 : 1;
+		// Find farthest point not in a solid block that we can move to.
+		// Loop does not execute if movement is 0
+		// It is perfectly possible for no additional movement to be applied if against a wall.
+		for (int i = Math.abs(conveyerMovement); i >= 0; i--) {
+			int translation = i * conveyerMultiplier;
+			int newX = this.currentLocation.x() + translation;
+			if (!(solidToSide(newX) ) ) {
+				currentLocation.translateX(translation);
+				break;
+			}
+		}
+		
+		updateReadyToAnimate();
+		
+	}
+	
+	/**
+	 * 
+	 * Determines if bonzo's sprite should be updated, or if it must wait another tick.
+	 * Calling this method does NOT update the tick count, unlike other objects that
+	 * use a similiar trick. ticksToNextFrame is updated in the update method.
+	 * 
+	 * @return
+	 */
+	private boolean readyToAnimate() {
+		return this.ticksToNextFrame >= TICKS_BETWEEN_FRAMES;
+	}
+	
+	private void updateReadyToAnimate() {
+		if (ticksToNextFrame >= TICKS_BETWEEN_FRAMES)  ticksToNextFrame = 0;
+		else										   ++ticksToNextFrame;
 	}
 	
 	public void paint(Graphics2D g2d) {
