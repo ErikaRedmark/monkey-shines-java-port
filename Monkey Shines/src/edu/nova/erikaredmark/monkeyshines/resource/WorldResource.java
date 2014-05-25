@@ -1,5 +1,7 @@
 package edu.nova.erikaredmark.monkeyshines.resource;
 
+import java.awt.AlphaComposite;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
@@ -593,15 +595,17 @@ public final class WorldResource {
 			
 			// Draw on sheet
 			Graphics2D graphics = sheet.createGraphics();
+			//graphics.setColor(new Color(100, 100, 100, 100) );
+			//graphics.fillRect(0, 0, width, height);
 			for (int i = 0; i < conveyerCount; i++) {
 				// Draw the second frame, which has a little rotation, to give user the sense
 				// of which direction the conveyer is going in.
 				int drawFromX = GameConstants.TILE_SIZE_X;
-				int drawFromY = GameConstants.TILE_SIZE_Y * i;
+				int drawFromY = GameConstants.TILE_SIZE_Y * i * 2;
 				
-				// We drop down a level per 5 conveyers
-				int drawToX = (i % 5) * GameConstants.TILE_SIZE_X;
-				int drawToY = (i / 5) * GameConstants.TILE_SIZE_Y;
+				// We drop down a level per 10 conveyers
+				int drawToX = ((i * 2) % 10) * GameConstants.TILE_SIZE_X;
+				int drawToY = ((i * 2) / 10) * GameConstants.TILE_SIZE_Y;
 				// We have the x, y for the Clockwise conveyer in both source and destination
 				graphics.drawImage(conveyerTiles, 
 					drawToX, drawToY, 
@@ -609,6 +613,17 @@ public final class WorldResource {
 					drawFromX, drawFromY, 
 					drawFromX + GameConstants.TILE_SIZE_X, drawFromY + GameConstants.TILE_SIZE_Y, 
 					null);
+				
+				// Do Anti-clockwise conveyer.
+				drawFromY += GameConstants.TILE_SIZE_Y;
+				drawToX += GameConstants.TILE_SIZE_X;
+				
+				graphics.drawImage(conveyerTiles, 
+						drawToX, drawToY, 
+						drawToX + GameConstants.TILE_SIZE_X, drawToY + GameConstants.TILE_SIZE_Y, 
+						drawFromX, drawFromY, 
+						drawFromX + GameConstants.TILE_SIZE_X, drawFromY + GameConstants.TILE_SIZE_Y, 
+						null);
 			}
 			
 			editorConveyerTiles = sheet;
