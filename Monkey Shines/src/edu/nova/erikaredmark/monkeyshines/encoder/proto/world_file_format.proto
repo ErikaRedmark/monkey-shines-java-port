@@ -1,0 +1,156 @@
+package monkeyshines;
+
+option java_package = "edu.nova.erikaredmark.monkeyshines.encoder.proto";
+option java_outer_classname = "WorldFormatProtos";
+
+// This proto file describes the file format for .world files that contain level data. World files are
+// given graphics, sounds, music, etc... from a resource pack at runtime, as such this file describes
+// types. It is up to the resource pack to grant graphics and sounds to those types.
+
+// compile with
+// protoc -I=src --java_out=src src/edu/nova/erikaredmark/monkeyshines/encoder/proto/world_file_format.proto
+message World {
+  
+  optional string name = 1;
+  // Map<String, Goodie>
+  repeated StringToGoodieTuple goodies = 2;
+  // Map<Integer, Level>
+  repeated IntegerToLevelTuple levels = 3;
+  repeated Hazard hazards = 4;
+  // In the original game, this was always 10000
+  optional uint32 bonus_screen = 5;
+  
+  // Following fields were not available in original:
+  optional string author = 6;
+  
+  message StringToGoodieTuple {
+  	required string one = 1;
+  	required Goodie two = 2;
+  }
+  
+  message IntegerToLevelTuple {
+  	required uint32 one = 1;
+  	required LevelScreen two = 2;
+  }
+  
+  message Point {
+  	required int32 x = 1;
+  	required int32 y = 2;
+  }
+  
+  message Box {
+  	required Point topLeft = 1;
+  	required Point bottomRight = 2;
+  }
+  
+  message Goodie {
+  	// Rare case where id refers to graphic AND type, since types
+  	// are hardcoded.
+  	optional uint32 id = 1;
+  	optional uint32 screen_id = 2;
+  	optional Point location = 3;
+  }
+  
+  enum DeathAnimation {
+  	NORMAL_DEATH = 0;
+  	BEE = 1;
+  	BURN = 2;
+  	ELECTRIC = 3;
+  }
+  
+  // These are the global definitions of the types of hazards, not the actual tiles
+  // containing hazards defined later.
+  message Hazard {
+  	optional uint32 id = 1;
+  	optional bool explodes = 2;
+  	optional DeathAnimation death_animation = 3;
+  }
+  
+  // Possibly the most complicated structure, as this contains all the information on a single screen
+  // not global to the world. This includes sprite, tile, background data as well as start location.
+  message LevelScreen {
+  	optional uint32 id = 1;
+  	optional Background background = 2;
+  	optional Point bonzo_location = 3;
+  	repeated Sprite sprites = 4;
+  	repeated TileColumn tileColumns = 5;
+  }
+  
+  message Background {
+  	optional uint32 id = 1;
+  	optional BackgroundType type = 2; 
+  }
+  
+  enum BackgroundType {
+  	PATTERN = 1;
+  	FULL = 2;
+  	SOLID_COLOR = 3;
+  }
+  
+  message Sprite {
+  	optional uint32 id = 1;
+  	optional Point start_location = 2;
+  	optional Box bounding_box = 3;
+  	optional Point initial_speed = 4;
+  	optional AnimationType animation = 5;
+  	optional AnimationSpeed animation_speed = 6;
+  	optional SpriteType type = 7;	
+  }
+  
+  enum AnimationType {
+  	INCREASING_FRAMES = 1;
+  	CYLCING_FRAMES = 2;
+  }
+  
+  // Original game had only two animation speeds. In the future it
+  // is possible this can be deprecated and replaced with just a
+  // number of ticks per frame.
+  enum AnimationSpeed {
+  	NORMAL_SPEED = 1;
+  	SLOW = 2;
+  }
+  
+  enum SpriteType {
+  	NORMAL = 1;
+  	HEALTH_DRAIN = 2;
+  	EXIT_DOOR = 3;
+  	BONUS_DOOR = 4;
+  	// Not part of original game; a sprite that doesn't hurt. Can be
+  	// used maybe to add some extra detail to levels. MAY be a surprise
+  	// to players.
+  	SCENERY_SPRITE = 5;
+  }
+
+  // This class has one purpose: Allow 2D array in protocol buffer format.
+  // Level stores array columns should together form the row-col form needed
+  message TileColumn {
+  	required Tile tile = 1;
+  }
+  
+  message Tile {
+  	// No matter the tile type, Id gives the graphics context to use, whether the index
+  	// in the array for covneyers, the hazard id, or the solid/thru/scenery id.
+  	optional uint32 id = 1;
+  	optional Point location = 2;
+  	// Tile type determine which of the following fields, if any, are relevant
+  	optional TileType type = 3;
+  	// Only used for conveyer belts
+  	optional Rotation rotation = 4;
+  }
+  
+  enum TileType {
+  	SOLID = 1;
+  	THRU = 2;
+  	SCENERY = 3;
+  	HAZARD = 4;
+  	CONVEYER = 5;
+  	BREAKING = 6;
+  	NONE = 7;
+  }
+  
+  enum Rotation {
+  	CLOCKWISE = 1;
+  	ANTI_CLOCKWISE = 2;
+  }
+
+}
