@@ -383,7 +383,7 @@ public class World {
 	 * 
 	 */
 	private void hazardCollisionCheck(Bonzo bonzo) {
-		ImmutablePoint2D[] tilesToCheck = effectiveTiles(bonzo.getCurrentBounds() );
+		ImmutablePoint2D[] tilesToCheck = effectiveTilesCollision(bonzo.getCurrentBounds() );
 		for (ImmutablePoint2D tile: tilesToCheck) {
 			TileType type = getCurrentScreen().getTile(tile.x(), tile.y() );
 			if (type instanceof HazardTile) {
@@ -427,7 +427,7 @@ public class World {
 	 * 		if assertions are enabled and the bounds are not 40x40
 	 * 
 	 */
-	static ImmutablePoint2D[] effectiveTiles(ImmutableRectangle bounds) {
+	static ImmutablePoint2D[] effectiveTilesCollision(ImmutableRectangle bounds) {
 		assert bounds.getSize().x() == 40;
 		assert bounds.getSize().y() == 40;
 		// Solution: 
@@ -471,6 +471,7 @@ public class World {
 		fourPoints[3] = ImmutablePoint2D.of(newTopLeftX + 1, newTopLeftY + 1);
 		return fourPoints;
 	}
+	
 	
 	// Reminder: Form is like "1000X4,3"
 	/**

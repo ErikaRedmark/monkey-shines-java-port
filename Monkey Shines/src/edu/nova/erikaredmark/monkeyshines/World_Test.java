@@ -19,7 +19,7 @@ public final class World_Test {
 	 */
 	@Test public void effectiveTilesNoSnap() {
 		ImmutableRectangle box = ImmutableRectangle.of(2, 3, 40, 40);
-		ImmutablePoint2D[] four = World.effectiveTiles(box);
+		ImmutablePoint2D[] four = World.effectiveTilesCollision(box);
 		assertEquals(0, four[0].x() );
 		assertEquals(0, four[0].y() );
 		
@@ -41,7 +41,7 @@ public final class World_Test {
 	 */
 	@Test public void effectiveTilesSnap() {
 		ImmutableRectangle box = ImmutableRectangle.of(12, 13, 40, 40);
-		ImmutablePoint2D[] four = World.effectiveTiles(box);
+		ImmutablePoint2D[] four = World.effectiveTilesCollision(box);
 		assertEquals(1, four[0].x() );
 		assertEquals(1, four[0].y() );
 		

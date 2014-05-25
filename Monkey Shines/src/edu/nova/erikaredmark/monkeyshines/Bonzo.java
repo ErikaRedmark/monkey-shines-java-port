@@ -123,12 +123,20 @@ public final class Bonzo {
 		
 		LevelScreen currentScreen = worldPointer.getCurrentScreen();
 		int bonzoOneBelowFeetY = (currentLocation.y() + BONZO_SIZE.y() ) + 1;
+		// Four points, each point 'snaps' to a tile. We need to check two centres, otherwise it is possible for bonzo
+		// to be flanked by emptiness, be right in the middle of a solid block, and fall through.
 		TileType onGroundLeft = currentScreen.getTileAt(currentLocation.x() + 3, bonzoOneBelowFeetY);
 		TileType onGroundRight = currentScreen.getTileAt(currentLocation.x() + (BONZO_SIZE.x() - 4), bonzoOneBelowFeetY );
+		int bonzoSizeXHalf = BONZO_SIZE.x() / 2;
+		TileType onGroundCentreLeft = currentScreen.getTileAt(currentLocation.x() + bonzoSizeXHalf, bonzoOneBelowFeetY);
+		TileType onGroundCentreRight = currentScreen.getTileAt(currentLocation.x() + bonzoSizeXHalf + 1, bonzoOneBelowFeetY);
 		
 		// If at least part of him is on a thru tile.
+		// Thrus differ from solids; he could jump up into a thru. We must handle that case. Solids are more simple.
 		if (    onGroundLeft.isThru()
-			 || onGroundRight.isThru() ) {
+			 || onGroundRight.isThru() 
+			 || onGroundCentreLeft.isThru()
+			 || onGroundCentreRight.isThru() ) {
 			// If bonzo is already exactly on the ground, everything is fine. Otherwise, we may have to fall through it.
 			int depth = (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y;
 			if (depth == 0)  return 0;
@@ -148,8 +156,11 @@ public final class Bonzo {
 			//We need to make sure that we are exactly on the thing, we don't budge it.
 			return ( (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y ); 
 			
+		// Landing or on a solid.
 		} else if (    onGroundLeft == StatelessTileType.SOLID
-				    || onGroundRight == StatelessTileType.SOLID) {
+				    || onGroundRight == StatelessTileType.SOLID
+				    || onGroundCentreLeft == StatelessTileType.SOLID
+				    || onGroundCentreRight == StatelessTileType.SOLID) {
 			return (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y;
 
 		}
