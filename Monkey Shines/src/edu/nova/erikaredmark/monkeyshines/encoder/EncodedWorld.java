@@ -478,10 +478,17 @@ public final class EncodedWorld {
 		case THRU: return StatelessTileType.THRU;
 		case SCENERY: return StatelessTileType.SCENE;
 		case HAZARD: return HazardTile.forHazard(hazards.get(tile.getId() ) );
-		case CONVEYER: return new ConveyerTile(conveyers.get(tile.getId() ) );
+		case CONVEYER: return new ConveyerTile(conveyers.get(tile.getId() * 2 + getConveyerIdOffset(tile.getRotation() ) ) );
 		case BREAKING: throw new RuntimeException("Implement proto form of Breaking tiles to in-memory conversion");
 		default: throw new RuntimeException("Proto tiletype " + type + " has no defined java object!");
 		}
+	}
+	
+	// Returns 0 for clockwise rotation and 1 for anti-clockwise rotation.
+	// Used to get offset for mapping encoded conveyer to proper real conveyer
+	private static int getConveyerIdOffset(WorldFormatProtos.World.Rotation rotation) {
+		if (rotation == WorldFormatProtos.World.Rotation.CLOCKWISE)  return 0;
+		else														 return 1;
 	}
 	
 	/* ------------------------------ Rotation -------------------------------- */
