@@ -337,6 +337,15 @@ public final class Bonzo {
 		worldPointer.getResource().getSoundManager().playOnce(animation.soundEffect() );
 	}
 	
+	/**
+	 * 
+	 * Moves bonzo at the given velocity, augmented by GameConstants. Given velocity is normally
+	 * a simple +/-1 multiplier to determine direction.
+	 * 
+	 * @param velocity
+	 * 		velocity to move Bonzo
+	 * 
+	 */
 	public void move(double velocity) {
 		// If we are not jumping, increment the sprite
 		if (!isJumping) {
@@ -350,7 +359,7 @@ public final class Bonzo {
 		//currentVelocity.x = velocity * GameConstants.BONZO_SPEED_MULTIPLIER;
 		//only move if not a solid tile ahead
 		
-		double newX = (int)(currentLocation.precisionX() + ( velocity * GameConstants.BONZO_SPEED_MULTIPLIER ) );
+		double newX = currentLocation.precisionX() + ( velocity * GameConstants.BONZO_SPEED_MULTIPLIER );
 		if (velocity < 0) {
 			walkingDirection = 1;
 			if (!solidToSide((int)newX) )
@@ -508,19 +517,21 @@ public final class Bonzo {
 		
 		// If we are affected by a conveyer, we are moved. If we are moved into a wall, we move just enough
 		// to touch it.
-		int conveyerMovement = this.affectedConveyer.translationX();
+		double conveyerMovement = this.affectedConveyer.translationX();
 		// required to have one loop handle two directions.
-		int conveyerMultiplier =   conveyerMovement < 0
-								 ? -1
-								 : 1;
-		// Find farthest point not in a solid block that we can move to.
+		double conveyerMultiplier =   conveyerMovement < 0.0
+								 ? -1.0
+								 : 1.0;
+		// Find farthest point not in a solid block that we can move to.  Since double values
+		// truncate to integer for actual position, we just look at truncated ints.
 		// Loop does not execute if movement is 0
 		// It is perfectly possible for no additional movement to be applied if against a wall.
-		for (int i = Math.abs(conveyerMovement); i >= 0; i--) {
-			int translation = i * conveyerMultiplier;
-			int newX = this.currentLocation.x() + translation;
-			if (!(solidToSide(newX) ) ) {
-				currentLocation.translateX(translation);
+		for (double i = Math.abs(conveyerMovement); i >= 0; i--) {
+			double translation = i * conveyerMultiplier;
+			double newX = this.currentLocation.precisionX() + translation;
+			// Truncated value will be Bonzo's 'effective' location on the world at the given time.
+			if (!(solidToSide((int)newX) ) ) {
+				currentLocation.setX(newX);
 				break;
 			}
 		}

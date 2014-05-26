@@ -33,11 +33,11 @@ public final class GameConstants {
 	 */
 	public static double TERMINAL_VELOCITY = 14.0;
 	public static double SPEED_MULTIPLIER = 1.0; // The speed of a sprite is multiplied by this to get how fast it moves across screen.
-	public static double BONZO_SPEED_MULTIPLIER = 3.0; // The speed Bonzo dashes across the landscape
-	public static double BONZO_JUMP_MULTIPLIER = 1.6; // The force of bonzo's jump
+	public static double BONZO_SPEED_MULTIPLIER = 2.6; // The speed Bonzo dashes across the landscape
+	public static double BONZO_JUMP_MULTIPLIER = 1.25; // The force of bonzo's jump
 	
 	// Bonzo accelerates downward until terminal velocity
-	public static double BONZO_FALL_ACCELERATION_JUMP = -0.4; // The acceleration bonzo falls during a jump. Significantly slower than normal.
+	public static double BONZO_FALL_ACCELERATION_JUMP = -0.3; // The acceleration bonzo falls during a jump. Significantly slower than normal.
 	public static double BONZO_FALL_ACCELERATION_NORMAL = -1.0; // The acceleration bonzo falls normally
 	
 	public static double FRUIT_SCORE = 10.0; // Standard score for fruit.
@@ -48,7 +48,7 @@ public final class GameConstants {
 	public static int SAFE_FALL_DISTANCE = 80; // Number of pixels fall before Bonzo starts taking damage.
 	public static double FALL_DAMAGE_MULTIPLIER = 2.0; // Number of pixels of distance fell times this is the damage bonzo will take.
 	public static int BONUS_SCREEN = 10000; // The screenID of the bonus world; or where the bonus door takes one too.
-	public static int CONVEYER_SPEED = 2; // The number of pixels, per tick, to move Bonzo when he is under the effect of a conveyer belt.
+	public static double CONVEYER_SPEED = 1.4; // The number of pixels, per tick, to move Bonzo when he is under the effect of a conveyer belt.
 	
 	public static final int WINDOW_WIDTH = 640;
 	public static final int WINDOW_HEIGHT = 480;

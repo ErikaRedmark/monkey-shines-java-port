@@ -72,14 +72,14 @@ public final class Conveyer {
 	
 	public enum Rotation {
 		CLOCKWISE {
-			@Override public int translationX() {
+			@Override public double translationX() {
 				return GameConstants.CONVEYER_SPEED;
 			}
 			
 			@Override public int drawYOffset() { return 0; }
 		},
 		ANTI_CLOCKWISE {
-			@Override public int translationX() {
+			@Override public double translationX() {
 				return -GameConstants.CONVEYER_SPEED;
 			}
 			
@@ -90,7 +90,7 @@ public final class Conveyer {
 		 * amount. Removes need for null checking and extra branching.
 		 */
 		NONE {
-			@Override public int translationX() { return 0; }
+			@Override public double translationX() { return 0; }
 			@Override public int drawYOffset() { throw new UnsupportedOperationException("NONE is a valid rotation type ONLY for bonzo; cannot draw a non-rotating conveyer belt"); }
 		};
 		
@@ -100,7 +100,7 @@ public final class Conveyer {
 		 * when on a conveyer belt of this rotation.
 		 * 	
 		 */
-		public abstract int translationX();
+		public abstract double translationX();
 		
 		/**
 		 * 
