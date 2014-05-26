@@ -33,6 +33,11 @@ public final class GameConstants {
 	 */
 	public static double TERMINAL_VELOCITY = 14.0;
 	public static double SPEED_MULTIPLIER = 1.0; // The speed of a sprite is multiplied by this to get how fast it moves across screen.
+	
+	// Notes
+	// 1) Bonzos speed multiplier combined with any speed increases (such as conveyers) must not exceed 10. If it does,
+	//	  collision detection in terms of 'snapping' him against walls will instead bounce him back.
+	// 2) If the total speed ever exceeds 20 the game becomes basically broken. Don't do that.
 	public static double BONZO_SPEED_MULTIPLIER = 2.6; // The speed Bonzo dashes across the landscape
 	public static double BONZO_JUMP_MULTIPLIER = 1.25; // The force of bonzo's jump
 	

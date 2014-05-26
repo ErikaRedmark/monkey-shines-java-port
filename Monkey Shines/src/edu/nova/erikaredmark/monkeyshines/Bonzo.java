@@ -27,6 +27,7 @@ public final class Bonzo {
 	
 	// Sprite Info
 	private int walkingDirection; // used during walking for determing what to blit.
+								  // 1 for left, 0 for right.
 	private int currentSprite; // used everywhere for whatever sprite he is on for animation
 	
 	private int currentScreenID;
@@ -167,11 +168,16 @@ public final class Bonzo {
 					}
 				}
 			}
-			if (t.isThru() )  atLeastThru = true;
+			
+			if (t.isThru() ) {
+				atLeastThru = true;
+				atLeastGround = true;
+			}
+			
 			if (t == StatelessTileType.SOLID)  atLeastGround = true;
 		}
 		
-		// Check #2; bonzo may be INSIDE the ground. Determine if he is and how much to snap him up by
+		// Check #2; bonzo may be INSIDE the ground. Determine if he is and how much to snap him up by.
 		// If at least part of him is on a thru tile.
 		// Thrus differ from solids; he could jump up into a thru. We must handle that case. Solids are more simple.
 		if (atLeastThru) {
@@ -191,12 +197,19 @@ public final class Bonzo {
 				// we approached it from the side, not above.
 			}
 			
+			// Done. Thrus always toggle 'at least ground' which will run next if statement for calculating 'bounce up'
+			// effect. This if statement was just to prevent bounce up if he shouldn't bounce up.
+		}
+		
+		if (atLeastGround) {
 			//We need to make sure that we are exactly on the thing, we don't budge it.
-			return new GroundState( (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y, onConveyer); 
-			
-		// Landing or on a solid.
-		} else if (atLeastGround) {
-			return new GroundState( (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y, onConveyer);
+			// bonzoOneBelowFeet - 1 gives us bottom position of bonzo. Special case for when this
+			// variable is aligned % = 0, it means bonzo is already on the ground. Return 0 for those
+			// instances to prevent snapping up a file tile.
+			if (bonzoOneBelowFeetY % GameConstants.TILE_SIZE_Y == 0)  return new GroundState(0, onConveyer);
+			else {
+				return new GroundState( (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y, onConveyer);
+			}
 		}
 		
 		return new GroundState(-1, onConveyer);
@@ -355,23 +368,52 @@ public final class Bonzo {
 					currentSprite = 0;
 			}
 		}
-		
-		//currentVelocity.x = velocity * GameConstants.BONZO_SPEED_MULTIPLIER;
-		//only move if not a solid tile ahead
-		
+
+		// Check if there is a solid. If not, walk there. Otherwise, we need to snap
+		// him against the solid denying movement but allowing him to hug it. Otherwise
+		// it will be impossible for the player to get aligned for jumping 
 		double newX = currentLocation.precisionX() + ( velocity * GameConstants.BONZO_SPEED_MULTIPLIER );
-		if (velocity < 0) {
-			walkingDirection = 1;
-			if (!solidToSide((int)newX) )
-				currentLocation.setX(newX);
-		} else {
-			// Need to use right side of sprite
-			int rightSide = ((int)newX) + Bonzo.BONZO_SIZE.x();
-			walkingDirection = 0;
-			if (!solidToSide(rightSide) ) {
-				currentLocation.setX(newX);
-			}
-		}
+		this.walkingDirection = velocity < 0 ? 1 : 0; // 1 for left, 0 for right.
+		int solidCheck =   this.walkingDirection == 1
+						 ? (int)newX
+						 : ((int)newX) + Bonzo.BONZO_SIZE.x();
+						 
+		if (!solidToSide(solidCheck) )  currentLocation.setX(newX);
+		else							snapBonzoX();
+	}
+	
+	/**
+	 * 
+	 * Snaps bonzo's X position to be aligned with the tiles, such that % the size of a tile
+	 * is zero. This is intended for hitting walls. See warning for bonzo speed in GameConstants.
+	 * <p/>
+	 * The snapping is done via whatever tile column he is closest to.
+	 * 
+	 */
+	private void snapBonzoX() {
+		// We divide by tile size X later to 'snap'. We add one to that result if bonzo was
+		// closer to the OTHER side (his remainder was greater than halfway there)
+		int rounding =   this.currentLocation.x() % GameConstants.TILE_SIZE_X < 10
+					   ? 0
+					   : GameConstants.TILE_SIZE_X;
+		int locationNormalised = (this.currentLocation.x() / GameConstants.TILE_SIZE_X) * GameConstants.TILE_SIZE_X;
+		this.currentLocation.setX(locationNormalised + rounding);
+	}
+	
+	/**
+	 * 
+	 * Snaps bonzo's Y position to be aligned with the tiles. This is typically used when bonzo
+	 * hits the ceiling to prevent him from going slightly 'thru' the ceiling, which completely
+	 * ruins the snapping algorithms that the standard 'move' method uses.
+	 * 
+	 */
+	private void snapBonzoY() {
+		int rounding =   this.currentLocation.y() % GameConstants.TILE_SIZE_Y < 10
+				   	   ? 0
+				       : GameConstants.TILE_SIZE_Y;
+		
+		int locationNormalised = (this.currentLocation.y() / GameConstants.TILE_SIZE_Y) * GameConstants.TILE_SIZE_Y;
+		this.currentLocation.setY(locationNormalised + rounding);
 	}
 	
 	/**
@@ -488,6 +530,9 @@ public final class Bonzo {
 		} else {
 			currentVelocity.setY(0);
 			// if pushing us up takes us OFF the ground, don't do it. Sloppy Kludge
+			if (groundState.snapUpBy == 19) {
+				System.out.println("debug");
+			}
 			currentLocation.translateY(-groundState.snapUpBy); //Push back to level field.
 			// If we are jumping when we land, move sprite to post-jump stage and stop jumping
 			if (isJumping)  currentSprite = 3;
@@ -512,6 +557,10 @@ public final class Bonzo {
 				// Only reverse the velocity if we are actually already going up. If we are falling and somehow still
 				// inside a solid, don't reverse again or we get bouncing through ceilings.
 				if (currentVelocity.y() < 0)  currentVelocity.reverseY();
+				
+				// We need to snap our location at the y point, to prevent 'solidToSide' returning true looking
+				// tiles to the side in the ceiling. Do not let bonzo inside the ceiling!
+				snapBonzoY();
 			}
 		}
 		
