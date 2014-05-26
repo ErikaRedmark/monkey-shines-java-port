@@ -405,7 +405,7 @@ public final class EncodedWorld {
 	static List<WorldFormatProtos.World.Tile> tilesToProto(Tile[][] tiles) {
 		List<WorldFormatProtos.World.Tile> protoTiles = new ArrayList<>(GameConstants.TILES_IN_ROW * GameConstants.TILES_IN_COL);
 		for (int i = 0; i < GameConstants.TILES_IN_COL; i++) {
-			for (int j = 0; i < GameConstants.TILES_IN_ROW; j++) {
+			for (int j = 0; j < GameConstants.TILES_IN_ROW; j++) {
 				protoTiles.add(tileToProto(tiles[i][j]) );
 			}
 		}

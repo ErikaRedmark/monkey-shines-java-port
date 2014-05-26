@@ -35,11 +35,26 @@ public class Tile {
 	
 	private static final Tile NO_TILE = new Tile(ImmutablePoint2D.of(0, 0), 0, StatelessTileType.NONE);
 	
+	/* Note: Stateful tile types, such as hazards, use their own ids for the global tile id. 
+	 * only stateless tile types use tileId, since they are effectively storing their 'state'
+	 * outside of their actual type. 
+	 */
 	private Tile(final ImmutablePoint2D point, final int tileId, final TileType type) {
 		this.tileX = point.x() * GameConstants.TILE_SIZE_X;
 		this.tileY = point.y() * GameConstants.TILE_SIZE_X;
-		this.tileId = tileId;
-		if (type == null)  assert false : "Null tile type passed to tile at " + tileX + ", " + tileY;
+		// To be honest, this code makes me angry. But its the price for sometimes storing the tileId
+		// in Tile for stateless tiles, and sometimes storing it in the actual TileType object for
+		// stateful tiles.
+		assert type != null : "Null tile type passed to tile at " + tileX + ", " + tileY;
+		this.tileId =   type instanceof StatelessTileType
+					  ? tileId
+					  : 	type instanceof HazardTile
+					  	  ? ((HazardTile)type).getHazard().getId()
+					  	  :		type instanceof ConveyerTile
+					  	  	  ? ((ConveyerTile)type).getConveyer().getId()
+					  	  	  : -1;
+		if (this.tileId == -1)  throw new RuntimeException("Unknown tile type " + type + " for tile " + tileX + ", " + tileY);
+		
 		this.type = type;	
 	}
 	
