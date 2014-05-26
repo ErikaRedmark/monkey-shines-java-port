@@ -26,8 +26,9 @@ public final class GoToScreenDialog {
 	private final JLabel     lblScreenIdField;
 	private final JComponent[] inputsArray;
 	
-	private GoToScreenDialog() {
+	private GoToScreenDialog(int currentId) {
 		screenIdField = new JTextField(8);
+		screenIdField.setText(String.valueOf(currentId) );
 		lblScreenIdField = new JLabel("Screen Id:");
 		inputsArray = new JComponent[] {lblScreenIdField, screenIdField};
 	}
@@ -48,11 +49,12 @@ public final class GoToScreenDialog {
 	 * 
 	 */
 	public static Optional<Integer> displayAndGetId(Frame parent, int currentId) {
-		GoToScreenDialog d = new GoToScreenDialog();
+		GoToScreenDialog d = new GoToScreenDialog(currentId);
 		int result = JOptionPane.showConfirmDialog(parent, d.getInputsArray(), "Go To Screen...", JOptionPane.OK_CANCEL_OPTION);
 		
-		return (result == JOptionPane.CANCEL_OPTION ? Optional.<Integer>absent() : 
-													  StringToNumber.string2Int(d.getScreenIdField().getText()) );
+		return (  result == JOptionPane.CANCEL_OPTION 
+				? Optional.<Integer>absent()
+				: StringToNumber.string2Int(d.getScreenIdField().getText()) );
 	}
 	
 }
