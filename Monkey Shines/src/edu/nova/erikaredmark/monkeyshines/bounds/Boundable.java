@@ -1,7 +1,5 @@
 package edu.nova.erikaredmark.monkeyshines.bounds;
 
-import java.io.Serializable;
-
 /**
  * 
  * Note: Had this been Scala, this would be a trait.
@@ -19,10 +17,7 @@ import java.io.Serializable;
  * @author Erika Redmark
  *
  */
-public abstract class Boundable implements Serializable {
-	/* Safe to use default serialized form. The idea of a 'rectangle' isn't going to change.
-	 */
-	private static final long serialVersionUID = 157L;
+public abstract class Boundable {
 	
 	/** The location of the boundable. May be any implementation of a point.	*/
 	protected IPoint2D location;

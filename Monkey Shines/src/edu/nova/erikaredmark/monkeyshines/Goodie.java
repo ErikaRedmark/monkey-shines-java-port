@@ -175,6 +175,9 @@ public class Goodie {
 
 	
 	public enum Type {
+		// WARNING: xOffset is used as ID for encoding this in save file format!
+		// Adding the concept of another row to this sprite sheet will require
+		// modifying that logic!
 		RED_KEY(0),
 		BLUE_KEY(1),
 		APPLE(2),
@@ -236,6 +239,20 @@ public class Goodie {
 				if (g.xOffset == val) return g;
 			}
 			throw new IllegalArgumentException("Value out of range");
+		}
+
+		/**
+		 * 
+		 * Returns the numerical id of the enumeration. This is used for encoding the goodie
+		 * for .world files.
+		 * 
+		 * @return
+		 * 		unique id for enumeration.
+		 * 
+		 */
+		public int id() {
+			// Id == xOffset.
+			return xOffset;
 		}
 	}
 	

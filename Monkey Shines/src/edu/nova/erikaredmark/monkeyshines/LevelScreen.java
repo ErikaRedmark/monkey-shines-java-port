@@ -116,12 +116,16 @@ public final class LevelScreen {
 	}
 	
 
-	
-	private LevelScreen(final int screenId, 
-						final int backgroundId,
-						final Tile[][] screenTiles, 
-						final ImmutablePoint2D bonzoStart, 
-						final List<Sprite> spritesOnScreen) {
+	/**
+	 * 
+	 * Intended for internal static factories and decoding system only
+	 * 
+	 */
+	public LevelScreen(final int screenId, 
+					   final int backgroundId,
+					   final Tile[][] screenTiles, 
+					   final ImmutablePoint2D bonzoStart, 
+					   final List<Sprite> spritesOnScreen) {
 		
 		this.screenId = screenId;
 		this.backgroundId = backgroundId;

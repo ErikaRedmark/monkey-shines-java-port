@@ -189,6 +189,11 @@ public final class WorldFormatProtos {
   }
   /**
    * Protobuf type {@code monkeyshines.World}
+   *
+   * <pre>
+   * compile with
+   * protoc -I=src --java_out=src src/edu/nova/erikaredmark/monkeyshines/encoder/proto/world_file_format.proto
+   * </pre>
    */
   public static final class World extends
       com.google.protobuf.GeneratedMessage
@@ -2825,19 +2830,19 @@ public final class WorldFormatProtos {
        */
       edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.PointOrBuilder getTopLeftOrBuilder();
 
-      // required .monkeyshines.World.Point bottomRight = 2;
+      // required .monkeyshines.World.Point size = 2;
       /**
-       * <code>required .monkeyshines.World.Point bottomRight = 2;</code>
+       * <code>required .monkeyshines.World.Point size = 2;</code>
        */
-      boolean hasBottomRight();
+      boolean hasSize();
       /**
-       * <code>required .monkeyshines.World.Point bottomRight = 2;</code>
+       * <code>required .monkeyshines.World.Point size = 2;</code>
        */
-      edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point getBottomRight();
+      edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point getSize();
       /**
-       * <code>required .monkeyshines.World.Point bottomRight = 2;</code>
+       * <code>required .monkeyshines.World.Point size = 2;</code>
        */
-      edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.PointOrBuilder getBottomRightOrBuilder();
+      edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.PointOrBuilder getSizeOrBuilder();
     }
     /**
      * Protobuf type {@code monkeyshines.World.Box}
@@ -2906,12 +2911,12 @@ public final class WorldFormatProtos {
               case 18: {
                 edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.Builder subBuilder = null;
                 if (((bitField0_ & 0x00000002) == 0x00000002)) {
-                  subBuilder = bottomRight_.toBuilder();
+                  subBuilder = size_.toBuilder();
                 }
-                bottomRight_ = input.readMessage(edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.PARSER, extensionRegistry);
+                size_ = input.readMessage(edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.PARSER, extensionRegistry);
                 if (subBuilder != null) {
-                  subBuilder.mergeFrom(bottomRight_);
-                  bottomRight_ = subBuilder.buildPartial();
+                  subBuilder.mergeFrom(size_);
+                  size_ = subBuilder.buildPartial();
                 }
                 bitField0_ |= 0x00000002;
                 break;
@@ -2978,31 +2983,31 @@ public final class WorldFormatProtos {
         return topLeft_;
       }
 
-      // required .monkeyshines.World.Point bottomRight = 2;
-      public static final int BOTTOMRIGHT_FIELD_NUMBER = 2;
-      private edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point bottomRight_;
+      // required .monkeyshines.World.Point size = 2;
+      public static final int SIZE_FIELD_NUMBER = 2;
+      private edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point size_;
       /**
-       * <code>required .monkeyshines.World.Point bottomRight = 2;</code>
+       * <code>required .monkeyshines.World.Point size = 2;</code>
        */
-      public boolean hasBottomRight() {
+      public boolean hasSize() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required .monkeyshines.World.Point bottomRight = 2;</code>
+       * <code>required .monkeyshines.World.Point size = 2;</code>
        */
-      public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point getBottomRight() {
-        return bottomRight_;
+      public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point getSize() {
+        return size_;
       }
       /**
-       * <code>required .monkeyshines.World.Point bottomRight = 2;</code>
+       * <code>required .monkeyshines.World.Point size = 2;</code>
        */
-      public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.PointOrBuilder getBottomRightOrBuilder() {
-        return bottomRight_;
+      public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.PointOrBuilder getSizeOrBuilder() {
+        return size_;
       }
 
       private void initFields() {
         topLeft_ = edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.getDefaultInstance();
-        bottomRight_ = edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.getDefaultInstance();
+        size_ = edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.getDefaultInstance();
       }
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
@@ -3013,7 +3018,7 @@ public final class WorldFormatProtos {
           memoizedIsInitialized = 0;
           return false;
         }
-        if (!hasBottomRight()) {
+        if (!hasSize()) {
           memoizedIsInitialized = 0;
           return false;
         }
@@ -3021,7 +3026,7 @@ public final class WorldFormatProtos {
           memoizedIsInitialized = 0;
           return false;
         }
-        if (!getBottomRight().isInitialized()) {
+        if (!getSize().isInitialized()) {
           memoizedIsInitialized = 0;
           return false;
         }
@@ -3036,7 +3041,7 @@ public final class WorldFormatProtos {
           output.writeMessage(1, topLeft_);
         }
         if (((bitField0_ & 0x00000002) == 0x00000002)) {
-          output.writeMessage(2, bottomRight_);
+          output.writeMessage(2, size_);
         }
         getUnknownFields().writeTo(output);
       }
@@ -3053,7 +3058,7 @@ public final class WorldFormatProtos {
         }
         if (((bitField0_ & 0x00000002) == 0x00000002)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(2, bottomRight_);
+            .computeMessageSize(2, size_);
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSerializedSize = size;
@@ -3164,7 +3169,7 @@ public final class WorldFormatProtos {
         private void maybeForceBuilderInitialization() {
           if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
             getTopLeftFieldBuilder();
-            getBottomRightFieldBuilder();
+            getSizeFieldBuilder();
           }
         }
         private static Builder create() {
@@ -3179,10 +3184,10 @@ public final class WorldFormatProtos {
             topLeftBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00000001);
-          if (bottomRightBuilder_ == null) {
-            bottomRight_ = edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.getDefaultInstance();
+          if (sizeBuilder_ == null) {
+            size_ = edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.getDefaultInstance();
           } else {
-            bottomRightBuilder_.clear();
+            sizeBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00000002);
           return this;
@@ -3224,10 +3229,10 @@ public final class WorldFormatProtos {
           if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
             to_bitField0_ |= 0x00000002;
           }
-          if (bottomRightBuilder_ == null) {
-            result.bottomRight_ = bottomRight_;
+          if (sizeBuilder_ == null) {
+            result.size_ = size_;
           } else {
-            result.bottomRight_ = bottomRightBuilder_.build();
+            result.size_ = sizeBuilder_.build();
           }
           result.bitField0_ = to_bitField0_;
           onBuilt();
@@ -3248,8 +3253,8 @@ public final class WorldFormatProtos {
           if (other.hasTopLeft()) {
             mergeTopLeft(other.getTopLeft());
           }
-          if (other.hasBottomRight()) {
-            mergeBottomRight(other.getBottomRight());
+          if (other.hasSize()) {
+            mergeSize(other.getSize());
           }
           this.mergeUnknownFields(other.getUnknownFields());
           return this;
@@ -3260,7 +3265,7 @@ public final class WorldFormatProtos {
             
             return false;
           }
-          if (!hasBottomRight()) {
+          if (!hasSize()) {
             
             return false;
           }
@@ -3268,7 +3273,7 @@ public final class WorldFormatProtos {
             
             return false;
           }
-          if (!getBottomRight().isInitialized()) {
+          if (!getSize().isInitialized()) {
             
             return false;
           }
@@ -3411,121 +3416,121 @@ public final class WorldFormatProtos {
           return topLeftBuilder_;
         }
 
-        // required .monkeyshines.World.Point bottomRight = 2;
-        private edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point bottomRight_ = edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.getDefaultInstance();
+        // required .monkeyshines.World.Point size = 2;
+        private edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point size_ = edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.getDefaultInstance();
         private com.google.protobuf.SingleFieldBuilder<
-            edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.Builder, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.PointOrBuilder> bottomRightBuilder_;
+            edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.Builder, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.PointOrBuilder> sizeBuilder_;
         /**
-         * <code>required .monkeyshines.World.Point bottomRight = 2;</code>
+         * <code>required .monkeyshines.World.Point size = 2;</code>
          */
-        public boolean hasBottomRight() {
+        public boolean hasSize() {
           return ((bitField0_ & 0x00000002) == 0x00000002);
         }
         /**
-         * <code>required .monkeyshines.World.Point bottomRight = 2;</code>
+         * <code>required .monkeyshines.World.Point size = 2;</code>
          */
-        public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point getBottomRight() {
-          if (bottomRightBuilder_ == null) {
-            return bottomRight_;
+        public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point getSize() {
+          if (sizeBuilder_ == null) {
+            return size_;
           } else {
-            return bottomRightBuilder_.getMessage();
+            return sizeBuilder_.getMessage();
           }
         }
         /**
-         * <code>required .monkeyshines.World.Point bottomRight = 2;</code>
+         * <code>required .monkeyshines.World.Point size = 2;</code>
          */
-        public Builder setBottomRight(edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point value) {
-          if (bottomRightBuilder_ == null) {
+        public Builder setSize(edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point value) {
+          if (sizeBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
             }
-            bottomRight_ = value;
+            size_ = value;
             onChanged();
           } else {
-            bottomRightBuilder_.setMessage(value);
+            sizeBuilder_.setMessage(value);
           }
           bitField0_ |= 0x00000002;
           return this;
         }
         /**
-         * <code>required .monkeyshines.World.Point bottomRight = 2;</code>
+         * <code>required .monkeyshines.World.Point size = 2;</code>
          */
-        public Builder setBottomRight(
+        public Builder setSize(
             edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.Builder builderForValue) {
-          if (bottomRightBuilder_ == null) {
-            bottomRight_ = builderForValue.build();
+          if (sizeBuilder_ == null) {
+            size_ = builderForValue.build();
             onChanged();
           } else {
-            bottomRightBuilder_.setMessage(builderForValue.build());
+            sizeBuilder_.setMessage(builderForValue.build());
           }
           bitField0_ |= 0x00000002;
           return this;
         }
         /**
-         * <code>required .monkeyshines.World.Point bottomRight = 2;</code>
+         * <code>required .monkeyshines.World.Point size = 2;</code>
          */
-        public Builder mergeBottomRight(edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point value) {
-          if (bottomRightBuilder_ == null) {
+        public Builder mergeSize(edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point value) {
+          if (sizeBuilder_ == null) {
             if (((bitField0_ & 0x00000002) == 0x00000002) &&
-                bottomRight_ != edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.getDefaultInstance()) {
-              bottomRight_ =
-                edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.newBuilder(bottomRight_).mergeFrom(value).buildPartial();
+                size_ != edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.getDefaultInstance()) {
+              size_ =
+                edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.newBuilder(size_).mergeFrom(value).buildPartial();
             } else {
-              bottomRight_ = value;
+              size_ = value;
             }
             onChanged();
           } else {
-            bottomRightBuilder_.mergeFrom(value);
+            sizeBuilder_.mergeFrom(value);
           }
           bitField0_ |= 0x00000002;
           return this;
         }
         /**
-         * <code>required .monkeyshines.World.Point bottomRight = 2;</code>
+         * <code>required .monkeyshines.World.Point size = 2;</code>
          */
-        public Builder clearBottomRight() {
-          if (bottomRightBuilder_ == null) {
-            bottomRight_ = edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.getDefaultInstance();
+        public Builder clearSize() {
+          if (sizeBuilder_ == null) {
+            size_ = edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.getDefaultInstance();
             onChanged();
           } else {
-            bottomRightBuilder_.clear();
+            sizeBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00000002);
           return this;
         }
         /**
-         * <code>required .monkeyshines.World.Point bottomRight = 2;</code>
+         * <code>required .monkeyshines.World.Point size = 2;</code>
          */
-        public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.Builder getBottomRightBuilder() {
+        public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.Builder getSizeBuilder() {
           bitField0_ |= 0x00000002;
           onChanged();
-          return getBottomRightFieldBuilder().getBuilder();
+          return getSizeFieldBuilder().getBuilder();
         }
         /**
-         * <code>required .monkeyshines.World.Point bottomRight = 2;</code>
+         * <code>required .monkeyshines.World.Point size = 2;</code>
          */
-        public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.PointOrBuilder getBottomRightOrBuilder() {
-          if (bottomRightBuilder_ != null) {
-            return bottomRightBuilder_.getMessageOrBuilder();
+        public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.PointOrBuilder getSizeOrBuilder() {
+          if (sizeBuilder_ != null) {
+            return sizeBuilder_.getMessageOrBuilder();
           } else {
-            return bottomRight_;
+            return size_;
           }
         }
         /**
-         * <code>required .monkeyshines.World.Point bottomRight = 2;</code>
+         * <code>required .monkeyshines.World.Point size = 2;</code>
          */
         private com.google.protobuf.SingleFieldBuilder<
             edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.Builder, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.PointOrBuilder> 
-            getBottomRightFieldBuilder() {
-          if (bottomRightBuilder_ == null) {
-            bottomRightBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            getSizeFieldBuilder() {
+          if (sizeBuilder_ == null) {
+            sizeBuilder_ = new com.google.protobuf.SingleFieldBuilder<
                 edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.Builder, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.PointOrBuilder>(
-                    bottomRight_,
+                    size_,
                     getParentForChildren(),
                     isClean());
-            bottomRight_ = null;
+            size_ = null;
           }
-          return bottomRightBuilder_;
+          return sizeBuilder_;
         }
 
         // @@protoc_insertion_point(builder_scope:monkeyshines.World.Box)
@@ -4903,29 +4908,59 @@ public final class WorldFormatProtos {
       edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.SpriteOrBuilder getSpritesOrBuilder(
           int index);
 
-      // repeated .monkeyshines.World.TileColumn tileColumns = 5;
+      // repeated .monkeyshines.World.Tile tiles = 5;
       /**
-       * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+       * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+       *
+       * <pre>
+       * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+       * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+       * isn't too difficult.
+       * </pre>
        */
-      java.util.List<edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn> 
-          getTileColumnsList();
+      java.util.List<edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile> 
+          getTilesList();
       /**
-       * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+       * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+       *
+       * <pre>
+       * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+       * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+       * isn't too difficult.
+       * </pre>
        */
-      edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn getTileColumns(int index);
+      edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile getTiles(int index);
       /**
-       * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+       * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+       *
+       * <pre>
+       * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+       * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+       * isn't too difficult.
+       * </pre>
        */
-      int getTileColumnsCount();
+      int getTilesCount();
       /**
-       * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+       * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+       *
+       * <pre>
+       * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+       * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+       * isn't too difficult.
+       * </pre>
        */
-      java.util.List<? extends edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumnOrBuilder> 
-          getTileColumnsOrBuilderList();
+      java.util.List<? extends edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileOrBuilder> 
+          getTilesOrBuilderList();
       /**
-       * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+       * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+       *
+       * <pre>
+       * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+       * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+       * isn't too difficult.
+       * </pre>
        */
-      edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumnOrBuilder getTileColumnsOrBuilder(
+      edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileOrBuilder getTilesOrBuilder(
           int index);
     }
     /**
@@ -5025,10 +5060,10 @@ public final class WorldFormatProtos {
               }
               case 42: {
                 if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
-                  tileColumns_ = new java.util.ArrayList<edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn>();
+                  tiles_ = new java.util.ArrayList<edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile>();
                   mutable_bitField0_ |= 0x00000010;
                 }
-                tileColumns_.add(input.readMessage(edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn.PARSER, extensionRegistry));
+                tiles_.add(input.readMessage(edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.PARSER, extensionRegistry));
                 break;
               }
             }
@@ -5043,7 +5078,7 @@ public final class WorldFormatProtos {
             sprites_ = java.util.Collections.unmodifiableList(sprites_);
           }
           if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
-            tileColumns_ = java.util.Collections.unmodifiableList(tileColumns_);
+            tiles_ = java.util.Collections.unmodifiableList(tiles_);
           }
           this.unknownFields = unknownFields.build();
           makeExtensionsImmutable();
@@ -5173,40 +5208,70 @@ public final class WorldFormatProtos {
         return sprites_.get(index);
       }
 
-      // repeated .monkeyshines.World.TileColumn tileColumns = 5;
-      public static final int TILECOLUMNS_FIELD_NUMBER = 5;
-      private java.util.List<edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn> tileColumns_;
+      // repeated .monkeyshines.World.Tile tiles = 5;
+      public static final int TILES_FIELD_NUMBER = 5;
+      private java.util.List<edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile> tiles_;
       /**
-       * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+       * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+       *
+       * <pre>
+       * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+       * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+       * isn't too difficult.
+       * </pre>
        */
-      public java.util.List<edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn> getTileColumnsList() {
-        return tileColumns_;
+      public java.util.List<edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile> getTilesList() {
+        return tiles_;
       }
       /**
-       * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+       * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+       *
+       * <pre>
+       * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+       * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+       * isn't too difficult.
+       * </pre>
        */
-      public java.util.List<? extends edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumnOrBuilder> 
-          getTileColumnsOrBuilderList() {
-        return tileColumns_;
+      public java.util.List<? extends edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileOrBuilder> 
+          getTilesOrBuilderList() {
+        return tiles_;
       }
       /**
-       * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+       * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+       *
+       * <pre>
+       * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+       * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+       * isn't too difficult.
+       * </pre>
        */
-      public int getTileColumnsCount() {
-        return tileColumns_.size();
+      public int getTilesCount() {
+        return tiles_.size();
       }
       /**
-       * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+       * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+       *
+       * <pre>
+       * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+       * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+       * isn't too difficult.
+       * </pre>
        */
-      public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn getTileColumns(int index) {
-        return tileColumns_.get(index);
+      public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile getTiles(int index) {
+        return tiles_.get(index);
       }
       /**
-       * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+       * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+       *
+       * <pre>
+       * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+       * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+       * isn't too difficult.
+       * </pre>
        */
-      public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumnOrBuilder getTileColumnsOrBuilder(
+      public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileOrBuilder getTilesOrBuilder(
           int index) {
-        return tileColumns_.get(index);
+        return tiles_.get(index);
       }
 
       private void initFields() {
@@ -5214,7 +5279,7 @@ public final class WorldFormatProtos {
         background_ = edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Background.getDefaultInstance();
         bonzoLocation_ = edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.getDefaultInstance();
         sprites_ = java.util.Collections.emptyList();
-        tileColumns_ = java.util.Collections.emptyList();
+        tiles_ = java.util.Collections.emptyList();
       }
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
@@ -5233,8 +5298,8 @@ public final class WorldFormatProtos {
             return false;
           }
         }
-        for (int i = 0; i < getTileColumnsCount(); i++) {
-          if (!getTileColumns(i).isInitialized()) {
+        for (int i = 0; i < getTilesCount(); i++) {
+          if (!getTiles(i).isInitialized()) {
             memoizedIsInitialized = 0;
             return false;
           }
@@ -5258,8 +5323,8 @@ public final class WorldFormatProtos {
         for (int i = 0; i < sprites_.size(); i++) {
           output.writeMessage(4, sprites_.get(i));
         }
-        for (int i = 0; i < tileColumns_.size(); i++) {
-          output.writeMessage(5, tileColumns_.get(i));
+        for (int i = 0; i < tiles_.size(); i++) {
+          output.writeMessage(5, tiles_.get(i));
         }
         getUnknownFields().writeTo(output);
       }
@@ -5286,9 +5351,9 @@ public final class WorldFormatProtos {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(4, sprites_.get(i));
         }
-        for (int i = 0; i < tileColumns_.size(); i++) {
+        for (int i = 0; i < tiles_.size(); i++) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(5, tileColumns_.get(i));
+            .computeMessageSize(5, tiles_.get(i));
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSerializedSize = size;
@@ -5406,7 +5471,7 @@ public final class WorldFormatProtos {
             getBackgroundFieldBuilder();
             getBonzoLocationFieldBuilder();
             getSpritesFieldBuilder();
-            getTileColumnsFieldBuilder();
+            getTilesFieldBuilder();
           }
         }
         private static Builder create() {
@@ -5435,11 +5500,11 @@ public final class WorldFormatProtos {
           } else {
             spritesBuilder_.clear();
           }
-          if (tileColumnsBuilder_ == null) {
-            tileColumns_ = java.util.Collections.emptyList();
+          if (tilesBuilder_ == null) {
+            tiles_ = java.util.Collections.emptyList();
             bitField0_ = (bitField0_ & ~0x00000010);
           } else {
-            tileColumnsBuilder_.clear();
+            tilesBuilder_.clear();
           }
           return this;
         }
@@ -5498,14 +5563,14 @@ public final class WorldFormatProtos {
           } else {
             result.sprites_ = spritesBuilder_.build();
           }
-          if (tileColumnsBuilder_ == null) {
+          if (tilesBuilder_ == null) {
             if (((bitField0_ & 0x00000010) == 0x00000010)) {
-              tileColumns_ = java.util.Collections.unmodifiableList(tileColumns_);
+              tiles_ = java.util.Collections.unmodifiableList(tiles_);
               bitField0_ = (bitField0_ & ~0x00000010);
             }
-            result.tileColumns_ = tileColumns_;
+            result.tiles_ = tiles_;
           } else {
-            result.tileColumns_ = tileColumnsBuilder_.build();
+            result.tiles_ = tilesBuilder_.build();
           }
           result.bitField0_ = to_bitField0_;
           onBuilt();
@@ -5558,29 +5623,29 @@ public final class WorldFormatProtos {
               }
             }
           }
-          if (tileColumnsBuilder_ == null) {
-            if (!other.tileColumns_.isEmpty()) {
-              if (tileColumns_.isEmpty()) {
-                tileColumns_ = other.tileColumns_;
+          if (tilesBuilder_ == null) {
+            if (!other.tiles_.isEmpty()) {
+              if (tiles_.isEmpty()) {
+                tiles_ = other.tiles_;
                 bitField0_ = (bitField0_ & ~0x00000010);
               } else {
-                ensureTileColumnsIsMutable();
-                tileColumns_.addAll(other.tileColumns_);
+                ensureTilesIsMutable();
+                tiles_.addAll(other.tiles_);
               }
               onChanged();
             }
           } else {
-            if (!other.tileColumns_.isEmpty()) {
-              if (tileColumnsBuilder_.isEmpty()) {
-                tileColumnsBuilder_.dispose();
-                tileColumnsBuilder_ = null;
-                tileColumns_ = other.tileColumns_;
+            if (!other.tiles_.isEmpty()) {
+              if (tilesBuilder_.isEmpty()) {
+                tilesBuilder_.dispose();
+                tilesBuilder_ = null;
+                tiles_ = other.tiles_;
                 bitField0_ = (bitField0_ & ~0x00000010);
-                tileColumnsBuilder_ = 
+                tilesBuilder_ = 
                   com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                     getTileColumnsFieldBuilder() : null;
+                     getTilesFieldBuilder() : null;
               } else {
-                tileColumnsBuilder_.addAllMessages(other.tileColumns_);
+                tilesBuilder_.addAllMessages(other.tiles_);
               }
             }
           }
@@ -5601,8 +5666,8 @@ public final class WorldFormatProtos {
               return false;
             }
           }
-          for (int i = 0; i < getTileColumnsCount(); i++) {
-            if (!getTileColumns(i).isInitialized()) {
+          for (int i = 0; i < getTilesCount(); i++) {
+            if (!getTiles(i).isInitialized()) {
               
               return false;
             }
@@ -6136,244 +6201,352 @@ public final class WorldFormatProtos {
           return spritesBuilder_;
         }
 
-        // repeated .monkeyshines.World.TileColumn tileColumns = 5;
-        private java.util.List<edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn> tileColumns_ =
+        // repeated .monkeyshines.World.Tile tiles = 5;
+        private java.util.List<edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile> tiles_ =
           java.util.Collections.emptyList();
-        private void ensureTileColumnsIsMutable() {
+        private void ensureTilesIsMutable() {
           if (!((bitField0_ & 0x00000010) == 0x00000010)) {
-            tileColumns_ = new java.util.ArrayList<edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn>(tileColumns_);
+            tiles_ = new java.util.ArrayList<edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile>(tiles_);
             bitField0_ |= 0x00000010;
            }
         }
 
         private com.google.protobuf.RepeatedFieldBuilder<
-            edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn.Builder, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumnOrBuilder> tileColumnsBuilder_;
+            edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.Builder, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileOrBuilder> tilesBuilder_;
 
         /**
-         * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+         * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+         *
+         * <pre>
+         * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+         * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+         * isn't too difficult.
+         * </pre>
          */
-        public java.util.List<edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn> getTileColumnsList() {
-          if (tileColumnsBuilder_ == null) {
-            return java.util.Collections.unmodifiableList(tileColumns_);
+        public java.util.List<edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile> getTilesList() {
+          if (tilesBuilder_ == null) {
+            return java.util.Collections.unmodifiableList(tiles_);
           } else {
-            return tileColumnsBuilder_.getMessageList();
+            return tilesBuilder_.getMessageList();
           }
         }
         /**
-         * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+         * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+         *
+         * <pre>
+         * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+         * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+         * isn't too difficult.
+         * </pre>
          */
-        public int getTileColumnsCount() {
-          if (tileColumnsBuilder_ == null) {
-            return tileColumns_.size();
+        public int getTilesCount() {
+          if (tilesBuilder_ == null) {
+            return tiles_.size();
           } else {
-            return tileColumnsBuilder_.getCount();
+            return tilesBuilder_.getCount();
           }
         }
         /**
-         * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+         * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+         *
+         * <pre>
+         * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+         * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+         * isn't too difficult.
+         * </pre>
          */
-        public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn getTileColumns(int index) {
-          if (tileColumnsBuilder_ == null) {
-            return tileColumns_.get(index);
+        public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile getTiles(int index) {
+          if (tilesBuilder_ == null) {
+            return tiles_.get(index);
           } else {
-            return tileColumnsBuilder_.getMessage(index);
+            return tilesBuilder_.getMessage(index);
           }
         }
         /**
-         * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+         * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+         *
+         * <pre>
+         * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+         * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+         * isn't too difficult.
+         * </pre>
          */
-        public Builder setTileColumns(
-            int index, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn value) {
-          if (tileColumnsBuilder_ == null) {
+        public Builder setTiles(
+            int index, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile value) {
+          if (tilesBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
             }
-            ensureTileColumnsIsMutable();
-            tileColumns_.set(index, value);
+            ensureTilesIsMutable();
+            tiles_.set(index, value);
             onChanged();
           } else {
-            tileColumnsBuilder_.setMessage(index, value);
+            tilesBuilder_.setMessage(index, value);
           }
           return this;
         }
         /**
-         * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+         * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+         *
+         * <pre>
+         * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+         * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+         * isn't too difficult.
+         * </pre>
          */
-        public Builder setTileColumns(
-            int index, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn.Builder builderForValue) {
-          if (tileColumnsBuilder_ == null) {
-            ensureTileColumnsIsMutable();
-            tileColumns_.set(index, builderForValue.build());
+        public Builder setTiles(
+            int index, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.Builder builderForValue) {
+          if (tilesBuilder_ == null) {
+            ensureTilesIsMutable();
+            tiles_.set(index, builderForValue.build());
             onChanged();
           } else {
-            tileColumnsBuilder_.setMessage(index, builderForValue.build());
+            tilesBuilder_.setMessage(index, builderForValue.build());
           }
           return this;
         }
         /**
-         * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+         * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+         *
+         * <pre>
+         * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+         * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+         * isn't too difficult.
+         * </pre>
          */
-        public Builder addTileColumns(edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn value) {
-          if (tileColumnsBuilder_ == null) {
+        public Builder addTiles(edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile value) {
+          if (tilesBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
             }
-            ensureTileColumnsIsMutable();
-            tileColumns_.add(value);
+            ensureTilesIsMutable();
+            tiles_.add(value);
             onChanged();
           } else {
-            tileColumnsBuilder_.addMessage(value);
+            tilesBuilder_.addMessage(value);
           }
           return this;
         }
         /**
-         * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+         * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+         *
+         * <pre>
+         * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+         * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+         * isn't too difficult.
+         * </pre>
          */
-        public Builder addTileColumns(
-            int index, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn value) {
-          if (tileColumnsBuilder_ == null) {
+        public Builder addTiles(
+            int index, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile value) {
+          if (tilesBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
             }
-            ensureTileColumnsIsMutable();
-            tileColumns_.add(index, value);
+            ensureTilesIsMutable();
+            tiles_.add(index, value);
             onChanged();
           } else {
-            tileColumnsBuilder_.addMessage(index, value);
+            tilesBuilder_.addMessage(index, value);
           }
           return this;
         }
         /**
-         * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+         * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+         *
+         * <pre>
+         * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+         * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+         * isn't too difficult.
+         * </pre>
          */
-        public Builder addTileColumns(
-            edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn.Builder builderForValue) {
-          if (tileColumnsBuilder_ == null) {
-            ensureTileColumnsIsMutable();
-            tileColumns_.add(builderForValue.build());
+        public Builder addTiles(
+            edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.Builder builderForValue) {
+          if (tilesBuilder_ == null) {
+            ensureTilesIsMutable();
+            tiles_.add(builderForValue.build());
             onChanged();
           } else {
-            tileColumnsBuilder_.addMessage(builderForValue.build());
+            tilesBuilder_.addMessage(builderForValue.build());
           }
           return this;
         }
         /**
-         * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+         * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+         *
+         * <pre>
+         * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+         * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+         * isn't too difficult.
+         * </pre>
          */
-        public Builder addTileColumns(
-            int index, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn.Builder builderForValue) {
-          if (tileColumnsBuilder_ == null) {
-            ensureTileColumnsIsMutable();
-            tileColumns_.add(index, builderForValue.build());
+        public Builder addTiles(
+            int index, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.Builder builderForValue) {
+          if (tilesBuilder_ == null) {
+            ensureTilesIsMutable();
+            tiles_.add(index, builderForValue.build());
             onChanged();
           } else {
-            tileColumnsBuilder_.addMessage(index, builderForValue.build());
+            tilesBuilder_.addMessage(index, builderForValue.build());
           }
           return this;
         }
         /**
-         * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+         * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+         *
+         * <pre>
+         * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+         * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+         * isn't too difficult.
+         * </pre>
          */
-        public Builder addAllTileColumns(
-            java.lang.Iterable<? extends edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn> values) {
-          if (tileColumnsBuilder_ == null) {
-            ensureTileColumnsIsMutable();
-            super.addAll(values, tileColumns_);
+        public Builder addAllTiles(
+            java.lang.Iterable<? extends edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile> values) {
+          if (tilesBuilder_ == null) {
+            ensureTilesIsMutable();
+            super.addAll(values, tiles_);
             onChanged();
           } else {
-            tileColumnsBuilder_.addAllMessages(values);
+            tilesBuilder_.addAllMessages(values);
           }
           return this;
         }
         /**
-         * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+         * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+         *
+         * <pre>
+         * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+         * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+         * isn't too difficult.
+         * </pre>
          */
-        public Builder clearTileColumns() {
-          if (tileColumnsBuilder_ == null) {
-            tileColumns_ = java.util.Collections.emptyList();
+        public Builder clearTiles() {
+          if (tilesBuilder_ == null) {
+            tiles_ = java.util.Collections.emptyList();
             bitField0_ = (bitField0_ & ~0x00000010);
             onChanged();
           } else {
-            tileColumnsBuilder_.clear();
+            tilesBuilder_.clear();
           }
           return this;
         }
         /**
-         * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+         * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+         *
+         * <pre>
+         * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+         * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+         * isn't too difficult.
+         * </pre>
          */
-        public Builder removeTileColumns(int index) {
-          if (tileColumnsBuilder_ == null) {
-            ensureTileColumnsIsMutable();
-            tileColumns_.remove(index);
+        public Builder removeTiles(int index) {
+          if (tilesBuilder_ == null) {
+            ensureTilesIsMutable();
+            tiles_.remove(index);
             onChanged();
           } else {
-            tileColumnsBuilder_.remove(index);
+            tilesBuilder_.remove(index);
           }
           return this;
         }
         /**
-         * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+         * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+         *
+         * <pre>
+         * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+         * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+         * isn't too difficult.
+         * </pre>
          */
-        public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn.Builder getTileColumnsBuilder(
+        public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.Builder getTilesBuilder(
             int index) {
-          return getTileColumnsFieldBuilder().getBuilder(index);
+          return getTilesFieldBuilder().getBuilder(index);
         }
         /**
-         * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+         * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+         *
+         * <pre>
+         * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+         * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+         * isn't too difficult.
+         * </pre>
          */
-        public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumnOrBuilder getTileColumnsOrBuilder(
+        public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileOrBuilder getTilesOrBuilder(
             int index) {
-          if (tileColumnsBuilder_ == null) {
-            return tileColumns_.get(index);  } else {
-            return tileColumnsBuilder_.getMessageOrBuilder(index);
+          if (tilesBuilder_ == null) {
+            return tiles_.get(index);  } else {
+            return tilesBuilder_.getMessageOrBuilder(index);
           }
         }
         /**
-         * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+         * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+         *
+         * <pre>
+         * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+         * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+         * isn't too difficult.
+         * </pre>
          */
-        public java.util.List<? extends edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumnOrBuilder> 
-             getTileColumnsOrBuilderList() {
-          if (tileColumnsBuilder_ != null) {
-            return tileColumnsBuilder_.getMessageOrBuilderList();
+        public java.util.List<? extends edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileOrBuilder> 
+             getTilesOrBuilderList() {
+          if (tilesBuilder_ != null) {
+            return tilesBuilder_.getMessageOrBuilderList();
           } else {
-            return java.util.Collections.unmodifiableList(tileColumns_);
+            return java.util.Collections.unmodifiableList(tiles_);
           }
         }
         /**
-         * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+         * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+         *
+         * <pre>
+         * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+         * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+         * isn't too difficult.
+         * </pre>
          */
-        public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn.Builder addTileColumnsBuilder() {
-          return getTileColumnsFieldBuilder().addBuilder(
-              edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn.getDefaultInstance());
+        public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.Builder addTilesBuilder() {
+          return getTilesFieldBuilder().addBuilder(
+              edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.getDefaultInstance());
         }
         /**
-         * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+         * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+         *
+         * <pre>
+         * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+         * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+         * isn't too difficult.
+         * </pre>
          */
-        public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn.Builder addTileColumnsBuilder(
+        public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.Builder addTilesBuilder(
             int index) {
-          return getTileColumnsFieldBuilder().addBuilder(
-              index, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn.getDefaultInstance());
+          return getTilesFieldBuilder().addBuilder(
+              index, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.getDefaultInstance());
         }
         /**
-         * <code>repeated .monkeyshines.World.TileColumn tileColumns = 5;</code>
+         * <code>repeated .monkeyshines.World.Tile tiles = 5;</code>
+         *
+         * <pre>
+         * This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+         * and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+         * isn't too difficult.
+         * </pre>
          */
-        public java.util.List<edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn.Builder> 
-             getTileColumnsBuilderList() {
-          return getTileColumnsFieldBuilder().getBuilderList();
+        public java.util.List<edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.Builder> 
+             getTilesBuilderList() {
+          return getTilesFieldBuilder().getBuilderList();
         }
         private com.google.protobuf.RepeatedFieldBuilder<
-            edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn.Builder, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumnOrBuilder> 
-            getTileColumnsFieldBuilder() {
-          if (tileColumnsBuilder_ == null) {
-            tileColumnsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-                edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn.Builder, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumnOrBuilder>(
-                    tileColumns_,
+            edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.Builder, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileOrBuilder> 
+            getTilesFieldBuilder() {
+          if (tilesBuilder_ == null) {
+            tilesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+                edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.Builder, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileOrBuilder>(
+                    tiles_,
                     ((bitField0_ & 0x00000010) == 0x00000010),
                     getParentForChildren(),
                     isClean());
-            tileColumns_ = null;
+            tiles_ = null;
           }
-          return tileColumnsBuilder_;
+          return tilesBuilder_;
         }
 
         // @@protoc_insertion_point(builder_scope:monkeyshines.World.LevelScreen)
@@ -8151,539 +8324,6 @@ public final class WorldFormatProtos {
       // @@protoc_insertion_point(class_scope:monkeyshines.World.Sprite)
     }
 
-    public interface TileColumnOrBuilder
-        extends com.google.protobuf.MessageOrBuilder {
-
-      // required .monkeyshines.World.Tile tile = 1;
-      /**
-       * <code>required .monkeyshines.World.Tile tile = 1;</code>
-       */
-      boolean hasTile();
-      /**
-       * <code>required .monkeyshines.World.Tile tile = 1;</code>
-       */
-      edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile getTile();
-      /**
-       * <code>required .monkeyshines.World.Tile tile = 1;</code>
-       */
-      edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileOrBuilder getTileOrBuilder();
-    }
-    /**
-     * Protobuf type {@code monkeyshines.World.TileColumn}
-     *
-     * <pre>
-     * This class has one purpose: Allow 2D array in protocol buffer format.
-     * Level stores array columns should together form the row-col form needed
-     * </pre>
-     */
-    public static final class TileColumn extends
-        com.google.protobuf.GeneratedMessage
-        implements TileColumnOrBuilder {
-      // Use TileColumn.newBuilder() to construct.
-      private TileColumn(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
-        super(builder);
-        this.unknownFields = builder.getUnknownFields();
-      }
-      private TileColumn(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-      private static final TileColumn defaultInstance;
-      public static TileColumn getDefaultInstance() {
-        return defaultInstance;
-      }
-
-      public TileColumn getDefaultInstanceForType() {
-        return defaultInstance;
-      }
-
-      private final com.google.protobuf.UnknownFieldSet unknownFields;
-      @java.lang.Override
-      public final com.google.protobuf.UnknownFieldSet
-          getUnknownFields() {
-        return this.unknownFields;
-      }
-      private TileColumn(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        initFields();
-        int mutable_bitField0_ = 0;
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              default: {
-                if (!parseUnknownField(input, unknownFields,
-                                       extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-              case 10: {
-                edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.Builder subBuilder = null;
-                if (((bitField0_ & 0x00000001) == 0x00000001)) {
-                  subBuilder = tile_.toBuilder();
-                }
-                tile_ = input.readMessage(edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.PARSER, extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(tile_);
-                  tile_ = subBuilder.buildPartial();
-                }
-                bitField0_ |= 0x00000001;
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e.getMessage()).setUnfinishedMessage(this);
-        } finally {
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
-      }
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.internal_static_monkeyshines_World_TileColumn_descriptor;
-      }
-
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.internal_static_monkeyshines_World_TileColumn_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn.class, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn.Builder.class);
-      }
-
-      public static com.google.protobuf.Parser<TileColumn> PARSER =
-          new com.google.protobuf.AbstractParser<TileColumn>() {
-        public TileColumn parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          return new TileColumn(input, extensionRegistry);
-        }
-      };
-
-      @java.lang.Override
-      public com.google.protobuf.Parser<TileColumn> getParserForType() {
-        return PARSER;
-      }
-
-      private int bitField0_;
-      // required .monkeyshines.World.Tile tile = 1;
-      public static final int TILE_FIELD_NUMBER = 1;
-      private edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile tile_;
-      /**
-       * <code>required .monkeyshines.World.Tile tile = 1;</code>
-       */
-      public boolean hasTile() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
-      }
-      /**
-       * <code>required .monkeyshines.World.Tile tile = 1;</code>
-       */
-      public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile getTile() {
-        return tile_;
-      }
-      /**
-       * <code>required .monkeyshines.World.Tile tile = 1;</code>
-       */
-      public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileOrBuilder getTileOrBuilder() {
-        return tile_;
-      }
-
-      private void initFields() {
-        tile_ = edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.getDefaultInstance();
-      }
-      private byte memoizedIsInitialized = -1;
-      public final boolean isInitialized() {
-        byte isInitialized = memoizedIsInitialized;
-        if (isInitialized != -1) return isInitialized == 1;
-
-        if (!hasTile()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-        if (!getTile().isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-        memoizedIsInitialized = 1;
-        return true;
-      }
-
-      public void writeTo(com.google.protobuf.CodedOutputStream output)
-                          throws java.io.IOException {
-        getSerializedSize();
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
-          output.writeMessage(1, tile_);
-        }
-        getUnknownFields().writeTo(output);
-      }
-
-      private int memoizedSerializedSize = -1;
-      public int getSerializedSize() {
-        int size = memoizedSerializedSize;
-        if (size != -1) return size;
-
-        size = 0;
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(1, tile_);
-        }
-        size += getUnknownFields().getSerializedSize();
-        memoizedSerializedSize = size;
-        return size;
-      }
-
-      private static final long serialVersionUID = 0L;
-      @java.lang.Override
-      protected java.lang.Object writeReplace()
-          throws java.io.ObjectStreamException {
-        return super.writeReplace();
-      }
-
-      public static edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn parseFrom(
-          com.google.protobuf.ByteString data)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-      }
-      public static edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn parseFrom(
-          com.google.protobuf.ByteString data,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-      }
-      public static edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn parseFrom(byte[] data)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-      }
-      public static edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn parseFrom(
-          byte[] data,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-      }
-      public static edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn parseFrom(java.io.InputStream input)
-          throws java.io.IOException {
-        return PARSER.parseFrom(input);
-      }
-      public static edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn parseFrom(
-          java.io.InputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return PARSER.parseFrom(input, extensionRegistry);
-      }
-      public static edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn parseDelimitedFrom(java.io.InputStream input)
-          throws java.io.IOException {
-        return PARSER.parseDelimitedFrom(input);
-      }
-      public static edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn parseDelimitedFrom(
-          java.io.InputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return PARSER.parseDelimitedFrom(input, extensionRegistry);
-      }
-      public static edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn parseFrom(
-          com.google.protobuf.CodedInputStream input)
-          throws java.io.IOException {
-        return PARSER.parseFrom(input);
-      }
-      public static edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn parseFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return PARSER.parseFrom(input, extensionRegistry);
-      }
-
-      public static Builder newBuilder() { return Builder.create(); }
-      public Builder newBuilderForType() { return newBuilder(); }
-      public static Builder newBuilder(edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn prototype) {
-        return newBuilder().mergeFrom(prototype);
-      }
-      public Builder toBuilder() { return newBuilder(this); }
-
-      @java.lang.Override
-      protected Builder newBuilderForType(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-        Builder builder = new Builder(parent);
-        return builder;
-      }
-      /**
-       * Protobuf type {@code monkeyshines.World.TileColumn}
-       *
-       * <pre>
-       * This class has one purpose: Allow 2D array in protocol buffer format.
-       * Level stores array columns should together form the row-col form needed
-       * </pre>
-       */
-      public static final class Builder extends
-          com.google.protobuf.GeneratedMessage.Builder<Builder>
-         implements edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumnOrBuilder {
-        public static final com.google.protobuf.Descriptors.Descriptor
-            getDescriptor() {
-          return edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.internal_static_monkeyshines_World_TileColumn_descriptor;
-        }
-
-        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-            internalGetFieldAccessorTable() {
-          return edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.internal_static_monkeyshines_World_TileColumn_fieldAccessorTable
-              .ensureFieldAccessorsInitialized(
-                  edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn.class, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn.Builder.class);
-        }
-
-        // Construct using edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn.newBuilder()
-        private Builder() {
-          maybeForceBuilderInitialization();
-        }
-
-        private Builder(
-            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-          super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-            getTileFieldBuilder();
-          }
-        }
-        private static Builder create() {
-          return new Builder();
-        }
-
-        public Builder clear() {
-          super.clear();
-          if (tileBuilder_ == null) {
-            tile_ = edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.getDefaultInstance();
-          } else {
-            tileBuilder_.clear();
-          }
-          bitField0_ = (bitField0_ & ~0x00000001);
-          return this;
-        }
-
-        public Builder clone() {
-          return create().mergeFrom(buildPartial());
-        }
-
-        public com.google.protobuf.Descriptors.Descriptor
-            getDescriptorForType() {
-          return edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.internal_static_monkeyshines_World_TileColumn_descriptor;
-        }
-
-        public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn getDefaultInstanceForType() {
-          return edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn.getDefaultInstance();
-        }
-
-        public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn build() {
-          edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn result = buildPartial();
-          if (!result.isInitialized()) {
-            throw newUninitializedMessageException(result);
-          }
-          return result;
-        }
-
-        public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn buildPartial() {
-          edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn result = new edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn(this);
-          int from_bitField0_ = bitField0_;
-          int to_bitField0_ = 0;
-          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
-            to_bitField0_ |= 0x00000001;
-          }
-          if (tileBuilder_ == null) {
-            result.tile_ = tile_;
-          } else {
-            result.tile_ = tileBuilder_.build();
-          }
-          result.bitField0_ = to_bitField0_;
-          onBuilt();
-          return result;
-        }
-
-        public Builder mergeFrom(com.google.protobuf.Message other) {
-          if (other instanceof edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn) {
-            return mergeFrom((edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn)other);
-          } else {
-            super.mergeFrom(other);
-            return this;
-          }
-        }
-
-        public Builder mergeFrom(edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn other) {
-          if (other == edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn.getDefaultInstance()) return this;
-          if (other.hasTile()) {
-            mergeTile(other.getTile());
-          }
-          this.mergeUnknownFields(other.getUnknownFields());
-          return this;
-        }
-
-        public final boolean isInitialized() {
-          if (!hasTile()) {
-            
-            return false;
-          }
-          if (!getTile().isInitialized()) {
-            
-            return false;
-          }
-          return true;
-        }
-
-        public Builder mergeFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-          edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn parsedMessage = null;
-          try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileColumn) e.getUnfinishedMessage();
-            throw e;
-          } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
-          return this;
-        }
-        private int bitField0_;
-
-        // required .monkeyshines.World.Tile tile = 1;
-        private edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile tile_ = edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.getDefaultInstance();
-        private com.google.protobuf.SingleFieldBuilder<
-            edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.Builder, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileOrBuilder> tileBuilder_;
-        /**
-         * <code>required .monkeyshines.World.Tile tile = 1;</code>
-         */
-        public boolean hasTile() {
-          return ((bitField0_ & 0x00000001) == 0x00000001);
-        }
-        /**
-         * <code>required .monkeyshines.World.Tile tile = 1;</code>
-         */
-        public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile getTile() {
-          if (tileBuilder_ == null) {
-            return tile_;
-          } else {
-            return tileBuilder_.getMessage();
-          }
-        }
-        /**
-         * <code>required .monkeyshines.World.Tile tile = 1;</code>
-         */
-        public Builder setTile(edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile value) {
-          if (tileBuilder_ == null) {
-            if (value == null) {
-              throw new NullPointerException();
-            }
-            tile_ = value;
-            onChanged();
-          } else {
-            tileBuilder_.setMessage(value);
-          }
-          bitField0_ |= 0x00000001;
-          return this;
-        }
-        /**
-         * <code>required .monkeyshines.World.Tile tile = 1;</code>
-         */
-        public Builder setTile(
-            edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.Builder builderForValue) {
-          if (tileBuilder_ == null) {
-            tile_ = builderForValue.build();
-            onChanged();
-          } else {
-            tileBuilder_.setMessage(builderForValue.build());
-          }
-          bitField0_ |= 0x00000001;
-          return this;
-        }
-        /**
-         * <code>required .monkeyshines.World.Tile tile = 1;</code>
-         */
-        public Builder mergeTile(edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile value) {
-          if (tileBuilder_ == null) {
-            if (((bitField0_ & 0x00000001) == 0x00000001) &&
-                tile_ != edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.getDefaultInstance()) {
-              tile_ =
-                edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.newBuilder(tile_).mergeFrom(value).buildPartial();
-            } else {
-              tile_ = value;
-            }
-            onChanged();
-          } else {
-            tileBuilder_.mergeFrom(value);
-          }
-          bitField0_ |= 0x00000001;
-          return this;
-        }
-        /**
-         * <code>required .monkeyshines.World.Tile tile = 1;</code>
-         */
-        public Builder clearTile() {
-          if (tileBuilder_ == null) {
-            tile_ = edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.getDefaultInstance();
-            onChanged();
-          } else {
-            tileBuilder_.clear();
-          }
-          bitField0_ = (bitField0_ & ~0x00000001);
-          return this;
-        }
-        /**
-         * <code>required .monkeyshines.World.Tile tile = 1;</code>
-         */
-        public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.Builder getTileBuilder() {
-          bitField0_ |= 0x00000001;
-          onChanged();
-          return getTileFieldBuilder().getBuilder();
-        }
-        /**
-         * <code>required .monkeyshines.World.Tile tile = 1;</code>
-         */
-        public edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileOrBuilder getTileOrBuilder() {
-          if (tileBuilder_ != null) {
-            return tileBuilder_.getMessageOrBuilder();
-          } else {
-            return tile_;
-          }
-        }
-        /**
-         * <code>required .monkeyshines.World.Tile tile = 1;</code>
-         */
-        private com.google.protobuf.SingleFieldBuilder<
-            edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.Builder, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileOrBuilder> 
-            getTileFieldBuilder() {
-          if (tileBuilder_ == null) {
-            tileBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-                edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Tile.Builder, edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TileOrBuilder>(
-                    tile_,
-                    getParentForChildren(),
-                    isClean());
-            tile_ = null;
-          }
-          return tileBuilder_;
-        }
-
-        // @@protoc_insertion_point(builder_scope:monkeyshines.World.TileColumn)
-      }
-
-      static {
-        defaultInstance = new TileColumn(true);
-        defaultInstance.initFields();
-      }
-
-      // @@protoc_insertion_point(class_scope:monkeyshines.World.TileColumn)
-    }
-
     public interface TileOrBuilder
         extends com.google.protobuf.MessageOrBuilder {
 
@@ -10002,6 +9642,11 @@ public final class WorldFormatProtos {
     }
     /**
      * Protobuf type {@code monkeyshines.World}
+     *
+     * <pre>
+     * compile with
+     * protoc -I=src --java_out=src src/edu/nova/erikaredmark/monkeyshines/encoder/proto/world_file_format.proto
+     * </pre>
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
@@ -11425,11 +11070,6 @@ public final class WorldFormatProtos {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_monkeyshines_World_Sprite_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_monkeyshines_World_TileColumn_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_monkeyshines_World_TileColumn_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_monkeyshines_World_Tile_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -11445,7 +11085,7 @@ public final class WorldFormatProtos {
     java.lang.String[] descriptorData = {
       "\nHedu/nova/erikaredmark/monkeyshines/enc" +
       "oder/proto/world_file_format.proto\022\014monk" +
-      "eyshines\"\337\017\n\005World\022\014\n\004name\030\001 \001(\t\0228\n\007good" +
+      "eyshines\"\226\017\n\005World\022\014\n\004name\030\001 \001(\t\0228\n\007good" +
       "ies\030\002 \003(\0132\'.monkeyshines.World.StringToG" +
       "oodieTuple\0227\n\006levels\030\003 \003(\0132\'.monkeyshine" +
       "s.World.IntegerToLevelTuple\022+\n\007hazards\030\004" +
@@ -11455,49 +11095,47 @@ public final class WorldFormatProtos {
       "\032.monkeyshines.World.Goodie\032P\n\023IntegerTo",
       "LevelTuple\022\013\n\003one\030\001 \002(\r\022,\n\003two\030\002 \002(\0132\037.m" +
       "onkeyshines.World.LevelScreen\032\035\n\005Point\022\t" +
-      "\n\001x\030\001 \002(\005\022\t\n\001y\030\002 \002(\005\032a\n\003Box\022*\n\007topLeft\030\001" +
-      " \002(\0132\031.monkeyshines.World.Point\022.\n\013botto" +
-      "mRight\030\002 \002(\0132\031.monkeyshines.World.Point\032" +
-      "T\n\006Goodie\022\n\n\002id\030\001 \001(\r\022\021\n\tscreen_id\030\002 \001(\r" +
-      "\022+\n\010location\030\003 \001(\0132\031.monkeyshines.World." +
-      "Point\032c\n\006Hazard\022\n\n\002id\030\001 \001(\r\022\020\n\010explodes\030" +
-      "\002 \001(\010\022;\n\017death_animation\030\003 \001(\0162\".monkeys" +
-      "hines.World.DeathAnimation\032\342\001\n\013LevelScre",
-      "en\022\n\n\002id\030\001 \001(\r\0222\n\nbackground\030\002 \001(\0132\036.mon" +
-      "keyshines.World.Background\0221\n\016bonzo_loca" +
-      "tion\030\003 \001(\0132\031.monkeyshines.World.Point\022+\n" +
-      "\007sprites\030\004 \003(\0132\032.monkeyshines.World.Spri" +
-      "te\0223\n\013tileColumns\030\005 \003(\0132\036.monkeyshines.W" +
-      "orld.TileColumn\032J\n\nBackground\022\n\n\002id\030\001 \001(" +
-      "\r\0220\n\004type\030\002 \001(\0162\".monkeyshines.World.Bac" +
-      "kgroundType\032\311\002\n\006Sprite\022\n\n\002id\030\001 \001(\r\0221\n\016st" +
-      "art_location\030\002 \001(\0132\031.monkeyshines.World." +
-      "Point\022-\n\014bounding_box\030\003 \001(\0132\027.monkeyshin",
-      "es.World.Box\0220\n\rinitial_speed\030\004 \001(\0132\031.mo" +
-      "nkeyshines.World.Point\0224\n\tanimation\030\005 \001(" +
-      "\0162!.monkeyshines.World.AnimationType\022;\n\017" +
-      "animation_speed\030\006 \001(\0162\".monkeyshines.Wor" +
-      "ld.AnimationSpeed\022,\n\004type\030\007 \001(\0162\036.monkey" +
-      "shines.World.SpriteType\0324\n\nTileColumn\022&\n" +
-      "\004tile\030\001 \002(\0132\030.monkeyshines.World.Tile\032\233\001" +
-      "\n\004Tile\022\n\n\002id\030\001 \001(\r\022+\n\010location\030\002 \001(\0132\031.m" +
-      "onkeyshines.World.Point\022*\n\004type\030\003 \001(\0162\034." +
-      "monkeyshines.World.TileType\022.\n\010rotation\030",
-      "\004 \001(\0162\034.monkeyshines.World.Rotation\"C\n\016D" +
-      "eathAnimation\022\020\n\014NORMAL_DEATH\020\000\022\007\n\003BEE\020\001" +
-      "\022\010\n\004BURN\020\002\022\014\n\010ELECTRIC\020\003\"8\n\016BackgroundTy" +
-      "pe\022\013\n\007PATTERN\020\001\022\010\n\004FULL\020\002\022\017\n\013SOLID_COLOR" +
-      "\020\003\":\n\rAnimationType\022\025\n\021INCREASING_FRAMES" +
-      "\020\001\022\022\n\016CYLCING_FRAMES\020\002\",\n\016AnimationSpeed" +
-      "\022\020\n\014NORMAL_SPEED\020\001\022\010\n\004SLOW\020\002\"]\n\nSpriteTy" +
-      "pe\022\n\n\006NORMAL\020\001\022\020\n\014HEALTH_DRAIN\020\002\022\r\n\tEXIT" +
-      "_DOOR\020\003\022\016\n\nBONUS_DOOR\020\004\022\022\n\016SCENERY_SPRIT" +
-      "E\020\005\"^\n\010TileType\022\t\n\005SOLID\020\001\022\010\n\004THRU\020\002\022\013\n\007",
-      "SCENERY\020\003\022\n\n\006HAZARD\020\004\022\014\n\010CONVEYER\020\005\022\014\n\010B" +
-      "REAKING\020\006\022\010\n\004NONE\020\007\"-\n\010Rotation\022\r\n\tCLOCK" +
-      "WISE\020\001\022\022\n\016ANTI_CLOCKWISE\020\002BE\n0edu.nova.e" +
-      "rikaredmark.monkeyshines.encoder.protoB\021" +
-      "WorldFormatProtos"
+      "\n\001x\030\001 \002(\005\022\t\n\001y\030\002 \002(\005\032Z\n\003Box\022*\n\007topLeft\030\001" +
+      " \002(\0132\031.monkeyshines.World.Point\022\'\n\004size\030" +
+      "\002 \002(\0132\031.monkeyshines.World.Point\032T\n\006Good" +
+      "ie\022\n\n\002id\030\001 \001(\r\022\021\n\tscreen_id\030\002 \001(\r\022+\n\010loc" +
+      "ation\030\003 \001(\0132\031.monkeyshines.World.Point\032c" +
+      "\n\006Hazard\022\n\n\002id\030\001 \001(\r\022\020\n\010explodes\030\002 \001(\010\022;" +
+      "\n\017death_animation\030\003 \001(\0162\".monkeyshines.W" +
+      "orld.DeathAnimation\032\326\001\n\013LevelScreen\022\n\n\002i",
+      "d\030\001 \001(\r\0222\n\nbackground\030\002 \001(\0132\036.monkeyshin" +
+      "es.World.Background\0221\n\016bonzo_location\030\003 " +
+      "\001(\0132\031.monkeyshines.World.Point\022+\n\007sprite" +
+      "s\030\004 \003(\0132\032.monkeyshines.World.Sprite\022\'\n\005t" +
+      "iles\030\005 \003(\0132\030.monkeyshines.World.Tile\032J\n\n" +
+      "Background\022\n\n\002id\030\001 \001(\r\0220\n\004type\030\002 \001(\0162\".m" +
+      "onkeyshines.World.BackgroundType\032\311\002\n\006Spr" +
+      "ite\022\n\n\002id\030\001 \001(\r\0221\n\016start_location\030\002 \001(\0132" +
+      "\031.monkeyshines.World.Point\022-\n\014bounding_b" +
+      "ox\030\003 \001(\0132\027.monkeyshines.World.Box\0220\n\rini",
+      "tial_speed\030\004 \001(\0132\031.monkeyshines.World.Po" +
+      "int\0224\n\tanimation\030\005 \001(\0162!.monkeyshines.Wo" +
+      "rld.AnimationType\022;\n\017animation_speed\030\006 \001" +
+      "(\0162\".monkeyshines.World.AnimationSpeed\022," +
+      "\n\004type\030\007 \001(\0162\036.monkeyshines.World.Sprite" +
+      "Type\032\233\001\n\004Tile\022\n\n\002id\030\001 \001(\r\022+\n\010location\030\002 " +
+      "\001(\0132\031.monkeyshines.World.Point\022*\n\004type\030\003" +
+      " \001(\0162\034.monkeyshines.World.TileType\022.\n\010ro" +
+      "tation\030\004 \001(\0162\034.monkeyshines.World.Rotati" +
+      "on\"C\n\016DeathAnimation\022\020\n\014NORMAL_DEATH\020\000\022\007",
+      "\n\003BEE\020\001\022\010\n\004BURN\020\002\022\014\n\010ELECTRIC\020\003\"8\n\016Backg" +
+      "roundType\022\013\n\007PATTERN\020\001\022\010\n\004FULL\020\002\022\017\n\013SOLI" +
+      "D_COLOR\020\003\":\n\rAnimationType\022\025\n\021INCREASING" +
+      "_FRAMES\020\001\022\022\n\016CYLCING_FRAMES\020\002\",\n\016Animati" +
+      "onSpeed\022\020\n\014NORMAL_SPEED\020\001\022\010\n\004SLOW\020\002\"]\n\nS" +
+      "priteType\022\n\n\006NORMAL\020\001\022\020\n\014HEALTH_DRAIN\020\002\022" +
+      "\r\n\tEXIT_DOOR\020\003\022\016\n\nBONUS_DOOR\020\004\022\022\n\016SCENER" +
+      "Y_SPRITE\020\005\"^\n\010TileType\022\t\n\005SOLID\020\001\022\010\n\004THR" +
+      "U\020\002\022\013\n\007SCENERY\020\003\022\n\n\006HAZARD\020\004\022\014\n\010CONVEYER" +
+      "\020\005\022\014\n\010BREAKING\020\006\022\010\n\004NONE\020\007\"-\n\010Rotation\022\r",
+      "\n\tCLOCKWISE\020\001\022\022\n\016ANTI_CLOCKWISE\020\002BE\n0edu" +
+      ".nova.erikaredmark.monkeyshines.encoder." +
+      "protoB\021WorldFormatProtos"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -11533,7 +11171,7 @@ public final class WorldFormatProtos {
           internal_static_monkeyshines_World_Box_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_monkeyshines_World_Box_descriptor,
-              new java.lang.String[] { "TopLeft", "BottomRight", });
+              new java.lang.String[] { "TopLeft", "Size", });
           internal_static_monkeyshines_World_Goodie_descriptor =
             internal_static_monkeyshines_World_descriptor.getNestedTypes().get(4);
           internal_static_monkeyshines_World_Goodie_fieldAccessorTable = new
@@ -11551,7 +11189,7 @@ public final class WorldFormatProtos {
           internal_static_monkeyshines_World_LevelScreen_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_monkeyshines_World_LevelScreen_descriptor,
-              new java.lang.String[] { "Id", "Background", "BonzoLocation", "Sprites", "TileColumns", });
+              new java.lang.String[] { "Id", "Background", "BonzoLocation", "Sprites", "Tiles", });
           internal_static_monkeyshines_World_Background_descriptor =
             internal_static_monkeyshines_World_descriptor.getNestedTypes().get(7);
           internal_static_monkeyshines_World_Background_fieldAccessorTable = new
@@ -11564,14 +11202,8 @@ public final class WorldFormatProtos {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_monkeyshines_World_Sprite_descriptor,
               new java.lang.String[] { "Id", "StartLocation", "BoundingBox", "InitialSpeed", "Animation", "AnimationSpeed", "Type", });
-          internal_static_monkeyshines_World_TileColumn_descriptor =
-            internal_static_monkeyshines_World_descriptor.getNestedTypes().get(9);
-          internal_static_monkeyshines_World_TileColumn_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_monkeyshines_World_TileColumn_descriptor,
-              new java.lang.String[] { "Tile", });
           internal_static_monkeyshines_World_Tile_descriptor =
-            internal_static_monkeyshines_World_descriptor.getNestedTypes().get(10);
+            internal_static_monkeyshines_World_descriptor.getNestedTypes().get(9);
           internal_static_monkeyshines_World_Tile_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_monkeyshines_World_Tile_descriptor,

@@ -15,9 +15,6 @@ import edu.nova.erikaredmark.monkeyshines.bounds.Boundable;
  *
  */
 public final class ImmutableRectangle extends Boundable {
-	/* Safe to use default serialized form. The idea of a 'rectangle' isn't going to change.
-	 */
-	private static final long serialVersionUID = 157L;
 
 	private ImmutableRectangle(final int x, final int y, final int width, final int height) {
 		super.location = ImmutablePoint2D.of(x, y);

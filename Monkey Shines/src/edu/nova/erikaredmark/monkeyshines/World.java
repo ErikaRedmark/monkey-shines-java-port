@@ -80,60 +80,13 @@ public class World {
 	
 	/**
 	 * 
-	 * Creates a new, fresh copy of a world based on the encoded world (typically from restoring from a file). The passed 
-	 * object may be reused any number of times with this method. This method will always generate a world that is distinct
-	 * from any other world generated in terms of data sharing.
-	 * 
-	 * @param world
-	 * 		the encoded world to create this world from
-	 * 
-	 * @param rsrc
-	 * 		a world resource to use as graphics for the new world
-	 * 	
-	 * @return
-	 * 		a new world, ready for bonzo to inhabit
-	 * 
-	 */
-	public static World inflateFrom(EncodedWorld world, WorldResource rsrc) {
-		// TODO method stub
-		final String worldName = world.getName();
-		final Map<String, Goodie> goodiesInWorld = new HashMap<>();
-		for (Entry<String, EncodedGoodie> goodie : world.getGoodies().entrySet() ) {
-			goodiesInWorld.put(goodie.getKey(), Goodie.inflateFrom(goodie.getValue() ) );
-		}
-		
-		
-		final List<Hazard> hazards = new ArrayList<>();
-		for (EncodedHazard encHazard : world.getHazards() ) {
-			hazards.add(Hazard.inflateFrom(encHazard, rsrc) );
-		}
-		
-		// Size of conveyers may be added to if the world is skinned with an updated
-		// resource containing new conveyers.
-		// generate as many conveyer instances as graphics resource allows. Decoding of the
-		// actual levels with the auto-generated conveyers will handle conveyer belts.
-		List<Conveyer> conveyers = new ArrayList<>(rsrc.getConveyerCount() * 2 );
-		generateConveyers(conveyers, rsrc.getConveyerCount(), rsrc.getConveyerSheet() );
-		
-		// Finally, all the different kinds of tiles loaded, we can load the actually tilemap that requires references
-		// to those tiles
-		final Map<Integer, LevelScreen> worldScreens = new HashMap<>();
-		for (Entry<Integer, EncodedLevelScreen> screen : world.getLevels().entrySet() ) {
-			worldScreens.put(screen.getKey(), LevelScreen.inflateFrom(screen.getValue(), hazards, conveyers) );
-		}
-
-		return new World(worldName, goodiesInWorld, worldScreens, hazards, conveyers, rsrc);	
-	}
-	
-	/**
-	 * 
 	 * generates 'amt' conveyer SETS. Each set is two conveyers; one clockwise and one anti-clockwise. Newly generated conveyers
 	 * are added to the end of the list.
 	 * <p/>
 	 * Because the list is mutated, it must NOT be an immutable type.
 	 * 
 	 */
-	static void generateConveyers(List<Conveyer> conveyers, int amt, BufferedImage conveyerSheet) {
+	public static void generateConveyers(List<Conveyer> conveyers, int amt, BufferedImage conveyerSheet) {
 		// Two entries in the list per conveyer id. Rotation determines which one.
 		int startId = conveyers.size() / 2;
 		for (int i = 0; i < amt; i++) {
@@ -201,13 +154,11 @@ public class World {
 	 * Explicitly sets the modifiable data values of the world. Does not set the graphics resources, which must be done through a call to
 	 * {@code skin}
 	 * <p/>
-	 * Only static factories call this method. No defensive copying; static factory must make sure there is no data sharing.
+	 * This is intended for static factories and the decoding system for .world files ONLY. No defensive copies of parameters are made,
+	 * so it is the responsibility of the client to ensure there is no data sharing.
 	 * 
-	 * @param worldName
-	 * @param goodiesInWorld
-	 * @param worldScreens
 	 */
-	private World(final String worldName, 
+	public World(final String worldName, 
 				  final Map<String, Goodie> goodiesInWorld, 
 				  final Map<Integer, LevelScreen> worldScreens,
 				  final List<Hazard> hazards,

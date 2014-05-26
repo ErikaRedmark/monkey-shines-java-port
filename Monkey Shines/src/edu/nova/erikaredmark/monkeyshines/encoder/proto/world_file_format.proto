@@ -40,7 +40,7 @@ message World {
   
   message Box {
   	required Point topLeft = 1;
-  	required Point bottomRight = 2;
+  	required Point size = 2;
   }
   
   message Goodie {
@@ -73,7 +73,10 @@ message World {
   	optional Background background = 2;
   	optional Point bonzo_location = 3;
   	repeated Sprite sprites = 4;
-  	repeated TileColumn tileColumns = 5;
+  	// This is a 2D array in memory. It is cut down to a 1D array of nxm elements
+  	// and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
+  	// isn't too difficult.
+  	repeated Tile tiles = 5;
   }
   
   message Background {
@@ -119,12 +122,6 @@ message World {
   	// used maybe to add some extra detail to levels. MAY be a surprise
   	// to players.
   	SCENERY_SPRITE = 5;
-  }
-
-  // This class has one purpose: Allow 2D array in protocol buffer format.
-  // Level stores array columns should together form the row-col form needed
-  message TileColumn {
-  	required Tile tile = 1;
   }
   
   message Tile {

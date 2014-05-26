@@ -3,8 +3,6 @@ package edu.nova.erikaredmark.monkeyshines;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
-
 import edu.nova.erikaredmark.monkeyshines.bounds.IPoint2D;
 
 /**
@@ -20,9 +18,7 @@ import edu.nova.erikaredmark.monkeyshines.bounds.IPoint2D;
  * @author The Doctor
  *
  */
-public final class ImmutablePoint2D implements Serializable, IPoint2D {
-	private static final long serialVersionUID = 147L;
-	
+public final class ImmutablePoint2D implements IPoint2D {
 	// Implementation note: Can't be final due to serialization, but class has not public mutator methods.
 	// These fields should never change after assignment.
 	private transient int x;
