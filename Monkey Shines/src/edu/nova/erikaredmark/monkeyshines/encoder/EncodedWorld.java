@@ -2,18 +2,12 @@ package edu.nova.erikaredmark.monkeyshines.encoder;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 import edu.nova.erikaredmark.monkeyshines.AnimationSpeed;
 import edu.nova.erikaredmark.monkeyshines.AnimationType;
@@ -31,7 +25,6 @@ import edu.nova.erikaredmark.monkeyshines.Tile;
 import edu.nova.erikaredmark.monkeyshines.World;
 import edu.nova.erikaredmark.monkeyshines.bounds.Boundable;
 import edu.nova.erikaredmark.monkeyshines.bounds.IPoint2D;
-import edu.nova.erikaredmark.monkeyshines.editor.WorldEditor;
 import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
 import edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos;
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
@@ -491,33 +484,61 @@ public final class EncodedWorld {
 		}
 	}
 	
-//
-//	/**
-//	 * 
-//	 * Creates a new world that is empty. The newly created world will have the given name and a single screen of id 1000.
-//	 * 
-//	 * @param name
-//	 * 		the name of the new world
-//	 * 
-//	 * @return
-//	 * 		an empty encoded world
-//	 * 
-//	 */
-//	public static EncodedWorld fresh(String name) {
-//		// Set up empty screen
-//		EncodedLevelScreen emptyScreen = EncodedLevelScreen.fresh(1000);
-//		Map<Integer, EncodedLevelScreen> screens = new HashMap<>();
-//		screens.put(1000, emptyScreen);
-//		
-//		// Set up empty goodie map
-//		Map<String, EncodedGoodie> goodies = new HashMap<>();
-//		
-//		// Set up empty hazard list
-//		List<EncodedHazard> hazards = Collections.emptyList();
-//
-//		// Return new empty world
-//		return new EncodedWorld(name, goodies, screens, hazards);
-//	}
 
+	/**
+	 * 
+	 * Creates a new world that is empty. The newly created world will have the given name and a single screen of id 1000.
+	 * 
+	 * @param name
+	 * 		the name of the new world
+	 * 
+	 * @return
+	 * 		an empty encoded world
+	 * 
+	 */
+	public static EncodedWorld fresh(String name) {
+		// Set up all defaults
+		WorldFormatProtos.World.Builder newWorld = WorldFormatProtos.World.newBuilder();
+		newWorld.setAuthor("Author Unimplemented");
+		newWorld.setName(name);
+		newWorld.setBonusScreen(10000);
+		// Goodies and hazards have no entries.
+		
+		WorldFormatProtos.World.LevelScreen.Builder emptyLevel = WorldFormatProtos.World.LevelScreen.newBuilder();
+		emptyLevel.setId(1000);
+		emptyLevel.setBackground(WorldFormatProtos.World.Background.newBuilder()
+								 .setType(WorldFormatProtos.World.BackgroundType.FULL)
+								 .setId(0)
+								 .build() );
+		emptyLevel.setBonzoLocation(WorldFormatProtos.World.Point.newBuilder()
+									.setX(0)
+									.setY(0)
+									.build() );
+		
+		// MUST set up tiles to all empty
+		
+		List<WorldFormatProtos.World.Tile> tiles = new ArrayList<>(GameConstants.TOTAL_TILES);
+		for (int i = 0; i < GameConstants.TILES_IN_COL; i++) {
+			for (int j = 0; j < GameConstants.TILES_IN_ROW; j++) {
+			
+			tiles.add(WorldFormatProtos.World.Tile.newBuilder()
+					  .setId(0)
+					  .setLocation(WorldFormatProtos.World.Point.newBuilder()
+							  	   .setX(i)
+							  	   .setY(j) ) 
+					  .setType(WorldFormatProtos.World.TileType.NONE)
+					  .build() );
+			}
+		}
+		
+		emptyLevel.addAllTiles(tiles);
+		
+		newWorld.addLevels(WorldFormatProtos.World.IntegerToLevelTuple.newBuilder()
+						   .setOne(1000)
+						   .setTwo(emptyLevel)
+						   .build() );
+		
+		return new EncodedWorld(newWorld.build() );
+	}
 	
 }

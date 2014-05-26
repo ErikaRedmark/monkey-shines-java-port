@@ -21,7 +21,6 @@ import edu.nova.erikaredmark.monkeyshines.bounds.Boundable;
  *
  */
 public final class ImmutableClippingRectangle extends Boundable {
-	private static final long serialVersionUID = -5404673629716680291L;
 	
 	// TODO this class will only currently be used for clipping rectangles and drawing contexts. As a result, it will
 	// quickly fill up with (0, 0, 40, 40) and (40, 0, 40, 40) and valid rectangles for drawing sprites and fruits, and

@@ -57,7 +57,7 @@ public final class WorldIO {
 		if (Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS) == false)
 			throw new IllegalArgumentException("Path " + path + " must point to a valid folder");
 		
-		EncodedWorld encoded = EncodedWorld.from(worldEditor);
+		EncodedWorld encoded = EncodedWorld.fromMemory(worldEditor.getWorld() );
 		final Path outputPath = path.resolve(worldEditor.getWorldName() + WorldIO.WORLD_EXTENSION);
 		
 		try (ObjectOutputStream os = new ObjectOutputStream(Files.newOutputStream(outputPath, StandardOpenOption.CREATE) ) ) {
@@ -95,7 +95,7 @@ public final class WorldIO {
 		if (Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS) == false)
 			throw new IllegalArgumentException("Path " + path + " must point to the .world file to overwrite");
 		
-		EncodedWorld encoded = EncodedWorld.from(worldEditor);
+		EncodedWorld encoded = EncodedWorld.fromMemory(worldEditor.getWorld() );
 		try (ObjectOutputStream os = new ObjectOutputStream(Files.newOutputStream(path, StandardOpenOption.CREATE) ) ) {
 			os.writeObject(encoded);
 		} catch (IOException e) {

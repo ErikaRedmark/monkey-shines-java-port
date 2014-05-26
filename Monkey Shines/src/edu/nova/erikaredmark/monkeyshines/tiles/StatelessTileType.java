@@ -1,8 +1,5 @@
 package edu.nova.erikaredmark.monkeyshines.tiles;
 
-import edu.nova.erikaredmark.monkeyshines.encoder.EncodableTileType;
-
-
 /**
  * 
  * How the tile reacts to the game world. Some tile types are stateless; their nature represents all that needs to be known
@@ -26,7 +23,7 @@ import edu.nova.erikaredmark.monkeyshines.encoder.EncodableTileType;
  * @author Erika Redmark
  *
  */
-public enum StatelessTileType implements TileType, EncodableTileType {
+public enum StatelessTileType implements TileType {
 	SOLID {
 		@Override public boolean isThru() { return false; }
 		@Override public void update() { /* No op */ }

@@ -6,7 +6,6 @@ import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.io.File;
 import java.nio.file.Path;
 
 import javax.swing.JFileChooser;
@@ -55,15 +54,17 @@ public class GameWindow extends JPanel implements ActionListener {
 		// system should be in place 
 		JFileChooser fileChooser = new JFileChooser();
 		if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-			File worldFile = fileChooser.getSelectedFile();
+			Path worldFile = fileChooser.getSelectedFile().toPath();
 			
 			try {
-				EncodedWorld world = WorldIO.restoreWorld(worldFile.toPath() );
+				EncodedWorld world = WorldIO.restoreWorld(worldFile);
 				// Try to load the resource pack
-				String worldName = world.getName();
-				Path packFile = worldFile.toPath().getParent().resolve(worldName + ".zip");
+				String fileName = worldFile.getFileName().toString();
+				// Remove .world extension so we can substitute with .zip.
+				String worldName = fileName.substring(0, fileName.lastIndexOf('.') );
+				Path packFile = worldFile.getParent().resolve(worldName + ".zip");
 				WorldResource rsrc = WorldResource.fromPack(packFile);
-				currentWorld = World.inflateFrom(world, rsrc);
+				currentWorld = world.newWorldInstance(rsrc);
 			} catch (WorldRestoreException ex) {
 				JOptionPane.showMessageDialog(this,
 				    "Cannot load world: Possibly corrupt or not a world file: " + ex.getMessage(),

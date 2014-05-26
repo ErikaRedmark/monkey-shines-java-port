@@ -4,9 +4,6 @@ import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.nova.erikaredmark.monkeyshines.encoder.EncodedLevelScreen;
-import edu.nova.erikaredmark.monkeyshines.encoder.EncodedSprite;
-import edu.nova.erikaredmark.monkeyshines.encoder.EncodedTile;
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
@@ -45,51 +42,7 @@ public final class LevelScreen {
 	private WorldResource rsrc;
 	private boolean isSkinned = false;
 	
-	// Background to get
 
-	
-	/**
-	 * 
-	 * Creates an instance of this object from its encoded for.
-	 * 
-	 * @param screen
-	 * 		the level screen to inflate
-	 * 
-	 * @param worldHazards
-	 * 		list of hazards that are part of the world. Some levels have hazards on them so these must
-	 * 		be inflated first. This list will not be modified
-	 * 
-	 * @param conveyers
-	 * 		list of conveyers that are part of the world. As with hazards, some levels have conveyer belts
-	 * 		that must reference a valid 'Conveyer' object for their immutable state.
-	 * 
-	 * @return
-	 * 		new instance of this object
-	 * 
-	 */
-	public static LevelScreen inflateFrom(EncodedLevelScreen screen, List<Hazard> worldHazards, List<Conveyer> conveyers) {
-		final int screenId = screen.getId();
-		final int backgroundId = screen.getBackgroundId();
-		final ImmutablePoint2D bonzoStart = screen.getBonzoLocation();
-		
-		final Tile[][] screenTiles = new Tile[20][32];
-		final EncodedTile[][] encodedTiles = screen.getTiles();
-		for (int i = 0; i < screenTiles.length; i++) {
-			for (int j = 0; j < screenTiles[i].length; j++) {
-				screenTiles[i][j] = Tile.inflateFrom(encodedTiles[i][j], worldHazards, conveyers);
-			}
-		}
-		
-		final List<EncodedSprite> encodedSprites = screen.getSprites();
-		final List<Sprite> spritesOnScreen = new ArrayList<>();
-		for (EncodedSprite encSprite : encodedSprites) {
-			spritesOnScreen.add(Sprite.inflateFrom(encSprite) );
-		}
-		
-		return new LevelScreen(screenId, backgroundId, screenTiles, bonzoStart, spritesOnScreen);
-		
-	}
-	
 	/**
 	 * 
 	 * Creates an empty level screen initialised to no tiles or sprites with a background id of 0.

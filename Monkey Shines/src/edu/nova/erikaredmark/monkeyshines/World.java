@@ -12,10 +12,6 @@ import java.util.Map.Entry;
 
 import edu.nova.erikaredmark.monkeyshines.Conveyer.Rotation;
 import edu.nova.erikaredmark.monkeyshines.bounds.IPoint2D;
-import edu.nova.erikaredmark.monkeyshines.encoder.EncodedGoodie;
-import edu.nova.erikaredmark.monkeyshines.encoder.EncodedHazard;
-import edu.nova.erikaredmark.monkeyshines.encoder.EncodedLevelScreen;
-import edu.nova.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;

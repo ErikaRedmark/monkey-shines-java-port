@@ -58,7 +58,7 @@ public final class WorldEditor {
 	 * 
 	 */
 	public static WorldEditor fromEncoded(EncodedWorld encoded, WorldResource rsrc) {
-		World world = World.inflateFrom(encoded, rsrc);
+		World world = encoded.newWorldInstance(rsrc);
 		
 		return new WorldEditor(world, rsrc);
 	}
@@ -223,5 +223,14 @@ public final class WorldEditor {
 		return world.screenIdExists(id);
 	}
 
+	/**
+	 * 
+	 * Returns the underlying world being edited
+	 * 
+	 * @return
+	 * 		world being edited
+	 * 
+	 */
+	public World getWorld() { return this.world; }
 
 }

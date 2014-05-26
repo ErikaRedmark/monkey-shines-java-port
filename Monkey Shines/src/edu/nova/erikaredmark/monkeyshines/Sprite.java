@@ -2,7 +2,6 @@ package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics2D;
 
-import edu.nova.erikaredmark.monkeyshines.encoder.EncodedSprite;
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 
 /** TODO
@@ -45,19 +44,6 @@ public class Sprite {
 	
 	private WorldResource rsrc;
 	private boolean isSkinned = false;
-	
-	public static Sprite inflateFrom(EncodedSprite encodedSprite) {
-		final int id = encodedSprite.getId();
-		final ImmutablePoint2D startLocation = encodedSprite.getLocation();
-		final ImmutableRectangle boundingBox = encodedSprite.getBoundingBox();
-		final int initialSpeedX = encodedSprite.getInitialSpeedX();
-		final int initialSpeedY = encodedSprite.getInitialSpeedY();
-		final AnimationType animationType = encodedSprite.getAnimationType();
-		final AnimationSpeed animationSpeed = encodedSprite.getAnimationSpeed();
-		
-		return new Sprite(id, startLocation, boundingBox, initialSpeedX, initialSpeedY, animationType, animationSpeed);
-	}
-	
 	/** 
 	 * 
 	 * Creates a new unmoving sprite with the given and resource pack. The sprite starts at 0,0, has no bounding box to

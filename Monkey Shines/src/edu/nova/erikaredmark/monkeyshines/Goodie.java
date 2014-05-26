@@ -2,7 +2,6 @@ package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics;
 
-import edu.nova.erikaredmark.monkeyshines.encoder.EncodedGoodie;
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 
 public class Goodie {
@@ -79,21 +78,7 @@ public class Goodie {
 		drawX = type.getDrawX();
 		drawY = type.getDrawY();
 	}
-	
 
-	/**
-	 * 
-	 * Creates an instance of this object from its encoded for.
-	 * 
-	 * @param value
-	 * 
-	 * @return
-	 * 
-	 */
-	public static Goodie inflateFrom(EncodedGoodie value) {
-		return new Goodie(value.getGoodieType(), value.getLocation(), value.getScreenId() );
-	}
-	
 	public void skin(final WorldResource rsrc) {
 		this.rsrc = rsrc;;
 		isSkinned = true;

@@ -237,7 +237,8 @@ public class LevelEditor extends JFrame {
 	public void loadWorld(final Path worldFile) throws WorldRestoreException, ResourcePackException {
 		EncodedWorld world = WorldIO.restoreWorld(worldFile);
 		// Try to load the resource pack
-		String worldName = world.getName();
+		String fileName = worldFile.getFileName().toString();
+		String worldName = fileName.substring(0, fileName.lastIndexOf('.') );
 		Path packFile = worldFile.getParent().resolve(worldName + ".zip");
 		WorldResource rsrc = WorldResource.fromPack(packFile);
 		this.currentWorld.loadWorld(world, rsrc);

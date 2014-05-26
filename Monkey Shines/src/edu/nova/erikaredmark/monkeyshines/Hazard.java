@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Ints;
 
 import edu.nova.erikaredmark.monkeyshines.editor.HazardMutable;
-import edu.nova.erikaredmark.monkeyshines.encoder.EncodedHazard;
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 
 
@@ -64,26 +63,7 @@ public final class Hazard implements Comparable<Hazard> {
 		this.deathAnimation = deathAnimation;
 		this.hazardSheet = rsrc.getHazardSheet();
 	}
-	
-	/**
-	 * 
-	 * Creates an instance of this object by inflating the encoded form and applying the supplied resource pointer to
-	 * construct the graphics and sounds
-	 * 
-	 * @param encHazard
-	 * 		encoded hazard to inflate from
-	 * 
-	 * @param rsrc
-	 * 		world resource to initialise graphics and sounds
-	 * 
-	 * @return
-	 * 		an instance of this object
-	 * 
-	 */
-	public static Hazard inflateFrom(EncodedHazard encHazard, WorldResource rsrc) {
-		return new Hazard(encHazard.getId(), encHazard.getExplodes(), encHazard.getDeathAnimation(), rsrc);
-	}
-	
+
 	/**
 	 * 
 	 * Creates a copy of this hazard that is mutable. The returned mutable object can not modify this immutable object.
