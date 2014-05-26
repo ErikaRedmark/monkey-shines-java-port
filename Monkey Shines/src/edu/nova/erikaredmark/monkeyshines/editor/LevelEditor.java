@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 
 import javax.swing.AbstractAction;
@@ -233,8 +234,11 @@ public class LevelEditor extends JFrame {
 	 * 		less serious than an issue with the .world file, as the resource pack can be easily
 	 * 		modified
 	 * 
+	 * @throws IOException
+	 * 		if a low level I/O error prevents loading the world
+	 * 
 	 */
-	public void loadWorld(final Path worldFile) throws WorldRestoreException, ResourcePackException {
+	public void loadWorld(final Path worldFile) throws WorldRestoreException, ResourcePackException, IOException {
 		EncodedWorld world = WorldIO.restoreWorld(worldFile);
 		// Try to load the resource pack
 		String fileName = worldFile.getFileName().toString();
@@ -267,6 +271,12 @@ public class LevelEditor extends JFrame {
 		} catch (ResourcePackException ex) {
 			JOptionPane.showMessageDialog(this,
 			    "Resource pack issues: " + ex.getMessage(),
+			    "Loading Error",
+			    JOptionPane.ERROR_MESSAGE);
+			ex.printStackTrace();
+		} catch (IOException ex) {
+			JOptionPane.showMessageDialog(this,
+			    "Low level I/O issue: " + ex.getMessage(),
 			    "Loading Error",
 			    JOptionPane.ERROR_MESSAGE);
 			ex.printStackTrace();
@@ -344,7 +354,13 @@ public class LevelEditor extends JFrame {
 					// TODO send to a better logging framework
 					ex.printStackTrace();
 					JOptionPane.showMessageDialog(editor,
-					    "Cannot Save World: " + ex.getMessage(),
+					    "Cannot Save World: Possible world corruption: " + ex.getMessage(),
+					    "Saving Error",
+					    JOptionPane.ERROR_MESSAGE);
+				} catch (IOException ex) {
+					ex.printStackTrace();
+					JOptionPane.showMessageDialog(editor,
+					    "Cannot Save World: I/O error: " + ex.getMessage(),
 					    "Saving Error",
 					    JOptionPane.ERROR_MESSAGE);
 				}

@@ -2,6 +2,7 @@ package edu.nova.erikaredmark.monkeyshines.encoder;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,6 +27,7 @@ import edu.nova.erikaredmark.monkeyshines.World;
 import edu.nova.erikaredmark.monkeyshines.bounds.Boundable;
 import edu.nova.erikaredmark.monkeyshines.bounds.IPoint2D;
 import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
+import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 import edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos;
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 import edu.nova.erikaredmark.monkeyshines.tiles.ConveyerTile;
@@ -103,6 +105,23 @@ public final class EncodedWorld {
 			return new EncodedWorld(temp);
 		} catch (IOException e) {
 			throw new WorldRestoreException(e);
+		}
+	}
+	
+
+	/**
+	 * 
+	 * Saves the given world to the given stream. Stream is left open after method ends.
+	 * 
+	 * @param out
+	 * 		output stream to write to
+	 * 
+	 */
+	public void save(OutputStream out) throws WorldSaveException {
+		try {
+			world.writeTo(out);
+		} catch (IOException e) {
+			throw new WorldSaveException(e);
 		}
 	}
 	

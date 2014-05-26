@@ -11,6 +11,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -137,12 +138,15 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	 * @param location
 	 * 		the location to save to
 	 * 
-	 * @throws
-	 * 		WorldSaveException
-	 * 			if an error is occurred saving this editors state to the given file
+	 * @throws WorldSaveException
+	 * 		if an error is occurred saving this editors state to the given file due to
+	 * 		the world being in a corrupt state
+	 * 
+	 * @throws IOException
+	 * 		if a low level I/O error prevents saving the world
 	 * 
 	 */
-	public void saveWorld(final Path location)  throws WorldSaveException {
+	public void saveWorld(final Path location) throws WorldSaveException, IOException {
 		WorldIO.saveOnlyWorld(this.currentWorldEditor, location);
 	}
 	

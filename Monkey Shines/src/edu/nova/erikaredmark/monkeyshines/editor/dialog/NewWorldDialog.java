@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import javax.swing.JCheckBox;
 
 import edu.nova.erikaredmark.monkeyshines.encoder.WorldIO;
+import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 
 
 /**
@@ -90,7 +91,7 @@ public class NewWorldDialog extends JPanel {
 						// Dispatch event so system knows to actually close the dialog
 						// dispatchEvent(new ComponentEvent(NewWorldDialog.this, ComponentEvent.COMPONENT_HIDDEN));
 						
-					} catch (IOException ex) {
+					} catch (IOException | WorldSaveException ex) {
 						JOptionPane.showMessageDialog(null,
 						    "Unable to save due to " + ex.getMessage(),
 						    "Saving Error",

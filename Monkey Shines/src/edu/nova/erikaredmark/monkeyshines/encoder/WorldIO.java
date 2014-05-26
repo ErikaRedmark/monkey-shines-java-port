@@ -5,13 +5,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
 
 import edu.nova.erikaredmark.monkeyshines.editor.WorldEditor;
 import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
@@ -44,28 +42,28 @@ public final class WorldIO {
 	 * @param path
 	 * 		a location to save the world to. The encoder will generate the save format at that location. This does not include
 	 * 		the file name, and should point to a folder
+	 * @throws IOException 
 	 * 
-	 * @throws 
-	 * 		IlegalArgumentException
-	 * 			if the given path points to anything other than a valid folder
-	 * 		WorldSaveException
-	 * 			if an error occurs during saving the world. Clients must recover gracefully from this error by alerting the 
-	 * 			user of all relevant details
+	 * @throws IlegalArgumentException
+	 * 		if the given path points to anything other than a valid folder
+	 * 
+	 * @throws WorldSaveException
+	 * 		if an error occurs during saving the world due to high level issues (such as world corruption)
+	 * 
+	 * @throws IOException
+	 * 		if an error occurs saving the world due to low level I/O issues
 	 * 
 	 */
-	public static void saveWorld( WorldEditor worldEditor, Path path ) throws WorldSaveException {
+	public static void saveWorld( WorldEditor worldEditor, Path path ) throws WorldSaveException, IOException {
 		if (Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS) == false)
 			throw new IllegalArgumentException("Path " + path + " must point to a valid folder");
 		
 		EncodedWorld encoded = EncodedWorld.fromMemory(worldEditor.getWorld() );
 		final Path outputPath = path.resolve(worldEditor.getWorldName() + WorldIO.WORLD_EXTENSION);
 		
-		try (ObjectOutputStream os = new ObjectOutputStream(Files.newOutputStream(outputPath, StandardOpenOption.CREATE) ) ) {
-			os.writeObject(encoded);
-		} catch (IOException e) {
-			throw new WorldSaveException(e);
-		}
-		
+		try (OutputStream out = Files.newOutputStream(outputPath) ) {
+			encoded.save(out);
+		} 
 		
 	}
 	
@@ -83,24 +81,24 @@ public final class WorldIO {
 	 * 		a location to save the world to. Unlike the other save method, this must point to an existing file in which
 	 * 		to overwrite (the original world)
 	 * 
-	 * @throws 
-	 * 		IlegalArgumentException
-	 * 			if the given path points to anything other than a valid file
-	 * 		WorldSaveException
-	 * 			if an error occurs during saving the world. Clients must recover gracefully from this error by alerting the 
-	 * 			user of all relevant details
+	 * @throws IlegalArgumentException
+	 * 		if the given path points to anything other than a valid file
+	 * 
+	 * @throws WorldSaveException
+	 * 		if an error occurs during saving the world due to high level issues (such as world corruption)
+	 * 
+	 * @throws IOException
+	 * 		if an error occurs saving the world due to low level I/O issues
 	 * 
 	 */
-	public static void saveOnlyWorld( WorldEditor worldEditor, Path path ) throws WorldSaveException {
+	public static void saveOnlyWorld( WorldEditor worldEditor, Path path ) throws WorldSaveException, IOException {
 		if (Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS) == false)
 			throw new IllegalArgumentException("Path " + path + " must point to the .world file to overwrite");
 		
 		EncodedWorld encoded = EncodedWorld.fromMemory(worldEditor.getWorld() );
-		try (ObjectOutputStream os = new ObjectOutputStream(Files.newOutputStream(path, StandardOpenOption.CREATE) ) ) {
-			os.writeObject(encoded);
-		} catch (IOException e) {
-			throw new WorldSaveException(e);
-		}
+		try (OutputStream out = Files.newOutputStream(path) ) {
+			encoded.save(out);
+		} 
 	}
 	
 	/**
@@ -127,7 +125,7 @@ public final class WorldIO {
 	 * 		if something occurs during folder and/or file creation that prevents the full creation of this world
 	 * 
 	 */
-	public static void newWorldWithDefault(Path newWorldFolder, String worldName) throws IOException {
+	public static void newWorldWithDefault(Path newWorldFolder, String worldName) throws WorldSaveException, IOException {
 	    // Don't create the world data until we first verify the resource pack is valid
 		InputStream resourceSource = WorldIO.class.getResourceAsStream("/resources/standard/default.zip");
 	    if (resourceSource == null) throw new RuntimeException("Bad .jar file, default resource pack unavailable");
@@ -158,15 +156,15 @@ public final class WorldIO {
 	 * 
 	 * @throws IOException 
 	 * 
-	 * @throws
-	 * 		IllegalArgumentException	
-	 * 			if the path to the new world folder already exists, or if the parent of the path (all folders leading up)
-	 * 			do not exist, or if the given resource pack does not exist
-	 * 		IOException
-	 * 			if something occurs during folder and/or file creation that prevents the full creation of this world
+	 * @throws IllegalArgumentException	
+	 * 		if the path to the new world folder already exists, or if the parent of the path (all folders leading up)
+	 * 		do not exist, or if the given resource pack does not exist
+	 * 
+	 * @throws IOException
+	 * 		if something occurs during folder and/or file creation that prevents the full creation of this world
 	 * 
 	 */
-	public static void newWorldWithResources(Path newWorldFolder, String worldName, Path rsrcPack) throws IOException {
+	public static void newWorldWithResources(Path newWorldFolder, String worldName, Path rsrcPack) throws WorldSaveException, IOException {
 		checkArgument(Files.exists(rsrcPack, LinkOption.NOFOLLOW_LINKS) );
 		newWorldData(newWorldFolder, worldName);
 		
@@ -179,7 +177,7 @@ public final class WorldIO {
 	}
 	
 	/** Common code to both newWorldYYY functions. Makes the .world file, does not handle resources.					*/
-	private static void newWorldData(Path newWorldFolder, String worldName) throws IOException {
+	private static void newWorldData(Path newWorldFolder, String worldName) throws WorldSaveException, IOException {
 		checkArgument(Files.exists(newWorldFolder, LinkOption.NOFOLLOW_LINKS) == false );    // child must not exist
 		checkArgument(Files.exists(newWorldFolder.getParent(), LinkOption.NOFOLLOW_LINKS) ); // ... but parent must
 		
@@ -188,8 +186,8 @@ public final class WorldIO {
 		// Create .world file
 		EncodedWorld newWorld = EncodedWorld.fresh(worldName);
 		Path worldLocation = newWorldFolder.resolve(worldName + WorldIO.WORLD_EXTENSION);
-		try (ObjectOutputStream os = new ObjectOutputStream(Files.newOutputStream(worldLocation, StandardOpenOption.CREATE) ) ) {
-			os.writeObject(newWorld);
+		try (OutputStream out = Files.newOutputStream(worldLocation) ) {
+			newWorld.save(out);
 		}
 	}
 	
@@ -204,23 +202,23 @@ public final class WorldIO {
 	 * @param world
 	 * 		path to the .world file
 	 * 
-	 * @throws 
-	 * 		IllegalArgumentException
-	 * 			if the given path does not point to an actual file
-	 * 		WorldRestoreException
-	 * 			if the given file cannot be read for whatever reason (possible corruption) resulting in an inability to
-	 * 			generate a world from it
+	 * @throws IllegalArgumentException
+	 * 		if the given path does not point to an actual file
+	 * 
+	 * @throws WorldRestoreException
+	 * 		if the given file cannot be read due to world corruption resulting in an inability to
+	 * 		generate a world from it
+	 * 
+	 * @throws IOException
+	 * 		if a low level I/O error prevents read
 	 * 
 	 */
-	public static EncodedWorld restoreWorld( Path world ) throws WorldRestoreException {
+	public static EncodedWorld restoreWorld(Path world) throws WorldRestoreException, IOException {
 		if (Files.isRegularFile(world, LinkOption.NOFOLLOW_LINKS) == false)
 			throw new IllegalArgumentException("Path " + world + " must point to a valid file.");
 		
-		try (ObjectInputStream is = new ObjectInputStream(Files.newInputStream(world, StandardOpenOption.READ))) {
-			EncodedWorld recoveredWorld = (EncodedWorld) is.readObject();
-			return recoveredWorld;
-		} catch (IOException | ClassCastException | ClassNotFoundException e) {
-			throw new WorldRestoreException(e);
+		try (InputStream in = Files.newInputStream(world) ) {
+			return EncodedWorld.fromStream(in);
 		}
 	}
 	

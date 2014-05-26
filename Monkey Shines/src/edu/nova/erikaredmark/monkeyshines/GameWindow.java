@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.nio.file.Path;
 
 import javax.swing.JFileChooser;
@@ -74,6 +75,12 @@ public class GameWindow extends JPanel implements ActionListener {
 			} catch (ResourcePackException ex) {
 				JOptionPane.showMessageDialog(this,
 				    "Resource pack issues: " + ex.getMessage(),
+				    "Loading Error",
+				    JOptionPane.ERROR_MESSAGE);
+				ex.printStackTrace();
+			} catch (IOException ex) {
+				JOptionPane.showMessageDialog(this,
+				    "Low level I/O error: " + ex.getMessage(),
 				    "Loading Error",
 				    JOptionPane.ERROR_MESSAGE);
 				ex.printStackTrace();
