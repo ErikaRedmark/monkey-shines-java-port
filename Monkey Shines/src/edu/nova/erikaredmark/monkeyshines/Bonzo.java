@@ -248,9 +248,12 @@ public final class Bonzo {
 	 * 
 	 */
 	public boolean solidToSide(final int newX) {
+		// We give a little 'lee way', we don't check the very top or bottom, but a little off the extremes.
+		// This allows Bonzo to fit easily into 2 space open passageways and then the ground snap algorithms
+		// can take effect.
 		LevelScreen currentScreen = worldPointer.getCurrentScreen();
-		if (   currentScreen.getTileAt(newX, currentLocation.y() ) == StatelessTileType.SOLID 
-		    || currentScreen.getTileAt(newX, currentLocation.y() + BONZO_SIZE.y() - 1) == StatelessTileType.SOLID
+		if (   currentScreen.getTileAt(newX, currentLocation.y() + 2 ) == StatelessTileType.SOLID 
+		    || currentScreen.getTileAt(newX, currentLocation.y() + BONZO_SIZE.y() - 1 - 2) == StatelessTileType.SOLID
 			|| currentScreen.getTileAt(newX, currentLocation.y() + (BONZO_SIZE.y() / 2) ) == StatelessTileType.SOLID) {
 			
 			return true;
