@@ -17,25 +17,27 @@ Game Engine
 - [x] Basic sprite mechanics
 - [x] Bonzo death and respawn
 - [x] Bonzo basic animation
-- [ ] Lives
 - [x] Jump-Through Tile logic
-- [ ] Collisons (currently uses rough bounding box and is not precise enough)
 - [x] Bonzo Movement
-- [X] Hazards (Bombs, Dynamite. . .)
-- [ ] Conveyer Belts
+- [x] Hazards (Bombs, Dynamite. . .)
+- [x] Conveyer Belts
+- [x] Goodies and Yums
 - [ ] Breakable Tiles
+- [ ] Sprite Collisons (currently uses rough bounding box and is not precise enough)
+- [ ] UI Containing other information than just main game screen
+- [ ] Health
+- [ ] Health Draining Sprites
+- [ ] Lives
 - [ ] Red keys and Exit Door
 - [ ] Blue keys and Bonus Door
 - [ ] Patterned backgrounds (Currently have full-screen backgrounds as stand-ins)
-- [ ] Powerup
-- [x] Goodies and Yums
+- [ ] Shield Powerup
+- [ ] Wing Powerup
 - [ ] Score
-- [ ] Health
-- [ ] Health Draining Sprites
-- [ ] UI Containing other information than just main game screen
+- [ ] Multipliers
 - [ ] Main menu (A large task that I will break into smaller ones when the rest of the engine/level editor is complete)
 
-Level Editor
+#Level Editor
 Please note that the current save format uses Java serialisation. Updates may destroy the ability to read old .world files, so if you do work on a world don't overdo it.
 - [x] Creating and loading worlds
 - [x] Saving worlds
@@ -47,24 +49,27 @@ Please note that the current save format uses Java serialisation. Updates may de
 - [x] Adding goodies
 - [x] Placing Bonzo starting position
 - [x] Slowdown animations of sprites
-- [ ] Adding conveyer belts
+- [x] Adding Hazards
+- [x] Adding conveyer belts
 - [ ] Adding breakable tiles
-- [X] Adding Hazards
+- [ ] Setting level background
+- [ ] Indicating Authorship (Not part of original game)
 
-Game Content
-Other than test worlds, no worlds will be worked on until the save file format is frozen.
+#Game Content
+Save file format is done; it is possible to work on worlds. Not all engine features exist though.
 - [ ] Spooked
 - [ ] Spaced Out
 - [ ] About the House
 - [ ] In the Drink
 - [ ] In the Swing
 
+#More Game Content
 Some third party worlds that I would like to port to this new version as well:
 - [ ] Cory's Storm Keep
 - [ ] Phils Mac World
 - [ ] Present for Phil
 
-I know there are others, but those are the ones that stick out the most in my memory. I have Cory's Storm Keep but neither of the others to reference.
+Additional worlds may be added.
 
 # Final Words
 If anyone wishes to help, especially if you have played the game before, feel open to contect me (Erika Redmark) at maniacmonkeyinspace@gmail.com. 
@@ -72,4 +77,28 @@ If anyone wishes to help, especially if you have played the game before, feel op
 # Small About Me
 I just recently got into the workforce as a Java developer for an Eclipse plugin. Since I prefer to have my day job be something other than an EA Games inspired death march, I pretty much have decided that games would be a hobby. I do have a game idea that is original that I would like to work on but I already had this code lying around from when I worked on it at university, and I didn't want it to just rot away.
 
+# Original Credits
+Listing of the original people who worked on the original game. These are basically the people you would find if you looked in the Credits section of the original game:
 
+Fantasoft Owner: Tim Phillips
+
+Programming: Mark Elliott
+
+Artwork: Alan Lau
+
+Music and Sound Effects: Petteri Lajunen, Ville-Eemeli Kakela
+
+Level Design: 
+Spooked - Vern Jensen
+Spaced Out - Ville-Eemeli Kakela & Petteri Lajunen
+In The Drink - Alexander Minidis
+About the House - Alexander Minidis
+In The Swing - Vern Jensen
+
+Special Thanks: 
+David Lau
+
+# Extra Original Credits
+Some more people associated with the game, not in the original development but nevertheless important contributers.
+
+Philip Roy: Writer of original level design tutorials and documents, creator of 'Bonzo Hits Cyberspace' hosted on Fantasofts website, as well as winner of "Level Design Contest" for original game with the world 'Phils Mac World'.
