@@ -12,7 +12,7 @@ There are two main points of entry in the code:
 
 # Status
 The basic game engine mechanics are coming together, but there is still quite a lot to do. This list is more for my benefit (and is probably incomplete) but if you are familiar with the original game many items should be familiar:
-Game Engine
+##Game Engine
 - [x] Basic tilemap (Solids, Jump-Throughs, Scenery)
 - [x] Basic sprite mechanics
 - [x] Bonzo death and respawn
@@ -37,8 +37,8 @@ Game Engine
 - [ ] Multipliers
 - [ ] Main menu (A large task that I will break into smaller ones when the rest of the engine/level editor is complete)
 
-#Level Editor
-Please note that the current save format uses Java serialisation. Updates may destroy the ability to read old .world files, so if you do work on a world don't overdo it.
+##Level Editor
+The save file format for the level editor has been rewritten. Worlds created with the level editor will not become unreadable with future versions of the game.
 - [x] Creating and loading worlds
 - [x] Saving worlds
 - [x] Adding Tiles to a screen
@@ -55,7 +55,7 @@ Please note that the current save format uses Java serialisation. Updates may de
 - [ ] Setting level background
 - [ ] Indicating Authorship (Not part of original game)
 
-#Game Content
+##Game Content
 Save file format is done; it is possible to work on worlds. Not all engine features exist though.
 - [ ] Spooked
 - [ ] Spaced Out
@@ -63,7 +63,7 @@ Save file format is done; it is possible to work on worlds. Not all engine featu
 - [ ] In the Drink
 - [ ] In the Swing
 
-#More Game Content
+##More Game Content
 Some third party worlds that I would like to port to this new version as well:
 - [ ] Cory's Storm Keep
 - [ ] Phils Mac World
