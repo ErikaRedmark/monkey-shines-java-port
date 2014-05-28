@@ -187,11 +187,14 @@ public final class Bonzo {
 			
 			// Very important! If we are inside of a thru, we do NOT bounce onto it unless bonzo's original position was
 			// ABOVE the thru. Otherwise, it is too easy for him to snap up if a jump didn't quite make it.
-			// We do not snap up at zero velocity only if bonzos original position was equal to or less than this position. 
-			// Zero velocity with identical Y position means bonzo is not falling; he is standing, so he IS on the ground
-			// exactly already.
-			if (originalPositionY / GameConstants.TILE_SIZE_Y == currentLocation.y() / GameConstants.TILE_SIZE_Y) {
+			// This takes bonzos original location, and compares it to the current location. If he came from above they will
+			// snap to different tiles. We look at the TOP of bonzo, but because he is 40x40 and divides evenly into tile
+			// sizes, if his top points snap to different tiles, so would his bottom points.
+			// One exception. If bonzos original location was RIGHT ON the tile border at the y point, it still counts as a
+			// landing (this is for hitting a ceiling with a thru right below), thus the - 1 fudge factour
+			if ( (originalPositionY - 1) / GameConstants.TILE_SIZE_Y == currentLocation.y() / GameConstants.TILE_SIZE_Y) {
 				
+
 				return new GroundState(-1, onConveyer);
 				// Effectively, if we snap the original position and the current position and we end up at the same tile, then
 				// we approached it from the side, not above.
