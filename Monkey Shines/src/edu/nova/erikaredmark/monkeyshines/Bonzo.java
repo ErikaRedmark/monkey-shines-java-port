@@ -19,6 +19,7 @@ public final class Bonzo {
 	
 	// Constants for bonzo
 	public static final ImmutablePoint2D BONZO_SIZE = ImmutablePoint2D.of(40, 40);
+	public static final ImmutablePoint2D BONZO_SIZE_HALF = ImmutablePoint2D.of(20, 20);
 	
 	private static final int JUMP_SPRITES = 8;
 	private static final int JUMP_Y = 80;
@@ -157,7 +158,7 @@ public final class Bonzo {
 		// Four points, each point 'snaps' to a tile. We need to check two centres, otherwise it is possible for bonzo
 		// to be flanked by emptiness, be right in the middle of a solid block, and fall through.
 		TileType[] grounds = new TileType[4];
-		int bonzoSizeXHalf = BONZO_SIZE.x() / 2;
+		int bonzoSizeXHalf = BONZO_SIZE_HALF.x();
 		
 		grounds[0] = currentScreen.getTileAt(currentLocation.x() + GameConstants.FALL_SIZE, bonzoOneBelowFeetY);
 		grounds[1] = currentScreen.getTileAt(currentLocation.x() + bonzoSizeXHalf, bonzoOneBelowFeetY);
@@ -274,7 +275,7 @@ public final class Bonzo {
 		LevelScreen currentScreen = worldPointer.getCurrentScreen();
 		if (   currentScreen.getTileAt(newX, currentLocation.y() + 4 ) == StatelessTileType.SOLID 
 		    || currentScreen.getTileAt(newX, currentLocation.y() + BONZO_SIZE.y() - 1 - 4) == StatelessTileType.SOLID
-			|| currentScreen.getTileAt(newX, currentLocation.y() + (BONZO_SIZE.y() / 2) ) == StatelessTileType.SOLID) {
+			|| currentScreen.getTileAt(newX, currentLocation.y() + BONZO_SIZE_HALF.y() ) == StatelessTileType.SOLID) {
 			
 			return true;
 		}
@@ -299,15 +300,22 @@ public final class Bonzo {
 	 */
 	public boolean solidToUp(final int newY) {
 		LevelScreen currentScreen = worldPointer.getCurrentScreen();
-		TileType[] above = new TileType[4];
-		// The two middle points will never refer to the same tile, but may refer to different tiles
+		TileType[] above = new TileType[6];
+		// The two 'early' middle points will never refer to the same tile, but may refer to different tiles
 		// from extreme edge.
-		// Two middles being Open but others showing a solid will activate the special case, snapping
+		// Two early middles being Open but others showing a solid will activate the special case, snapping
 		// bonzo in place.
+		// Two interior middles are to make sure bonzo can't jump through a single solid block above him.
+		// 0,5 = extremes
+		// 1,4 = exterior 'middles' intended for snapping special case
+		// 2,3 == truly middle, middles, intended to make sure there is no single solid block
+		// 		  hiding.
 		above[0] = currentScreen.getTileAt(currentLocation.x(), newY);
 		above[1] = currentScreen.getTileAt(currentLocation.x() + 2, newY );
-		above[2] = currentScreen.getTileAt(currentLocation.x() + (BONZO_SIZE.x() - 1) - 2, newY );
-		above[3] = currentScreen.getTileAt(currentLocation.x() + (BONZO_SIZE.x() - 1), newY );
+		above[2] = currentScreen.getTileAt(currentLocation.x() + BONZO_SIZE_HALF.x(), newY ); // prefers left tile snap
+		above[3] = currentScreen.getTileAt(currentLocation.x() + BONZO_SIZE_HALF.x() + 1, newY ); // prefers right tile snap
+		above[4] = currentScreen.getTileAt(currentLocation.x() + (BONZO_SIZE.x() - 1) - 2, newY );
+		above[5] = currentScreen.getTileAt(currentLocation.x() + (BONZO_SIZE.x() - 1), newY );
 		
 		boolean atLeastSolid = false;
 		for (TileType t : above) {
@@ -318,8 +326,10 @@ public final class Bonzo {
 		if (!(atLeastSolid) )  return false;
 		
 		// Solids? Check our special case. If we can't use that then it is a solid wall.
-		if (   above[1] != StatelessTileType.SOLID 
-		    && above[2] != StatelessTileType.SOLID) {
+		if (   above[1] != StatelessTileType.SOLID
+			&& above[2] != StatelessTileType.SOLID
+			&& above[3] != StatelessTileType.SOLID
+		    && above[4] != StatelessTileType.SOLID) {
 			
 			// Activate special case: Snap bonzo to nearest tile boundary, which should
 			// be enough to line him up to move up.
