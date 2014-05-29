@@ -36,6 +36,19 @@ public final class Bonzo {
 	// Velocity applied to bonzo. Affected by the keyboard and falls.
 	private Point2D currentVelocity;
 	
+	
+	// Use a pointer to the current world to get information such as the screen, and then from there where bonzo
+	// is relative to the screen.
+	private World worldPointer;
+	
+	
+	/* **********************************************
+	 * 
+	 * State variables
+	 * All states, except dying, can co-exist together. Hence, they are just booleans and not a more defined
+	 * state machine.
+	 * 
+	 * **********************************************/
 	// when :up: is hit, velocity is applied upwards. As long as jumping is yes and he has positive velocity and does NOT
 	// have a jetpack, slowly decrease it until it reachs the max limit (MAX_FALL_SPEED)
 	// Once there is ground below bonzo, stop jumping
@@ -51,16 +64,16 @@ public final class Bonzo {
 	// death animations and is only updated when bonzo is killed.
 	private DeathAnimation deathAnimation;
 	
-	// Animation data
-	// ticks to next frame means how many ticks before advancing bonzo's sprite sheet.
-	// this is NOT the same as ticks between updates. Updates happen every tick (collisions)
-	// but advancing the sprite sheet is slower.
+	/* **********************************************
+	 * 
+	 * Animation data
+	 * ticks to next frame means how many ticks before advancing bonzo's sprite sheet.
+     * this is NOT the same as ticks between updates. Updates happen every tick (collisions)
+	 * but advancing the sprite sheet is slower.
+	 * 
+	 * **********************************************/
 	private int ticksToNextFrame;
 	private static final int TICKS_BETWEEN_FRAMES = 0;
-	
-	// Use a pointer to the current world to get information such as the screen, and then from there where bonzo
-	// is relative to the screen.
-	private World worldPointer;
 	
 	public Bonzo(final World worldPointer) {
 		this.worldPointer = worldPointer;
@@ -118,8 +131,10 @@ public final class Bonzo {
 	 * he will end up being bumped up to the next tile down, being inside a solid. Terminal velocity should never reach above
 	 * that amount.
 	 * <p/>
-	 * This method does not modify any state and merely returns a value. The value contains how far bonzo must be
+	 * This method does not modify any major state and merely returns a value. The value contains how far bonzo must be
 	 * pushed up as well as a boolean indicating if any of the ground he landed on contained a conveyer belt.
+	 * <p/>
+	 * This method modifies ONE minor state variable; the fall assist.
 	 * <p/>
 	 * The parameters for original position are required to determine, for dealing with thru blocks, if bonzo fell onto
 	 * the block, or if he was already inside of it. 
@@ -143,10 +158,11 @@ public final class Bonzo {
 		// to be flanked by emptiness, be right in the middle of a solid block, and fall through.
 		TileType[] grounds = new TileType[4];
 		int bonzoSizeXHalf = BONZO_SIZE.x() / 2;
-		grounds[0] = currentScreen.getTileAt(currentLocation.x() + 3, bonzoOneBelowFeetY);
+		
+		grounds[0] = currentScreen.getTileAt(currentLocation.x() + GameConstants.FALL_SIZE, bonzoOneBelowFeetY);
 		grounds[1] = currentScreen.getTileAt(currentLocation.x() + bonzoSizeXHalf, bonzoOneBelowFeetY);
 		grounds[2] = currentScreen.getTileAt(currentLocation.x() + bonzoSizeXHalf + 1, bonzoOneBelowFeetY);
-		grounds[3] = currentScreen.getTileAt(currentLocation.x() + (BONZO_SIZE.x() - 4), bonzoOneBelowFeetY );
+		grounds[3] = currentScreen.getTileAt(currentLocation.x() + (BONZO_SIZE.x() - 1 - GameConstants.FALL_SIZE), bonzoOneBelowFeetY );
 
 		// State variables for later in the method. We want to loop over the tile types returned only one time.
 		Rotation onConveyer = Rotation.NONE;
@@ -208,7 +224,8 @@ public final class Bonzo {
 			//We need to make sure that we are exactly on the thing, we don't budge it.
 			// bonzoOneBelowFeet - 1 gives us bottom position of bonzo. Special case for when this
 			// variable is aligned % = 0, it means bonzo is already on the ground. Return 0 for those
-			// instances to prevent snapping up a file tile.
+			// instances to prevent snapping up a full tile.
+			// TODO add more fall assist algorithms to help bonzo land in 2x2 wide passageways
 			if (bonzoOneBelowFeetY % GameConstants.TILE_SIZE_Y == 0)  return new GroundState(0, onConveyer);
 			else {
 				return new GroundState( (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y, onConveyer);
@@ -255,8 +272,8 @@ public final class Bonzo {
 		// This allows Bonzo to fit easily into 2 space open passageways and then the ground snap algorithms
 		// can take effect.
 		LevelScreen currentScreen = worldPointer.getCurrentScreen();
-		if (   currentScreen.getTileAt(newX, currentLocation.y() + 2 ) == StatelessTileType.SOLID 
-		    || currentScreen.getTileAt(newX, currentLocation.y() + BONZO_SIZE.y() - 1 - 2) == StatelessTileType.SOLID
+		if (   currentScreen.getTileAt(newX, currentLocation.y() + 4 ) == StatelessTileType.SOLID 
+		    || currentScreen.getTileAt(newX, currentLocation.y() + BONZO_SIZE.y() - 1 - 4) == StatelessTileType.SOLID
 			|| currentScreen.getTileAt(newX, currentLocation.y() + (BONZO_SIZE.y() / 2) ) == StatelessTileType.SOLID) {
 			
 			return true;
@@ -386,6 +403,10 @@ public final class Bonzo {
 						 
 		if (!solidToSide(solidCheck) )  currentLocation.setX(newX);
 		else							snapBonzoX();
+		
+		// Once bonzo lands, he only has a few moves where he can be close to the edge. this doesn't prevent him from
+		// falling, just allows him to get a few pixels closer to the edge.
+		// if (fallAssistGrace > 0)  --fallAssistGrace;
 	}
 	
 	/**

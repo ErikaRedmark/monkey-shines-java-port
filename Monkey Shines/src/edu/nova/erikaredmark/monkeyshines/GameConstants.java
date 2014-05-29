@@ -44,6 +44,10 @@ public final class GameConstants {
 	// Bonzo accelerates downward until terminal velocity
 	public static double BONZO_FALL_ACCELERATION_JUMP = -0.3; // The acceleration bonzo falls during a jump. Significantly slower than normal.
 	public static double BONZO_FALL_ACCELERATION_NORMAL = -1.0; // The acceleration bonzo falls normally
+
+	// The number of pixels into bonzos sprite to start a fall. Bigger numbers make bonzo
+	// fall earlier (he can't tiptoe to the edge of his normal bounding box)
+	public static int FALL_SIZE = 4;
 	
 	public static double FRUIT_SCORE = 10.0; // Standard score for fruit.
 	public static double YUMMY_FRUIT_SCORE = 50.0; // score for Yummy fruit.
