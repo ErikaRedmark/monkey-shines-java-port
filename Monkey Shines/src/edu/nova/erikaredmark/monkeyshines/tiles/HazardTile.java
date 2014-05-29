@@ -20,16 +20,16 @@ public class HazardTile implements TileType {
 	// State information
 	// Determines if the hazard should be in exploding animation or not. Ignored for hazards that don't explode and 
 	// ignored for a hazard that already exploded.
-	private transient boolean exploding = false;
+	private boolean exploding = false;
 
 	// Cycles between 0-1 for basic drawing, and then 0-9 for explosion rendering.
 	// When this value is -1, the hazard is not drawn. Additionally, a value of -1
 	// indicates the hazard is 'dead' and can't hurt bonzo anymore.
-	private transient int animationPoint = 0;
+	private int animationPoint = 0;
 	
 	// When this reaches TICKS_BETWEEN_ANIMATIONS, it goes back to zero and the animationPoint is updated.
 	// This prevents quick, rapid animation.
-	private transient int timeToNextFrame = 0;
+	private int timeToNextFrame = 0;
 	
 	private static final int TICKS_BETWEEN_ANIMATIONS = 5;
 	private static final int MAX_EXPLODING_FRAMES = 9;
@@ -143,6 +143,17 @@ public class HazardTile implements TileType {
 	 */
 	private void die() {
 		animationPoint = -1;
+	}
+	
+	/**
+	 * 
+	 * Resets the state of the hazard. Normally called whenever a level screen is reloaded.
+	 * 
+	 */
+	public void reset() {
+		exploding = false;
+		animationPoint = 0;
+		timeToNextFrame = 0;
 	}
 	
 	/**

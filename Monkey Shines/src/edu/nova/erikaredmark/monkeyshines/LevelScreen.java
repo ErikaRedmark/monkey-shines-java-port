@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
 
@@ -158,13 +159,34 @@ public final class LevelScreen {
 		this.bonzoCameFrom = bonzoStart;
 	}
 	
+
+	/**
+	 * 
+	 * Resets screen. Hazards are returned to their locations, and sprites are reset to initial positions.
+	 * 
+	 */
+	public void resetScreen() {
+		resetSprites();
+		resetHazards();
+	}
+	
 	/**
 	 * Sprites move around the screen. This makes them return to where they spawn when the screen is first entered. 
 	 * Typically called alongside resetBonzo when Bonzo dies.
 	 */
-	public void resetSprites() {
+	private void resetSprites() {
 		for (Sprite nextSprite : spritesOnScreen) {
 			nextSprite.resetSpritePosition();
+		}
+	}
+	
+	private void resetHazards() {
+		// TODO If required, a possible optimisation may be to store hazard tiles in separate list to iterate over.
+		for (Tile col[] : this.screenTiles) {
+			for (Tile t : col) {
+				TileType type = t.getType();
+				if (type instanceof HazardTile)  ((HazardTile)type).reset();
+			}
 		}
 	}
 	
@@ -360,8 +382,5 @@ public final class LevelScreen {
 	 * 		2d array of tiles. Changes to the array <strong> will cause issues. Do not modify</strong>
 	 */
 	public Tile[][] internalGetTiles() { return this.screenTiles; }
-
-
-
 
 }

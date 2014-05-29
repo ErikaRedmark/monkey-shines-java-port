@@ -223,7 +223,7 @@ public class World {
 	 */
 	public void restartBonzo(Bonzo theBonzo) {
 		theBonzo.restartBonzoOnScreen(getCurrentScreen() );
-		getCurrentScreen().resetSprites();
+		getCurrentScreen().resetScreen();
 	}
 	
 	/**
@@ -263,6 +263,7 @@ public class World {
 	public boolean changeCurrentScreen(int screenId) {
 		if (screenIdExists(screenId) == false) return false;
 		else {
+			getCurrentScreen().resetScreen();
 			this.currentScreen = screenId;
 			return true;
 		}
