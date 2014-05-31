@@ -4,6 +4,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.tiles.CollapsibleTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.ConveyerTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
@@ -44,7 +45,7 @@ public class Tile {
 		this.tileY = point.y() * GameConstants.TILE_SIZE_X;
 		// To be honest, this code makes me angry. But its the price for sometimes storing the tileId
 		// in Tile for stateless tiles, and sometimes storing it in the actual TileType object for
-		// stateful tiles.
+		// stateful tiles. TODO make TileType objects ALWAYS store id instead.
 		assert type != null : "Null tile type passed to tile at " + tileX + ", " + tileY;
 		this.tileId =   type instanceof StatelessTileType
 					  ? tileId
@@ -52,7 +53,9 @@ public class Tile {
 					  	  ? ((HazardTile)type).getHazard().getId()
 					  	  :		type instanceof ConveyerTile
 					  	  	  ? ((ConveyerTile)type).getConveyer().getId()
-					  	  	  : -1;
+					  	  	  : 	type instanceof CollapsibleTile
+					  	  	  	  ? ((CollapsibleTile)type).getId()
+					  	  	  	  : -1;
 		if (this.tileId == -1)  throw new RuntimeException("Unknown tile type " + type + " for tile " + tileX + ", " + tileY);
 		
 		this.type = type;	
@@ -96,12 +99,16 @@ public class Tile {
 			if (tileId > sheetCols * sheetRows) {
 				System.out.println("" + this + ": Out of graphics range (Given sprite sheet only permits ids up to " + sheetCols * sheetRows);
 			}
+			
+			// TODO change concept of skinning so it applies to these tiles.
 		} else if (this.type instanceof HazardTile) {
 			// Hazards are not skinned. Tiletype contains all graphics information
 			// Intentionally Empty
 		} else if (this.type instanceof ConveyerTile) {
 			// Conveyers are not skinned. Tiletype contains all graphics information
 			// Intentionally Empty
+		} else if (this.type instanceof CollapsibleTile) {
+			// Collapsibles not skinned either.
 		} else {
 			throw new RuntimeException("No drawing handling for this tile: " + toString() );
 		}
@@ -147,6 +154,8 @@ public class Tile {
 			}
 		} else if (this.type instanceof ConveyerTile) {
 			((ConveyerTile)this.type).paint(g2d, tileX, tileY);
+		} else if (this.type instanceof CollapsibleTile) {
+			((CollapsibleTile)this.type).paint(g2d, tileX, tileY);
 		} else {
 			g2d.drawImage(rsrc.getTilesheetFor(this.type), tileX, tileY, tileX + GameConstants.TILE_SIZE_X, tileY + GameConstants.TILE_SIZE_Y, //DEST
 					tileDrawCol, tileDrawRow, tileDrawCol + GameConstants.TILE_SIZE_X, tileDrawRow + GameConstants.TILE_SIZE_Y, // SOURCE

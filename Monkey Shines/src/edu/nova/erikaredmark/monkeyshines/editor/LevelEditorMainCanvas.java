@@ -38,6 +38,7 @@ import edu.nova.erikaredmark.monkeyshines.encoder.WorldIO;
 import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 import edu.nova.erikaredmark.monkeyshines.resource.CoreResource;
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.tiles.CollapsibleTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.ConveyerTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
@@ -307,7 +308,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
 		currentTileType = PaintbrushType.SOLIDS;
-		changeState(EditorState.PLACING_TILES);
+		//changeState(EditorState.PLACING_TILES);
 	}
 	
 	/** User action to set state to placing thrus																		*/
@@ -315,27 +316,38 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
 		currentTileType = PaintbrushType.THRUS;
-		changeState(EditorState.PLACING_TILES);
+		//changeState(EditorState.PLACING_TILES);
 	}
 	
 	public void actionPlacingScenes() {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
 		currentTileType = PaintbrushType.SCENES;
-		changeState(EditorState.PLACING_TILES);
+		//changeState(EditorState.PLACING_TILES);
 	}
 	
 	public void actionPlacingConveyers() {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
 		currentTileType = PaintbrushType.CONVEYERS;
-		changeState(EditorState.PLACING_TILES);
 	}
 	
 	public void actionSelectingConveyers() {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
 		changeState(EditorState.SELECTING_CONVEYERS);
+	}
+	
+	public void actionPlacingCollapsibles() {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		
+		currentTileType = PaintbrushType.COLLAPSIBLE;
+	}
+	
+	public void actionSelectingCollapsibles() {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		
+		changeState(EditorState.SELECTING_COLLAPSIBLE);
 	}
 	
 	public void actionPlacingSprites() {
@@ -560,9 +572,12 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 					null);
 			
 			// If we are selecting a tile, draw the whole sheet to the side.
+			// Lot of repeated code, but each tile type has a slightly different way to draw the sprite
+			// sheet. TODO possible refactor to get ALL sprite sheets from world resource to bring this done to one call?
 			if (currentState == EditorState.SELECTING_TILES) {
 				currentTileSheet = currentWorldEditor.getWorldResource().getTilesheetFor(paintbrush2TileType(currentTileType) );
-				g2d.drawImage(currentTileSheet, 0, 0, currentTileSheet.getWidth(), currentTileSheet.getHeight(), null );
+				g2d.drawImage(currentTileSheet, 0, 0, currentTileSheet.getWidth(), currentTileSheet.getHeight(), 
+						 						null );
 			} else if (currentState == EditorState.SELECTING_GOODIES) {
 				BufferedImage goodieSheet = currentWorldEditor.getWorldResource().getGoodieSheet(); // This contains their animation, so chop it in half.
 				g2d.drawImage(goodieSheet, 0, 0, goodieSheet.getWidth(), goodieSheet.getHeight() / 2, // Destination
@@ -578,6 +593,11 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 				g2d.drawImage(conveyerSheet, 0, 0, conveyerSheet.getWidth(), conveyerSheet.getHeight(),
 							  				 0, 0, conveyerSheet.getWidth(), conveyerSheet.getHeight(),
 							  				 null);
+			} else if (currentState == EditorState.SELECTING_COLLAPSIBLE) {
+				BufferedImage collapsingSheet = currentWorldEditor.getWorldResource().getEditorCollapsingSheet();
+				g2d.drawImage(collapsingSheet, 0, 0, collapsingSheet.getWidth(), collapsingSheet.getHeight(),
+							  				   0, 0, collapsingSheet.getWidth(), collapsingSheet.getHeight(),
+							  				   null);
 			}
 		}
 		
@@ -625,6 +645,10 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 			// which would be the actual Conveyer id times 2, plus one IF anti-clockwise.
 			type = new ConveyerTile(currentWorldEditor.getConveyers().get(specialId) );
 			break;
+		case COLLAPSIBLE:
+			// Stateful, but easy to create.
+			type = new CollapsibleTile(specialId, currentWorldEditor.getWorldResource().getCollapsingSheet() );
+			break;
 		default:
 			throw new IllegalArgumentException("Paintbrush type " + currentTileType.toString() + " not a valid tile type");
 		}
@@ -633,7 +657,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		return type;
 	}
 	
-	public enum PaintbrushType { SOLIDS, THRUS, SCENES, HAZARDS, SPRITES, GOODIES, CONVEYERS; }
+	public enum PaintbrushType { SOLIDS, THRUS, SCENES, HAZARDS, SPRITES, GOODIES, CONVEYERS, COLLAPSIBLE; }
 	
 	
 	/**
@@ -772,6 +796,26 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 				
 				// Valid conveyer. The id alone is enough
 				editor.specialId = conveyerId;
+				editor.changeState(EditorState.PLACING_TILES);
+			}
+			
+			@Override public void defaultDragAction(LevelEditorMainCanvas editor) {
+				defaultClickAction(editor);
+			}
+		},
+		
+		SELECTING_COLLAPSIBLE {
+			@Override public void defaultClickAction(LevelEditorMainCanvas editor) {
+				// Editor sheet has layed them out in proper order for ids to match.
+				final WorldResource rsrc = editor.currentWorldEditor.getWorldResource();
+				int collapsibleId = editor.resolveObjectId(rsrc.getEditorCollapsingSheet(),
+														   editor.mousePosition.x(), 
+														   editor.mousePosition.y() );
+				
+				if (collapsibleId == -1)  return;
+				if (collapsibleId >= rsrc.getCollapsingCount() )  return;
+
+				editor.specialId = collapsibleId;
 				editor.changeState(EditorState.PLACING_TILES);
 			}
 			

@@ -4,6 +4,7 @@ import java.awt.Graphics2D;
 
 import edu.nova.erikaredmark.monkeyshines.Conveyer.Rotation;
 import edu.nova.erikaredmark.monkeyshines.resource.CoreResource;
+import edu.nova.erikaredmark.monkeyshines.tiles.CollapsibleTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.ConveyerTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
@@ -129,16 +130,16 @@ public final class Bonzo {
 	/**
 	 * Determines if bonzo has hit the ground. Intended ONLY to be called if bonzo is currently in a jump state. If he
 	 * hits the ground, speed considerations may make it possible for him to go through the ground a couple units. The returned
-	 * value indicates how far to 'bump' bonzo up if he goes through the ground too far.
+	 * value indicates how far to 'bump' bonzo up if he goes through the ground too far. This should only be called once
+	 * per tick and result used and/or stored. It does modify tile state in some cases.
 	 * <p/>
 	 * <strong> The speed bonzo is falling must NOT exceed one minus the verticle size of the tile!</strong> Otherwise
 	 * he will end up being bumped up to the next tile down, being inside a solid. Terminal velocity should never reach above
 	 * that amount.
 	 * <p/>
-	 * This method does not modify any major state and merely returns a value. The value contains how far bonzo must be
-	 * pushed up as well as a boolean indicating if any of the ground he landed on contained a conveyer belt.
-	 * <p/>
-	 * This method modifies ONE minor state variable; the fall assist.
+	 * This method does not modify any major state OF BONZO and merely returns a value. The value contains how far bonzo must be
+	 * pushed up, a rotation amount if bonzo is on a conveyer. This method modifies ONE minor state variable; the fall assist,
+	 * and if the tile is collapsible it will modify the TILES state.
 	 * <p/>
 	 * The parameters for original position are required to determine, for dealing with thru blocks, if bonzo fell onto
 	 * the block, or if he was already inside of it. 
@@ -173,6 +174,10 @@ public final class Bonzo {
 		boolean atLeastThru = false;
 		boolean atLeastGround = false;
 		
+		// Because we are looking at four positions, with a max of three unique tiles and possibly two,
+		// there may be repeats. We can't use == to check due to stateless tile types (TODO refactor them into
+		// other classes) but the repeats are required checking for any code modifying tile state.
+		TileType pastTile = null;
 		for (TileType t : grounds) {
 			if (t instanceof ConveyerTile) {
 				if (onConveyer == Rotation.NONE)  onConveyer = ((ConveyerTile) t).getConveyer().getRotation();
@@ -195,6 +200,13 @@ public final class Bonzo {
 			}
 			
 			if (t == StatelessTileType.SOLID)  atLeastGround = true;
+			
+			// If on a collapsing tile, collapse it if we haven't collapsed it already.
+			if (t != pastTile && t instanceof CollapsibleTile) {
+				((CollapsibleTile)t).collapse();
+			}
+			
+			pastTile = t;
 		}
 		
 		// Check #2; bonzo may be INSIDE the ground. Determine if he is and how much to snap him up by.

@@ -29,6 +29,7 @@ import edu.nova.erikaredmark.monkeyshines.GameConstants;
 import edu.nova.erikaredmark.monkeyshines.GameSoundEffect;
 import edu.nova.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import edu.nova.erikaredmark.monkeyshines.graphics.exception.ResourcePackException.Type;
+import edu.nova.erikaredmark.monkeyshines.tiles.CollapsibleTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.ConveyerTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
@@ -68,7 +69,11 @@ public final class WorldResource {
 	// Special: lazily initialised (since the real game doesn't ask for
 	// it) when editor asks for selecting conveyer belts.
 	private BufferedImage editorConveyerTiles;
-	
+
+	/* -------------------------- COLLAPSING -------------------------- */
+	private final BufferedImage collapsingTiles;
+	// Another lazily initialised sprite sheet specific to the editor.
+	private BufferedImage editorCollapsingTiles;
 	
 	/* -------------------------- BACKGROUND -------------------------- */
 	private final BufferedImage backgrounds[];
@@ -90,9 +95,10 @@ public final class WorldResource {
 	// Generated automatically in constructor
 	private final SoundManager soundManager;
 	private int conveyerCount;
+	private int collapsingCount;
 	
 	// Implementation note: Even the arrays are null (not just empty) as this is not intended for any kind of paint methods
-	private static final WorldResource EMPTY = new WorldResource(null, null, null, null, null, null, null, null, null, new HashMap<GameSoundEffect, Clip>() );
+	private static final WorldResource EMPTY = new WorldResource(null, null, null, null, null, null, null, null, null, null, new HashMap<GameSoundEffect, Clip>() );
 	
 	
 	/* -- Internal -- */
@@ -104,6 +110,7 @@ public final class WorldResource {
 					      final BufferedImage sceneTiles,
 					      final BufferedImage hazardTiles,
 					      final BufferedImage conveyerTiles,
+					      final BufferedImage collapsingTiles,
 					      final BufferedImage[] backgrounds,
 					      final BufferedImage[] sprites,
 					      final BufferedImage goodieSheet,
@@ -114,6 +121,7 @@ public final class WorldResource {
 		this.thruTiles = thruTiles;
 		this.sceneTiles = sceneTiles;
 		this.hazardTiles = hazardTiles;
+		this.collapsingTiles = collapsingTiles;
 		this.backgrounds = backgrounds;
 		this.sprites = sprites;
 		this.conveyerTiles = conveyerTiles;
@@ -132,6 +140,11 @@ public final class WorldResource {
 		conveyerCount =   conveyerTiles != null
 						? conveyerTiles.getHeight() / (GameConstants.TILE_SIZE_Y * 2)
 						: 0;
+						
+		// Simpler than conveyer; height / size of tiles easily gives collapsable tile count
+		collapsingCount =   collapsingTiles != null
+						  ? collapsingTiles.getHeight() / GameConstants.TILE_SIZE_Y
+						  : 0;
 	}
 	
 	/**
@@ -176,6 +189,7 @@ public final class WorldResource {
 		BufferedImage sceneTiles	= null;
 		BufferedImage hazardTiles   = null;
 		BufferedImage conveyerTiles = null;
+		BufferedImage collapsingTiles = null;
 		// Max index will be used to tell the validator how far to count to in the array list to confirm 
 		// contiguous entries. (as in, if 'background4' exists, then 'background0, background1, etc' MUST exist.
 		List<BufferedImage> backgrounds = new ArrayList<>();
@@ -215,6 +229,10 @@ public final class WorldResource {
 				case "conveyers.gif":
 					if (conveyerTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "conveyer.gif");
 					conveyerTiles = ImageIO.read(zipFile.getInputStream(entry) );
+					break;
+				case "collapsing.gif":
+					if (collapsingTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "collapsing.gif");
+					collapsingTiles = ImageIO.read(zipFile.getInputStream(entry) );
 					break;
 				case "goodies.gif":
 					if (goodieSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "goodies.gif");
@@ -282,6 +300,7 @@ public final class WorldResource {
 		checkResourceNotNull(yumSheet, "yums.gif");
 		checkResourceNotNull(hazardTiles, "hazards.gif");
 		checkResourceNotNull(conveyerTiles, "conveyers.gif");
+		checkResourceNotNull(collapsingTiles, "collapsing.gif");
 		checkResourceContiguous(backgrounds, maxBackgroundIndex, "background");
 		checkResourceContiguous(sprites, maxSpriteIndex, "sprite");
 		
@@ -294,6 +313,7 @@ public final class WorldResource {
 							  sceneTiles,
 							  hazardTiles,
 							  conveyerTiles,
+							  collapsingTiles,
 							  backgrounds.toArray(new BufferedImage[backgrounds.size()]), 
 							  sprites.toArray(new BufferedImage[sprites.size()]),
 							  goodieSheet, 
@@ -457,6 +477,8 @@ public final class WorldResource {
 			return getHazardSheet();
 		} else if (type instanceof ConveyerTile) {
 			return getConveyerSheet();
+		} else if (type instanceof CollapsibleTile) {
+			return getCollapsingSheet();
 		} else {
 			throw new RuntimeException("Unexpected tile type class " + type.getClass().getName() );
 		}
@@ -629,7 +651,79 @@ public final class WorldResource {
 		
 		return editorConveyerTiles;
 	}
+	
+	/**
+	 * 
+	 * Returns the sprite sheet for collapsing tiles, which have 10 frames in them. The final frame is typically
+	 * empty, but does not need to be. It represents the 'final state' where bonzo can fall through the floor.
+	 * The other nine are the process of the tile collapsing.
+	 * <p/>
+	 * Each row has 10 frames. The first frame of each row is the 'full version' of that specific collapsing tile.
+	 * <p/>
+	 * Each row indicates a new type of collapsing tile.
+	 * 
+	 * @return
+	 * 
+	 */
+	public BufferedImage getCollapsingSheet() {
+		return collapsingTiles;
+	}
+	
+	/**
+	 * 
+	 * Returns a sprite sheet optimised for the editor, allowing the user to choose a unique type of collapsing
+	 * tile. From each set of 10 frames that make up one collapsing tile, the first frame will be used as the
+	 * 'exmplar' for that collapsing tile set, and displayed such that the user may easily choose which unique
+	 * collapsable tile they want.
+	 * 
+	 * @return
+	 * 		lazily initialised collapsable tile sheet for the editor.
+	 * 
+	 */
+	public BufferedImage getEditorCollapsingSheet() {
+		// Lazy initialise; no need in creating sheet if the actual game is being played as it won't be used there
+		if (editorCollapsingTiles == null) {
+			int width = collapsingTiles.getWidth() * 2;
+			// 10 frames per collapsing. The editor sprite sheet will show 10 unique collapsing tiles
+			// per row.
+			int height = (1 + (collapsingCount / 10) ) * GameConstants.TILE_SIZE_Y;
+			BufferedImage sheet = new BufferedImage(width, height, collapsingTiles.getType() );
+			Graphics2D graphics = sheet.createGraphics();
 
+			for (int i = 0; i < collapsingCount; i++) {
+				// Draw only the first frame of the collapsing tile.
+				int drawFromX = 0;
+				int drawFromY = GameConstants.TILE_SIZE_Y * i;
+				
+				// We drop down a level per 10 collapsing tiles
+				int drawToX = (i % 10) * GameConstants.TILE_SIZE_X;
+				int drawToY = (i / 10) * GameConstants.TILE_SIZE_Y;
+
+				graphics.drawImage(collapsingTiles, 
+					drawToX, drawToY, 
+					drawToX + GameConstants.TILE_SIZE_X, drawToY + GameConstants.TILE_SIZE_Y, 
+					drawFromX, drawFromY, 
+					drawFromX + GameConstants.TILE_SIZE_X, drawFromY + GameConstants.TILE_SIZE_Y, 
+					null);
+			}
+			
+			editorCollapsingTiles = sheet;
+		}
+		
+		return editorCollapsingTiles;
+	}
+
+	/**
+	 * 
+	 * Returns the number of unique, collapsible tiles in this resource.
+	 * 
+	 * @return
+	 * 
+	 */
+	public int getCollapsingCount() {
+		return collapsingCount;
+	}
+	
 	/**
 	 * 
 	 * Determines if a hazard of the given ID may be added to the world using this graphics resource. If the hazard 

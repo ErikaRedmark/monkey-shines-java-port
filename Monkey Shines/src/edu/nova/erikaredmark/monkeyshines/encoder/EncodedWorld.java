@@ -30,6 +30,7 @@ import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldRestoreExceptio
 import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 import edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos;
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.tiles.CollapsibleTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.ConveyerTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
@@ -444,7 +445,7 @@ public final class EncodedWorld {
 	static Tile protoToTile(WorldFormatProtos.World.Tile protoTile, WorldResource rsrc, List<Hazard> hazards, List<Conveyer> conveyers) {
 		return Tile.newTile(protoToPoint(protoTile.getLocation() ), 
 							protoTile.getId(), 
-							protoToTileType(protoTile.getType(), protoTile, hazards, conveyers), 
+							protoToTileType(protoTile.getType(), protoTile, rsrc, hazards, conveyers), 
 							rsrc);
 	}
 	
@@ -465,13 +466,15 @@ public final class EncodedWorld {
 			return WorldFormatProtos.World.TileType.HAZARD;
 		} else if (type instanceof ConveyerTile) {
 			return WorldFormatProtos.World.TileType.CONVEYER;
+		} else if (type instanceof CollapsibleTile) {
+			return WorldFormatProtos.World.TileType.BREAKING;
 		} else {
 			throw new RuntimeException("Tile type " + type + " has no defined proto version!");
 		}
 	}
 	
 	// Extra parameters are required for setting up some more complicated tiles.
-	static TileType protoToTileType(WorldFormatProtos.World.TileType type, WorldFormatProtos.World.Tile tile, List<Hazard> hazards, List<Conveyer> conveyers) {
+	static TileType protoToTileType(WorldFormatProtos.World.TileType type, WorldFormatProtos.World.Tile tile, WorldResource rsrc, List<Hazard> hazards, List<Conveyer> conveyers) {
 		switch (type) {
 		case NONE: return StatelessTileType.NONE;
 		case SOLID: return StatelessTileType.SOLID;
@@ -479,7 +482,7 @@ public final class EncodedWorld {
 		case SCENERY: return StatelessTileType.SCENE;
 		case HAZARD: return HazardTile.forHazard(hazards.get(tile.getId() ) );
 		case CONVEYER: return new ConveyerTile(conveyers.get(tile.getId() * 2 + getConveyerIdOffset(tile.getRotation() ) ) );
-		case BREAKING: throw new RuntimeException("Implement proto form of Breaking tiles to in-memory conversion");
+		case BREAKING: return new CollapsibleTile(tile.getId(), rsrc.getCollapsingSheet() );
 		default: throw new RuntimeException("Proto tiletype " + type + " has no defined java object!");
 		}
 	}
