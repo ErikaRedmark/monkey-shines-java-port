@@ -11,7 +11,7 @@ There are two main points of entry in the code:
 - MonkeyShines: This class allows you to start the actual game. It should open a file chooser from which you can select a .world file (this file chooser is temporary and easy way to just playtest worlds). I do NOT include any sample/demo .world files to run, so you will have to make one with the editor.
 
 # Status
-The basic game engine mechanics are coming together, but there is still quite a lot to do. This list is more for my benefit (and is probably incomplete) but if you are familiar with the original game many items should be familiar:
+The basic game engine mechanics are coming together, but there is still quite a lot to do. This list is more for my benefit (and is probably incomplete) but if you are familiar with the original game many items should be familiar. A check means the feature is implemented, but not necessarily fine-tuned or all bugs have been removed.
 ##Game Engine
 - [x] Basic tilemap (Solids, Jump-Throughs, Scenery)
 - [x] Basic sprite mechanics
@@ -22,7 +22,7 @@ The basic game engine mechanics are coming together, but there is still quite a 
 - [x] Hazards (Bombs, Dynamite. . .)
 - [x] Conveyer Belts
 - [x] Goodies and Yums
-- [ ] Breakable Tiles
+- [x] Collapsible Tiles
 - [ ] Sprite Collisons (currently uses rough bounding box and is not precise enough)
 - [ ] UI Containing other information than just main game screen
 - [ ] Health
@@ -51,7 +51,7 @@ The save file format for the level editor has been rewritten. Worlds created wit
 - [x] Slowdown animations of sprites
 - [x] Adding Hazards
 - [x] Adding conveyer belts
-- [ ] Adding breakable tiles
+- [x] Adding collapsible tiles
 - [ ] Setting level background
 - [ ] Indicating Authorship (Not part of original game)
 
