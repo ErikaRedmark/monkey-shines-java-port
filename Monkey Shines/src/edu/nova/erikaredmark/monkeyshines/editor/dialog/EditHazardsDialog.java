@@ -103,7 +103,7 @@ public class EditHazardsDialog extends JDialog {
 				}
 				
 				// newModel.size means assign the next Id. Assuming sorted list, size will always equal the next index of a new element
-				Hazard.newHazardTo(newModel, newModel.size(), rsrc );
+				Hazard.newHazardTo(newModel, newModel.size() );
 				
 				// Update the list model used by the view
 				hazardListModel.clear();

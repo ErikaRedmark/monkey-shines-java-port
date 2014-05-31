@@ -1,6 +1,9 @@
 package edu.nova.erikaredmark.monkeyshines.tiles;
 
+import java.awt.Graphics2D;
+
 import edu.nova.erikaredmark.monkeyshines.Hazard;
+import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 
 /**
  * 
@@ -90,6 +93,8 @@ public class HazardTile implements TileType {
 		if (exploding)  return animationPoint - 2;
 		else			return animationPoint;
 	}
+
+	@Override public int getId() { return hazard.getId(); }
 	
 	/**
 	 * 
@@ -112,7 +117,17 @@ public class HazardTile implements TileType {
 		
 		}
 	}
+
+	@Override public boolean isThru() { return false; }
 	
+	@Override public boolean isSolid() { return true; }
+	
+	@Override public void paint(Graphics2D g2d, int drawToX, int drawToY, WorldResource rsrc) {
+		// Nothing to paint if dead.
+		if (isDead() )  return;
+		
+		hazard.paint(g2d, drawToX, drawToY, rsrc, getAnimationStep() );
+	}
 	/**
 	 * 
 	 * Checks if the hazard is ready to switch to the next frame of animation. Calling this
@@ -184,5 +199,4 @@ public class HazardTile implements TileType {
 		}
 	}
 
-	@Override public boolean isThru() { return false; }
 }

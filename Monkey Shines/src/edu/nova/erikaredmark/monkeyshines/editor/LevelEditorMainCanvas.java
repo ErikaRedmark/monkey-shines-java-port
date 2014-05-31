@@ -39,9 +39,10 @@ import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 import edu.nova.erikaredmark.monkeyshines.resource.CoreResource;
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 import edu.nova.erikaredmark.monkeyshines.tiles.CollapsibleTile;
+import edu.nova.erikaredmark.monkeyshines.tiles.CommonTile;
+import edu.nova.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
 import edu.nova.erikaredmark.monkeyshines.tiles.ConveyerTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
-import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
 
 
@@ -62,14 +63,13 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	private Point2D mousePosition;
 	
 	// Information about what clicking something will do
-	private int currentTileID;
+	// current tile is used for all types of tiles, and determines which specific graphic resource
+	// a given type of tile will use.
+	private int currentTileId;
 	private Goodie.Type currentGoodieType;
 	
 	// Unlike the other properties, current hazard MAY be null. It is 100% possible for a world to not have hazards
 	private Hazard currentHazard;
-	// Used for hazards and conveyers. Indicates which id of conveyer/hazard to draw a new instance of, since those
-	// tile types are stateful.
-	private int specialId;
 	
 	// Current overlay graphic
 	private BufferedImage currentTileSheet;
@@ -87,7 +87,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	
 	public LevelEditorMainCanvas(final KeyboardInput keys) {
 		super();
-		currentTileID = 0;
+		currentTileId = 0;
 		currentGoodieType = Goodie.Type.BANANA; // Need to pick something for default. Bananas are good.
 		currentTileType = PaintbrushType.SOLIDS;
 		currentState = EditorState.NO_WORLD_LOADED;
@@ -193,7 +193,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 				mouseX / GameConstants.TILE_SIZE_X,
 				mouseY / GameConstants.TILE_SIZE_Y,
 				paintbrush2TileType(currentTileType),
-				currentTileID);
+				currentTileId);
 	}
 	
 	/**
@@ -210,7 +210,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		currentScreenEditor.setTile(mouseX / GameConstants.TILE_SIZE_X,
 									mouseY / GameConstants.TILE_SIZE_Y,
 									HazardTile.forHazard(currentHazard),
-									specialId);
+									currentTileId);
 	}
 	
 	/**
@@ -575,7 +575,10 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 			// Lot of repeated code, but each tile type has a slightly different way to draw the sprite
 			// sheet. TODO possible refactor to get ALL sprite sheets from world resource to bring this done to one call?
 			if (currentState == EditorState.SELECTING_TILES) {
-				currentTileSheet = currentWorldEditor.getWorldResource().getTilesheetFor(paintbrush2TileType(currentTileType) );
+				// This handles one of the stateless types.
+				TileType statelessType = paintbrush2TileType(currentTileType);
+				assert statelessType instanceof CommonTile;
+				currentTileSheet = currentWorldEditor.getWorldResource().getStatelessTileTypeSheet(((CommonTile)statelessType).getUnderlyingType() );
 				g2d.drawImage(currentTileSheet, 0, 0, currentTileSheet.getWidth(), currentTileSheet.getHeight(), 
 						 						null );
 			} else if (currentState == EditorState.SELECTING_GOODIES) {
@@ -622,13 +625,13 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		TileType type = null;
 		switch (paintbrush) {
 		case SOLIDS:
-			type = StatelessTileType.SOLID;
+			type = CommonTile.of(currentTileId, StatelessTileType.SOLID);
 			break;
 		case THRUS:
-			type = StatelessTileType.THRU;
+			type = CommonTile.of(currentTileId, StatelessTileType.THRU);;
 			break;
 		case SCENES:
-			type = StatelessTileType.SCENE;
+			type = CommonTile.of(currentTileId, StatelessTileType.SCENE);;
 			break;
 		case HAZARDS:
 			// Stateful type: Create new based on id. Properties of hazard will be based on World
@@ -636,18 +639,18 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 			// This instance will NOT be added to the world itself!! It must be copied, or multiple hazards may
 			// end up sharing state (like hitting one bomb will blow up every other bomb painted with the same
 			// paintbrush).
-			type = HazardTile.forHazard(currentWorldEditor.getHazards().get(this.specialId) );
+			type = HazardTile.forHazard(currentWorldEditor.getHazards().get(currentTileId) );
 			break;
 		case CONVEYERS:
 			// Stateful type: Create new based on id. All state information is simply graphical drawing
 			// so it isn't too difficult to create.
 			// Please note: Special Id is assigned by the editor to be the INDEX in the conveyer list,
 			// which would be the actual Conveyer id times 2, plus one IF anti-clockwise.
-			type = new ConveyerTile(currentWorldEditor.getConveyers().get(specialId) );
+			type = new ConveyerTile(currentWorldEditor.getConveyers().get(currentTileId) );
 			break;
 		case COLLAPSIBLE:
 			// Stateful, but easy to create.
-			type = new CollapsibleTile(specialId, currentWorldEditor.getWorldResource().getCollapsingSheet() );
+			type = new CollapsibleTile(currentTileId);
 			break;
 		default:
 			throw new IllegalArgumentException("Paintbrush type " + currentTileType.toString() + " not a valid tile type");
@@ -706,7 +709,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 				// do nothing if click is out of bounds
 				if (tileId == -1)  return;
 				
-				editor.currentTileID = tileId;
+				editor.currentTileId = tileId;
 				editor.changeState(EditorState.PLACING_TILES);
 			}
 			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { 
@@ -767,7 +770,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 				// We have a valid hazard reference
 				
 				editor.currentHazard = availableHazards.get(hazardId);
-				editor.specialId = hazardId;
+				editor.currentTileId = hazardId;
 				// Hazards are considered a tile
 				editor.changeState(EditorState.PLACING_TILES);
 			}
@@ -795,7 +798,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 				if (conveyerId >= conveyers.size() )  return;
 				
 				// Valid conveyer. The id alone is enough
-				editor.specialId = conveyerId;
+				editor.currentTileId = conveyerId;
 				editor.changeState(EditorState.PLACING_TILES);
 			}
 			
@@ -815,7 +818,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 				if (collapsibleId == -1)  return;
 				if (collapsibleId >= rsrc.getCollapsingCount() )  return;
 
-				editor.specialId = collapsibleId;
+				editor.currentTileId = collapsibleId;
 				editor.changeState(EditorState.PLACING_TILES);
 			}
 			

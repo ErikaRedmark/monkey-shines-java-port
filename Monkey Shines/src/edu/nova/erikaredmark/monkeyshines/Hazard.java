@@ -1,7 +1,6 @@
 package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -36,8 +35,6 @@ public final class Hazard implements Comparable<Hazard> {
 	private final boolean explodes;
 	private final DeathAnimation deathAnimation;
 	
-	private final BufferedImage hazardSheet;
-	
 	/**
 	 * 
 	 * Constructs a new hazard object for the world
@@ -57,11 +54,10 @@ public final class Hazard implements Comparable<Hazard> {
 	 * 		graphics resource for the world this hazard is in so it may perform painting routines
 	 * 
 	 */
-	public Hazard(final int id, final boolean explodes, final DeathAnimation deathAnimation, WorldResource rsrc) {
+	public Hazard(final int id, final boolean explodes, final DeathAnimation deathAnimation) {
 		this.id = id;
 		this.explodes = explodes;
 		this.deathAnimation = deathAnimation;
-		this.hazardSheet = rsrc.getHazardSheet();
 	}
 
 	/**
@@ -73,26 +69,7 @@ public final class Hazard implements Comparable<Hazard> {
 	 * 
 	 */
 	public HazardMutable mutableCopy() {
-		return new HazardMutable(this.id, this.explodes, this.deathAnimation, this.hazardSheet);
-	}
-	
-	/**
-	 * 
-	 * This constructor is intended for copying between mutable and immutable hazards by constructing directly the data of
-	 * the hazard (such as not going through a resource to get the hazard sheet, as a copy would have to do if it knew not
-	 * the resource)
-	 * <p/>
-	 * Intended only for use with {@code HazardMutable}
-	 * 
-	 * @param hazardSheet
-	 * 		the sprite sheet for the hazard
-	 * 
-	 */
-	public Hazard(final int id, final boolean explodes, final DeathAnimation deathAnimation, final BufferedImage hazardSheet) {
-		this.id = id;
-		this.explodes = explodes;
-		this.deathAnimation = deathAnimation;
-		this.hazardSheet = hazardSheet;
+		return new HazardMutable(this.id, this.explodes, this.deathAnimation);
 	}
 	
 	/**
@@ -110,7 +87,6 @@ public final class Hazard implements Comparable<Hazard> {
 		this.id = newId;
 		this.explodes = copy.explodes;
 		this.deathAnimation = copy.deathAnimation;
-		this.hazardSheet = copy.hazardSheet;
 	}
 	
 	public DeathAnimation getDeathAnimation() { return deathAnimation; }
@@ -138,7 +114,8 @@ public final class Hazard implements Comparable<Hazard> {
 	 * 		number of hazards to create. This is typically obtained via the graphics sprite sheet.
 	 * 
 	 * @param rsrc
-	 * 		a world resource for assigning to the newly created hazards.
+	 * 		the number of hazards created is dependent on the graphics context's ability to paint them.
+	 * 		Measurement information is needed from it.
 	 * 
 	 * @return
 	 * 		list of newly created hazards. The list is immutable. The list contains {@code count} elements with hazard ids ordered from {@code start}
@@ -152,7 +129,7 @@ public final class Hazard implements Comparable<Hazard> {
 		
 		ImmutableList.Builder<Hazard> hazards = new ImmutableList.Builder<>();
 		for (int i = 0; i < count; i++) {
-			hazards.add(new Hazard(start + i, true, DeathAnimation.BURN, rsrc) );
+			hazards.add(new Hazard(start + i, true, DeathAnimation.BURN) );
 		}
 		
 		return hazards.build();
@@ -188,13 +165,13 @@ public final class Hazard implements Comparable<Hazard> {
 	 * 		{@code 0} for first frame of hazard, {@code 1} for second. Other values will produce incorrect behaviour
 	 * 
 	 */
-	public void paint(Graphics2D g2d, int drawToX, int drawToY, int animationStep) {
+	public void paint(Graphics2D g2d, int drawToX, int drawToY, WorldResource rsrc, int animationStep) {
 		assert animationStep == 0 || animationStep == 1;
 		
 		int drawFromX = id * GameConstants.TILE_SIZE_X;
 		int drawFromY = animationStep * GameConstants.TILE_SIZE_Y;
 		
-		g2d.drawImage(hazardSheet, drawToX , drawToY, 											    // Destination 1 (top left)
+		g2d.drawImage(rsrc.getHazardSheet(), drawToX , drawToY, 								    // Destination 1 (top left)
 					  drawToX + GameConstants.TILE_SIZE_X, drawToY + GameConstants.TILE_SIZE_Y,     // Destination 2 (bottom right)
 					  drawFromX, drawFromY, 													    // Source 1 (top Left)
 					  drawFromX + GameConstants.TILE_SIZE_X, drawFromY + GameConstants.TILE_SIZE_Y, // Source 2 (bottom right)
@@ -227,12 +204,12 @@ public final class Hazard implements Comparable<Hazard> {
 	 * 		hazards were constructed with; this is to allow this method to function if the list is empty
 	 * 
 	 */
-	public static void newHazardTo(final List<Hazard> existingHazards, int id, final WorldResource rsrc) {
+	public static void newHazardTo(final List<Hazard> existingHazards, int id) {
 		if (id < 0)  throw new IllegalArgumentException("Hazard ids must be positive");
 		checkSorted(existingHazards);
 		// Actual method logic
 		
-		final Hazard newHazard = new Hazard(id, true, DeathAnimation.BURN, rsrc);
+		final Hazard newHazard = new Hazard(id, true, DeathAnimation.BURN);
 		
 		// Hazards removed in the loop will have copies constructed with new ids.
 		final List<Hazard> removedHazards = new ArrayList<>();
@@ -401,7 +378,6 @@ public final class Hazard implements Comparable<Hazard> {
 		final Hazard that = (Hazard) obj;
 		
 		return    this.id == that.id
-		       && this.hazardSheet.equals(that.hazardSheet)
 		       && this.explodes == that.explodes
 		       && this.deathAnimation == that.deathAnimation;
 	}

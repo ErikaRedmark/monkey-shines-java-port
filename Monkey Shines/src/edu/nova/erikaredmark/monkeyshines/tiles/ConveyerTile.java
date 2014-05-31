@@ -3,6 +3,7 @@ package edu.nova.erikaredmark.monkeyshines.tiles;
 import java.awt.Graphics2D;
 
 import edu.nova.erikaredmark.monkeyshines.Conveyer;
+import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 
 /**
  * 
@@ -54,9 +55,11 @@ public class ConveyerTile implements TileType {
 	 * 		y location to draw (pixels)
 	 * 
 	 */
-	public void paint(Graphics2D g2d, int drawToX, int drawToY) {
-		conveyer.paint(g2d, drawToX, drawToY, animationStep);
+	@Override public void paint(Graphics2D g2d, int drawToX, int drawToY, WorldResource rsrc) {
+		conveyer.paint(g2d, drawToX, drawToY, animationStep, rsrc);
 	}
+	
+	@Override public int getId() { return conveyer.getId(); }
 	
 	/**
 	 * 
@@ -82,5 +85,7 @@ public class ConveyerTile implements TileType {
 	}
 	
 	@Override public boolean isThru() { return true; }
+	
+	@Override public boolean isSolid() { return false; }
 
 }

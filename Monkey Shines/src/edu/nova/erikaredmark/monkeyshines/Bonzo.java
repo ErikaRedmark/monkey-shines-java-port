@@ -6,7 +6,6 @@ import edu.nova.erikaredmark.monkeyshines.Conveyer.Rotation;
 import edu.nova.erikaredmark.monkeyshines.resource.CoreResource;
 import edu.nova.erikaredmark.monkeyshines.tiles.CollapsibleTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.ConveyerTile;
-import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
 
 /**
@@ -199,7 +198,7 @@ public final class Bonzo {
 				atLeastGround = true;
 			}
 			
-			if (t == StatelessTileType.SOLID)  atLeastGround = true;
+			if (t.isSolid() )  atLeastGround = true;
 			
 			// If on a collapsing tile, collapse it if we haven't collapsed it already.
 			if (t != pastTile && t instanceof CollapsibleTile) {
@@ -288,9 +287,9 @@ public final class Bonzo {
 		// This allows Bonzo to fit easily into 2 space open passageways and then the ground snap algorithms
 		// can take effect.
 		LevelScreen currentScreen = worldPointer.getCurrentScreen();
-		if (   currentScreen.getTileAt(newX, currentLocation.y() + 4 ) == StatelessTileType.SOLID 
-		    || currentScreen.getTileAt(newX, currentLocation.y() + BONZO_SIZE.y() - 1 - 4) == StatelessTileType.SOLID
-			|| currentScreen.getTileAt(newX, currentLocation.y() + BONZO_SIZE_HALF.y() ) == StatelessTileType.SOLID) {
+		if (   currentScreen.getTileAt(newX, currentLocation.y() + 4 ).isSolid()
+		    || currentScreen.getTileAt(newX, currentLocation.y() + BONZO_SIZE.y() - 1 - 4).isSolid()
+			|| currentScreen.getTileAt(newX, currentLocation.y() + BONZO_SIZE_HALF.y() ).isSolid() ) {
 			
 			return true;
 		}
@@ -334,17 +333,17 @@ public final class Bonzo {
 		
 		boolean atLeastSolid = false;
 		for (TileType t : above) {
-			if (t == StatelessTileType.SOLID)  atLeastSolid = true;
+			if (t.isSolid())  atLeastSolid = true;
 		}
 		
 		// No solids no problem
 		if (!(atLeastSolid) )  return false;
 		
 		// Solids? Check our special case. If we can't use that then it is a solid wall.
-		if (   above[1] != StatelessTileType.SOLID
-			&& above[2] != StatelessTileType.SOLID
-			&& above[3] != StatelessTileType.SOLID
-		    && above[4] != StatelessTileType.SOLID) {
+		if (   !(above[1].isSolid() )
+			&& !(above[2].isSolid() )
+			&& !(above[3].isSolid() )
+		    && !(above[4].isSolid() ) ) {
 			
 			// Activate special case: Snap bonzo to nearest tile boundary, which should
 			// be enough to line him up to move up.

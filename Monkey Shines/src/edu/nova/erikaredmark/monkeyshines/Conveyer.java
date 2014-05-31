@@ -1,7 +1,8 @@
 package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
+
+import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 
 
 /**
@@ -18,12 +19,9 @@ public final class Conveyer {
 	private int id;
 	private Rotation rotation;
 	
-	private final BufferedImage conveyerSheet;
-	
-	public Conveyer(final int id, final Rotation rotation, final BufferedImage conveyerSheet) {
+	public Conveyer(final int id, final Rotation rotation) {
 		this.id = id;
 		this.rotation = rotation;
-		this.conveyerSheet = conveyerSheet;
 	}
 	
 	/** Intended for test methods and encoder/decoders*/
@@ -50,7 +48,7 @@ public final class Conveyer {
 	 * 		assertions are enabled, other values will fail. Otherwise, undefined behaviour.
 	 * 
 	 */
-	public void paint(Graphics2D g2d, int drawToX, int drawToY, int animationStep) {
+	public void paint(Graphics2D g2d, int drawToX, int drawToY, int animationStep, WorldResource rsrc) {
 		assert animationStep >= 0 && animationStep < 5;
 		
 		// X position depends 100% on animation step
@@ -63,7 +61,7 @@ public final class Conveyer {
 		// Y position is either the same as ySet for clockwise, or ySet + TILE_SIZE_Y for anti-clockwise
 		int drawFromY = ySet + rotation.drawYOffset();
 		
-		g2d.drawImage(conveyerSheet, drawToX , drawToY, 											// Destination 1 (top left)
+		g2d.drawImage(rsrc.getConveyerSheet(), drawToX , drawToY, 									// Destination 1 (top left)
 					  drawToX + GameConstants.TILE_SIZE_X, drawToY + GameConstants.TILE_SIZE_Y,     // Destination 2 (bottom right)
 					  drawFromX, drawFromY, 													    // Source 1 (top Left)
 					  drawFromX + GameConstants.TILE_SIZE_X, drawFromY + GameConstants.TILE_SIZE_Y, // Source 2 (bottom right)

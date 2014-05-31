@@ -1,14 +1,12 @@
 package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import edu.nova.erikaredmark.monkeyshines.Conveyer.Rotation;
 import edu.nova.erikaredmark.monkeyshines.bounds.IPoint2D;
@@ -82,12 +80,12 @@ public class World {
 	 * Because the list is mutated, it must NOT be an immutable type.
 	 * 
 	 */
-	public static void generateConveyers(List<Conveyer> conveyers, int amt, BufferedImage conveyerSheet) {
+	public static void generateConveyers(List<Conveyer> conveyers, int amt) {
 		// Two entries in the list per conveyer id. Rotation determines which one.
 		int startId = conveyers.size() / 2;
 		for (int i = 0; i < amt; i++) {
-			conveyers.add(new Conveyer(startId + i, Rotation.CLOCKWISE, conveyerSheet) );
-			conveyers.add(new Conveyer(startId + i, Rotation.ANTI_CLOCKWISE, conveyerSheet) );
+			conveyers.add(new Conveyer(startId + i, Rotation.CLOCKWISE) );
+			conveyers.add(new Conveyer(startId + i, Rotation.ANTI_CLOCKWISE) );
 		}
 	}
 	
@@ -112,7 +110,7 @@ public class World {
 		
 		// Generate # of conveyers proportional to graphics context size
 		List<Conveyer> conveyers = new ArrayList<>(rsrc.getConveyerCount() * 2);
-		generateConveyers(conveyers, rsrc.getConveyerCount(), rsrc.getConveyerSheet() );
+		generateConveyers(conveyers, rsrc.getConveyerCount() );
 		
 		return new World(name, new HashMap<String, Goodie>(), screens, new ArrayList<Hazard>(), conveyers, rsrc);
 	}
@@ -127,23 +125,6 @@ public class World {
 	 * 
 	 */
 	public WorldResource getResource() { return this.rsrc; }
-	
-	/**
-	 * 
-	 * Sets the graphics resources this worlds will use when any of its parts, be it tiles, sprites, etc are drawn.
-	 * 
-	 * @param rsrc
-	 * 
-	 */
-	private void skin(final WorldResource rsrc) {
-		for (Entry<String, Goodie> goodie : goodiesInWorld.entrySet() ) {
-			goodie.getValue().skin(rsrc);
-		}
-		
-		for (Entry<Integer, LevelScreen> level : worldScreens.entrySet() ) {
-			level.getValue().skin(rsrc);
-		}
-	}
 	
 	/**
 	 * 
@@ -171,7 +152,6 @@ public class World {
 		/* Constant data		*/
 		this.currentScreen = 1000;
 		this.rsrc = rsrc;
-		skin(rsrc);
 	}
 	
 	/**

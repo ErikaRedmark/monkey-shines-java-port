@@ -31,41 +31,30 @@ public class Goodie {
 	private int drawY;
 	
 	private WorldResource rsrc;
-	private boolean isSkinned = false;
-	
-	// Static initialisation: Goodie sheet is shared by all Goodie objects, and only one instance should exist.
-//	static {
-//		try (InputStream goodiePath = "".getClass().getResourceAsStream("/resources/graphics/objects.gif");
-//		     InputStream yumPath = "".getClass().getResourceAsStream("/resources/graphics/yummies.gif") ) {
-//			
-//		    goodieSheet = ImageIO.read(goodiePath);
-//		    yumSheet = ImageIO.read(yumPath);
-//		    
-//		} catch (IOException e) {
-//			System.out.println("Quand est la bien?");
-//		}
-//	}
 	
 	/**
+	 * 
 	 * Creates a goodie for the specified screen, for the specified world. 
 	 *
 	 * @param type
+	 * 
 	 * @param location
-	 * @param screenID
+	 * 
+	 * @param screenId
+	 * 
 	 */
 	public static Goodie newGoodie(final Type type, 
 								   final ImmutablePoint2D location, 
 								   final int screenID, 
 								   final WorldResource rsrc) {
 		
-		Goodie g = new Goodie(type, location, screenID);
-		g.skin(rsrc);
-		return g;
+		return new Goodie(type, location, screenID, rsrc);
 	}
 	
-	private Goodie(final Type type, final ImmutablePoint2D location, final int screenId) {
+	private Goodie(final Type type, final ImmutablePoint2D location, final int screenId, final WorldResource rsrc) {
 		this.screenID = screenId;
 		this.location = location;
+		this.rsrc = rsrc;
 		goodieType = type;
 		taken = false;
 		dead = false;
@@ -79,13 +68,6 @@ public class Goodie {
 		drawY = type.getDrawY();
 	}
 
-	public void skin(final WorldResource rsrc) {
-		this.rsrc = rsrc;;
-		isSkinned = true;
-	}
-	
-	public boolean isSkinned() { return isSkinned; }
-	
 	// Very simple animation.
 	public void update() {
 		if (!taken && !dead) {

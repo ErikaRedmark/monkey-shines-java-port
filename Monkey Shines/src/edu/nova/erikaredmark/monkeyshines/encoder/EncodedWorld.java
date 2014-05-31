@@ -31,10 +31,11 @@ import edu.nova.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 import edu.nova.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos;
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 import edu.nova.erikaredmark.monkeyshines.tiles.CollapsibleTile;
+import edu.nova.erikaredmark.monkeyshines.tiles.CommonTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.ConveyerTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
-import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
+import edu.nova.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
 
 /**
  *
@@ -142,14 +143,14 @@ public final class EncodedWorld {
 	public World newWorldInstance(final WorldResource rsrc) {
 		final String worldName = world.getName();
 		final Map<String, Goodie> goodiesInWorld = protoToGoodies(world.getGoodiesList(), rsrc);
-		final List<Hazard> hazards = protoToHazards(world.getHazardsList(), rsrc );
+		final List<Hazard> hazards = protoToHazards(world.getHazardsList() );
 		
 		// Size of conveyers may be added to if the world is skinned with an updated
 		// resource containing new conveyers.
 		// generate as many conveyer instances as graphics resource allows. Decoding of the
 		// actual levels with the auto-generated conveyers will handle conveyer belts.
 		List<Conveyer> conveyers = new ArrayList<>(rsrc.getConveyerCount() * 2 );
-		World.generateConveyers(conveyers, rsrc.getConveyerCount(), rsrc.getConveyerSheet() );
+		World.generateConveyers(conveyers, rsrc.getConveyerCount() );
 		
 		// Finally, all the different kinds of tiles loaded, we can load the actually tilemap that requires references
 		// to those tiles
@@ -175,19 +176,18 @@ public final class EncodedWorld {
 		return protoHazard.build();
 	}
 	
-	static List<Hazard> protoToHazards(List<WorldFormatProtos.World.Hazard> protoHazards, WorldResource rsrc) {
+	static List<Hazard> protoToHazards(List<WorldFormatProtos.World.Hazard> protoHazards) {
 		List<Hazard> hazards = new ArrayList<>(protoHazards.size() );
 		for (WorldFormatProtos.World.Hazard h : protoHazards) {
-			hazards.add(protoToHazard(h, rsrc) );
+			hazards.add(protoToHazard(h) );
 		}
 		return hazards;
 	}
 	
-	static Hazard protoToHazard(WorldFormatProtos.World.Hazard protoHazard, WorldResource rsrc) {
+	static Hazard protoToHazard(WorldFormatProtos.World.Hazard protoHazard) {
 		return new Hazard(protoHazard.getId(), 
 						  protoHazard.getExplodes(), 
-						  protoToDeathAnimation(protoHazard.getDeathAnimation() ), 
-						  rsrc.getHazardSheet() );
+						  protoToDeathAnimation(protoHazard.getDeathAnimation() ) );
 	}
 	
 	/* ------------------------------ Death Animation -------------------------------- */
@@ -303,7 +303,8 @@ public final class EncodedWorld {
 							   protoLevel.getBackground().getId(), 
 							   protoToTiles(protoLevel.getTilesList(), rsrc, hazards, conveyers), 
 							   protoToPoint(protoLevel.getBonzoLocation() ), 
-							   protoToSprites(protoLevel.getSpritesList(), rsrc ) );
+							   protoToSprites(protoLevel.getSpritesList(), rsrc ),
+							   rsrc);
 	}
 	
 	/* ------------------------------ Sprites -------------------------------- */
@@ -407,16 +408,23 @@ public final class EncodedWorld {
 		List<WorldFormatProtos.World.Tile> protoTiles = new ArrayList<>(GameConstants.TILES_IN_ROW * GameConstants.TILES_IN_COL);
 		for (int i = 0; i < GameConstants.TILES_IN_COL; i++) {
 			for (int j = 0; j < GameConstants.TILES_IN_ROW; j++) {
-				protoTiles.add(tileToProto(tiles[i][j]) );
+				// Note that 2D array stores as y, x.
+				protoTiles.add(tileToProto(tiles[i][j], j, i) );
 			}
 		}
 		return protoTiles;
 	}
 	
-	static WorldFormatProtos.World.Tile tileToProto(Tile tile) {
+	// x and y are locations tile exists in world. In game, that information is just in the array. On disk,
+	// that information is stored with each tile.
+	static WorldFormatProtos.World.Tile tileToProto(Tile tile, int x, int y) {
 		WorldFormatProtos.World.Tile.Builder protoTile = WorldFormatProtos.World.Tile.newBuilder();
-		protoTile.setId(tile.getTileId() );
-		protoTile.setLocation(pointToProto(tile.getLocation() ) );
+		// All tiles store id in their TileType class, but in proto form we keep it in the basic Tile object.
+		protoTile.setId(tile.getType().getId() );
+		protoTile.setLocation(WorldFormatProtos.World.Point.newBuilder()
+							  .setX(x)
+							  .setY(y)
+							  .build() );
 		
 		TileType tileType = tile.getType();
 		protoTile.setType(tileTypeToProto(tileType) );
@@ -443,19 +451,22 @@ public final class EncodedWorld {
 	
 	// Extra params needed for some tiles.
 	static Tile protoToTile(WorldFormatProtos.World.Tile protoTile, WorldResource rsrc, List<Hazard> hazards, List<Conveyer> conveyers) {
-		return Tile.newTile(protoToPoint(protoTile.getLocation() ), 
-							protoTile.getId(), 
-							protoToTileType(protoTile.getType(), protoTile, rsrc, hazards, conveyers), 
-							rsrc);
+		TileType resultType = protoToTileType(protoTile.getType(), protoTile, rsrc, hazards, conveyers);
+		return   resultType == null
+			   ? Tile.emptyTile()
+			   : Tile.newTile(protoToPoint(protoTile.getLocation() ), 
+							  protoTile.getId(), 
+							  resultType, 
+							  rsrc);
 	}
 	
 	/* ------------------------------ Tile Types -------------------------------- */
-	// This is not enough to conver ALL tile type information to proto form. One must
+	// This is not enough to convert ALL tile type information to proto form. One must
 	// determine which exact type it is and if there is need for additional information extraction
 	// for the proto form of Tile
 	static WorldFormatProtos.World.TileType tileTypeToProto(TileType type) {
-		if (type instanceof StatelessTileType) {
-			switch ((StatelessTileType)type) {
+		if (type instanceof CommonTile) {
+			switch (((CommonTile)type).getUnderlyingType() ) {
 			case NONE: return WorldFormatProtos.World.TileType.NONE;
 			case SOLID: return WorldFormatProtos.World.TileType.SOLID;
 			case THRU: return WorldFormatProtos.World.TileType.THRU;
@@ -474,15 +485,17 @@ public final class EncodedWorld {
 	}
 	
 	// Extra parameters are required for setting up some more complicated tiles.
+	// VERY SPECIAL: This returns null for none tiles. Callers must convert null to the special
+	// immutable singleton Tile.NO_TILE.
 	static TileType protoToTileType(WorldFormatProtos.World.TileType type, WorldFormatProtos.World.Tile tile, WorldResource rsrc, List<Hazard> hazards, List<Conveyer> conveyers) {
 		switch (type) {
-		case NONE: return StatelessTileType.NONE;
-		case SOLID: return StatelessTileType.SOLID;
-		case THRU: return StatelessTileType.THRU;
-		case SCENERY: return StatelessTileType.SCENE;
+		case NONE: return null;
+		case SOLID: return CommonTile.of(tile.getId(), StatelessTileType.SOLID, rsrc);
+		case THRU: return CommonTile.of(tile.getId(), StatelessTileType.THRU, rsrc);
+		case SCENERY: return CommonTile.of(tile.getId(), StatelessTileType.SCENE, rsrc);
 		case HAZARD: return HazardTile.forHazard(hazards.get(tile.getId() ) );
 		case CONVEYER: return new ConveyerTile(conveyers.get(tile.getId() * 2 + getConveyerIdOffset(tile.getRotation() ) ) );
-		case BREAKING: return new CollapsibleTile(tile.getId(), rsrc.getCollapsingSheet() );
+		case BREAKING: return new CollapsibleTile(tile.getId() );
 		default: throw new RuntimeException("Proto tiletype " + type + " has no defined java object!");
 		}
 	}

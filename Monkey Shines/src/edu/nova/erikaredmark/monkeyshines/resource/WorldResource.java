@@ -29,11 +29,7 @@ import edu.nova.erikaredmark.monkeyshines.GameConstants;
 import edu.nova.erikaredmark.monkeyshines.GameSoundEffect;
 import edu.nova.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import edu.nova.erikaredmark.monkeyshines.graphics.exception.ResourcePackException.Type;
-import edu.nova.erikaredmark.monkeyshines.tiles.CollapsibleTile;
-import edu.nova.erikaredmark.monkeyshines.tiles.ConveyerTile;
-import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
-import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
-import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
+import edu.nova.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
 
 /**
  * 
@@ -464,25 +460,14 @@ public final class WorldResource {
 	 * 		a reference to the sprite sheet for the tiles
 	 * 
 	 */
-	public BufferedImage getTilesheetFor(final TileType type) {
-		if (type instanceof StatelessTileType) {
-			switch ((StatelessTileType)type) {
-				case SOLID: return solidTiles;
-				case THRU : return thruTiles;
-				case SCENE: return sceneTiles;
-				case NONE: throw new IllegalArgumentException("No tilesheet for NONE tiles");
-				default: throw new IllegalArgumentException("Unknown tile type " + type);
-			}
-		} else if (type instanceof HazardTile) {
-			return getHazardSheet();
-		} else if (type instanceof ConveyerTile) {
-			return getConveyerSheet();
-		} else if (type instanceof CollapsibleTile) {
-			return getCollapsingSheet();
-		} else {
-			throw new RuntimeException("Unexpected tile type class " + type.getClass().getName() );
+	public BufferedImage getStatelessTileTypeSheet(final StatelessTileType type) {
+		switch (type) {
+			case SOLID: return solidTiles;
+			case THRU : return thruTiles;
+			case SCENE: return sceneTiles;
+			case NONE: throw new IllegalArgumentException("No tilesheet for NONE tiles");
+			default: throw new IllegalArgumentException("Unknown tile type " + type);
 		}
-
 	}
 	
 	/**

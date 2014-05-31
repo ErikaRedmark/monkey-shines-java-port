@@ -1,9 +1,9 @@
 package edu.nova.erikaredmark.monkeyshines.tiles;
 
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
 
 import edu.nova.erikaredmark.monkeyshines.GameConstants;
+import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 
 /**
  * 
@@ -22,19 +22,17 @@ import edu.nova.erikaredmark.monkeyshines.GameConstants;
 public final class CollapsibleTile implements TileType {
 	// Only immutable state; id of which collapsing tile this in graphics resource
 	private final int id;
-	private final BufferedImage collapsingSheet;
 
 	// the level of damage the tile has currently taken. Once it hits 20 that effectively 
 	// makes it 'dead'. Lower values mean LESS damage.
 	int damage;
 	
-	public CollapsibleTile(final int id, final BufferedImage collapsingSheet) {
+	public CollapsibleTile(final int id) {
 		this.id = id;
-		this.collapsingSheet = collapsingSheet;
 		this.damage = 0;
 	}
 
-	public int getId() { return id; }
+	@Override public int getId() { return id; }
 	
 	/**
 	 * 
@@ -44,9 +42,9 @@ public final class CollapsibleTile implements TileType {
 	 * when destroyed.
 	 * 
 	 */
-	@Override public boolean isThru() {
-		return damage < 20;
-	}
+	@Override public boolean isThru() { return damage < 20; }
+	
+	@Override public boolean isSolid() { return false; }
 
 	@Override public void update() { 
 		/* Damaging a tile is done per tick IF bonzo is standing on it. We don't have that context here so
@@ -70,13 +68,13 @@ public final class CollapsibleTile implements TileType {
 	 * The appearence of this tile if fully controlled by its own state.
 	 * 
 	 */
-	public void paint(Graphics2D g2d, int drawToX, int drawToY) {
+	@Override public void paint(Graphics2D g2d, int drawToX, int drawToY, WorldResource rsrc) {
 		// 10 frames of animation, 20 points of damage.
 		int drawFromX = (damage / 2) * GameConstants.TILE_SIZE_X;
 		// y position is controlled 100% by immutable id
 		int drawFromY = id * GameConstants.TILE_SIZE_Y;
 		
-		g2d.drawImage(collapsingSheet, drawToX , drawToY, 											// Destination 1 (top left)
+		g2d.drawImage(rsrc.getCollapsingSheet(), drawToX , drawToY, 							    // Destination 1 (top left)
 					  drawToX + GameConstants.TILE_SIZE_X, drawToY + GameConstants.TILE_SIZE_Y,     // Destination 2 (bottom right)
 					  drawFromX, drawFromY, 													    // Source 1 (top Left)
 					  drawFromX + GameConstants.TILE_SIZE_X, drawFromY + GameConstants.TILE_SIZE_Y, // Source 2 (bottom right)

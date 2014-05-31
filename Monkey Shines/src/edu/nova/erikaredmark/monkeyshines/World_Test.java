@@ -62,7 +62,7 @@ public final class World_Test {
 	 */
 	@Test public void generateConveyersEmpty() {
 		List<Conveyer> conveyers = new ArrayList<>();
-		World.generateConveyers(conveyers, 2, null);
+		World.generateConveyers(conveyers, 2);
 		assertEquals(4, conveyers.size() );
 		assertEquals(Rotation.CLOCKWISE, conveyers.get(0).getRotation() );
 		assertEquals(0, conveyers.get(0).getId() );
@@ -81,10 +81,10 @@ public final class World_Test {
 	 */
 	@Test public void generateConveyersPartial() {
 		List<Conveyer> conveyers = new ArrayList<>();
-		conveyers.add(new Conveyer(0, Rotation.CLOCKWISE, null) );
-		conveyers.add(new Conveyer(0, Rotation.ANTI_CLOCKWISE, null) );
+		conveyers.add(new Conveyer(0, Rotation.CLOCKWISE) );
+		conveyers.add(new Conveyer(0, Rotation.ANTI_CLOCKWISE) );
 		
-		World.generateConveyers(conveyers, 2, null);
+		World.generateConveyers(conveyers, 2);
 		
 		assertEquals(6, conveyers.size() );
 		assertEquals(Rotation.CLOCKWISE, conveyers.get(0).getRotation() );

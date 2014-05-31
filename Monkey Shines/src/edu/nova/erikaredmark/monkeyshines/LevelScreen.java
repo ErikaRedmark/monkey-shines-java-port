@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
+import edu.nova.erikaredmark.monkeyshines.tiles.CommonTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
-import edu.nova.erikaredmark.monkeyshines.tiles.StatelessTileType;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
 
 /**
@@ -41,7 +41,6 @@ public final class LevelScreen {
 	// Graphics
 	// These are all pointers to what is stored in world.
 	private WorldResource rsrc;
-	private boolean isSkinned = false;
 	
 
 	/**
@@ -60,13 +59,12 @@ public final class LevelScreen {
 	 * 
 	 */
 	public static final LevelScreen newScreen(int screenId, WorldResource rsrc) {
-		LevelScreen screen = new LevelScreen(screenId,
-							                 0,
-							                 Tile.createBlankTileMap(),
-							                 ImmutablePoint2D.of(0, 0),
-							                 new ArrayList<Sprite>() );
-		screen.skin(rsrc);
-		return screen;
+		return new LevelScreen(screenId,
+					           0,
+							   Tile.createBlankTileMap(),
+							   ImmutablePoint2D.of(0, 0),
+							   new ArrayList<Sprite>(),
+							   rsrc);
 	}
 	
 
@@ -76,34 +74,19 @@ public final class LevelScreen {
 	 * 
 	 */
 	public LevelScreen(final int screenId, 
-					   final int backgroundId,
+			 		   final int backgroundId,
 					   final Tile[][] screenTiles, 
 					   final ImmutablePoint2D bonzoStart, 
-					   final List<Sprite> spritesOnScreen) {
+					   final List<Sprite> spritesOnScreen,
+					   final WorldResource rsrc) {
 		
 		this.screenId = screenId;
 		this.backgroundId = backgroundId;
 		this.screenTiles = screenTiles;
 		this.bonzoStart = bonzoStart;
 		this.spritesOnScreen = spritesOnScreen;
-	}
-	
-	public void skin(final WorldResource rsrc) {
 		this.rsrc = rsrc;
-		for (Sprite s : spritesOnScreen) {
-			s.skin(rsrc);
-		}
-		
-		for (Tile[] tileArray : screenTiles) {
-			for (Tile t : tileArray) {
-				t.skin(rsrc);
-			}
-		}
-		
-		isSkinned = true;
 	}
-	
-	public boolean isSkinned() { return isSkinned; }
 	
 	/** Returns the screen id of this screen																			*/
 	public int getId() { return this.screenId; }
@@ -213,7 +196,7 @@ public final class LevelScreen {
 	 * this method should already be normalised as a grid location and not an absolute location
 	 * on the screen
 	 * <p/>
-	 * If the location is not valid for a tile, then {@code StatelessTileType.NONE} is returned.
+	 * If the location is not valid for a tile, then {@code CommonTile.NONE} is returned.
 	 * 
 	 * @param x
 	 * 		x location in terms of grid index
@@ -228,8 +211,13 @@ public final class LevelScreen {
 	 */
 	public TileType getTile(int x, int y) {
 		// If out of bounds, allow to slip by
-		if (x < 0 || x >= GameConstants.TILES_IN_ROW || y < 0 || y >= GameConstants.TILES_IN_COL)
-			return StatelessTileType.NONE;
+		if (   x < 0 
+			|| x >= GameConstants.TILES_IN_ROW 
+			|| y < 0 
+			|| y >= GameConstants.TILES_IN_COL) {
+			
+			return CommonTile.NONE;
+		}
 		
 		return screenTiles[y][x].getType();
 	}
@@ -316,7 +304,6 @@ public final class LevelScreen {
 	public void setTile(int tileX, int tileY, TileType tileType, int tileId) {
 		if (tileX > 31 || tileX < 0) throw new IllegalArgumentException(tileX + " outside of X range [0, 31]");
 		if (tileY > 20 || tileY < 0) throw new IllegalArgumentException(tileY + " outside of Y range [0, 19]");
-		if (isSkinned == false) throw new IllegalStateException("LevelScreen " + this + " not skinned yet");
 		
 		screenTiles[tileY][tileX] = Tile.newTile(ImmutablePoint2D.of(tileX, tileY), tileId, tileType, rsrc);
 	}

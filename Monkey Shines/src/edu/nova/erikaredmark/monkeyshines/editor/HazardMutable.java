@@ -1,7 +1,5 @@
 package edu.nova.erikaredmark.monkeyshines.editor;
 
-import java.awt.image.BufferedImage;
-
 import edu.nova.erikaredmark.monkeyshines.DeathAnimation;
 import edu.nova.erikaredmark.monkeyshines.Hazard;
 
@@ -32,14 +30,10 @@ public class HazardMutable {
 	// ID remains final: That is a function of where it is in the list.
 	private final int id;
 	
-	// Resource remains final
-	private final BufferedImage hazardSheet;
-	
-	public HazardMutable(final int id, final boolean explodes, final DeathAnimation deathAnimation, final BufferedImage hazardSheet) {
+	public HazardMutable(final int id, final boolean explodes, final DeathAnimation deathAnimation) {
 		this.id = id;
 		this.explodes = explodes;
 		this.deathAnimation = deathAnimation;
-		this.hazardSheet = hazardSheet;
 	}
 	
 	/**
@@ -51,16 +45,12 @@ public class HazardMutable {
 	 * 		an immutable copy of this object
 	 * 
 	 */
-	public Hazard immutableCopy() {
-		return new Hazard(id, explodes, deathAnimation, hazardSheet);
-	}
+	public Hazard immutableCopy() { return new Hazard(id, explodes, deathAnimation); }
 
 	public boolean getExplodes() { return explodes; }
 	public void setExplodes(boolean explodes) {	this.explodes = explodes; }
 
 	public DeathAnimation getDeathAnimation() { return deathAnimation; }
 	public void setDeathAnimation(DeathAnimation deathAnimation) { this.deathAnimation = deathAnimation; }
-
-	public BufferedImage getHazardSheet() { return hazardSheet; }
 	
 }

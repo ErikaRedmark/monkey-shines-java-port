@@ -43,7 +43,6 @@ public class Sprite {
 	private       boolean twoWayFacing;
 	
 	private WorldResource rsrc;
-	private boolean isSkinned = false;
 	/** 
 	 * 
 	 * Creates a new unmoving sprite with the given and resource pack. The sprite starts at 0,0, has no bounding box to
@@ -64,9 +63,7 @@ public class Sprite {
 	 * 		a new instance of this class
 	 */
 	public static Sprite newUnmovingSprite(int id, AnimationType type, AnimationSpeed speed, WorldResource rsrc) {
-		Sprite s = new Sprite(id, ImmutablePoint2D.of(0, 0), ImmutableRectangle.of(0, 0, 0, 0), 0, 0, type, speed);
-		s.skin(rsrc);
-		return s;
+		return new Sprite(id, ImmutablePoint2D.of(0, 0), ImmutableRectangle.of(0, 0, 0, 0), 0, 0, type, speed, rsrc);
 	}
 	
 	/**
@@ -96,13 +93,19 @@ public class Sprite {
 	 * 
 	 */
 	public static Sprite newSprite(int spriteId, ImmutablePoint2D spriteStartingLocation, ImmutableRectangle spriteBoundingBox, ImmutablePoint2D spriteVelocity, AnimationType animationType, AnimationSpeed speed, WorldResource rsrc) {
-		Sprite s = new Sprite(spriteId, spriteStartingLocation, spriteBoundingBox, spriteVelocity.x(), spriteVelocity.y(), animationType, speed);
-		s.skin(rsrc);
-		return s;
+		return new Sprite(spriteId, spriteStartingLocation, spriteBoundingBox, spriteVelocity.x(), spriteVelocity.y(), animationType, speed, rsrc);
 	}
 	
 	
-	private Sprite(final int id, final ImmutablePoint2D startLocation, final ImmutableRectangle boundingBox, final int initialSpeedX, final int initialSpeedY, final AnimationType type, final AnimationSpeed speed) {
+	private Sprite(final int id, 
+			  	   final ImmutablePoint2D startLocation, 
+			  	   final ImmutableRectangle boundingBox, 
+			  	   final int initialSpeedX, 
+			  	   final int initialSpeedY, 
+			  	   final AnimationType type, 
+			  	   final AnimationSpeed speed,
+			  	   final WorldResource rsrc) {
+		
 		this.id = id;
 		this.startLocation = startLocation;
 		this.boundingBox = boundingBox;
@@ -110,6 +113,7 @@ public class Sprite {
 		this.initialSpeedY = initialSpeedY;
 		this.animationType = type;
 		this.animationSpeed = speed;
+		setUpGraphics(rsrc);
 		
 		// State information
 		this.speedX = initialSpeedX;
@@ -118,17 +122,15 @@ public class Sprite {
 		
 	}
 	
-	public void skin(final WorldResource rsrc) {
+	private void setUpGraphics(final WorldResource rsrc) {
 		this.rsrc = rsrc;
 		currentClip = ClippingRectangle.of(GameConstants.SPRITE_SIZE_X, GameConstants.SPRITE_SIZE_Y);
 		twoWayFacing = (rsrc.getSpritesheetFor(this.id).getHeight() > GameConstants.SPRITE_SIZE_Y);
 		if (twoWayFacing && speedX >= 0) {
 			this.currentClip.setY(GameConstants.SPRITE_SIZE_Y);
 		}
-		this.isSkinned = true;
 	}
-	
-	public boolean isSkinned() { return isSkinned; }
+
 	/**
 	 * 
 	 * Returns the starting location of this sprite. The returned object is immutable.
@@ -148,9 +150,7 @@ public class Sprite {
 	 * 		the animation type for the sprite
 	 * 
 	 */
-	public AnimationType getAnimationType() {
-		return animationType;
-	}
+	public AnimationType getAnimationType() { return animationType; }
 	
 	/**
 	 * 
@@ -160,15 +160,15 @@ public class Sprite {
 	 * 		animation speed of the sprite
 	 * 
 	 */
-	public AnimationSpeed getAnimationSpeed() {
-		return animationSpeed;
-	}
+	public AnimationSpeed getAnimationSpeed() { return animationSpeed; }
 	
 	/**
+	 * 
 	 * Returns a new point instance that represents the current sprite's position. This point instance may be freely modified
 	 * without affecting the original sprite.
 	 * 
 	 * @return
+	 * 
 	 */
 	public Point2D newPointFromSpritePosition() { return Point2D.of(currentLocation); }
 	
