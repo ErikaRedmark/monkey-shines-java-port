@@ -75,6 +75,9 @@ public final class Bonzo {
 	 * **********************************************/
 	private int ticksToNextFrame;
 	private static final int TICKS_BETWEEN_FRAMES = 0;
+	// Once bonzo lands, he is back in his original state, EXCEPT the animation needs to play the
+	// jumping frames backwards. 
+	private boolean unJumping;
 	
 	public Bonzo(final World worldPointer) {
 		this.worldPointer = worldPointer;
@@ -393,8 +396,12 @@ public final class Bonzo {
 	 * 
 	 */
 	public void move(double velocity) {
-		// If we are not jumping, increment the sprite
-		if (!isJumping) {
+		// If we are not jumping, unjumping, or dying, increment the sprite
+		// basically, as long as no other state is controlling animation, animate.
+		if (   !(isJumping) 
+			&& !(isDying) 
+			&& !(unJumping) ) {
+			
 			if (readyToAnimate() ) {
 				currentSprite++;
 				if (currentSprite >= 16)
@@ -507,13 +514,25 @@ public final class Bonzo {
 	
 	/**
 	 * 
-	 * Sets bonzos state to jumping
+	 * Sets bonzos state to jumping. This only affects unjump state by disabling it if
+	 * it was on already. It does not do the reverse (auto toggling it).
 	 * 
 	 * @param jumping
 	 * 
 	 */
 	private void setJumping(boolean jumping) {
 		this.isJumping = jumping;
+		if (unJumping)  setUnjumping(false);
+	}
+	
+	private void setUnjumping(boolean unjump) {
+		this.unJumping = unjump;
+		if (unJumping) {
+			// Sprite 6 is the last jump sprite, so the 'first' for unjumping
+			this.currentSprite = 6;
+		} else {
+			this.currentSprite = 0;
+		}
 	}
 	
 	/**
@@ -571,9 +590,11 @@ public final class Bonzo {
 				System.out.println("debug");
 			}
 			currentLocation.translateY(-groundState.snapUpBy); //Push back to level field.
-			// If we are jumping when we land, move sprite to post-jump stage and stop jumping
-			if (isJumping)  currentSprite = 3;
-			setJumping(false);
+			// If we are jumping when we land, start the 'unjump' animation.
+			if (isJumping) {
+				setJumping(false);
+				setUnjumping(true);
+			}
 			
 			// Set conveyer belt state
 			setAffectedByConveyer(groundState.onConveyer);
@@ -586,9 +607,8 @@ public final class Bonzo {
 		if (isJumping) {
 			// check for a tile above us
 			if (!solidToUp(currentLocation.y() ) ) {
-				//currentLocation.y -= currentVelocity.y;
-				if (currentSprite < 7)
-					currentSprite++;
+				if (currentSprite < 7)  ++currentSprite;
+				
 			} else {
 				// We did hit a solid
 				// Only reverse the velocity if we are actually already going up. If we are falling and somehow still
@@ -599,6 +619,14 @@ public final class Bonzo {
 				// tiles to the side in the ceiling. Do not let bonzo inside the ceiling!
 				snapBonzoY();
 			}
+		}
+		
+		// If landing from a jump, we are in an unjumping state; sole goal is to play sprites backwards.
+		if (unJumping) {
+			// Technically, sprite 0 is the end, but if we go up to it, we have 1 frame of bad animation.
+			// Sprite 0 will be set with unjumping becoming false.
+			if (currentSprite > 0)  --currentSprite;
+			else				    setUnjumping(false);
 		}
 		
 		// If we are affected by a conveyer, we are moved. If we are moved into a wall, we move just enough
@@ -659,15 +687,18 @@ public final class Bonzo {
 		}
 		// if walking right
 		int takeFromX = currentSprite * BONZO_SIZE.x();
-		if (!isJumping) {
+		
+		// Standard Drawing
+		if (!(isJumping) && (!unJumping) ) {
 			g2d.drawImage(CoreResource.INSTANCE.getBonzoSheet(), currentLocation.x(), currentLocation.y(),  //DEST
 						  currentLocation.x() + BONZO_SIZE.x(), currentLocation.y() + BONZO_SIZE.y(), // DEST2
 						  takeFromX, walkingDirection * 40, takeFromX + BONZO_SIZE.x(), (walkingDirection * 40) + 40,
 						  null);
-		} else if (isJumping) {
+			
+		// Jump/Unjump drawing
+		} else {
 			// if we are jumping to the left, we have to go 8 * 40 to the right to get to the right sprite level
-			if (walkingDirection == 1)
-				takeFromX += JUMP_LEFT_X;
+			if (walkingDirection == 1)  takeFromX += JUMP_LEFT_X;
 			g2d.drawImage(CoreResource.INSTANCE.getBonzoSheet(), currentLocation.x(), currentLocation.y(),  //DEST
 						  currentLocation.x() + BONZO_SIZE.x(), (int)currentLocation.y() + BONZO_SIZE.y(), // DEST2
 						  takeFromX, JUMP_Y, takeFromX + BONZO_SIZE.x(), JUMP_Y + 40,
