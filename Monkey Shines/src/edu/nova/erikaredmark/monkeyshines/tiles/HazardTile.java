@@ -165,7 +165,7 @@ public class HazardTile implements TileType {
 	 * Resets the state of the hazard. Normally called whenever a level screen is reloaded.
 	 * 
 	 */
-	public void reset() {
+	@Override public void reset() {
 		exploding = false;
 		animationPoint = 0;
 		timeToNextFrame = 0;

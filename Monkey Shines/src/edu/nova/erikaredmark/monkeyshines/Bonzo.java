@@ -406,6 +406,8 @@ public final class Bonzo {
 	 * 
 	 */
 	public void move(double velocity) {
+		// no zombies
+		if (isDying)  return;
 		// If we are not jumping, unjumping, or dying, increment the sprite
 		// basically, as long as no other state is controlling animation, animate.
 		if (   !(isJumping) 

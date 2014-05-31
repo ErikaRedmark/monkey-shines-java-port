@@ -68,6 +68,14 @@ public interface TileType {
 	
 	/**
 	 * 
+	 * Some tile types have a concept of reset. Resetting is done whenver a level is reloaded, such
+	 * as from death or just moving back onto the screen.
+	 * 
+	 */
+	void reset();
+	
+	/**
+	 * 
 	 * Paints the given tile on the world. Container classes store location, and supply it to paint
 	 * method in pixel position. The tile will draw according to its internal id, its state, and
 	 * the current world resource.

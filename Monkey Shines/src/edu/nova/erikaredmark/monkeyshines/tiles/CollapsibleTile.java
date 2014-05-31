@@ -46,6 +46,10 @@ public final class CollapsibleTile implements TileType {
 	
 	@Override public boolean isSolid() { return false; }
 
+	@Override public void reset() { 
+		damage = 0;
+	}	
+	
 	@Override public void update() { 
 		/* Damaging a tile is done per tick IF bonzo is standing on it. We don't have that context here so
 		 * update does nothing. Collision logic must check for collapsing tile and call specific methods.

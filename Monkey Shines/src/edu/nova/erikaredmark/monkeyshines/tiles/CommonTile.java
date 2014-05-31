@@ -104,6 +104,8 @@ public class CommonTile implements TileType {
 
 	@Override public void update() { /* No state; never updates */ }
 	
+	@Override public void reset() { /* No op */ }
+	
 	@Override public void paint(Graphics2D g2d, int drawToX, int drawToY, WorldResource rsrc) {
 		if (this.underlyingType == StatelessTileType.NONE)  return;
 		

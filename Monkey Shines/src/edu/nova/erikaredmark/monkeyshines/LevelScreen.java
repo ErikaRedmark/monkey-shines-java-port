@@ -6,7 +6,6 @@ import java.util.List;
 
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 import edu.nova.erikaredmark.monkeyshines.tiles.CommonTile;
-import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
 
 /**
@@ -150,7 +149,7 @@ public final class LevelScreen {
 	 */
 	public void resetScreen() {
 		resetSprites();
-		resetHazards();
+		resetTiles();
 	}
 	
 	/**
@@ -163,12 +162,11 @@ public final class LevelScreen {
 		}
 	}
 	
-	private void resetHazards() {
-		// TODO If required, a possible optimisation may be to store hazard tiles in separate list to iterate over.
+	private void resetTiles() {
+		// TODO If required, a possible optimisation may be to store tiles in separate list to iterate over.
 		for (Tile col[] : this.screenTiles) {
 			for (Tile t : col) {
-				TileType type = t.getType();
-				if (type instanceof HazardTile)  ((HazardTile)type).reset();
+				t.getType().reset();
 			}
 		}
 	}
