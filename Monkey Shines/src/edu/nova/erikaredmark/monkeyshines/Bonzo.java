@@ -531,7 +531,12 @@ public final class Bonzo {
 			// Sprite 6 is the last jump sprite, so the 'first' for unjumping
 			this.currentSprite = 6;
 		} else {
-			this.currentSprite = 0;
+			// This is the first normal move sprite bonzo will be set to
+			// This differs when moving left vs right due to how the sprite sheet is designed.
+			// When moving right, as he falls his arms need to swing back, not towards the front.
+			if (walkingDirection == 0) this.currentSprite = 6; // right
+			else					   this.currentSprite = 0; // left 
+			
 		}
 	}
 	
