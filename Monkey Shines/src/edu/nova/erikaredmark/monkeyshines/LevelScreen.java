@@ -338,9 +338,6 @@ public final class LevelScreen {
 	 * As the name suggests, this doesn't merely paint; going through every entity, it run updates on
 	 * them as well. Updating is done after painting
 	 * 
-	 * TODO draws entire screen. May require a more intelligent algorithm to run on slower
-	 * machines
-	 * 
 	 * @param g2d
 	 * 
 	 */

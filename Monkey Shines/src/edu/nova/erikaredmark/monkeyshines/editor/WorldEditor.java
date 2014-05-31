@@ -111,8 +111,10 @@ public final class WorldEditor {
 	 * 		engine will be running this level
 	 */
 	public void changeCurrentScreen(LevelScreenEditor editor) {
-		world.changeCurrentScreen(editor.getId() );
-		// TODO display dialog if there is an unknown failure? Check return type
+		boolean couldChange = world.changeCurrentScreen(editor.getId() );
+		if (!(couldChange) ) {
+			System.err.println("Could not change screen to " + editor.getId() );
+		}
 	}
 	
 	public void paint(Graphics2D g) {

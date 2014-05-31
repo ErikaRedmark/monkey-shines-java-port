@@ -16,6 +16,7 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
@@ -98,7 +99,10 @@ public class EditHazardsDialog extends JDialog {
 				// Perform a check: We cannot add a new hazard if there is not enough space in the graphics context to 
 				// render the hazard. Number of hazards is limited by the size of our resource.
 				if (!(rsrc.canAddHazard(newModel.size() ) ) ) {
-					// TODO error message
+					JOptionPane.showMessageDialog(EditHazardsDialog.this,
+						    "No more hazards can be added. Not enough graphics resources. Add more sprites to hazard sprite sheet to add more hazards.",
+						    "No More Hazard Graphics",
+						    JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 				

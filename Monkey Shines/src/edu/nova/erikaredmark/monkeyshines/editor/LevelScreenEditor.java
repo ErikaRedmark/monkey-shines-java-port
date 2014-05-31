@@ -31,7 +31,6 @@ public class LevelScreenEditor {
 	 */
 	public void setTile(int tileX, int tileY, TileType tileType, int tileId) {
 		this.screen.setTile(tileX, tileY, tileType, tileId);
-		// TODO store change
 	}
 	
 	/**
@@ -39,7 +38,6 @@ public class LevelScreenEditor {
 	 */
 	public void eraseTile(int i, int j) {
 		this.screen.eraseTile(i, j);
-		// TODO store change
 	}
 
 	public int getId() { return screen.getId(); }

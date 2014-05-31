@@ -176,7 +176,6 @@ public final class WorldResource {
 	 */
 	public static WorldResource fromPack(final Path packFile) throws ResourcePackException {
 		// TODO replace with reading magic number http://www.coderanch.com/t/381509/java/java/check-file-zip-file-java
-		//if (packFile.getFileName().endsWith(".zip") == false ) throw new IllegalArgumentException("not a zipfile: " + packFile);
 		
 		// Declare non final versions of instance data. However, we enforce only replacing null in other ways in the below code.
 		// Once they are added to the world resource object they will become final.

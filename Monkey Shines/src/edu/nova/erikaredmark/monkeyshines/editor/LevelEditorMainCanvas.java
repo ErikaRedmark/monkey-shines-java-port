@@ -302,13 +302,11 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	
 	/* These actions are called from user input.																		*/
 	
-	// TODO a lot of these 'changeState(EditorState.PLACING_TILES)' can probably be removed
 	/** User action to set state to placing solids																		*/
 	public void actionPlacingSolids() {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
 		currentTileType = PaintbrushType.SOLIDS;
-		//changeState(EditorState.PLACING_TILES);
 	}
 	
 	/** User action to set state to placing thrus																		*/
@@ -316,14 +314,12 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
 		currentTileType = PaintbrushType.THRUS;
-		//changeState(EditorState.PLACING_TILES);
 	}
 	
 	public void actionPlacingScenes() {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
 		currentTileType = PaintbrushType.SCENES;
-		//changeState(EditorState.PLACING_TILES);
 	}
 	
 	public void actionPlacingConveyers() {

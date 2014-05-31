@@ -5,11 +5,6 @@ import java.awt.Graphics;
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 
 public class Goodie {
-	/**
-	 * MAJOR TODO
-	 * Must fix the fact that goodies appear on all screens.
-	 */
-
 	// These values indicate starting information for object construction
 	private final Type goodieType;
 	private final int screenID;

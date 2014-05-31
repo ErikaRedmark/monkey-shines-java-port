@@ -249,7 +249,6 @@ public class World {
 		}
 	}
 	
-	// TODO Design: Should it return to Bonzo a special object specifying the results?
 	public void checkCollisions(Bonzo theBonzo) {
 		// Another Screen?
 		ImmutablePoint2D currentLocation = theBonzo.getCurrentLocation();

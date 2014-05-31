@@ -174,8 +174,8 @@ public final class Bonzo {
 		boolean atLeastGround = false;
 		
 		// Because we are looking at four positions, with a max of three unique tiles and possibly two,
-		// there may be repeats. We can't use == to check due to stateless tile types (TODO refactor them into
-		// other classes) but the repeats are required checking for any code modifying tile state.
+		// there may be repeats. We can't use == to check due to stateless tile types but the repeats 
+		// are required checking for any code modifying tile state.
 		TileType pastTile = null;
 		for (TileType t : grounds) {
 			if (t instanceof ConveyerTile) {
@@ -240,7 +240,6 @@ public final class Bonzo {
 			// bonzoOneBelowFeet - 1 gives us bottom position of bonzo. Special case for when this
 			// variable is aligned % = 0, it means bonzo is already on the ground. Return 0 for those
 			// instances to prevent snapping up a full tile.
-			// TODO add more fall assist algorithms to help bonzo land in 2x2 wide passageways
 			if (bonzoOneBelowFeetY % GameConstants.TILE_SIZE_Y == 0)  return new GroundState(0, onConveyer);
 			else {
 				return new GroundState( (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y, onConveyer);

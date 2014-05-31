@@ -4,13 +4,14 @@ import java.awt.Graphics2D;
 
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 
-/** TODO
+/**
  * 
- * I have to make sure every graphic used is loaded once, and these sprites contain pointers to the sheet, and not
- * the actual sheet.
+ * Represents a moving entity in the world, bounded within a region, that will kill bonzo if he
+ * touched it.
+ * 
+ * @author Erika Redmark
  *
  */
-
 public class Sprite {
 
 	// Initial state information

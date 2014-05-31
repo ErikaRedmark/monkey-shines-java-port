@@ -359,18 +359,17 @@ public class LevelEditor extends JFrame {
 				try {
 					editor.currentWorld.saveWorld(saveTo);
 				} catch (WorldSaveException ex) {
-					// TODO send to a better logging framework
-					ex.printStackTrace();
 					JOptionPane.showMessageDialog(editor,
 					    "Cannot Save World: Possible world corruption: " + ex.getMessage(),
 					    "Saving Error",
 					    JOptionPane.ERROR_MESSAGE);
-				} catch (IOException ex) {
 					ex.printStackTrace();
+				} catch (IOException ex) {
 					JOptionPane.showMessageDialog(editor,
 					    "Cannot Save World: I/O error: " + ex.getMessage(),
 					    "Saving Error",
 					    JOptionPane.ERROR_MESSAGE);
+					ex.printStackTrace();
 				}
 			}
 		}); 

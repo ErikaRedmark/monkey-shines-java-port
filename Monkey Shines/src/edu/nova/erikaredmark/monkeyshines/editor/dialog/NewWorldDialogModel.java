@@ -41,20 +41,6 @@ public final class NewWorldDialogModel extends ObservableModel {
 		this.useDefaultPack = true;
 		this.saveLocation = null;
 	}
-	
-	/** 
-	 * 
-	 * Returns a random, default world name. Mostly for fun. Acts as a default filler to a world name
-	 * when someone hasn't chosen their name yet
-	 * 
-	 * @return
-	 * 		some random name
-	 * 
-	 */
-	public static String randomWorldName() {
-		// TODO make actually random
-		return "World of Glit";
-	}
 
 	public static NewWorldDialogModel newInstance() {
 		return new NewWorldDialogModel();

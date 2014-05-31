@@ -182,8 +182,6 @@ public class NewWorldDialog extends JPanel {
 		
 		setPreferredSize(new Dimension(500, 158) );
 		setSize(500, 200);
-		
-		// TODO remove listeners on dispose action
 	}
 
 	

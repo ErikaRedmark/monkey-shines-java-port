@@ -5,8 +5,6 @@ package edu.nova.erikaredmark.monkeyshines;
  * 
  * Repository of game constants used by the engine for drawing and running the game.
  * 
- * TODO Over time, refactor constants/logic into appropriate classes.
- * 
  * @author Erika Redmark
  *
  */
