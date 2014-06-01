@@ -379,8 +379,6 @@ public class EditHazardsDialog extends JDialog {
 		dialog.setModal(true);
 		dialog.setVisible(true);
 
-		
-		
 		return dialog.model;
 	}
 	

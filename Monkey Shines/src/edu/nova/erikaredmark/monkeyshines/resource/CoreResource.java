@@ -7,7 +7,8 @@ import javax.imageio.ImageIO;
 
 /**
  * 
- * Provides access to graphics and sounds that are hardcoded into the game. 
+ * Provides access to graphics and sounds that are hardcoded into the game. As such, this class
+ * has static access.
  * 
  * @author Erika Redmark
  *
@@ -20,7 +21,7 @@ public enum CoreResource {
 	
 	private CoreResource() {
 		try {
-			transparentBonzo = ImageIO.read(this.getClass().getResourceAsStream("/resources/graphics/transbonzo.gif") );
+			transparentBonzo = ImageIO.read(this.getClass().getResourceAsStream("/resources/graphics/editor/transbonzo.gif") );
 		} catch (IOException e) {
 			throw new RuntimeException("Missing resource: transparent bonzo: " + e.getMessage(), e);
 		}

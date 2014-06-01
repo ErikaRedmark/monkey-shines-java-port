@@ -16,8 +16,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
-import com.google.common.base.Optional;
-
 import edu.nova.erikaredmark.monkeyshines.*;
 import edu.nova.erikaredmark.monkeyshines.editor.LevelEditorMainCanvas.EditorState;
 import edu.nova.erikaredmark.monkeyshines.editor.dialog.GoToScreenDialog;
@@ -195,18 +193,18 @@ public class LevelEditor extends JFrame {
 				    "World Not Loaded",
 				    JOptionPane.ERROR_MESSAGE);
 		}
-		
-		Optional<Integer> screenId = GoToScreenDialog.displayAndGetId(this, currentWorld.getVisibleScreenEditor().getId() );
-		if (screenId.isPresent() ) {
-			int goToScreenId = screenId.get();
-			if (currentWorld.screenExists(goToScreenId ) ) {
-				currentWorld.actionChangeScreen(goToScreenId);
+		int oldScreenId = currentWorld.getVisibleScreenEditor().getId();
+		int screenId = GoToScreenDialog.displayAndGetId(oldScreenId, currentWorld.getWorldEditor().getWorld() );
+		// If user changed screen id.
+		if (screenId != oldScreenId) {
+			if (currentWorld.screenExists(screenId ) ) {
+				currentWorld.actionChangeScreen(screenId);
 			} else {
 				// Confirm the user wishes to add a new screen if one is not already present before we jump to the
 				// new screen code
-				int result = JOptionPane.showConfirmDialog(this, "This screen does not yet exist. Create screen " + goToScreenId + "?");
+				int result = JOptionPane.showConfirmDialog(this, "This screen does not yet exist. Create screen " + screenId + "?");
 				if (result == JOptionPane.YES_OPTION) {
-					currentWorld.actionChangeScreen(goToScreenId );
+					currentWorld.actionChangeScreen(screenId);
 				}
 			}
 		}

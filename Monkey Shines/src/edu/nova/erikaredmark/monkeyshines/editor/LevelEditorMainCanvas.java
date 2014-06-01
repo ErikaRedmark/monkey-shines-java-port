@@ -153,6 +153,23 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	
 	/**
 	 * 
+	 * Returns the current world editor for the level editor. This call will fail if called when no
+	 * world is loaded.
+	 * 
+	 * @return
+	 * 		world editor, never {@code null}
+	 * 
+	 * @throws IllegalStateException
+	 * 		if no world is loaded in the editor
+	 * 
+	 */
+	public WorldEditor getWorldEditor() {
+		if (this.currentState == EditorState.NO_WORLD_LOADED)  throw new IllegalStateException("No world loaded");
+		return this.currentWorldEditor;
+	}
+	
+	/**
+	 * 
 	 * Returns the current state of this object.
 	 * 
 	 */
