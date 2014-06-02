@@ -9,6 +9,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 
 import javax.swing.AbstractAction;
@@ -47,6 +49,9 @@ public final class GoToScreenDialog extends JDialog {
 	
 	// Text box containing current screen id
 	private final JTextField screenIdText;
+	
+	// World reference for generating thumbnails
+	private final World world;
 	
 	private GoToScreenDialog(final int currentId, final World world) {
 		getContentPane().setLayout(new GridBagLayout() );
@@ -113,8 +118,9 @@ public final class GoToScreenDialog extends JDialog {
 		});
 		
 		screenIdText = new JTextField(6);
-		screenIdText.addActionListener(new ActionListener() {
-			@Override public void actionPerformed(ActionEvent arg0) { 
+		screenIdText.addKeyListener(new KeyListener() {
+			@Override public void keyPressed(KeyEvent e) { }
+			@Override public void keyReleased(KeyEvent e) { 
 				Optional<Integer> userValue = StringToNumber.string2Int(screenIdText.getText() );
 				if (userValue.isPresent() ) {
 					setId(userValue.get().intValue() );
@@ -123,6 +129,8 @@ public final class GoToScreenDialog extends JDialog {
 					System.err.println("Non-integer value " + screenIdText.getText() );
 				}
 			}
+			@Override public void keyTyped(KeyEvent e) { }
+
 		});
 		
 		levelSelect.add(rightArrow, BorderLayout.EAST);
@@ -171,6 +179,7 @@ public final class GoToScreenDialog extends JDialog {
 		// Set initial model values
 		this.originalScreenId = currentId;
 		this.selectedScreenId = currentId;
+		this.world = world;
 		this.screenIdText.setText(String.valueOf(currentId) );
 		updateThumbnail();
 	}
@@ -210,8 +219,12 @@ public final class GoToScreenDialog extends JDialog {
 	 * 
 	 */
 	private void updateThumbnail() {
-		// TODO create thumbnail
-		this.levelThumbnailToDraw = EditorResource.getNewScreenThumbnail();
+		if (this.world.screenIdExists(selectedScreenId) ) {
+			this.levelThumbnailToDraw = EditorResource.generateThumbnailFor(world, selectedScreenId);
+		} else {
+			this.levelThumbnailToDraw = EditorResource.getNewScreenThumbnail();
+		}
+		
 		this.levelThumbnail.repaint();
 	}
 	

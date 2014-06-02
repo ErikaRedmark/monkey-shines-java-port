@@ -354,6 +354,24 @@ public final class LevelScreen {
 			s.update();
 		}
 	}
+	
+	/**
+	 * 
+	 * Paints the level screen to the graphics context with no sprites. This
+	 * is intended as the first step for making a thumbnail of a level screen.
+	 * This does not update the game at all.
+	 * 
+	 */
+	public void paintForThumbnail(Graphics2D g2d) {
+		g2d.drawImage(rsrc.getBackground(this.backgroundId), 0, 0, null);
+		for (int i = 0; i < GameConstants.TILES_IN_COL; i++) { // for every tile in the row
+			for (int j = 0; j < GameConstants.TILES_IN_ROW; j++) {
+				if (screenTiles[i][j] != null) {
+					screenTiles[i][j].paint(g2d);
+				}
+			}
+		}
+	}
 
 	/**
 	 * <strong> NOT PUBLIC API</strong>
