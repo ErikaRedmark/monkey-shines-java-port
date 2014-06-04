@@ -85,7 +85,9 @@ public final class EditorResource {
 				thumbnail.setRGB(i, j, srcPixel);
 			}
 		}
-			
+		
+		tempLevelGraphics.dispose();
+		
 		return thumbnail;
 	}
 	

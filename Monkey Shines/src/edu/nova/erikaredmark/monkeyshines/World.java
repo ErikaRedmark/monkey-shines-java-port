@@ -269,7 +269,10 @@ public class World {
 		ImmutableRectangle bonzoBounding = theBonzo.getCurrentBounds();
 		for (Sprite nextSprite : allSprites) {
 			if (nextSprite.getCurrentBounds().intersect(bonzoBounding) ) {
-				theBonzo.tryKill(DeathAnimation.NORMAL);
+				// Bounding box check done. Do more expensive pixel check
+				if (nextSprite.pixelCollision(theBonzo) ) {
+					theBonzo.tryKill(DeathAnimation.NORMAL);
+				}
 			}
 		}
 		// A hazard?

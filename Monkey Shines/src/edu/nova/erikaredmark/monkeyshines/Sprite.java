@@ -1,7 +1,9 @@
 package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 
+import edu.nova.erikaredmark.monkeyshines.resource.CoreResource;
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 
 /**
@@ -269,11 +271,96 @@ public class Sprite {
 		}
 	}
 	
+	/**
+	 * 
+	 * One of the few methods whose function depends on the graphics; checks if the passed
+	 * Bonzo is colliding with this sprite, not with bounding box collision but on a pixel
+	 * basis. If any part of Bonzo's sprite has a non-full alpha transparency, and it touches
+	 * another part of this sprite with a non-full alpha transparency, that is a collision.
+	 * <p/>
+	 * This method is <strong> expensive</strong> and should only be used after doing a rough
+	 * bounding box determination.
+	 * 
+	 * @param theBonzo
+	 * 
+	 * @return
+	 * 		{@code true} if there was a pixel based collision, {@code false} if otherwise
+	 *
+	 */
+	public boolean pixelCollision(Bonzo theBonzo) {
+		// First, calculate the offset bonzo's sprite is from the target. We can then
+		// map a pixel in the sprite to a pixel on bonzo's sprite. If the pixel is out of
+		// range, then the sprite is not colliding. if it is in range, we compare the image
+		// pixel to the bonzo pixel. Both must be non-fully alpha transperent for a collision.
+		ImmutableRectangle bonzoBounds = theBonzo.getCurrentBounds();
+		// offsets are with respect from sprite TO bonzo, so positive values means bonzo is to the
+		// right/down of the sprite.
+		int xoffset = bonzoBounds.getLocation().x() - this.currentLocation.x();
+		int yoffset = bonzoBounds.getLocation().y() - this.currentLocation.y();
+		
+		// Got the images in memory. Get a bounding box representing which frame is being drawn at
+		// this time. those 40x40 regions will be used for pixel collision
+		BufferedImage bonzoSpriteSheet = CoreResource.INSTANCE.getBonzoSheet();
+		ImmutablePoint2D bonzoSpriteLocation = theBonzo.getDrawLocationInSprite();
+		
+		BufferedImage mySpriteSheet = rsrc.getSpritesheetFor(this.id);
+		
+		// Store both relevant parts of the images as integer arrays to
+		// reduce need for absolete position computation each iteration
+		int[] spriteRgb = mySpriteSheet.getRGB(currentClip.x(),
+											   currentClip.y(), 
+											   GameConstants.SPRITE_SIZE_X, 
+											   GameConstants.SPRITE_SIZE_Y, 
+											   new int[GameConstants.SPRITE_SIZE_X * GameConstants.SPRITE_SIZE_Y],
+											   0,
+											   GameConstants.SPRITE_SIZE_X);
+		
+		int[] bonzoRgb = bonzoSpriteSheet.getRGB(bonzoSpriteLocation.x(), 
+												 bonzoSpriteLocation.y(),
+												 Bonzo.BONZO_SIZE.x(),
+												 Bonzo.BONZO_SIZE.y(),
+												 new int[Bonzo.BONZO_SIZE.x() * Bonzo.BONZO_SIZE.y()],
+												 0,
+												 Bonzo.BONZO_SIZE.x() );
+		
+		// We already have our own. Let's begin. We iterate over our pixels, and calculate which pixel 
+		// position in bonzos sprite sheet we are 'on'. Hitting any location where both pixels have
+		// < 100% alpha transparency (0 alpha is completely solid)
+		// Loops start at 0. Two separate counters are kept to hold absolete positions in the sprite sheet
+		// for both bonzo and the sprite
+		// Assumption: both sprites are 40x40 pixels.
+		//
+		for (int i = 0; i < GameConstants.SPRITE_SIZE_X; i++) {
+			// Avoid calculation every pixel
+			int rowOffset = i * GameConstants.SPRITE_SIZE_X;
+			int fullBonzoOffset = rowOffset + (yoffset * GameConstants.SPRITE_SIZE_X) + xoffset;
+			for (int j = 0; j < GameConstants.SPRITE_SIZE_Y; j++) {
+				// don't bother with calculation if this pixel is not in bonzos bounding box
+				// otherwise we will hit a wrong pixel or an out of bounds issue
+				if (i + xoffset >= Bonzo.BONZO_SIZE.x() || j + yoffset >= Bonzo.BONZO_SIZE.y() )  continue;
+				
+				int spriteAlphaAtPixel = (spriteRgb[rowOffset + j] >> 24) & 0xff;
+				int bonzoAlphaAtPixel = (bonzoRgb[fullBonzoOffset + j] >> 24) & 0xff;
+				
+				if (spriteAlphaAtPixel == 0 && bonzoAlphaAtPixel == 0) {
+					// collision
+					return true;
+				}
+			}
+
+		}
+		
+		// No colliding non-transparent pixels
+		return false;
+		
+	}
+	
 	
 	private void reverseY() { speedY = -speedY; }
 
 	public int getId() { return id; }
 	public int getInitialSpeedX() { return initialSpeedX; }
 	public int getInitialSpeedY() {	return initialSpeedY; }
+
 
 }

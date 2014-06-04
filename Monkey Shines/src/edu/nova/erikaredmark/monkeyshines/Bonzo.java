@@ -701,24 +701,14 @@ public final class Bonzo {
 						  xOffset, yOffset, xOffset + deathSize.x(), yOffset + deathSize.y(),
 						  null);
 			return;
-		}
-		// if walking right
-		int takeFromX = currentSprite * BONZO_SIZE.x();
-		
-		// Standard Drawing
-		if (!(isJumping) && (!unJumping) ) {
-			g2d.drawImage(CoreResource.INSTANCE.getBonzoSheet(), currentLocation.x(), currentLocation.y(),  //DEST
-						  currentLocation.x() + BONZO_SIZE.x(), currentLocation.y() + BONZO_SIZE.y(), // DEST2
-						  takeFromX, walkingDirection * 40, takeFromX + BONZO_SIZE.x(), (walkingDirection * 40) + 40,
-						  null);
-			
-		// Jump/Unjump drawing
 		} else {
-			// if we are jumping to the left, we have to go 8 * 40 to the right to get to the right sprite level
-			if (walkingDirection == 1)  takeFromX += JUMP_LEFT_X;
-			g2d.drawImage(CoreResource.INSTANCE.getBonzoSheet(), currentLocation.x(), currentLocation.y(),  //DEST
-						  currentLocation.x() + BONZO_SIZE.x(), (int)currentLocation.y() + BONZO_SIZE.y(), // DEST2
-						  takeFromX, JUMP_Y, takeFromX + BONZO_SIZE.x(), JUMP_Y + 40,
+			// We can just get the draw location and assume 40x40
+			ImmutablePoint2D sourceLocation = getDrawLocationInSprite();
+			g2d.drawImage(CoreResource.INSTANCE.getBonzoSheet(), 
+						  currentLocation.x(), currentLocation.y(),
+						  currentLocation.x() + BONZO_SIZE.x(), currentLocation.y() + BONZO_SIZE.y(), 
+						  sourceLocation.x(), sourceLocation.y(),
+						  sourceLocation.x() + BONZO_SIZE.x(), sourceLocation.y() + BONZO_SIZE.y(),
 						  null);
 		}
 	}
@@ -757,6 +747,36 @@ public final class Bonzo {
 	 */
 	public ImmutableRectangle getCurrentBounds() {
 		return ImmutableRectangle.of(this.currentLocation.x(), this.currentLocation.y(), BONZO_SIZE.x(), BONZO_SIZE.y());
+	}
+
+	/**
+	 * 
+	 * Intended for pixel-perfect collisions; returns the exact point in the sprite sheet bonzo's current
+	 * frame of animation is.
+	 * <p/>
+	 * It is an error to call this method whilst bonzo is dying, as the sprite frame is no longer guaranteed
+	 * to be 40x40, and bonzo shouldn't be colliding with anything after already having been colliding with
+	 * thing already.
+	 *  
+	 * @return
+	 * 		location in sprite sheet that is currently the source frame of bonzos animation at the time
+	 * 		of this call
+	 * 
+	 */
+	public ImmutablePoint2D getDrawLocationInSprite() {
+		if (isDying)  throw new IllegalStateException("Can't get 40x40 draw location during a death animation");
+
+		// if walking right
+		int takeFromX = currentSprite * BONZO_SIZE.x();
+		// Standard Drawing
+		if (!(isJumping) && (!unJumping) ) {
+			return ImmutablePoint2D.of(takeFromX, walkingDirection * 40);
+		// Jump/Unjump drawing
+		} else {
+			// if we are jumping to the left, we have to go 8 * 40 to the right to get to the right sprite level
+			if (walkingDirection == 1)  takeFromX += JUMP_LEFT_X;
+			return ImmutablePoint2D.of(takeFromX, JUMP_Y);
+		}
 	}
 	
 	

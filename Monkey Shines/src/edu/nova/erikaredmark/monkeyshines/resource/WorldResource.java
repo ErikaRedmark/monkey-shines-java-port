@@ -631,7 +631,10 @@ public final class WorldResource {
 			}
 			
 			editorConveyerTiles = sheet;
+			graphics.dispose();
 		}
+		
+
 		
 		return editorConveyerTiles;
 	}
@@ -692,6 +695,7 @@ public final class WorldResource {
 			}
 			
 			editorCollapsingTiles = sheet;
+			graphics.dispose();
 		}
 		
 		return editorCollapsingTiles;
