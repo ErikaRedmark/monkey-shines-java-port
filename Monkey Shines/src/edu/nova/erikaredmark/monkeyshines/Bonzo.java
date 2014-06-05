@@ -1,6 +1,9 @@
 package edu.nova.erikaredmark.monkeyshines;
 
 import java.awt.Graphics2D;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import edu.nova.erikaredmark.monkeyshines.Conveyer.Rotation;
 import edu.nova.erikaredmark.monkeyshines.resource.CoreResource;
@@ -137,8 +140,8 @@ public final class Bonzo {
 	 * that amount.
 	 * <p/>
 	 * This method does not modify any major state OF BONZO and merely returns a value. The value contains how far bonzo must be
-	 * pushed up, a rotation amount if bonzo is on a conveyer. This method modifies ONE minor state variable; the fall assist,
-	 * and if the tile is collapsible it will modify the TILES state.
+	 * pushed up, a rotation amount if bonzo is on a conveyer, and any collapsable tiles that may need collapsing if
+	 * bonzo is on the ground properly. This method modifies ONE minor state variable; the fall assist
 	 * <p/>
 	 * The parameters for original position are required to determine, for dealing with thru blocks, if bonzo fell onto
 	 * the block, or if he was already inside of it. 
@@ -148,7 +151,8 @@ public final class Bonzo {
 	 * 		preventing him from snapping on top if he just missed it and is now inside it.
 	 * 
 	 * @return
-	 * 		{@code -1} if not on the ground, other a positive value indicating how deep into the ground bonzo is. This may
+	 * 		Ground state object; primary value is the snapUpBy value:
+	 * 	    {@code -1} if not on the ground, other a positive value indicating how deep into the ground bonzo is. This may
 	 * 		return 0... in which case bonzo is perfectly fine on the ground.
 	 * 
 	 */
@@ -177,6 +181,7 @@ public final class Bonzo {
 		// there may be repeats. We can't use == to check due to stateless tile types but the repeats 
 		// are required checking for any code modifying tile state.
 		TileType pastTile = null;
+		List<CollapsibleTile> mayCollapse = new ArrayList<>(4);
 		for (TileType t : grounds) {
 			if (t instanceof ConveyerTile) {
 				if (onConveyer == Rotation.NONE)  onConveyer = ((ConveyerTile) t).getConveyer().getRotation();
@@ -200,9 +205,10 @@ public final class Bonzo {
 			
 			if (t.isSolid() )  atLeastGround = true;
 			
-			// If on a collapsing tile, collapse it if we haven't collapsed it already.
+			// If on a collapsing tile, save it. It will be returned as part of
+			// the ground state for collapsing (should only do so if bonzo is on the tile
 			if (t != pastTile && t instanceof CollapsibleTile) {
-				((CollapsibleTile)t).collapse();
+				mayCollapse.add((CollapsibleTile)t);
 			}
 			
 			pastTile = t;
@@ -214,7 +220,7 @@ public final class Bonzo {
 		if (atLeastThru) {
 			// If bonzo is already exactly on the ground, everything is fine. Otherwise, we may have to fall through it.
 			int depth = (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y;
-			if (depth == 0)  return new GroundState(0, onConveyer);
+			if (depth == 0)  return new GroundState(0, onConveyer, mayCollapse);
 			
 			// Very important! If we are inside of a thru, we do NOT bounce onto it unless bonzo's original position was
 			// ABOVE the thru. Otherwise, it is too easy for him to snap up if a jump didn't quite make it.
@@ -226,7 +232,7 @@ public final class Bonzo {
 			if ( (originalPositionY - 1) / GameConstants.TILE_SIZE_Y == currentLocation.y() / GameConstants.TILE_SIZE_Y) {
 				
 
-				return new GroundState(-1, onConveyer);
+				return new GroundState(-1, onConveyer, mayCollapse);
 				// Effectively, if we snap the original position and the current position and we end up at the same tile, then
 				// we approached it from the side, not above.
 			}
@@ -240,13 +246,13 @@ public final class Bonzo {
 			// bonzoOneBelowFeet - 1 gives us bottom position of bonzo. Special case for when this
 			// variable is aligned % = 0, it means bonzo is already on the ground. Return 0 for those
 			// instances to prevent snapping up a full tile.
-			if (bonzoOneBelowFeetY % GameConstants.TILE_SIZE_Y == 0)  return new GroundState(0, onConveyer);
+			if (bonzoOneBelowFeetY % GameConstants.TILE_SIZE_Y == 0)  return new GroundState(0, onConveyer, mayCollapse);
 			else {
-				return new GroundState( (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y, onConveyer);
+				return new GroundState( (bonzoOneBelowFeetY - 1) % GameConstants.TILE_SIZE_Y, onConveyer, mayCollapse);
 			}
 		}
 		
-		return new GroundState(-1, onConveyer);
+		return new GroundState(-1, onConveyer, mayCollapse);
 	}
 	
 	/** 
@@ -259,14 +265,16 @@ public final class Bonzo {
 	private static final class GroundState {
 		public final int snapUpBy;
 		public final Rotation onConveyer;
+		public final List<CollapsibleTile> mayCollapse;
 		
-		private GroundState(final int snapUpBy, final Rotation onConveyer) {
+		private GroundState(final int snapUpBy, final Rotation onConveyer, final List<CollapsibleTile> mayCollapse) {
 			this.snapUpBy = snapUpBy;
 			this.onConveyer = onConveyer;
+			this.mayCollapse = Collections.unmodifiableList(mayCollapse);
 		}
 		
 		// Immutable singleton for when bonzo is rising, not falling.
-		private static final GroundState RISING = new GroundState(-1, Rotation.NONE);
+		private static final GroundState RISING = new GroundState(-1, Rotation.NONE, Collections.<CollapsibleTile>emptyList() );
 	}
 
 	
@@ -615,6 +623,11 @@ public final class Bonzo {
 			
 			// Set conveyer belt state
 			setAffectedByConveyer(groundState.onConveyer);
+			
+			// We landed, so any collapsibles must collapse.
+			for (CollapsibleTile c : groundState.mayCollapse) {
+				c.collapse();
+			}
 		} 
 		
 		// Give all collisions to World
