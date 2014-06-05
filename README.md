@@ -23,7 +23,7 @@ The basic game engine mechanics are coming together, but there is still quite a 
 - [x] Conveyer Belts
 - [x] Goodies and Yums
 - [x] Collapsible Tiles
-- [ ] Sprite Collisons (currently uses rough bounding box and is not precise enough)
+- [x] Sprite Collisons (uses pixel perfect collision)
 - [ ] UI Containing other information than just main game screen
 - [ ] Health
 - [ ] Health Draining Sprites
