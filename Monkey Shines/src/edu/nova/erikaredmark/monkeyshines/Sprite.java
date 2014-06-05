@@ -3,6 +3,7 @@ package edu.nova.erikaredmark.monkeyshines;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
+import edu.nova.erikaredmark.monkeyshines.bounds.Boundable;
 import edu.nova.erikaredmark.monkeyshines.resource.CoreResource;
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 
@@ -283,21 +284,15 @@ public class Sprite {
 	 * 
 	 * @param theBonzo
 	 * 
+	 * @param intersection
+	 * 		the intersection rectangle of the two bounding boxes for this sprite and bonzo.
+	 * 		passed since it was calculated as part of bounding box collision anyway
+	 * 
 	 * @return
 	 * 		{@code true} if there was a pixel based collision, {@code false} if otherwise
 	 *
 	 */
-	public boolean pixelCollision(Bonzo theBonzo) {
-		// First, calculate the offset bonzo's sprite is from the target. We can then
-		// map a pixel in the sprite to a pixel on bonzo's sprite. If the pixel is out of
-		// range, then the sprite is not colliding. if it is in range, we compare the image
-		// pixel to the bonzo pixel. Both must be non-fully alpha transperent for a collision.
-		ImmutableRectangle bonzoBounds = theBonzo.getCurrentBounds();
-		// offsets are with respect from sprite TO bonzo, so positive values means bonzo is to the
-		// right/down of the sprite.
-		int xoffset = bonzoBounds.getLocation().x() - this.currentLocation.x();
-		int yoffset = bonzoBounds.getLocation().y() - this.currentLocation.y();
-		
+	public boolean pixelCollision(Bonzo theBonzo, Boundable intersection) {
 		// Got the images in memory. Get a bounding box representing which frame is being drawn at
 		// this time. those 40x40 regions will be used for pixel collision
 		BufferedImage bonzoSpriteSheet = CoreResource.INSTANCE.getBonzoSheet();
@@ -305,58 +300,54 @@ public class Sprite {
 		
 		BufferedImage mySpriteSheet = rsrc.getSpritesheetFor(this.id);
 		
-		// Store both relevant parts of the images as integer arrays to
-		// reduce need for absolete position computation each iteration
-		int[] spriteRgb = mySpriteSheet.getRGB(currentClip.x(),
-											   currentClip.y(), 
-											   GameConstants.SPRITE_SIZE_X, 
-											   GameConstants.SPRITE_SIZE_Y, 
-											   new int[GameConstants.SPRITE_SIZE_X * GameConstants.SPRITE_SIZE_Y],
-											   0,
-											   GameConstants.SPRITE_SIZE_X);
+		// Basically, with the intersection, we will rip pixel data of the same size
+		// as the intersection from the appropriate parts of the image. Together with'
+		// the information regarding which frame is active, and the intersection data,
+		// we can 'overlay' the pixels with two arrays where each index in the array refers
+		// to a pixel in one sprite and the appropriate overlapping pixel in the other.
+		final int intersectionSizeX = intersection.getSize().x();
+		final int intersectionSizeY = intersection.getSize().y();
+		final int intersectionX = intersection.getLocation().x();
+		final int intersectionY = intersection.getLocation().y();
 		
-		int[] bonzoRgb = bonzoSpriteSheet.getRGB(bonzoSpriteLocation.x(), 
-												 bonzoSpriteLocation.y(),
-												 Bonzo.BONZO_SIZE.x(),
-												 Bonzo.BONZO_SIZE.y(),
-												 new int[Bonzo.BONZO_SIZE.x() * Bonzo.BONZO_SIZE.y()],
-												 0,
-												 Bonzo.BONZO_SIZE.x() );
+		// Initial location logic: Resole the intersection location in the world against
+		// our drawing location. Wherever the difference is negative, the location in the
+		// source image is just the normal initial 0 point for that frame. Otherwise, it
+		// is the 0 point with the positive offset.
+		final int spriteIntersectionX = intersectionX - currentLocation.x();
+		final int spriteIntersectionY = intersectionY - currentLocation.y();
+		int[] spriteRgb = mySpriteSheet.getRGB(spriteIntersectionX < 0 ? currentClip.x() : currentClip.x() + spriteIntersectionX, 
+											   spriteIntersectionY < 0 ? currentClip.y() : currentClip.y() + spriteIntersectionY, 
+											   intersectionSizeX, 
+											   intersectionSizeY, 
+											   new int[intersectionSizeX * intersectionSizeY], 
+											   0, 
+											   intersectionSizeX);
 		
-		// We already have our own. Let's begin. We iterate over our pixels, and calculate which pixel 
-		// position in bonzos sprite sheet we are 'on'. Hitting any location where both pixels have
-		// opacity (0 alpha is completely transparent)
-		// Loops start at 0. Two separate counters are kept to hold absolete positions in the sprite sheet
-		// for both bonzo and the sprite
-		// Assumption: both sprites are 40x40 pixels.
-		//
-		for (int i = 0; i < GameConstants.SPRITE_SIZE_X; i++) {
-			// Avoid calculation every pixel
-			int rowOffset = i * GameConstants.SPRITE_SIZE_X;
-			int fullBonzoOffset = rowOffset + (yoffset * GameConstants.SPRITE_SIZE_X) + xoffset;
-			for (int j = 0; j < GameConstants.SPRITE_SIZE_Y; j++) {
-				// don't bother with calculation if this pixel is not in bonzos bounding box
-				// otherwise we will hit a wrong pixel or an out of bounds issue
-				// We can't just look at fullBonzoOffset, as that is ambigious as to x/y position.
-				int currentXOffset = i + xoffset;
-				int currentYOffset = j + yoffset;
-				if (   currentXOffset >= Bonzo.BONZO_SIZE.x() 
-					|| currentYOffset >= Bonzo.BONZO_SIZE.y() 
-				    || currentXOffset < 0
-				    || currentYOffset < 0)  continue;
-				
-				int spriteAlphaAtPixel = (spriteRgb[rowOffset + j] >> 24) & 0xff;
-				int bonzoAlphaAtPixel = (bonzoRgb[fullBonzoOffset + j] >> 24) & 0xff;
-				
-				if (spriteAlphaAtPixel > 0 && bonzoAlphaAtPixel > 0) {
-					// collision
-					return true;
-				}
+		ImmutablePoint2D bonzoLocation = theBonzo.getCurrentLocation();
+		final int bonzoIntersectionX = intersectionX - bonzoLocation.x();
+		final int bonzoIntersectionY = intersectionY - bonzoLocation.y();
+		int[] bonzoRgb = bonzoSpriteSheet.getRGB(bonzoIntersectionX < 0 ? bonzoSpriteLocation.x() : bonzoSpriteLocation.x() + bonzoIntersectionX, 
+												 bonzoIntersectionY < 0 ? bonzoSpriteLocation.y() : bonzoSpriteLocation.y() + bonzoIntersectionY, 
+											     intersectionSizeX, 
+											     intersectionSizeY, 
+											     new int[intersectionSizeX * intersectionSizeY], 
+											     0, 
+											     intersectionSizeX);
+		
+		// Setup complete. We have a 1:1 between the arrays; a pixel at position i in one pixel array
+		// maps to the overlapping pixel in the other array. We simply extract the alphas from each pixel
+		// in the intersection area and if both are > than a Transparency Threshold constant, collision.
+		assert spriteRgb.length == bonzoRgb.length : "intersecting pixel data must be of same size!";
+		for (int i = 0; i < spriteRgb.length; i++) {
+			int spritePixel = (spriteRgb[i] >> 24) & 0xFF;
+			int bonzoPixel = (bonzoRgb[i] >> 24) & 0xFF;
+			
+			if (spritePixel > 0 && bonzoPixel > 0) {
+				return true;
 			}
-
 		}
 		
-		// No colliding non-transparent pixels
 		return false;
 		
 	}

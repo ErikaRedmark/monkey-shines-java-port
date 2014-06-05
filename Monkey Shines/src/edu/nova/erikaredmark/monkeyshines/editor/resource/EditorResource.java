@@ -25,7 +25,7 @@ public final class EditorResource {
 	
 	static {
 		try {
-			newScreenThumbnail = ImageIO.read(EditorResource.class.getResourceAsStream("/resources/graphics/editor/newScreen.gif") );
+			newScreenThumbnail = ImageIO.read(EditorResource.class.getResourceAsStream("/resources/graphics/editor/newScreen.png") );
 		} catch (IOException e) {
 			throw new RuntimeException("Missing resource: new screen thumbnail: " + e.getMessage(), e);
 		}

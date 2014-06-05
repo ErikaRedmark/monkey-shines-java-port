@@ -37,8 +37,17 @@ public class Boundable_Test {
 		ImmutableRectangle a = ImmutableRectangle.of(20, 20, 10, 10);
 		ImmutableRectangle b = ImmutableRectangle.of(10, 10, 30, 30);
 		
-		assertTrue(b.intersect(a) );
-		assertTrue(a.intersect(b) );
+		Boundable intersection = a.intersect(b);
+		Boundable intersection2 = b.intersect(a);
+		
+		assertNotNull(b.intersect(a) );
+		assertNotNull(a.intersect(b) );
+		assertEquals(intersection, intersection2);
+		
+		assertEquals(20, intersection.getLocation().x() );
+		assertEquals(20, intersection.getLocation().y() );
+		assertEquals(10, intersection.getSize().x() );
+		assertEquals(10, intersection.getSize().y() );
 	}
 	
 	/**
@@ -50,40 +59,80 @@ public class Boundable_Test {
 		ImmutableRectangle a = ImmutableRectangle.of(10, 10, 10, 10); // 10,10 to 20,20
 		ImmutableRectangle b = ImmutableRectangle.of(15, 10, 10, 10); // 15,10 to 25,20
 		
-		assertTrue(a.intersect(b) );
-		assertTrue(b.intersect(a) );
+		Boundable intersection = a.intersect(b);
+		Boundable intersection2 = b.intersect(a);
+		
+		assertNotNull(intersection);
+		assertNotNull(intersection);
+		
+		assertEquals(intersection, intersection2);
+		
+		assertEquals(15, intersection.getLocation().x() );
+		assertEquals(10, intersection.getLocation().y() );
+		assertEquals(5, intersection.getSize().x() );
+		assertEquals(10, intersection.getSize().y() );
 	}
 
 	@Test public void testIntersectTopSide() {
 		ImmutableRectangle a = ImmutableRectangle.of(10, 10, 10, 10);
 		ImmutableRectangle b = ImmutableRectangle.of(10, 15, 10, 10); // 10, 15 to 20, 25
 		
-		assertTrue(a.intersect(b) );
-		assertTrue(b.intersect(a) );
+		Boundable intersection = a.intersect(b);
+		Boundable intersection2 = b.intersect(a);
+		
+		assertNotNull(intersection);
+		assertNotNull(intersection);
+		
+		assertEquals(intersection, intersection2);
+		
+		assertEquals(10, intersection.getLocation().x() );
+		assertEquals(15, intersection.getLocation().y() );
+		assertEquals(10, intersection.getSize().x() );
+		assertEquals(5, intersection.getSize().y() );
 	}
 	
 	@Test public void testIntersectRightSide() {
 		ImmutableRectangle a = ImmutableRectangle.of(10, 10, 10, 10);
 		ImmutableRectangle b = ImmutableRectangle.of(5, 10, 10, 10);
 		
-		assertTrue(a.intersect(b) );
-		assertTrue(b.intersect(a) );
+		Boundable intersection = a.intersect(b);
+		Boundable intersection2 = b.intersect(a);
+		
+		assertNotNull(intersection);
+		assertNotNull(intersection);
+		
+		assertEquals(intersection, intersection2);
+		
+		assertEquals(10, intersection.getLocation().x() );
+		assertEquals(10, intersection.getLocation().y() );
+		assertEquals(5, intersection.getSize().x() );
+		assertEquals(10, intersection.getSize().y() );
 	}
 	
 	@Test public void testIntersectBottomSide() {
 		ImmutableRectangle a = ImmutableRectangle.of(10, 10, 10, 10);
 		ImmutableRectangle b = ImmutableRectangle.of(10, 5, 10, 10);
 		
-		assertTrue(a.intersect(b) );
-		assertTrue(b.intersect(a) );
+		Boundable intersection = a.intersect(b);
+		Boundable intersection2 = b.intersect(a);
+		
+		assertNotNull(intersection);
+		assertNotNull(intersection);
+		
+		assertEquals(intersection, intersection2);
+		
+		assertEquals(10, intersection.getLocation().x() );
+		assertEquals(10, intersection.getLocation().y() );
+		assertEquals(10, intersection.getSize().x() );
+		assertEquals(5, intersection.getSize().y() );
 	}
 	
 	@Test public void testNotIntersect() {
 		ImmutableRectangle a = ImmutableRectangle.of(10, 10, 10, 10);
 		ImmutableRectangle b = ImmutableRectangle.of(30, 30, 10, 10);
 		
-		assertFalse(a.intersect(b) );
-		assertFalse(b.intersect(a) );
+		assertNull(a.intersect(b) );
+		assertNull(b.intersect(a) );
 	}
 
 }

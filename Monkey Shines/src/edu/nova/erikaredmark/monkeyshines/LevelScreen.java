@@ -270,7 +270,7 @@ public final class LevelScreen {
 		final List<Sprite> returnList = new ArrayList<>();
 		for (Sprite s : spritesOnScreen) {
 			final ImmutableRectangle rect = s.getCurrentBounds();
-			if (box.intersect(rect) ) returnList.add(s);
+			if (box.intersect(rect) != null) returnList.add(s);
 		}
 		return returnList;
 	}

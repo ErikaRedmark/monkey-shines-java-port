@@ -80,6 +80,6 @@ public final class ImmutableRectangle extends Boundable {
 	public ImmutableRectangle newSize(ImmutablePoint2D size) {
 		return ImmutableRectangle.of(this.location.x(), this.location.y(), size.x(), size.y() );
 	}
-	
+
 	
 }

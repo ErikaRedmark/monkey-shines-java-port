@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import edu.nova.erikaredmark.monkeyshines.Conveyer.Rotation;
+import edu.nova.erikaredmark.monkeyshines.bounds.Boundable;
 import edu.nova.erikaredmark.monkeyshines.bounds.IPoint2D;
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 import edu.nova.erikaredmark.monkeyshines.tiles.HazardTile;
@@ -268,9 +269,10 @@ public class World {
 		List<Sprite> allSprites = getCurrentScreen().getSpritesOnScreen();
 		ImmutableRectangle bonzoBounding = theBonzo.getCurrentBounds();
 		for (Sprite nextSprite : allSprites) {
-			if (nextSprite.getCurrentBounds().intersect(bonzoBounding) ) {
+			Boundable intersection = nextSprite.getCurrentBounds().intersect(bonzoBounding);
+			if (intersection != null) {
 				// Bounding box check done. Do more expensive pixel check
-				if (nextSprite.pixelCollision(theBonzo) ) {
+				if (nextSprite.pixelCollision(theBonzo, intersection) ) {
 					theBonzo.tryKill(DeathAnimation.NORMAL);
 				}
 			}

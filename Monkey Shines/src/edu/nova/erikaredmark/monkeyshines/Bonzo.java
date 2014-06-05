@@ -751,8 +751,7 @@ public final class Bonzo {
 
 	/**
 	 * 
-	 * Intended for pixel-perfect collisions; returns the exact point in the sprite sheet bonzo's current
-	 * frame of animation is.
+	 * Returns the exact point in the sprite sheet bonzo's current frame of animation is.
 	 * <p/>
 	 * It is an error to call this method whilst bonzo is dying, as the sprite frame is no longer guaranteed
 	 * to be 40x40, and bonzo shouldn't be colliding with anything after already having been colliding with
