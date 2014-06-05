@@ -21,13 +21,13 @@ public enum CoreResource {
 	
 	private CoreResource() {
 		try {
-			transparentBonzo = ImageIO.read(this.getClass().getResourceAsStream("/resources/graphics/editor/transbonzo.gif") );
+			transparentBonzo = ImageIO.read(this.getClass().getResourceAsStream("/resources/graphics/editor/transbonzo.png") );
 		} catch (IOException e) {
 			throw new RuntimeException("Missing resource: transparent bonzo: " + e.getMessage(), e);
 		}
 		
 		try {
-			bonzoSprite = ImageIO.read(this.getClass().getResourceAsStream("/resources/graphics/thebonz.gif") );
+			bonzoSprite = ImageIO.read(this.getClass().getResourceAsStream("/resources/graphics/thebonz.png") );
 		} catch (IOException e) {
 			throw new RuntimeException("Missing resource: bonzo sprite sheet: " + e.getMessage(), e);
 		}

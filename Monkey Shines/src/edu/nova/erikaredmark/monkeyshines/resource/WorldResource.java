@@ -98,7 +98,7 @@ public final class WorldResource {
 	
 	
 	/* -- Internal -- */
-	private static final Pattern INDEX_PATTERN = Pattern.compile("^.*?([0-9]+)\\.gif$");
+	private static final Pattern INDEX_PATTERN = Pattern.compile("^.*?([0-9]+)\\.png$");
 	/** Static factories call this with proper defensive copying. No defensive copying is done in constructor
 	 */
 	private WorldResource(final BufferedImage solidTiles,
@@ -148,16 +148,19 @@ public final class WorldResource {
 	 * Initialises this resource object from a resource pack. A resource pack is a zipped folder containing the following 
 	 * contents (note that brackets @{code [ ]} indicate a fill in, not a character literal):
 	 * <ol>
-	 * <li>solids.gif</li>
-	 * <li>thrus.gif</li>
-	 * <li>scenes.gif</li>
-	 * <li>hazards.gif</li>
-	 * <li>background[#].gif (from 0 to some value with no breaks)</li>
-	 * <li>sprite[#] (from 0 to some value with no breaks)</li>
-	 * <li>goodies.gif</li>
-	 * <li>yums.gif</li>
+	 * <li>solids.png</li>
+	 * <li>thrus.png</li>
+	 * <li>scenes.png</li>
+	 * <li>hazards.png</li>
+	 * <li>conveyers.png</li>
+	 * <li>collapsing.png</li>
+	 * <li>background[#].png (from 0 to some value with no breaks)</li>
+	 * <li>sprite[#].png (from 0 to some value with no breaks)</li>
+	 * <li>goodies.png</li>
+	 * <li>yums.png</li>
 	 * </ol>
-	 * If there is any issue with the pack (missing resource, background2.gif with no background1.gif, for examples) this
+	 * TODO add sounds and music when names are finalised
+	 * If there is any issue with the pack (missing resource, background2.png with no background1.png, for examples) this
 	 * method will throw an exception. Otherwise, this will load all the graphics into memory and have them ready to
 	 * be applied to a world.
 	 * 
@@ -209,43 +212,43 @@ public final class WorldResource {
 				// FIRST: Handle hardcoded names that do not have continuations (numerical values from 0 to some number)
 				switch (entryName ) {
 				/* --------------------------------- Graphics Other Than Sprites --------------------------------- */
-				case "solids.gif":
-					if (solidTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "solids.gif");
+				case "solids.png":
+					if (solidTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "solids.png");
 					solidTiles = ImageIO.read(zipFile.getInputStream(entry) );
 					break;
-				case "thrus.gif":
-					if (thruTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "thrus.gif");
+				case "thrus.png":
+					if (thruTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "thrus.png");
 					thruTiles = ImageIO.read(zipFile.getInputStream(entry) );
 					break;
-				case "scenes.gif":
-					if (sceneTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "scenes.gif");
+				case "scenes.png":
+					if (sceneTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "scenes.png");
 					sceneTiles = ImageIO.read(zipFile.getInputStream(entry) );
 					break;
-				case "conveyers.gif":
-					if (conveyerTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "conveyer.gif");
+				case "conveyers.png":
+					if (conveyerTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "conveyer.png");
 					conveyerTiles = ImageIO.read(zipFile.getInputStream(entry) );
 					break;
-				case "collapsing.gif":
-					if (collapsingTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "collapsing.gif");
+				case "collapsing.png":
+					if (collapsingTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "collapsing.png");
 					collapsingTiles = ImageIO.read(zipFile.getInputStream(entry) );
 					break;
-				case "goodies.gif":
-					if (goodieSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "goodies.gif");
+				case "goodies.png":
+					if (goodieSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "goodies.png");
 					goodieSheet = ImageIO.read(zipFile.getInputStream(entry) );
 					break;
-				case "yums.gif":
-					if (yumSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "yums.gif");
+				case "yums.png":
+					if (yumSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "yums.png");
 					yumSheet = ImageIO.read(zipFile.getInputStream(entry) );
 					break;
-				case "hazards.gif":
-					if (hazardTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "hazards.gif");
+				case "hazards.png":
+					if (hazardTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "hazards.png");
 					hazardTiles = ImageIO.read(zipFile.getInputStream(entry) );
 					break;
 				// All other types are handled in default, as many different names may belong to one 'class' of things.
 				default:
 					// TODO repeated code here: consider refactoring?
 					/* -------------------- Backgrounds -------------------- */
-					if (entryName.matches("^background[0-9]+\\.gif$") ) {
+					if (entryName.matches("^background[0-9]+\\.png$") ) {
 						int index = indexFromName(entryName);
 						// Index out of bounds exception if we check and the array isn't big enough. If index is greater than size, then
 						// there was no previous anyway. If it isn't, make sure it is null
@@ -256,7 +259,7 @@ public final class WorldResource {
 						BufferedImage tempBackground = ImageIO.read(zipFile.getInputStream(entry) );
 						backgrounds.add(index, tempBackground);
 					/* ---------------------- Sprites ---------------------- */
-					} else if (entryName.matches("^sprite[0-9]+\\.gif$") ) {
+					} else if (entryName.matches("^sprite[0-9]+\\.png$") ) {
 						int index = indexFromName(entryName);
 						if (sprites.size() > index) {
 							if (sprites.get(index) != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
@@ -288,14 +291,14 @@ public final class WorldResource {
 		// FINAL CHECKS
 		// 1) Nothing is null
 		// 2) Array lists go from 0 to some value with no skips
-		checkResourceNotNull(solidTiles, "solids.gif");
-		checkResourceNotNull(thruTiles, "thrus.gif");
-		checkResourceNotNull(sceneTiles, "scenes.gif");
-		checkResourceNotNull(goodieSheet, "goodies.gif");
-		checkResourceNotNull(yumSheet, "yums.gif");
-		checkResourceNotNull(hazardTiles, "hazards.gif");
-		checkResourceNotNull(conveyerTiles, "conveyers.gif");
-		checkResourceNotNull(collapsingTiles, "collapsing.gif");
+		checkResourceNotNull(solidTiles, "solids.png");
+		checkResourceNotNull(thruTiles, "thrus.png");
+		checkResourceNotNull(sceneTiles, "scenes.png");
+		checkResourceNotNull(goodieSheet, "goodies.png");
+		checkResourceNotNull(yumSheet, "yums.png");
+		checkResourceNotNull(hazardTiles, "hazards.png");
+		checkResourceNotNull(conveyerTiles, "conveyers.png");
+		checkResourceNotNull(collapsingTiles, "collapsing.png");
 		checkResourceContiguous(backgrounds, maxBackgroundIndex, "background");
 		checkResourceContiguous(sprites, maxSpriteIndex, "sprite");
 		
@@ -421,7 +424,7 @@ public final class WorldResource {
 	/**
 	 * 
 	 * Regardless of the actual filename, extracts the number that appears in it. This is designed for filenames of the
-	 * type "somename135.gif, where the number appears before the .gif extension. This is for numbered images that have
+	 * type "somename135.png, where the number appears before the .png extension. This is for numbered images that have
 	 * an unknown number of graphics, such as sprites for a world.
 	 * 
 	 * @param name
@@ -430,7 +433,7 @@ public final class WorldResource {
 	private static int indexFromName(final String name) throws ResourcePackException {
 		Matcher matcher = INDEX_PATTERN.matcher(name);
 		boolean match = matcher.matches();
-		if (match == false) throw new ResourcePackException(Type.NO_INDEX_NUMBER, name + " should contain an index number before .gif");
+		if (match == false) throw new ResourcePackException(Type.NO_INDEX_NUMBER, name + " should contain an index number before .png");
 		
 		String integer = matcher.group(1);
 		return Integer.parseInt(integer);
@@ -444,7 +447,7 @@ public final class WorldResource {
 	 */
 	private static void checkResourceContiguous(final List<?> items, int maxIndex, String name) throws ResourcePackException {
 		for (int i = 0; i <= maxIndex; i++) {
-			if (items.get(i) == null) throw new ResourcePackException(Type.NON_CONTIGUOUS, name + i + ".gif");
+			if (items.get(i) == null) throw new ResourcePackException(Type.NON_CONTIGUOUS, name + i + ".png");
 		}
 	}
 	

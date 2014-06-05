@@ -325,7 +325,7 @@ public class Sprite {
 		
 		// We already have our own. Let's begin. We iterate over our pixels, and calculate which pixel 
 		// position in bonzos sprite sheet we are 'on'. Hitting any location where both pixels have
-		// < 100% alpha transparency (0 alpha is completely solid)
+		// opacity (0 alpha is completely transparent)
 		// Loops start at 0. Two separate counters are kept to hold absolete positions in the sprite sheet
 		// for both bonzo and the sprite
 		// Assumption: both sprites are 40x40 pixels.
@@ -337,12 +337,18 @@ public class Sprite {
 			for (int j = 0; j < GameConstants.SPRITE_SIZE_Y; j++) {
 				// don't bother with calculation if this pixel is not in bonzos bounding box
 				// otherwise we will hit a wrong pixel or an out of bounds issue
-				if (i + xoffset >= Bonzo.BONZO_SIZE.x() || j + yoffset >= Bonzo.BONZO_SIZE.y() )  continue;
+				// We can't just look at fullBonzoOffset, as that is ambigious as to x/y position.
+				int currentXOffset = i + xoffset;
+				int currentYOffset = j + yoffset;
+				if (   currentXOffset >= Bonzo.BONZO_SIZE.x() 
+					|| currentYOffset >= Bonzo.BONZO_SIZE.y() 
+				    || currentXOffset < 0
+				    || currentYOffset < 0)  continue;
 				
 				int spriteAlphaAtPixel = (spriteRgb[rowOffset + j] >> 24) & 0xff;
 				int bonzoAlphaAtPixel = (bonzoRgb[fullBonzoOffset + j] >> 24) & 0xff;
 				
-				if (spriteAlphaAtPixel == 0 && bonzoAlphaAtPixel == 0) {
+				if (spriteAlphaAtPixel > 0 && bonzoAlphaAtPixel > 0) {
 					// collision
 					return true;
 				}
