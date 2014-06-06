@@ -1,5 +1,6 @@
 package edu.nova.erikaredmark.monkeyshines;
 
+import java.awt.Canvas;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -27,21 +28,24 @@ import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
  *
  */
 public class GameWindow extends JPanel implements ActionListener {
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -1418470684111076474L;
 
-	// DEBUG STUFF
-	LevelScreen currentScreen;
-	World currentWorld;
+	private final Timer gameTimer;
 	
-	Timer gameTimer;
+	private final KeyboardInput keys;
 	
-	KeyboardInput keys;
+	private final Bonzo bonzo;
 	
-	Bonzo bonzo;
+	// Main drawing happens on gameplay. The world itself is the 'model' to this view.
+	private final GameplayPanel gameplayCanvas;
+	private World currentWorld;
+	
+	// UI Canvas stores other stats. Through a basic callback, World communicates
+	// back to this class for UI updates whenever one of the UI dependent stats
+	// changes.
+	private final UIPanel uiCanvas;
+	// not final: UI can change appearence based on the world resource.
+	private GameUIController uiModel;
 	
 	/**
 	 * Constructs a GameWindow listening to the keyboard
@@ -94,8 +98,20 @@ public class GameWindow extends JPanel implements ActionListener {
 		
 		bonzo = new Bonzo(currentWorld);
 		setDoubleBuffered(true);
-		setMinimumSize(new Dimension(GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT) );
-		setPreferredSize(new Dimension(GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT) );
+		// Accomodate the UI and the game. UI is a banner and width is equal to screen width
+		setMinimumSize(new Dimension(GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT + GameConstants.UI_HEIGHT) );
+		setPreferredSize(new Dimension(GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT + GameConstants.UI_HEIGHT) );
+		
+		// Place UI and main game screen as canvases with dedicated paint methods
+		setLayout(null);
+		gameplayCanvas = new GameplayPanel();
+		uiCanvas = new UIPanel();
+		
+		uiCanvas.setBounds(0, 0, GameConstants.SCREEN_WIDTH, GameConstants.UI_HEIGHT);
+		gameplayCanvas.setBounds(0, GameConstants.UI_HEIGHT + 1, GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT);
+
+		add(uiCanvas);
+		add(gameplayCanvas);
 		
 		gameTimer = new Timer(GameConstants.GAME_SPEED, this);
 		
@@ -103,23 +119,34 @@ public class GameWindow extends JPanel implements ActionListener {
 		
 		gameTimer.start();
 	}
+	
+	private final class GameplayPanel extends JPanel {
+		private static final long serialVersionUID = 1L;
 
-	/**
-	 * Calls the paint and update functions on the World object and Bonzo object
-	 * The sprites and tiles are handled by the World object.
-	 */
-	public void paint(Graphics g) {
-		super.paint(g);
-		Graphics2D g2d = (Graphics2D) g;
-		// Clear the screen with the world
-		currentWorld.paintAndUpdate(g2d);
-		bonzo.update();
-		bonzo.paint(g2d);
+		@Override public void paint(Graphics g) {
+			Graphics2D g2d = (Graphics2D) g;
+			// Clear the screen with the world
+			currentWorld.paintAndUpdate(g2d);
+			bonzo.update();
+			bonzo.paint(g2d);
+		}
 	}
+	
+	
+	private final class UIPanel extends JPanel {
+		private static final long serialVersionUID = 1L;
+
+		@Override public void paint(Graphics g) {
+			// TODO method stub
+		}
+	}
+
 
 	/**
 	 * Polls the keyboard for valid operations the player may make on Bonzo. During gameplay, 
 	 * the only allowed operations are moving left/right or jumping. 
+	 * This is the method called every tick to run the game logic. This is effectively the
+	 * 'entry point' to the main game loop.
 	 */
 	public void actionPerformed(ActionEvent e) {
 		// Poll Keyboard
@@ -134,6 +161,7 @@ public class GameWindow extends JPanel implements ActionListener {
 		if (keys.keyDown(KeyEvent.VK_UP) ) {
 			bonzo.jump(4);
 		}
+		
 		repaint();
 	}
 }

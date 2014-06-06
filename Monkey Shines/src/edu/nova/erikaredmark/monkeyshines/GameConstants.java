@@ -64,6 +64,7 @@ public final class GameConstants {
 	public static final int SCREEN_DRAW_Y = 0;
 	public static final int SCREEN_WIDTH = TILE_SIZE_X * TILES_IN_ROW;
 	public static final int SCREEN_HEIGHT = TILE_SIZE_Y * TILES_IN_COL;
+	public static final int UI_HEIGHT = 80;
 	
 	// Directions
 	public static final int LEFT = 1;
