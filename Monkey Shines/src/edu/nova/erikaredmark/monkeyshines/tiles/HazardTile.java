@@ -2,6 +2,7 @@ package edu.nova.erikaredmark.monkeyshines.tiles;
 
 import java.awt.Graphics2D;
 
+import edu.nova.erikaredmark.monkeyshines.GameConstants;
 import edu.nova.erikaredmark.monkeyshines.Hazard;
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 
@@ -35,7 +36,7 @@ public class HazardTile implements TileType {
 	private int timeToNextFrame = 0;
 	
 	private static final int TICKS_BETWEEN_ANIMATIONS = 5;
-	private static final int MAX_EXPLODING_FRAMES = 9;
+	private static final int MAX_EXPLODING_FRAMES = 8;
 	
 	private HazardTile(final Hazard hazard) {
 		this.hazard = hazard;
@@ -90,8 +91,7 @@ public class HazardTile implements TileType {
 	public int getAnimationStep() {
 		assert !(isDead() );
 		
-		if (exploding)  return animationPoint - 2;
-		else			return animationPoint;
+		return animationPoint;
 	}
 
 	@Override public int getId() { return hazard.getId(); }
@@ -126,7 +126,19 @@ public class HazardTile implements TileType {
 		// Nothing to paint if dead.
 		if (isDead() )  return;
 		
-		hazard.paint(g2d, drawToX, drawToY, rsrc, getAnimationStep() );
+		// If exploding, paint the explosions instead:
+		if (!(isExploding() ) ) {
+			hazard.paint(g2d, drawToX, drawToY, rsrc, getAnimationStep() );
+		} else {
+			int animation = getAnimationStep();
+			g2d.drawImage(rsrc.getExplosionSheet(),
+						  drawToX, drawToY, 
+						  drawToX + GameConstants.TILE_SIZE_X, drawToY + GameConstants.TILE_SIZE_Y, 
+						  animation * GameConstants.TILE_SIZE_X, 0, 
+						  (animation + 1) * GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y, 
+						  null);
+		}
+		
 	}
 	/**
 	 * 
@@ -134,6 +146,8 @@ public class HazardTile implements TileType {
 	 * method changes state; it checks if ready, and if not increments the ticker. As defined
 	 * in the class static final variables, a certain number of 'ticks' have to pass before 
 	 * being allowed to change the animation state.
+	 * <p/>
+	 * Hazards animate slower normally, and quicker when exploding.
 	 * 
 	 * @return
 	 * 		{@code true} if ready, {@code false} if otherwise. Merely calling this method
@@ -142,6 +156,8 @@ public class HazardTile implements TileType {
 	 * 
 	 */
 	private boolean readyToAnimate() {
+		if (isExploding() )  return true;
+		
 		if (timeToNextFrame >= TICKS_BETWEEN_ANIMATIONS) {
 			timeToNextFrame = 0;
 			return true;
