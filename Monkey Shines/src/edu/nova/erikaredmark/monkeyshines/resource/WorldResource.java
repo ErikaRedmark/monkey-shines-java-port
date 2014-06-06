@@ -8,7 +8,6 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +81,17 @@ public final class WorldResource {
 	private final BufferedImage goodieSheet;
 	private final BufferedImage yumSheet;
 	
+	/* -------------------------- Explosions -------------------------- */
+	private final BufferedImage explosionSheet;
+	
+	/* ------------------------- UI Elements -------------------------- */
+	// Shown on the top the main game screen; gives score, bonus, lives, current powerup, and current world.
+	private final BufferedImage banner;
+	// Bitmap numbers for drawing the score on the banner.
+	private final BufferedImage scoreNumbers;
+	// Bitmap numbers for drawing the bonus score remaining on the banner
+	private final BufferedImage bonusNumbers;
+	
 	/* --------------------------- SOUNDS ----------------------------- */
 	// Whilst sounds are stored here, they should only be played via the
 	// SoundManager. null sounds are possible; in that case, that means
@@ -92,11 +102,7 @@ public final class WorldResource {
 	private final SoundManager soundManager;
 	private int conveyerCount;
 	private int collapsingCount;
-	
-	// Implementation note: Even the arrays are null (not just empty) as this is not intended for any kind of paint methods
-	private static final WorldResource EMPTY = new WorldResource(null, null, null, null, null, null, null, null, null, null, new HashMap<GameSoundEffect, Clip>() );
-	
-	
+
 	/* -- Internal -- */
 	private static final Pattern INDEX_PATTERN = Pattern.compile("^.*?([0-9]+)\\.png$");
 	/** Static factories call this with proper defensive copying. No defensive copying is done in constructor
@@ -111,6 +117,10 @@ public final class WorldResource {
 					      final BufferedImage[] sprites,
 					      final BufferedImage goodieSheet,
 					      final BufferedImage yumSheet,
+					      final BufferedImage banner,
+					      final BufferedImage scoreNumbers,
+					      final BufferedImage bonusNumbers,
+					      final BufferedImage explosionSheet,
 					      final Map<GameSoundEffect, Clip> sounds) {
 		
 		this.solidTiles = solidTiles;
@@ -124,6 +134,10 @@ public final class WorldResource {
 		this.goodieSheet = goodieSheet;
 		this.yumSheet = yumSheet;
 		this.sounds = sounds;
+		this.banner = banner;
+		this.scoreNumbers = scoreNumbers;
+		this.bonusNumbers = bonusNumbers;
+		this.explosionSheet = explosionSheet;
 		
 		// Generated data
 		// this pointer escapes, but no one gets a reference to the manager until construction is over
@@ -196,6 +210,10 @@ public final class WorldResource {
 		int maxSpriteIndex = 0;
 		BufferedImage goodieSheet	= null;
 		BufferedImage yumSheet		= null;
+		BufferedImage bannerSheet = null;
+		BufferedImage scoreNumbersSheet = null;
+		BufferedImage bonusNumbersSheet = null;
+		BufferedImage explosionSheet = null;
 		
 		// Sound clips
 		// Unlike graphics, some sounds may not exist, and that is okay. The game just won't play
@@ -243,6 +261,22 @@ public final class WorldResource {
 				case "hazards.png":
 					if (hazardTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "hazards.png");
 					hazardTiles = ImageIO.read(zipFile.getInputStream(entry) );
+					break;
+				case "uibanner.png":
+					if (bannerSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "uibanner.png");
+					bannerSheet = ImageIO.read(zipFile.getInputStream(entry) );
+					break;
+				case "bonusNumbers.png":
+					if (bonusNumbersSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "bonusNumbers.png");
+					bonusNumbersSheet = ImageIO.read(zipFile.getInputStream(entry) );
+					break;
+				case "scoreNumbers.png":
+					if (scoreNumbersSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "scoreNumbers.png");
+					scoreNumbersSheet = ImageIO.read(zipFile.getInputStream(entry) );
+					break;
+				case "explosion.png":
+					if (explosionSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "explosion.png");
+					explosionSheet = ImageIO.read(zipFile.getInputStream(entry) );
 					break;
 				// All other types are handled in default, as many different names may belong to one 'class' of things.
 				default:
@@ -301,6 +335,10 @@ public final class WorldResource {
 		checkResourceNotNull(collapsingTiles, "collapsing.png");
 		checkResourceContiguous(backgrounds, maxBackgroundIndex, "background");
 		checkResourceContiguous(sprites, maxSpriteIndex, "sprite");
+		checkResourceNotNull(explosionSheet, "explosion.png");
+		checkResourceNotNull(scoreNumbersSheet, "scoreNumbers.png");
+		checkResourceNotNull(bonusNumbersSheet, "bonusNumbers.png");
+		checkResourceNotNull(bannerSheet, "uibanner.png");
 		
 		// Sounds may be null
 		// No null checks
@@ -316,6 +354,10 @@ public final class WorldResource {
 							  sprites.toArray(new BufferedImage[sprites.size()]),
 							  goodieSheet, 
 							  yumSheet,
+							  bannerSheet,
+							  scoreNumbersSheet,
+							  bonusNumbersSheet,
+							  explosionSheet,
 							  gameSounds);
 		
 		return worldRsrc;
@@ -403,22 +445,6 @@ public final class WorldResource {
 		} catch (LineUnavailableException e) {
 			throw new ResourcePackException(e);
 		}
-	}
-
-	/**
-	 * 
-	 * Returns an empty world resource. This is intended for test methods to provide resource objects to satisfy constructors
-	 * and factories when there is no actual painting involved in the test.
-	 * <p/>
-	 * All methods from the empty resource object return {@code null}. Painting code does not expect this; do not use when the
-	 * test would involve painting code
-	 * 
-	 * @return
-	 * 		empty resource
-	 * 
-	 */
-	public static WorldResource empty() {
-		return EMPTY;
 	}
 	
 	/**
@@ -554,6 +580,61 @@ public final class WorldResource {
 	 */
 	public BufferedImage getHazardSheet() {
 		return hazardTiles;
+	}
+	
+	/**
+	 * 
+	 * Returns the explosion sprite sheet. Explosions are the size of a tile and have 8 frames
+	 * of animation.
+	 * 
+	 * @return
+	 * 		explosion sprite sheet
+	 * 
+	 */
+	public BufferedImage getExplosionSheet() {
+		return explosionSheet;
+	}
+	
+	/**
+	 * 
+	 * Returns the sprite sheet used for drawing score numbers in the UI. Each number is 16 pixels by 30.
+	 * Getting a number to draw is easy; the number needed (0-9) multiplied by 16 gives the x starting
+	 * point, and all numbers are the same size and at the same y-level of 0
+	 * 
+	 * @return
+	 * 		score numbers sheet
+	 * 	
+	 */
+	public BufferedImage getScoreNumbersSheet() {
+		return scoreNumbers;
+	}
+	
+	/**
+	 * 
+	 * Returns the sprite sheet used for drawing bonus numbers in the UI. Each number is 16 pixels by 30.
+	 * Getting a number to draw is easy; the number needed (0-9) multiplied by 16 gives the x starting
+	 * point, and all numbers are the same size and at the same y-level of 0
+	 * 
+	 * @return
+	 * 		bonus numbers sheet
+	 * 	
+	 */
+	public BufferedImage getBonusNumbersSheet() {
+		return bonusNumbers;
+	}
+	
+	/**
+	 * 
+	 * Returns the banner that appears at the top of every game. This is the main UI where players will see
+	 * bonzos health, lives, score, bonus score, current powerup, and current world. It is the width of the game
+	 * screen by a {@code GameConstants.UI_HEIGHT) height.
+	 * 
+	 * @return
+	 * 		main ui banner
+	 * 
+	 */
+	public BufferedImage getBanner() {
+		return banner;
 	}
 	
 	/**

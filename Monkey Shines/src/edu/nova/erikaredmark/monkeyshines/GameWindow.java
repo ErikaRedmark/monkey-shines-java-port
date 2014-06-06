@@ -1,6 +1,5 @@
 package edu.nova.erikaredmark.monkeyshines;
 
-import java.awt.Canvas;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -44,8 +43,6 @@ public class GameWindow extends JPanel implements ActionListener {
 	// back to this class for UI updates whenever one of the UI dependent stats
 	// changes.
 	private final UIPanel uiCanvas;
-	// not final: UI can change appearence based on the world resource.
-	private GameUIController uiModel;
 	
 	/**
 	 * Constructs a GameWindow listening to the keyboard
@@ -108,7 +105,7 @@ public class GameWindow extends JPanel implements ActionListener {
 		uiCanvas = new UIPanel();
 		
 		uiCanvas.setBounds(0, 0, GameConstants.SCREEN_WIDTH, GameConstants.UI_HEIGHT);
-		gameplayCanvas.setBounds(0, GameConstants.UI_HEIGHT + 1, GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT);
+		gameplayCanvas.setBounds(0, GameConstants.UI_HEIGHT, GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT);
 
 		add(uiCanvas);
 		add(gameplayCanvas);
@@ -137,7 +134,15 @@ public class GameWindow extends JPanel implements ActionListener {
 		private static final long serialVersionUID = 1L;
 
 		@Override public void paint(Graphics g) {
-			// TODO method stub
+			Graphics2D g2d = (Graphics2D) g;
+			// Draw banner under everything else
+			WorldResource rsrc = currentWorld.getResource();
+			g2d.drawImage(rsrc.getBanner(), 
+						  0, 0,
+						  GameConstants.SCREEN_WIDTH, GameConstants.UI_HEIGHT,
+						  0, 0,
+						  GameConstants.SCREEN_WIDTH, GameConstants.UI_HEIGHT,
+						  null);
 		}
 	}
 
