@@ -28,6 +28,7 @@ import edu.nova.erikaredmark.monkeyshines.AnimationType;
 import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.ImmutableRectangle;
 import edu.nova.erikaredmark.monkeyshines.Sprite;
+import edu.nova.erikaredmark.monkeyshines.Sprite.SpriteType;
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 
 public class SpritePropertiesDialog extends JDialog {
@@ -195,10 +196,24 @@ public class SpritePropertiesDialog extends JDialog {
 			@Override public void focusGained(FocusEvent e) { }
 		});
 		
+		
+		final JComboBox<SpriteType> spriteType = new JComboBox<>(SpriteType.values() );
+		spriteType.setSelectedItem(model.getSpriteType() );
+		spriteType.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent event) {
+				final SpriteType type = (SpriteType)spriteType.getSelectedItem();
+				model.setSpriteType(type);
+			}
+		});
+		
+		springLayout.putConstraint(SpringLayout.NORTH, spriteType, 5, SpringLayout.SOUTH, txtStartY);
+		springLayout.putConstraint(SpringLayout.WEST, spriteType, 0, SpringLayout.WEST, lblTopleftx);
+		getContentPane().add(spriteType);
+		
 		final SpriteAnimationCanvas spriteDrawCanvas = new SpriteAnimationCanvas(0, model.getAnimationType(), model.getAnimationSpeed(), rsrc);
 		springLayout.putConstraint(SpringLayout.WEST, spriteDrawCanvas, 0, SpringLayout.WEST, txtVelocityY);
 		spriteDrawCanvas.setBounds(new Rectangle(0, 0, 40, 40));
-		springLayout.putConstraint(SpringLayout.NORTH, spriteDrawCanvas, 20, SpringLayout.SOUTH, txtVelocityY);
+		springLayout.putConstraint(SpringLayout.NORTH, spriteDrawCanvas, 20, SpringLayout.SOUTH, spriteType);
 		getContentPane().add(spriteDrawCanvas);
 		// Listen for changes to sprite id in model. Update graphics accordingly
 		model.addPropertyChangeListener(SpritePropertiesModel.PROPERTY_SPRITE_ID, new PropertyChangeListener() {
@@ -317,7 +332,7 @@ public class SpritePropertiesDialog extends JDialog {
 		dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		dialog.setModal(true);
 		dialog.setLocation(parent.getLocation() );
-		dialog.setSize(450, 260);
+		dialog.setSize(450, 300);
 		dialog.setVisible(true);
 		
 		// Dialog is over at this point. Set model based on how it was exited to tell client.
@@ -347,7 +362,7 @@ public class SpritePropertiesDialog extends JDialog {
 		dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		dialog.setModal(true);
 		dialog.setLocation(parent.getLocation() );
-		dialog.setSize(450, 260);
+		dialog.setSize(450, 300);
 		
 		// Show
 		dialog.setVisible(true);

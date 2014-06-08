@@ -40,6 +40,9 @@ public final class Bonzo {
 	// Velocity applied to bonzo. Affected by the keyboard and falls.
 	private Point2D currentVelocity;
 	
+	// Health goes down from long falls or certain health draining sprites
+	// health is bounded from 0 to GameConstants.HEALTH_MAX
+	private int health;
 	
 	// Use a pointer to the current world to get information such as the screen, and then from there where bonzo
 	// is relative to the screen.
@@ -84,6 +87,7 @@ public final class Bonzo {
 	
 	public Bonzo(final World worldPointer) {
 		this.worldPointer = worldPointer;
+		this.health = GameConstants.HEALTH_MAX;
 		currentScreenID = 1000; // Always 1000. Everything starts on 1000
 		final LevelScreen currentScreen = worldPointer.getScreenByID(currentScreenID);
 		
@@ -113,6 +117,9 @@ public final class Bonzo {
 		// When bonzo is restarted, he is not dead or jumping
 		setDying(false, this.deathAnimation);
 		setJumping(false);
+		
+		// Bring health back
+		this.health = GameConstants.HEALTH_MAX;
 	}
 	
 	public void changeScreen(final int newScreen) {
@@ -371,6 +378,27 @@ public final class Bonzo {
 		} else {
 			return true;
 		}
+	}
+	
+	/**
+	 * 
+	 * Hurts bonzo by the given amount, draining his health. If it drops below zero during this call, bonzo
+	 * is killed. Note that invincibility will be ignored; being hurt whilst invincible implies fall damage,
+	 * which invincibility should not be protecting from.
+	 * <p/>
+	 * The thing hurting bonzo must pass in a death animation enum indicating what death type should be used
+	 * if bonzo was to die from being hurt.
+	 * 
+	 * @param amt
+	 * 		amount to hurt bonzos health
+	 * 
+	 * @param animation
+	 * 		if bonzo does die, this is the animation that should be used
+	 * 
+	 */
+	public void hurt(int amt, DeathAnimation animation) {
+		health -= amt;
+		if (health < 0)  kill(DeathAnimation.NORMAL);
 	}
 	
 	/**

@@ -273,7 +273,7 @@ public class World {
 			if (intersection != null) {
 				// Bounding box check done. Do more expensive pixel check
 				if (nextSprite.pixelCollision(theBonzo, intersection) ) {
-					theBonzo.tryKill(DeathAnimation.NORMAL);
+					nextSprite.getType().onBonzoCollision(theBonzo, this);
 				}
 			}
 		}

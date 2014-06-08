@@ -8,6 +8,7 @@ import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.ImmutableRectangle;
 import edu.nova.erikaredmark.monkeyshines.LevelScreen;
 import edu.nova.erikaredmark.monkeyshines.Sprite;
+import edu.nova.erikaredmark.monkeyshines.Sprite.SpriteType;
 import edu.nova.erikaredmark.monkeyshines.resource.WorldResource;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
 
@@ -89,10 +90,11 @@ public class LevelScreenEditor {
 						  final ImmutablePoint2D spriteVelocity,
 						  final AnimationType animationType,
 						  final AnimationSpeed animationSpeed,
+						  final SpriteType spriteType,
 						  final WorldResource rsrc) {
 		
 		Sprite s =
-			Sprite.newSprite(spriteId, spriteStartingLocation, spriteBoundingBox, spriteVelocity, animationType, animationSpeed, rsrc);
+			Sprite.newSprite(spriteId, spriteStartingLocation, spriteBoundingBox, spriteVelocity, animationType, animationSpeed, spriteType, rsrc);
 		
 		screen.addSprite(s);
 		

@@ -22,6 +22,7 @@ import edu.nova.erikaredmark.monkeyshines.ImmutablePoint2D;
 import edu.nova.erikaredmark.monkeyshines.ImmutableRectangle;
 import edu.nova.erikaredmark.monkeyshines.LevelScreen;
 import edu.nova.erikaredmark.monkeyshines.Sprite;
+import edu.nova.erikaredmark.monkeyshines.Sprite.SpriteType;
 import edu.nova.erikaredmark.monkeyshines.Tile;
 import edu.nova.erikaredmark.monkeyshines.World;
 import edu.nova.erikaredmark.monkeyshines.bounds.Boundable;
@@ -323,8 +324,7 @@ public final class EncodedWorld {
 		protoSprite.setBoundingBox(boxToProto(sprite.getBoundingBox() ) );
 		protoSprite.setAnimation(animationTypeToProto(sprite.getAnimationType() ) );
 		protoSprite.setAnimationSpeed(animationSpeedToProto(sprite.getAnimationSpeed() ) );
-		// TODO no concept of sprite types in engine yet. All sprites are instant kill for now.
-		protoSprite.setType(WorldFormatProtos.World.SpriteType.NORMAL);
+		protoSprite.setType(spriteTypeToProto(sprite.getType() ) );
 		
 		// Build a point for storage
 		WorldFormatProtos.World.Point.Builder initialSpeed = WorldFormatProtos.World.Point.newBuilder();
@@ -348,8 +348,32 @@ public final class EncodedWorld {
 								protoToBox(protoSprite.getBoundingBox() ), 
 								protoToPoint(protoSprite.getInitialSpeed() ), 
 								protoToAnimationType(protoSprite.getAnimation() ), 
-								protoToAnimationSpeed(protoSprite.getAnimationSpeed() ), 
+								protoToAnimationSpeed(protoSprite.getAnimationSpeed() ),
+								protoToSpriteType(protoSprite.getType() ),
 								rsrc);
+	}
+	
+	/* --------------------------- Sprite Type --------------------------- */
+	static WorldFormatProtos.World.SpriteType spriteTypeToProto(SpriteType spriteType) {
+		switch (spriteType) {
+		case NORMAL:  return WorldFormatProtos.World.SpriteType.NORMAL;
+		case HEALTH_DRAIN:  return WorldFormatProtos.World.SpriteType.HEALTH_DRAIN;
+		case BONUS_DOOR:  return WorldFormatProtos.World.SpriteType.BONUS_DOOR;
+		case EXIT_DOOR:  return WorldFormatProtos.World.SpriteType.EXIT_DOOR;
+		case SCENERY:  return WorldFormatProtos.World.SpriteType.SCENERY_SPRITE;
+		default:  throw new RuntimeException("Sprite type " + spriteType + " has no defined proto version");
+		}
+	}
+	
+	static SpriteType protoToSpriteType(WorldFormatProtos.World.SpriteType spriteTypeProto) {
+		switch (spriteTypeProto) {
+		case NORMAL:  return SpriteType.NORMAL;
+		case HEALTH_DRAIN:  return SpriteType.HEALTH_DRAIN;
+		case BONUS_DOOR:  return SpriteType.BONUS_DOOR;
+		case EXIT_DOOR:  return SpriteType.EXIT_DOOR;
+		case SCENERY_SPRITE:  return SpriteType.SCENERY;
+		default:  throw new RuntimeException("Proto sprite type " + spriteTypeProto + " has no defined java object");
+		}
 	}
 	
 	/* ------------------------------ Box -------------------------------- */

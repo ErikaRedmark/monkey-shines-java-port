@@ -23,6 +23,7 @@ public class Sprite {
 	private final int				 id;
 	private final int 				 initialSpeedX;
 	private final int			     initialSpeedY;
+	private final SpriteType		 type;
 	
 	// Movement: Classic Monkeyshines bounding box movement
 	// Realtime state movement
@@ -60,14 +61,17 @@ public class Sprite {
 	 * @param animationType
 	 * 		animation type for this sprite
 	 * 
+	 * @param spriteType
+	 * 		primary type of this sprite. Determines effects of collision
+	 * 
 	 * @param rsrc
 	 * 		world resource for obtaining the graphics context
 	 * 
 	 * @return
 	 * 		a new instance of this class
 	 */
-	public static Sprite newUnmovingSprite(int id, AnimationType type, AnimationSpeed speed, WorldResource rsrc) {
-		return new Sprite(id, ImmutablePoint2D.of(0, 0), ImmutableRectangle.of(0, 0, 0, 0), 0, 0, type, speed, rsrc);
+	public static Sprite newUnmovingSprite(int id, AnimationType type, AnimationSpeed speed, SpriteType spriteType, WorldResource rsrc) {
+		return new Sprite(id, ImmutablePoint2D.of(0, 0), ImmutableRectangle.of(0, 0, 0, 0), 0, 0, type, speed, spriteType, rsrc);
 	}
 	
 	/**
@@ -96,8 +100,8 @@ public class Sprite {
 	 * 		graphics resource for giving the sprite a proper graphics context
 	 * 
 	 */
-	public static Sprite newSprite(int spriteId, ImmutablePoint2D spriteStartingLocation, ImmutableRectangle spriteBoundingBox, ImmutablePoint2D spriteVelocity, AnimationType animationType, AnimationSpeed speed, WorldResource rsrc) {
-		return new Sprite(spriteId, spriteStartingLocation, spriteBoundingBox, spriteVelocity.x(), spriteVelocity.y(), animationType, speed, rsrc);
+	public static Sprite newSprite(int spriteId, ImmutablePoint2D spriteStartingLocation, ImmutableRectangle spriteBoundingBox, ImmutablePoint2D spriteVelocity, AnimationType animationType, AnimationSpeed speed, SpriteType spriteType, WorldResource rsrc) {
+		return new Sprite(spriteId, spriteStartingLocation, spriteBoundingBox, spriteVelocity.x(), spriteVelocity.y(), animationType, speed, spriteType, rsrc);
 	}
 	
 	
@@ -106,8 +110,9 @@ public class Sprite {
 			  	   final ImmutableRectangle boundingBox, 
 			  	   final int initialSpeedX, 
 			  	   final int initialSpeedY, 
-			  	   final AnimationType type, 
+			  	   final AnimationType animationType, 
 			  	   final AnimationSpeed speed,
+			  	   final SpriteType spriteType,
 			  	   final WorldResource rsrc) {
 		
 		this.id = id;
@@ -115,8 +120,9 @@ public class Sprite {
 		this.boundingBox = boundingBox;
 		this.initialSpeedX = initialSpeedX;
 		this.initialSpeedY = initialSpeedY;
-		this.animationType = type;
+		this.animationType = animationType;
 		this.animationSpeed = speed;
+		this.type = spriteType;
 		setUpGraphics(rsrc);
 		
 		// State information
@@ -358,6 +364,66 @@ public class Sprite {
 	public int getId() { return id; }
 	public int getInitialSpeedX() { return initialSpeedX; }
 	public int getInitialSpeedY() {	return initialSpeedY; }
+	
+	/**
+	 * 
+	 * Returns the type of sprite this is, which mainly affects how the world and/or bonzo should
+	 * react when colliding with it.
+	 * 
+	 * @return
+	 * 		type
+	 * 
+	 */
+	public SpriteType getType() { return type; }
 
+	public enum SpriteType {
+		NORMAL("Instant Kill") {
+			@Override public void onBonzoCollision(Bonzo bonzo, World world) {
+				bonzo.tryKill(DeathAnimation.NORMAL);
+			}
+		},
+		HEALTH_DRAIN("Health Drain") {
+			@Override public void onBonzoCollision(Bonzo bonzo, World world) {
+				bonzo.hurt(GameConstants.HEALTH_DRAIN_PER_TICK, DeathAnimation.BEE);
+			}
+		},
+		EXIT_DOOR("Exit") {
+			@Override public void onBonzoCollision(Bonzo bonzo, World world) {
+				// TODO no exit code yet
+			}
+		},
+		BONUS_DOOR("Bonus") {
+			@Override public void onBonzoCollision(Bonzo bonzo, World world) {
+				// TODO no bonus door code yet
+			}
+		},
+		SCENERY("Harmless") {
+			@Override public void onBonzoCollision(Bonzo bonzo, World world) {
+				// This should not be called. Optimisations should not bother checking collisions
+				// for scenery sprites.
+				assert false : "No collision checks should be performed on scenery sprites";
+			}
+		};
+		
+		private final String name;
+		
+		private SpriteType(final String name) {
+			this.name = name;
+		}
+		
+		/**
+		 * 
+		 * Performs some action, either on the world or bonzo, when a sprite of this
+		 * type is collided with.
+		 * 
+		 * @param bonzo
+		 * 
+		 * @param world
+		 * 
+		 */
+		public abstract void onBonzoCollision(Bonzo bonzo, World world);
+		
+		@Override public String toString() { return name; }
+	}
 
 }
