@@ -21,7 +21,7 @@ public enum DeathAnimation {
 	BEE {
 		private final ImmutablePoint2D start = ImmutablePoint2D.of(0, 349);
 		private final ImmutablePoint2D size = ImmutablePoint2D.of(40, 52);
-		private final ImmutablePoint2D offset = ImmutablePoint2D.of(0, 29);
+		private final ImmutablePoint2D offset = ImmutablePoint2D.of(0, -13);
 		
 		@Override public ImmutablePoint2D deathStart() { return start; }
 		@Override public ImmutablePoint2D deathSize() { return size; }

@@ -455,6 +455,7 @@ public final class Bonzo {
 		currentVelocity.setX(0);
 		currentVelocity.setY(0);
 		currentSprite = 0;
+		timeInAir = 0;
 		setDying(true, animation);
 		soundManager.playOnce(animation.soundEffect() );
 	}
@@ -778,13 +779,15 @@ public final class Bonzo {
 	public void paint(Graphics2D g2d) {
 		// If dying, that overrides everything.
 		if (isDying) {
-			// TODO respect offset request of DeathAnimation enumeration.
 			ImmutablePoint2D deathStart = deathAnimation.deathStart();
 			ImmutablePoint2D deathSize = deathAnimation.deathSize();
+			ImmutablePoint2D offset = deathAnimation.offset();
+			int drawToX = currentLocation.x() + offset.x();
+			int drawToY = currentLocation.y() + offset.y();
 			int yOffset = deathStart.y() + (deathSize.y() * (currentSprite / deathAnimation.framesPerRow() ) );
 			int xOffset = deathSize.x() * (currentSprite % deathAnimation.framesPerRow() );
-			g2d.drawImage(CoreResource.INSTANCE.getBonzoSheet(), currentLocation.x(), currentLocation.y(),  //DEST
-						  currentLocation.x() + deathSize.x(), currentLocation.y() + deathSize.y(), // DEST2
+			g2d.drawImage(CoreResource.INSTANCE.getBonzoSheet(), drawToX, drawToY,  //DEST
+					      drawToX + deathSize.x(), drawToY + deathSize.y(), // DEST2
 						  xOffset, yOffset, xOffset + deathSize.x(), yOffset + deathSize.y(),
 						  null);
 			return;
