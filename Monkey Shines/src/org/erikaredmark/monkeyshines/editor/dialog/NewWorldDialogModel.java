@@ -2,7 +2,7 @@ package org.erikaredmark.monkeyshines.editor.dialog;
 
 import java.nio.file.Path;
 
-import org.redmark.erika.util.ObservableModel;
+import org.erikaredmark.util.ObservableModel;
 
 /**
  * 

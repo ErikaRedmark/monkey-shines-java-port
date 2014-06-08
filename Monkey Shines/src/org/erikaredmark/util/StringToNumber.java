@@ -1,4 +1,4 @@
-package org.redmark.erika.util;
+package org.erikaredmark.util;
 
 import com.google.common.base.Optional;
 

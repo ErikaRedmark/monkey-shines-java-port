@@ -6,7 +6,7 @@ import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.ImmutableRectangle;
 import org.erikaredmark.monkeyshines.Sprite;
 import org.erikaredmark.monkeyshines.Sprite.SpriteType;
-import org.redmark.erika.util.ObservableModel;
+import org.erikaredmark.util.ObservableModel;
 
 /**
  * 

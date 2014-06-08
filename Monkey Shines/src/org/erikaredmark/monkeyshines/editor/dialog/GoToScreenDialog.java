@@ -22,7 +22,7 @@ import javax.swing.plaf.basic.BasicArrowButton;
 
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.editor.resource.EditorResource;
-import org.redmark.erika.util.StringToNumber;
+import org.erikaredmark.util.StringToNumber;
 
 import com.google.common.base.Optional;
 
