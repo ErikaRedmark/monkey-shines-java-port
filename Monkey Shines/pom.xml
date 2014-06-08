@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.erikaredmark</groupId>
+	<artifactId>monkey_shines</artifactId>
+	<packaging>jar</packaging>
+  	<version>0.1-SNAPSHOT</version>
+  	<name>Monkey Shines</name>
+  	<url>https://github.com/ErikaRedmark/monkey-shines-java-port/wiki</url>
+  	<description>Port of Macintosh game 'Monkey Shines' to Java</description>
+  	
+  	<dependencies>
+  		<!--  Local Dependencies  -->
+		<dependency>
+			<groupId>com.google</groupId>
+			<artifactId>guava</artifactId>
+			<version>14.0.1</version>
+			<type>jar</type>
+		</dependency>
+	  	<dependency>
+			<groupId>com.google</groupId>
+			<artifactId>protobuf</artifactId>
+			<version>2.5.0</version>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>com.jcraft</groupId>
+			<artifactId>jorbis</artifactId>
+			<version>0.0.15</version>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>com.jcraft</groupId>
+			<artifactId>jogg</artifactId>
+			<version>0.0.7</version>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>com.tritonus</groupId>
+			<artifactId>tritonus_share</artifactId>
+			<version>1.0</version>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>com.javazoom</groupId>
+			<artifactId>vorbisspi</artifactId>
+			<version>1.0.3</version>
+			<type>jar</type>
+		</dependency>
+		
+		<!--  Remote Dependencies  -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.6</version>
+		</dependency>
+	</dependencies>
+  	
+  	<build>
+     	<sourceDirectory>${basedir}/src</sourceDirectory>
+		<resources>
+			<resource>
+				<directory>${basedir}/src/resources</directory>
+				<targetPath>resources</targetPath>
+			</resource>
+		</resources>
+     	
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+				</configuration>
+			</plugin>
+
+		
+			<!--  Compile Time dependencies must be included in .jar to run -->
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>org.erikaredmark.monkeyshines.MonkeyShines</mainClass>
+						</manifest>
+					</archive>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+  	
+	</build>
+
+	<repositories>
+		<repository>
+			<id>monkeyshines_local_repo</id>
+			<url>file://${basedir}/maven_repo</url>
+		</repository>
+	</repositories>
+
+</project>
+
+
