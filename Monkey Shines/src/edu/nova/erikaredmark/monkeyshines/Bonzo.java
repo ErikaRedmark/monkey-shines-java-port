@@ -137,6 +137,19 @@ public final class Bonzo {
 	}
 	
 	/**
+	 * 
+	 * returns how much health bonzo has remaining. This returns '0' if his health drops below zero.
+	 * 
+	 * @return
+	 * 
+	 */
+	public int getHealth() {
+		return   health > 0
+			   ? health
+			   : 0;
+	}
+	
+	/**
 	 * Determines if bonzo has hit the ground. Intended ONLY to be called if bonzo is currently in a jump state. If he
 	 * hits the ground, speed considerations may make it possible for him to go through the ground a couple units. The returned
 	 * value indicates how far to 'bump' bonzo up if he goes through the ground too far. This should only be called once

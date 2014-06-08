@@ -1,5 +1,6 @@
 package edu.nova.erikaredmark.monkeyshines;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -43,6 +44,21 @@ public class GameWindow extends JPanel implements ActionListener {
 	// back to this class for UI updates whenever one of the UI dependent stats
 	// changes.
 	private final UIPanel uiCanvas;
+	
+	// UI Panel constants: declared here due to initialision issues with non-const expressions
+	// in inner classes.
+	
+	// Drawing location to start drawing the health bar.
+	private static final int HEALTH_DRAW_X = 241;
+	private static final int HEALTH_DRAW_Y = 50;
+	private static final int HEALTH_DRAW_WIDTH = 151;
+	private static final int HEALTH_DRAW_HEIGHT = 14;
+	// Used to map the 'logical' health to the 'width' of the health bar.
+	// Bonzos health will be converted to double and extended/contracted by this multplier to get draw width.
+	private static final double HEALTH_MULTIPLIER = (double)HEALTH_DRAW_WIDTH / (double)GameConstants.HEALTH_MAX;
+	
+	// Color of health bar
+	private static final Color HEALTH_COLOR = new Color(0, 255, 0, 255);
 	
 	/**
 	 * Constructs a GameWindow listening to the keyboard
@@ -143,6 +159,14 @@ public class GameWindow extends JPanel implements ActionListener {
 						  0, 0,
 						  GameConstants.SCREEN_WIDTH, GameConstants.UI_HEIGHT,
 						  null);
+			
+			// Draw health. Currently draws a basic rectangle
+			g2d.setColor(HEALTH_COLOR);
+			// Normalise bonzo's current health with drawing.
+			double healthWidth = ((double)bonzo.getHealth()) * HEALTH_MULTIPLIER;
+			//System.out.println("Drawing rect: " + HEALTH_DRAW_X + " " + HEALTH_DRAW_Y + " " + (int)healthWidth + " " + HEALTH_DRAW_HEIGHT);
+			g2d.fillRect(HEALTH_DRAW_X, HEALTH_DRAW_Y, (int)healthWidth, HEALTH_DRAW_HEIGHT);
+			
 		}
 	}
 
