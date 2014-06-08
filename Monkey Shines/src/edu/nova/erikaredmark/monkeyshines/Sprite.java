@@ -384,7 +384,7 @@ public class Sprite {
 		},
 		HEALTH_DRAIN("Health Drain") {
 			@Override public void onBonzoCollision(Bonzo bonzo, World world) {
-				bonzo.hurt(GameConstants.HEALTH_DRAIN_PER_TICK, DeathAnimation.BEE);
+				bonzo.hurt(GameConstants.HEALTH_DRAIN_PER_TICK, DamageEffect.BEE);
 			}
 		},
 		EXIT_DOOR("Exit") {

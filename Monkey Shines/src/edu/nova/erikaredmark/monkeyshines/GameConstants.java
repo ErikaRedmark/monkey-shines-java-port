@@ -47,21 +47,31 @@ public final class GameConstants {
 	// fall earlier (he can't tiptoe to the edge of his normal bounding box)
 	public static int FALL_SIZE = 4;
 	
+	/* -------------------------- Health --------------------------- */
 	// Total units of health bonzo starts with
 	public static int HEALTH_MAX = 100;
-	public static int SAFE_FALL_DISTANCE = 80; // Number of pixels fall before Bonzo starts taking damage.
-	public static int SAFE_FALL_JUMP_DISTANCE = 120; // Number of pixels fall before bonzo starts taking damage
-													 // the moment he starts falling from a jump.
-	public static double FALL_DAMAGE_MULTIPLIER = 2.0; // Number of pixels of distance fell times this is the damage bonzo will take.
-	public static int HEALTH_DRAIN_PER_TICK = 2; // Units of health per TICK that are drained when bonzo is touching a
-												 // health draining sprite. This effect is NOT cumulative (touching 2 health
-												 // drainers at once is the same as touching 1)
-	public static double LIFE_INCREASE = 25.0; // Amount of life recovered when an energy thingy is taken.
+	// Number of ticks bonzo can be not standing on ground (longer for coming from a jump)
+	public static int SAFE_FALL_TIME = 10;
+	public static int SAFE_FALL_JUMP_TIME = 46;
 	
+	// Once bonzo passes the threshold for time, the number of ticks he is passed the
+	// threshold is put to the POWER of this value (important this be greater than 1).
+	// Bonzo damage from high heights should be exponential.
+	public static double FALL_DAMAGE_MULTIPLIER = 1.8;
+	// Units of health per TICK that are drained when bonzo is touching a
+	// health draining sprite. This effect is NOT cumulative (touching 2 health
+	// drainers at once is the same as touching 1)
+	public static int HEALTH_DRAIN_PER_TICK = 2; 
+	
+	// Amount of life recovered when an energy thingy is taken.
+	public static double LIFE_INCREASE = 25.0; 
+	
+	/* -------------------------- Score ---------------------------- */
 	public static double FRUIT_SCORE = 10.0; // Standard score for fruit.
 	public static double YUMMY_FRUIT_SCORE = 50.0; // score for Yummy fruit.
 	public static double EXIT_KEY_SCORE = 10.0; // Score for exit key
 	public static double BONUS_KEY_SCORE = 10.0; // Score for bonus keys
+	
 	public static int BONUS_SCREEN = 10000; // The screenID of the bonus world; or where the bonus door takes one too.
 	public static double CONVEYER_SPEED = 1.4; // The number of pixels, per tick, to move Bonzo when he is under the effect of a conveyer belt.
 	

@@ -7,6 +7,7 @@ import java.util.List;
 
 import edu.nova.erikaredmark.monkeyshines.Conveyer.Rotation;
 import edu.nova.erikaredmark.monkeyshines.resource.CoreResource;
+import edu.nova.erikaredmark.monkeyshines.resource.SoundManager;
 import edu.nova.erikaredmark.monkeyshines.tiles.CollapsibleTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.ConveyerTile;
 import edu.nova.erikaredmark.monkeyshines.tiles.TileType;
@@ -48,6 +49,10 @@ public final class Bonzo {
 	// is relative to the screen.
 	private World worldPointer;
 	
+	// Store a reference to the current resources sound manager for less indirection
+	// playing sounds
+	private SoundManager soundManager;
+	
 	
 	/* **********************************************
 	 * 
@@ -60,6 +65,11 @@ public final class Bonzo {
 	// have a jetpack, slowly decrease it until it reachs the max limit (MAX_FALL_SPEED)
 	// Once there is ground below bonzo, stop jumping
 	private boolean isJumping;
+	
+	// incremented every tick bonzo is not on the ground. When he lands, depending on whether he jumped
+	// or not, this will be used to calculate fall damage, if any.
+	// If bonzo is the air for so long that this overflows... well that's crazy level design.
+	private int timeInAir;
 	
 	// When bonzo is on a conveyer, he is moved in one direction or the other based on which way the
 	// conveyer is rotated.
@@ -88,6 +98,7 @@ public final class Bonzo {
 	public Bonzo(final World worldPointer) {
 		this.worldPointer = worldPointer;
 		this.health = GameConstants.HEALTH_MAX;
+		this.soundManager = worldPointer.getResource().getSoundManager();
 		currentScreenID = 1000; // Always 1000. Everything starts on 1000
 		final LevelScreen currentScreen = worldPointer.getScreenByID(currentScreenID);
 		
@@ -95,6 +106,7 @@ public final class Bonzo {
 		walkingDirection = 0;
 		currentSprite = 0;
 		affectedConveyer = Rotation.NONE;
+		
 		
 		// Initialise starting points
 		ImmutablePoint2D start = currentScreen.getBonzoStartingLocation().multiply(GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y);
@@ -117,6 +129,7 @@ public final class Bonzo {
 		// When bonzo is restarted, he is not dead or jumping
 		setDying(false, this.deathAnimation);
 		setJumping(false);
+		setUnjumping(false);
 		
 		// Bring health back
 		this.health = GameConstants.HEALTH_MAX;
@@ -409,9 +422,10 @@ public final class Bonzo {
 	 * 		if bonzo does die, this is the animation that should be used
 	 * 
 	 */
-	public void hurt(int amt, DeathAnimation animation) {
+	public void hurt(int amt, DamageEffect effect) {
 		health -= amt;
-		if (health < 0)  kill(DeathAnimation.NORMAL);
+		soundManager.playOnce(effect.soundEffect);
+		if (health < 0)  kill(effect.deathAnimation);
 	}
 	
 	/**
@@ -442,7 +456,7 @@ public final class Bonzo {
 		currentVelocity.setY(0);
 		currentSprite = 0;
 		setDying(true, animation);
-		worldPointer.getResource().getSoundManager().playOnce(animation.soundEffect() );
+		soundManager.playOnce(animation.soundEffect() );
 	}
 	
 	/**
@@ -641,6 +655,7 @@ public final class Bonzo {
 		/* ------- Not on the ground, so start pulling downward ---------- */
 		// Conveyer state is MAINTAINED.
 		if ( groundState.snapUpBy == -1) {
+			++timeInAir;
 			// if the current velocity has not yet hit terminal
 			if (currentVelocity.precisionY() <= GameConstants.TERMINAL_VELOCITY ) {
 				
@@ -656,11 +671,29 @@ public final class Bonzo {
 				System.out.println("debug");
 			}
 			currentLocation.translateY(-groundState.snapUpBy); //Push back to level field.
-			// If we are jumping when we land, start the 'unjump' animation.
+			// If we are jumping when we land, start the 'unjump' animation. Also, set
+			// the 'threshold' for falling time for fall calculations
+			int fallThreshold;
 			if (isJumping) {
 				setJumping(false);
 				setUnjumping(true);
+				fallThreshold = GameConstants.SAFE_FALL_JUMP_TIME;
+			} else {
+				fallThreshold = GameConstants.SAFE_FALL_TIME;
 			}
+			
+			// Apply fall damage if bonzo was beyond the threshold.
+			int airDifference = timeInAir - fallThreshold;
+			//System.out.println(timeInAir + " - " + fallThreshold + " = " + airDifference);
+			//System.out.println(airDifference);
+			if (airDifference > 0) {
+				// Do not fear the casts: Cast airDifference to double to apply multiplier, then back to int to
+				// get discrete units of damage to apply.
+				hurt((int)( (Math.pow( ((double)airDifference), GameConstants.FALL_DAMAGE_MULTIPLIER) ) ), DamageEffect.FALL);
+			}
+			
+			// Whether fall damage or not, bonzo no longer in air.
+			timeInAir = 0;
 			
 			// Set conveyer belt state
 			setAffectedByConveyer(groundState.onConveyer);
