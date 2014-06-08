@@ -24,9 +24,9 @@ The basic game engine mechanics are coming together, but there is still quite a 
 - [x] Goodies and Yums
 - [x] Collapsible Tiles
 - [x] Sprite Collisons (uses pixel perfect collision)
-- [ ] UI Containing other information than just main game screen
-- [ ] Health
-- [ ] Health Draining Sprites
+- [x] UI Containing other information than just main game screen
+- [x] Health
+- [x] Health Draining Sprites
 - [ ] Lives
 - [ ] Red keys and Exit Door
 - [ ] Blue keys and Bonus Door

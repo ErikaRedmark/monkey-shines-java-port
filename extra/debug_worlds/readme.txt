@@ -1,0 +1,1 @@
+Debug worlds are built with the intention of testing game mechanics.
