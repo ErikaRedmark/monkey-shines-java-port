@@ -44,6 +44,7 @@ public class GameWindow extends JPanel implements ActionListener {
 	// back to this class for UI updates whenever one of the UI dependent stats
 	// changes.
 	private final UIPanel uiCanvas;
+
 	
 	// UI Panel constants: declared here due to initialision issues with non-const expressions
 	// in inner classes.
@@ -59,6 +60,20 @@ public class GameWindow extends JPanel implements ActionListener {
 	
 	// Color of health bar
 	private static final Color HEALTH_COLOR = new Color(0, 255, 0, 255);
+	
+	// Score draw x/y is the top left location of the FIRST, leftmost digit.
+	private static final int SCORE_DRAW_X = 13;
+	private static final int SCORE_DRAW_Y = 32;
+	private static final int SCORE_WIDTH = 16;
+	private static final int SCORE_HEIGHT = 30;
+	// Precomputation of effectively a constant
+	private static final int SCORE_DRAW_Y2 = SCORE_DRAW_Y + SCORE_HEIGHT;
+	
+	private static final int SCORE_NUM_DIGITS = 7;
+	// Digits are updated when score is updated. Digits are always drawn from this
+	// array to avoid digit extraction algorithms every frame
+	// Default value 0 is guaranteed by language. Bonzo's score always starts at 0
+	private final int digits[] = new int[SCORE_NUM_DIGITS];
 	
 	/**
 	 * Constructs a GameWindow listening to the keyboard
@@ -109,9 +124,32 @@ public class GameWindow extends JPanel implements ActionListener {
 		
 		this.addKeyListener(keys);
 		
-		bonzo = new Bonzo(currentWorld);
+		bonzo = new Bonzo(currentWorld, new Runnable() {
+			/* Update the digits for bonzos score when bonzo increases score. */
+			@Override public void run() {
+				int rawScore = bonzo.getScore();
+				
+				// modulations are computed from biggest to smallest singificant digit.
+				// We must store them in the opposite direction to properly handle digits.
+				for (int i = SCORE_NUM_DIGITS - 1, modular = GameConstants.TEN_POWERS[i + 1], digitIndex = 0;
+					 i >= 0;
+					 --i, ++digitIndex) {
+					// Note: We need to compute the divisor to normalise to a number between 0-9, which
+					// will end up being the next modular anyway.
+					int divisor = GameConstants.TEN_POWERS[i];
+					
+					// Small correction to arithmetic during the last digit. A modulus of 1 technically
+					// is not divided again.
+					// if (divisor == 0)  divisor = 1;
+					
+					digits[digitIndex] = (rawScore % modular) / divisor;
+					// readies the next digit extraction for next loop.
+					modular = divisor;
+				}
+			}
+		});
 		setDoubleBuffered(true);
-		// Accomodate the UI and the game. UI is a banner and width is equal to screen width
+		// Accommodate the UI and the game. UI is a banner and width is equal to screen width
 		setMinimumSize(new Dimension(GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT + GameConstants.UI_HEIGHT) );
 		setPreferredSize(new Dimension(GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT + GameConstants.UI_HEIGHT) );
 		
@@ -151,7 +189,7 @@ public class GameWindow extends JPanel implements ActionListener {
 
 		@Override public void paint(Graphics g) {
 			Graphics2D g2d = (Graphics2D) g;
-			// Draw banner under everything else
+			/* --------------------- Initial Banner ---------------------- */
 			WorldResource rsrc = currentWorld.getResource();
 			g2d.drawImage(rsrc.getBanner(), 
 						  0, 0,
@@ -160,13 +198,26 @@ public class GameWindow extends JPanel implements ActionListener {
 						  GameConstants.SCREEN_WIDTH, GameConstants.UI_HEIGHT,
 						  null);
 			
-			// Draw health. Currently draws a basic rectangle
+			/* ------------------------- Health -------------------------- */
 			g2d.setColor(HEALTH_COLOR);
 			// Normalise bonzo's current health with drawing.
 			double healthWidth = ((double)bonzo.getHealth()) * HEALTH_MULTIPLIER;
 			//System.out.println("Drawing rect: " + HEALTH_DRAW_X + " " + HEALTH_DRAW_Y + " " + (int)healthWidth + " " + HEALTH_DRAW_HEIGHT);
 			g2d.fillRect(HEALTH_DRAW_X, HEALTH_DRAW_Y, (int)healthWidth, HEALTH_DRAW_HEIGHT);
 			
+			/* -------------------------- Score -------------------------- */
+			for (int i = 0; i < SCORE_NUM_DIGITS; i++) {
+				int drawToX = SCORE_DRAW_X + (SCORE_WIDTH * i);
+				// draw to Y is always the same
+				int drawFromX = SCORE_WIDTH * digits[i];
+				// draw from Y is always the same, 0
+				g2d.drawImage(rsrc.getScoreNumbersSheet(), 
+							  drawToX, SCORE_DRAW_Y,
+							  drawToX + SCORE_WIDTH, SCORE_DRAW_Y2, 
+							  drawFromX, 0, 
+							  drawFromX + SCORE_WIDTH, SCORE_HEIGHT, 
+							  null);
+			}
 		}
 	}
 

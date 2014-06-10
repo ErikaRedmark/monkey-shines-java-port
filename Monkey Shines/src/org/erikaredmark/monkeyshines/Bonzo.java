@@ -45,6 +45,11 @@ public final class Bonzo {
 	// health is bounded from 0 to GameConstants.HEALTH_MAX
 	private int health;
 	
+	// Score starts at zero and goes up until the game is over.
+	// And yes, score is a property of the character, not the world.
+	private int score;
+	private final Runnable scoreCallback;
+	
 	// Use a pointer to the current world to get information such as the screen, and then from there where bonzo
 	// is relative to the screen.
 	private World worldPointer;
@@ -95,8 +100,20 @@ public final class Bonzo {
 	// jumping frames backwards. 
 	private boolean unJumping;
 	
-	public Bonzo(final World worldPointer) {
+	/**
+	 * 
+	 * Creates bonzo for use in the game
+	 * 
+	 * @param worldPointer
+	 * 		reference to main world for collision detection purposes
+	 * 
+	 * @param scoreCallback
+	 * 		UI callback to use when bonzos score is updated (to reflect on GUI)
+	 * 
+	 */
+	public Bonzo(final World worldPointer, final Runnable scoreCallback) {
 		this.worldPointer = worldPointer;
+		this.scoreCallback = scoreCallback;
 		this.health = GameConstants.HEALTH_MAX;
 		this.soundManager = worldPointer.getResource().getSoundManager();
 		currentScreenID = 1000; // Always 1000. Everything starts on 1000
@@ -161,6 +178,22 @@ public final class Bonzo {
 			   ? health
 			   : 0;
 	}
+	
+	/**
+	 * 
+	 * Increments bonzos score by the specified amount. Bonzos score can never decrease in-game.
+	 * Calling this indicates to the UI that there is a new score and that the UI should be updated.
+	 * 
+	 * @param amt
+	 * 		the amount to increase by
+	 * 
+	 */
+	public void incrementScore(int amt) {
+		this.score += amt;
+		scoreCallback.run();
+	}
+	
+	public int getScore() { return this.score; }
 	
 	/**
 	 * Determines if bonzo has hit the ground. Intended ONLY to be called if bonzo is currently in a jump state. If he

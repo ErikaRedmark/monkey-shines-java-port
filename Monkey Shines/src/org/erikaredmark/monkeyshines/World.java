@@ -293,16 +293,16 @@ public class World {
 		
 		Goodie gotGoodie;
 		if ( (gotGoodie = goodiesInWorld.get(topLeftQuad) ) != null ) {
-			gotGoodie.take();
+			gotGoodie.take(theBonzo);
 		}
 		if ( (gotGoodie = goodiesInWorld.get(topRightQuad) ) != null ) {
-			gotGoodie.take();
+			gotGoodie.take(theBonzo);
 		}
 		if ( (gotGoodie = goodiesInWorld.get(bottomLeftQuad) ) != null ) {
-			gotGoodie.take();
+			gotGoodie.take(theBonzo);
 		}
 		if ( (gotGoodie = goodiesInWorld.get(bottomRightQuad) ) != null ) {
-			gotGoodie.take();
+			gotGoodie.take(theBonzo);
 		}
 	}
 	

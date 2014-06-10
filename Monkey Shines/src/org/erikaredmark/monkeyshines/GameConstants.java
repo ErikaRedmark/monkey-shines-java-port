@@ -98,6 +98,10 @@ public final class GameConstants {
 	// certain things to wait for n ticks before performing an action.
 	public static final int GAME_SPEED = 30; // 20 = 50 ticks per second
 	public static final int EDITOR_SPEED = GAME_SPEED + 30;
+	
+	// 10 to the power of 0 through 7. Used for digit calculation when drawing the score sprites
+	// index is the 'exponent', and result is the calculation. Base is 10.
+	public static final int[] TEN_POWERS = new int[] {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000};
 
 
 }

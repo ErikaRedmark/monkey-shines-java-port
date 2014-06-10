@@ -3,7 +3,13 @@ package org.erikaredmark.monkeyshines;
 import java.awt.Graphics;
 
 import org.erikaredmark.monkeyshines.resource.WorldResource;
-
+/**
+ * 
+ * Represents a specific goodie instance on the map
+ * 
+ * @author Erika Redmark
+ *
+ */
 public class Goodie {
 	// These values indicate starting information for object construction
 	private final Type goodieType;
@@ -83,12 +89,17 @@ public class Goodie {
 	 * Tells the goodie that it has been taken. This starts the 'Yum' animation and plays the appropriate
 	 * sound. A goodie may only be taken once. If a goodie is already taken, this method does nothing.
 	 * 
+	 * @param bonzo
+	 * 		a reference to bonzo, so that the goodies effects (score and misc.) may be applied to him.
+	 * 
 	 */
-	public void take() {
+	public void take(final Bonzo bonzo) {
 		if (taken)  return;
 		
 		taken = true;
 		rsrc.getSoundManager().playOnce(GameSoundEffect.YUM_COLLECT);
+		
+		bonzo.incrementScore(goodieType.score);
 	}
 	
 	public int getScreenID() {
@@ -140,26 +151,30 @@ public class Goodie {
 		// WARNING: xOffset is used as ID for encoding this in save file format!
 		// Adding the concept of another row to this sprite sheet will require
 		// modifying that logic!
-		RED_KEY(0),
-		BLUE_KEY(1),
-		APPLE(2),
-		ORANGE(3),
-		PEAR(4),
-		PURPLE_GRAPES(5),
-		BLUE_GRAPES(6),
-		BANANA(7),
-		ENERGY(8),
-		X2MULTIPLIER(9),
-		WHITE_MELRODE_WINGS(10),
-		SHIELD(11),
-		EXTRA_LIFE(12),
-		X3MULTIPLIER(13),
-		X4MULTIPLIER(14);
+		// TODO all scores are placeholders. Need to play original and determine score
+		// for each piece!
+		RED_KEY(0, 20),
+		BLUE_KEY(1, 20),
+		APPLE(2, 20),
+		ORANGE(3, 20),
+		PEAR(4, 20),
+		PURPLE_GRAPES(5, 30),
+		BLUE_GRAPES(6, 40),
+		BANANA(7, 500),
+		ENERGY(8, 20),
+		X2MULTIPLIER(9, 0),
+		WHITE_MELRODE_WINGS(10, 20),
+		SHIELD(11, 20),
+		EXTRA_LIFE(12, 100),
+		X3MULTIPLIER(13, 0),
+		X4MULTIPLIER(14, 0);
 		
 		private final int xOffset;
+		public final int score;
 		
-		private Type(final int xOffset) {
+		private Type(final int xOffset, final int score) {
 			this.xOffset = xOffset;
+			this.score = score;
 		}
 		
 		/**
