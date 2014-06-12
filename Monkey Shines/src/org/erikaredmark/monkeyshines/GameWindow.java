@@ -75,13 +75,30 @@ public class GameWindow extends JPanel implements ActionListener {
 	// Default value 0 is guaranteed by language. Bonzo's score always starts at 0
 	private final int digits[] = new int[SCORE_NUM_DIGITS];
 	
+	// A single digit representing bonzos lives. He may have up to 9 lives
+	// only. A value of Bonzo.INFINITE_LIVES draws nothing.
+	private int lifeDigit;
+	
+	private static final int LIFE_DRAW_X = 595;
+	private static final int LIFE_DRAW_Y = 33;
+	// Width and height are same as score width/height, as numerals are same
+	// size.
+	private static final int LIFE_DRAW_X2 = LIFE_DRAW_X + SCORE_WIDTH;
+	private static final int LIFE_DRAW_Y2 = LIFE_DRAW_Y + SCORE_HEIGHT;
+
+	private final Runnable endGame;
+	
 	/**
-	 * Constructs a GameWindow listening to the keyboard
+	 * Constructs a GameWindow listening to the keyboard.
+	 * 
+	 * When the game is over, the callback is called. 
+	 * 
 	 * @param keys
 	 */
-	public GameWindow(final KeyboardInput keys) {
+	public GameWindow(final KeyboardInput keys, final Runnable endGame) {
 		super();
 		this.keys = keys;
+		this.endGame = endGame;
 		
 		// TODO DEBUG jump straight to file browser to select a world. Obviously a better menu
 		// system should be in place 
@@ -124,30 +141,16 @@ public class GameWindow extends JPanel implements ActionListener {
 		
 		this.addKeyListener(keys);
 		
-		bonzo = new Bonzo(currentWorld, new Runnable() {
-			/* Update the digits for bonzos score when bonzo increases score. */
-			@Override public void run() {
-				int rawScore = bonzo.getScore();
-				
-				// modulations are computed from biggest to smallest singificant digit.
-				// We must store them in the opposite direction to properly handle digits.
-				for (int i = SCORE_NUM_DIGITS - 1, modular = GameConstants.TEN_POWERS[i + 1], digitIndex = 0;
-					 i >= 0;
-					 --i, ++digitIndex) {
-					// Note: We need to compute the divisor to normalise to a number between 0-9, which
-					// will end up being the next modular anyway.
-					int divisor = GameConstants.TEN_POWERS[i];
-					
-					// Small correction to arithmetic during the last digit. A modulus of 1 technically
-					// is not divided again.
-					// if (divisor == 0)  divisor = 1;
-					
-					digits[digitIndex] = (rawScore % modular) / divisor;
-					// readies the next digit extraction for next loop.
-					modular = divisor;
-				}
-			}
-		});
+		bonzo = new Bonzo(currentWorld,
+			// DEBUG: Will eventually be based on difficulty
+			4,
+			new Runnable() { @Override public void run() { scoreUpdate(); } },
+			new Runnable() { @Override public void run() { gameOver(); } },
+			new Runnable() { @Override public void run() { lifeLost(); } });
+		// DEBUG: Will eventually be based on difficulty
+		lifeDigit = 4;
+		
+
 		setDoubleBuffered(true);
 		// Accommodate the UI and the game. UI is a banner and width is equal to screen width
 		setMinimumSize(new Dimension(GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT + GameConstants.UI_HEIGHT) );
@@ -171,6 +174,47 @@ public class GameWindow extends JPanel implements ActionListener {
 		gameTimer.start();
 	}
 	
+	// Called from callback when bonzos score is updated in game. Sets digit values for
+	// score redraw.
+	private void scoreUpdate() {
+		int rawScore = bonzo.getScore();
+		
+		// modulations are computed from biggest to smallest singificant digit.
+		// We must store them in the opposite direction to properly handle digits.
+		for (int i = SCORE_NUM_DIGITS - 1, modular = GameConstants.TEN_POWERS[i + 1], digitIndex = 0;
+			 i >= 0;
+			 --i, ++digitIndex) {
+			// Note: We need to compute the divisor to normalise to a number between 0-9, which
+			// will end up being the next modular anyway.
+			int divisor = GameConstants.TEN_POWERS[i];
+			
+			// Small correction to arithmetic during the last digit. A modulus of 1 technically
+			// is not divided again.
+			// if (divisor == 0)  divisor = 1;
+			
+			digits[digitIndex] = (rawScore % modular) / divisor;
+			// readies the next digit extraction for next loop.
+			modular = divisor;
+		}
+	}
+	
+	// Called during a game over.
+	private void gameOver() {
+		// TODO soft fade out before running callback
+		endGame.run();
+	}
+	
+	// Called when bonzos life is lost. Sets life digit for drawing.
+	private void lifeLost() {
+		int lives = bonzo.getLives();
+		assert lives < 10 && lives >= -2;
+		// Gameover is called when lives is -1. Logically this should never
+		// be called when Bonzo is in that state
+		assert lives != -1;
+		
+		lifeDigit = lives;
+	}
+			
 	private final class GameplayPanel extends JPanel {
 		private static final long serialVersionUID = 1L;
 
@@ -217,6 +261,21 @@ public class GameWindow extends JPanel implements ActionListener {
 							  drawFromX, 0, 
 							  drawFromX + SCORE_WIDTH, SCORE_HEIGHT, 
 							  null);
+			}
+			
+			/* ------------------------- Lives --------------------------- */
+			{
+				if (lifeDigit >= 0) {
+					assert lifeDigit < 10;
+					int drawFromX = SCORE_WIDTH * lifeDigit;
+					
+					g2d.drawImage(rsrc.getScoreNumbersSheet(),
+								  LIFE_DRAW_X, LIFE_DRAW_Y,
+								  LIFE_DRAW_X2, LIFE_DRAW_Y2,
+								  drawFromX, 0,
+								  drawFromX + SCORE_WIDTH, SCORE_HEIGHT,
+								  null);
+				} // else draw nothing TODO perhaps draw infinity symbol?
 			}
 		}
 	}
