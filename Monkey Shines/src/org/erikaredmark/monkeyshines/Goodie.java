@@ -86,8 +86,20 @@ public class Goodie {
 	
 	/**
 	 * 
+	 * Resets this goodie, making it appear back on the screen, ONLY if it is persistant.
+	 * TODO this method is not currently used
+	 * 
+	 */
+	public void resetIfApplicable() {
+		if (goodieType.persistant)  taken = false;
+	}
+	
+	/**
+	 * 
 	 * Tells the goodie that it has been taken. This starts the 'Yum' animation and plays the appropriate
-	 * sound. A goodie may only be taken once. If a goodie is already taken, this method does nothing.
+	 * sound. A goodie may normally only be taken once. If a goodie is already taken, this method does nothing.
+	 * <p/>
+	 * Some goodies are reset when a level screen is restarted. TODO this is not yet implemented.
 	 * 
 	 * @param bonzo
 	 * 		a reference to bonzo, so that the goodies effects (score and misc.) may be applied to him.
@@ -97,9 +109,9 @@ public class Goodie {
 		if (taken)  return;
 		
 		taken = true;
-		rsrc.getSoundManager().playOnce(GameSoundEffect.YUM_COLLECT);
-		
+		rsrc.getSoundManager().playOnce(goodieType.soundEffect);
 		bonzo.incrementScore(goodieType.score);
+		goodieType.affectBonzo(bonzo);
 	}
 	
 	public int getScreenID() {
@@ -153,28 +165,56 @@ public class Goodie {
 		// modifying that logic!
 		// TODO all scores are placeholders. Need to play original and determine score
 		// for each piece!
-		RED_KEY(0, 20),
-		BLUE_KEY(1, 20),
-		APPLE(2, 20),
-		ORANGE(3, 20),
-		PEAR(4, 20),
-		PURPLE_GRAPES(5, 30),
-		BLUE_GRAPES(6, 40),
-		BANANA(7, 500),
-		ENERGY(8, 20),
-		X2MULTIPLIER(9, 0),
-		WHITE_MELRODE_WINGS(10, 20),
-		SHIELD(11, 20),
-		EXTRA_LIFE(12, 100),
-		X3MULTIPLIER(13, 0),
-		X4MULTIPLIER(14, 0);
+		RED_KEY(0, 20, GameSoundEffect.YUM_COLLECT, false),
+		BLUE_KEY(1, 20, GameSoundEffect.YUM_COLLECT, false),
+		APPLE(2, 20, GameSoundEffect.YUM_COLLECT, false),
+		ORANGE(3, 20, GameSoundEffect.YUM_COLLECT, false),
+		PEAR(4, 20,GameSoundEffect.YUM_COLLECT, false),
+		PURPLE_GRAPES(5, 30,GameSoundEffect.YUM_COLLECT, false),
+		BLUE_GRAPES(6, 40, GameSoundEffect.YUM_COLLECT, false),
+		BANANA(7, 500, GameSoundEffect.YUM_COLLECT, false),
+		ENERGY(8, 20, GameSoundEffect.POWERUP_MINOR, false) {
+			@Override public void affectBonzo(Bonzo bonzo) {
+				bonzo.incrementHealth(GameConstants.LIFE_INCREASE);
+			}
+		},
+		X2MULTIPLIER(9, 0, GameSoundEffect.POWERUP_MINOR, false),
+		WHITE_MELRODE_WINGS(10, 20, GameSoundEffect.POWERUP, true),
+		SHIELD(11, 20, GameSoundEffect.POWERUP, true),
+		EXTRA_LIFE(12, 100, GameSoundEffect.POWERUP, false) {
+			@Override public void affectBonzo(Bonzo bonzo) {
+				bonzo.incrementLives(1);
+			}
+		},
+		X3MULTIPLIER(13, 0, GameSoundEffect.POWERUP_MINOR, false),
+		X4MULTIPLIER(14, 0, GameSoundEffect.POWERUP_MINOR, false);
 		
 		private final int xOffset;
 		public final int score;
+		private final GameSoundEffect soundEffect;
+		private final boolean persistant;
 		
-		private Type(final int xOffset, final int score) {
+		/**
+		 * 
+		 * @param xOffset
+		 * 		offset in the spirtesheet for drawing, in units (basically id)
+		 * 
+		 * @param score
+		 * 		score that will be added to bonzo upon grabbing this goodie
+		 * 
+		 * @param soundEffect
+		 * 		sound effect played when bonzo grabs goodie
+		 * 
+		 * @param persistant
+		 * 		{@code true} to allow the goodie to return to the world when the screen
+		 * 		it is on is reset (leaving the scren, bonzo dying) {@code false} if otherwise
+		 * 
+		 */
+		private Type(final int xOffset, final int score, final GameSoundEffect soundEffect, final boolean persistant) {
 			this.xOffset = xOffset;
 			this.score = score;
+			this.soundEffect = soundEffect;
+			this.persistant = persistant;
 		}
 		
 		/**
@@ -231,6 +271,17 @@ public class Goodie {
 			// Id == xOffset.
 			return xOffset;
 		}
+		
+		/**
+		 * 
+		 * Some goodies produce different effects on bonzo. The default is to do nothing (except increment
+		 * any, if valid, score).
+		 * 
+		 * @param bonzo
+		 * 		reference to bonzo to affect him
+		 * 
+		 */
+		public void affectBonzo(Bonzo bonzo) { /* No op by default, overriden where required */ }
 	}
 	
 }

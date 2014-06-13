@@ -50,7 +50,7 @@ public final class Bonzo {
 	// If this is set to -2, bonzo has infinite lives. -1 means he's dead Jim
 	private int lives;
 	private final Runnable gameOverCallback;
-	private final Runnable lostLifeCallback;
+	private final Runnable lifeUpdatedCallback;
 	public static final int INFINITE_LIVES = -2;
 	
 	// Score starts at zero and goes up until the game is over.
@@ -125,8 +125,8 @@ public final class Bonzo {
 	 * @param gameOverCallback
 	 * 		UI callback for when the game is 'over', when bonzo loses all his lives
 	 * 
-	 * @param lostLifeCallback
-	 * 		UI callback for when bonzo loses a life, but NOT for when it is game over.
+	 * @param lifeUpdatedCallback
+	 * 		UI callback for when bonzo loses or gains a life, but NOT for when it is game over.
 	 * 		Dying with no lives calls the other callback
 	 * 
 	 */ 
@@ -134,13 +134,13 @@ public final class Bonzo {
 			     final int startingLives, 
 			     final Runnable scoreCallback, 
 			     final Runnable gameOverCallback,
-			     final Runnable lostLifeCallback) {
+			     final Runnable lifeUpdatedCallback) {
 		
 		this.worldPointer = worldPointer;
 		this.scoreCallback = scoreCallback;
 		this.lives = startingLives;
 		this.gameOverCallback = gameOverCallback;
-		this.lostLifeCallback = lostLifeCallback;
+		this.lifeUpdatedCallback = lifeUpdatedCallback;
 		this.health = GameConstants.HEALTH_MAX;
 		this.soundManager = worldPointer.getResource().getSoundManager();
 		currentScreenID = 1000; // Always 1000. Everything starts on 1000
@@ -208,6 +208,23 @@ public final class Bonzo {
 	
 	/**
 	 * 
+	 * Adds to bonzos health. Bonzo loses health over the course of normal gameplay; this is
+	 * intended for special circumstances, like energy goodies. If this would otherwise
+	 * put bonzo above {@code GameConstants.HEALTH_MAX}, bonzo is simply set to maximum.
+	 * <p/>
+	 * If assertions are enabled, negative values cause errors.
+	 * 
+	 */
+	public void incrementHealth(int amt) {
+		assert amt >= 0;
+		int newHealth = this.health + amt;
+		this.health =   newHealth < GameConstants.HEALTH_MAX
+					  ? newHealth
+					  : GameConstants.HEALTH_MAX;
+	}
+	
+	/**
+	 * 
 	 * Returns the number of lives Bonzo has remaining. If this is -2 that translates to 'Infinite' {@code Bonzo.INFINITE_LIVES}
 	 * 
 	 * @return
@@ -249,6 +266,8 @@ public final class Bonzo {
 		this.lives =   newLives < 9
 					 ? newLives
 					 : 9;
+		
+		lifeUpdatedCallback.run();
 	}
 	
 	public int getScore() { return this.score; }
@@ -738,7 +757,7 @@ public final class Bonzo {
 					if (lives == -1) {
 						gameOverCallback.run();
 					} else {
-						lostLifeCallback.run();
+						lifeUpdatedCallback.run();
 						worldPointer.restartBonzo(this);
 					}
 				}

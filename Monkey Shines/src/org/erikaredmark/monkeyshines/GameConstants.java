@@ -64,7 +64,7 @@ public final class GameConstants {
 	public static int HEALTH_DRAIN_PER_TICK = 2; 
 	
 	// Amount of life recovered when an energy thingy is taken.
-	public static double LIFE_INCREASE = 25.0; 
+	public static int LIFE_INCREASE = 15; 
 	
 	/* -------------------------- Score ---------------------------- */
 	public static double FRUIT_SCORE = 10.0; // Standard score for fruit.
