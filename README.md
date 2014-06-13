@@ -33,7 +33,7 @@ The basic game engine mechanics are coming together, but there is still quite a 
 - [ ] Patterned backgrounds (Currently have full-screen backgrounds as stand-ins)
 - [ ] Shield Powerup
 - [ ] Wing Powerup
-- [ ] Score
+- [x] Score
 - [ ] Multipliers
 - [ ] Main menu (A large task that I will break into smaller ones when the rest of the engine/level editor is complete)
 

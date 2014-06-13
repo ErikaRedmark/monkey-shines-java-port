@@ -230,6 +230,27 @@ public final class Bonzo {
 		scoreCallback.run();
 	}
 	
+	/**
+	 * 
+	 * Increments bonzos life count by the specified amount. Bonzo is capped at 9
+	 * lives and will not go further.
+	 * <p/>
+	 * If assertions are enabled, errors will be fired if negative values are passed.
+	 * External code is not allowed to decide when bonzo loses a life.
+	 * 
+	 * @param amt
+	 * 		number of lives to add. If this amount would otherwise push him over 9
+	 * 		lives he is kept at 9
+	 * 
+	 */
+	public void incrementLives(int amt) {
+		assert amt >= 0;
+		int newLives = this.lives + amt;
+		this.lives =   newLives < 9
+					 ? newLives
+					 : 9;
+	}
+	
 	public int getScore() { return this.score; }
 	
 	/**

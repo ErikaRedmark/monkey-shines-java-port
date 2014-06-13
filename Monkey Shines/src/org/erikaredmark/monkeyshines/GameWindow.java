@@ -34,10 +34,9 @@ public class GameWindow extends JPanel implements ActionListener {
 	
 	private final KeyboardInput keys;
 	
-	private final Bonzo bonzo;
-	
 	// Main drawing happens on gameplay. The world itself is the 'model' to this view.
 	private final GameplayPanel gameplayCanvas;
+	private Bonzo bonzo;
 	private World currentWorld;
 	
 	// UI Canvas stores other stats. Through a basic callback, World communicates
@@ -86,8 +85,6 @@ public class GameWindow extends JPanel implements ActionListener {
 	private static final int LIFE_DRAW_X2 = LIFE_DRAW_X + SCORE_WIDTH;
 	private static final int LIFE_DRAW_Y2 = LIFE_DRAW_Y + SCORE_HEIGHT;
 
-	private final Runnable endGame;
-	
 	/**
 	 * Constructs a GameWindow listening to the keyboard.
 	 * 
@@ -98,59 +95,13 @@ public class GameWindow extends JPanel implements ActionListener {
 	public GameWindow(final KeyboardInput keys, final Runnable endGame) {
 		super();
 		this.keys = keys;
-		this.endGame = endGame;
+		this.addKeyListener(keys);
 		
-		// TODO DEBUG jump straight to file browser to select a world. Obviously a better menu
-		// system should be in place 
-		JFileChooser fileChooser = new JFileChooser();
-		if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-			Path worldFile = fileChooser.getSelectedFile().toPath();
-			
-			try {
-				EncodedWorld world = WorldIO.restoreWorld(worldFile);
-				// Try to load the resource pack
-				String fileName = worldFile.getFileName().toString();
-				// Remove .world extension so we can substitute with .zip.
-				String worldName = fileName.substring(0, fileName.lastIndexOf('.') );
-				Path packFile = worldFile.getParent().resolve(worldName + ".zip");
-				WorldResource rsrc = WorldResource.fromPack(packFile);
-				currentWorld = world.newWorldInstance(rsrc);
-			} catch (WorldRestoreException ex) {
-				JOptionPane.showMessageDialog(this,
-				    "Cannot load world: Possibly corrupt or not a world file: " + ex.getMessage(),
-				    "Loading Error",
-				    JOptionPane.ERROR_MESSAGE);
-				ex.printStackTrace();
-			} catch (ResourcePackException ex) {
-				JOptionPane.showMessageDialog(this,
-				    "Resource pack issues: " + ex.getMessage(),
-				    "Loading Error",
-				    JOptionPane.ERROR_MESSAGE);
-				ex.printStackTrace();
-			} catch (IOException ex) {
-				JOptionPane.showMessageDialog(this,
-				    "Low level I/O error: " + ex.getMessage(),
-				    "Loading Error",
-				    JOptionPane.ERROR_MESSAGE);
-				ex.printStackTrace();
-			}
-		} else {
-			// No world chosen, no graphics loaded, nothing to do. Quit
+		// DEBUG placeholder for better menu system
+		if (!(loadCustomWorld() ) ) {
 			System.exit(0);
 		}
 		
-		this.addKeyListener(keys);
-		
-		bonzo = new Bonzo(currentWorld,
-			// DEBUG: Will eventually be based on difficulty
-			4,
-			new Runnable() { @Override public void run() { scoreUpdate(); } },
-			new Runnable() { @Override public void run() { gameOver(); } },
-			new Runnable() { @Override public void run() { lifeLost(); } });
-		// DEBUG: Will eventually be based on difficulty
-		lifeDigit = 4;
-		
-
 		setDoubleBuffered(true);
 		// Accommodate the UI and the game. UI is a banner and width is equal to screen width
 		setMinimumSize(new Dimension(GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT + GameConstants.UI_HEIGHT) );
@@ -172,6 +123,74 @@ public class GameWindow extends JPanel implements ActionListener {
 		setVisible(true);
 		
 		gameTimer.start();
+	}
+	
+	/**
+	 * 
+	 * Attempts to load a world by giving the user a file chooser. If a world is loaded, bonzo is set and
+	 * gameplay begins proper. This is used for both GameWindow initialisation and it can replace a world with
+	 * another without closing the game window.
+	 * <p/>
+	 * At the conclusion of this method, if it returns {@code true}, both the world and bonzo will be set to
+	 * valid, non-null values and gameplay can commence.
+	 * 
+	 * @return
+	 * 		{@code true} if a custom world is loaded, {@code false} if otherwise
+	 * 
+	 */
+	public boolean loadCustomWorld() {
+		// TODO DEBUG jump straight to file browser to select a world. Obviously a better menu
+		// system should be in place 
+		JFileChooser fileChooser = new JFileChooser();
+		if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+			Path worldFile = fileChooser.getSelectedFile().toPath();
+			
+			try {
+				EncodedWorld world = WorldIO.restoreWorld(worldFile);
+				// Try to load the resource pack
+				String fileName = worldFile.getFileName().toString();
+				// Remove .world extension so we can substitute with .zip.
+				String worldName = fileName.substring(0, fileName.lastIndexOf('.') );
+				Path packFile = worldFile.getParent().resolve(worldName + ".zip");
+				WorldResource rsrc = WorldResource.fromPack(packFile);
+				currentWorld = world.newWorldInstance(rsrc);
+			} catch (WorldRestoreException ex) {
+				JOptionPane.showMessageDialog(this,
+				    "Cannot load world: Possibly corrupt or not a world file: " + ex.getMessage(),
+				    "Loading Error",
+				    JOptionPane.ERROR_MESSAGE);
+				ex.printStackTrace();
+				return false;
+			} catch (ResourcePackException ex) {
+				JOptionPane.showMessageDialog(this,
+				    "Resource pack issues: " + ex.getMessage(),
+				    "Loading Error",
+				    JOptionPane.ERROR_MESSAGE);
+				ex.printStackTrace();
+				return false;
+			} catch (IOException ex) {
+				JOptionPane.showMessageDialog(this,
+				    "Low level I/O error: " + ex.getMessage(),
+				    "Loading Error",
+				    JOptionPane.ERROR_MESSAGE);
+				ex.printStackTrace();
+				return false;
+			}
+			
+			bonzo = new Bonzo(currentWorld,
+				// DEBUG: Will eventually be based on difficulty
+				4,
+				new Runnable() { @Override public void run() { scoreUpdate(); } },
+				new Runnable() { @Override public void run() { gameOver(); } },
+				new Runnable() { @Override public void run() { updateLives(); } });
+			// DEBUG: Will eventually be based on difficulty
+			lifeDigit = 4;
+			
+			return true;
+		} else {
+			// No world chosen
+			return false;
+		}
 	}
 	
 	// Called from callback when bonzos score is updated in game. Sets digit values for
@@ -200,12 +219,18 @@ public class GameWindow extends JPanel implements ActionListener {
 	
 	// Called during a game over.
 	private void gameOver() {
-		// TODO soft fade out before running callback
-		endGame.run();
+		// TODO soft fade out and return to main menu. Right now we just return to
+		// choosing a world.
+		// for now, we just give bonzo more lives
+		// +1 against the -1 goes to 0, resulting in 4
+		bonzo.incrementLives(5);
+		updateLives();
+		currentWorld.restartBonzo(bonzo);
+		System.out.println("This would normally be a game over.");
 	}
 	
 	// Called when bonzos life is lost. Sets life digit for drawing.
-	private void lifeLost() {
+	private void updateLives() {
 		int lives = bonzo.getLives();
 		assert lives < 10 && lives >= -2;
 		// Gameover is called when lives is -1. Logically this should never
