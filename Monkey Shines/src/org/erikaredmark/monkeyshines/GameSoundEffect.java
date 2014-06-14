@@ -37,11 +37,14 @@ public enum GameSoundEffect {
 	POWERUP_FADE {
 		@Override public String filename() { return "powerupFade.ogg"; }
 	},
-	POWERUP_MINOR {
-		@Override public String filename() { return "powerupMinor.ogg"; }
+	POWERUP_SHIELD {
+		@Override public String filename() { return "powerupShield.ogg"; }
 	},
-	POWERUP {
-		@Override public String filename() { return "powerup.ogg"; }
+	POWERUP_WING {
+		@Override public String filename() { return "powerupWing.ogg"; }
+	},
+	POWERUP_EXTRA_LIFE {
+		@Override public String filename() { return "powerupExtralife.ogg"; }
 	},
 	STANDARD_DEATH {
 		@Override public String filename() { return "bonzoStandardDeath.ogg"; }

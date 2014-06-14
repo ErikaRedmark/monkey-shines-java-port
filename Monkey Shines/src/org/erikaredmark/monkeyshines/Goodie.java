@@ -173,21 +173,21 @@ public class Goodie {
 		PURPLE_GRAPES(5, 30,GameSoundEffect.YUM_COLLECT, false),
 		BLUE_GRAPES(6, 40, GameSoundEffect.YUM_COLLECT, false),
 		BANANA(7, 500, GameSoundEffect.YUM_COLLECT, false),
-		ENERGY(8, 20, GameSoundEffect.POWERUP_MINOR, false) {
+		ENERGY(8, 20, GameSoundEffect.POWERUP_SHIELD, false) {
 			@Override public void affectBonzo(Bonzo bonzo) {
 				bonzo.incrementHealth(GameConstants.LIFE_INCREASE);
 			}
 		},
-		X2MULTIPLIER(9, 0, GameSoundEffect.POWERUP_MINOR, false),
-		WHITE_MELRODE_WINGS(10, 20, GameSoundEffect.POWERUP, true),
-		SHIELD(11, 20, GameSoundEffect.POWERUP, true),
-		EXTRA_LIFE(12, 100, GameSoundEffect.POWERUP, false) {
+		X2MULTIPLIER(9, 0, GameSoundEffect.POWERUP_SHIELD, false),
+		WHITE_MELRODE_WINGS(10, 20, GameSoundEffect.POWERUP_WING, true),
+		SHIELD(11, 20, GameSoundEffect.POWERUP_SHIELD, true),
+		EXTRA_LIFE(12, 100, GameSoundEffect.POWERUP_EXTRA_LIFE, false) {
 			@Override public void affectBonzo(Bonzo bonzo) {
 				bonzo.incrementLives(1);
 			}
 		},
-		X3MULTIPLIER(13, 0, GameSoundEffect.POWERUP_MINOR, false),
-		X4MULTIPLIER(14, 0, GameSoundEffect.POWERUP_MINOR, false);
+		X3MULTIPLIER(13, 0, GameSoundEffect.POWERUP_SHIELD, false),
+		X4MULTIPLIER(14, 0, GameSoundEffect.POWERUP_SHIELD, false);
 		
 		private final int xOffset;
 		public final int score;
