@@ -15,6 +15,7 @@ import org.erikaredmark.monkeyshines.bounds.IPoint2D;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.tiles.HazardTile;
 import org.erikaredmark.monkeyshines.tiles.TileType;
+import org.erikaredmark.util.collection.RingArray;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -223,13 +224,38 @@ public class World {
 	/**
 	 * Looks at the loaded LevelScreen and determines where Bonzo is supposed to restart from. This restart
 	 * value is either loaded from the LevelScreen constant (if Bonzo started here) or from the place he
-	 * entered the screen from.
+	 * entered the screen from IF his ground location is non null. If he never hit the ground on the
+	 * current screen, we use a different algorithm (otherwise he may infinitely respawn over death)
+	 * Up to {@code GameConstants.LEVEL_HISTORY} previous levels are checked for a non-null ground
+	 * location to safely respawn bonzo. If that fails, bonzo will respawn at the place he entered the
+	 * earliest screen in the history from, in the hopes that the level design isn't completely evil.
+	 * 
 	 * @param theBonzo
 	 */
 	public void restartBonzo(Bonzo theBonzo) {
-		theBonzo.restartBonzoOnScreen(getCurrentScreen() );
+		// no matter what, we are resetting this screen. Must do this first as restarting bonzo
+		// is an if-else mess of early returns.
 		resetCurrentScreen();
-		
+		// If the current screen has valid ground landings, just use the cameFrom location
+		final LevelScreen currentScreen = getCurrentScreen();
+		ImmutablePoint2D ground = currentScreen.getBonzoLastOnGround();
+		if (ground != null) {
+			theBonzo.restartBonzoOnScreen(currentScreen, currentScreen.getBonzoCameFrom() );
+		} else {
+			// Uh oh! We need to progress backwards through screen history and find a good ground
+			RingArray<LevelScreen> screenHistory = theBonzo.getScreenHistory();
+			for (LevelScreen s : screenHistory) {
+				ImmutablePoint2D sGround = s.getBonzoLastOnGround();
+				if (sGround == null)  continue;
+				
+				// Valid ground: Restart bonzo and end the method early.
+				theBonzo.restartBonzoOnScreen(s, sGround);
+				return;
+			}
+			
+			// Reaching the end of the for loop normally signifies no valid ground in ALL
+			// history. That must be one LONG fall; move bonzo to the last screen
+		}
 	}
 	
 	/**
@@ -300,8 +326,13 @@ public class World {
 			// Update bonzos location to the new screen location
 			theBonzo.changeScreen(newId);
 			dir.transferLocation(theBonzo.getMutableCurrentLocation(), Bonzo.BONZO_SIZE);
+			final LevelScreen theNewScreen = getCurrentScreen();
 			// Update the new screen with data about where we came from so deaths bring us to the same place
-			getCurrentScreen().setBonzoCameFrom(theBonzo.getCurrentLocation() );
+			theNewScreen.setBonzoCameFrom(theBonzo.getCurrentLocation() );
+			// If the current screen has a 'bonzo last on ground' state, reset it. Otherwise dying may bring him
+			// to the wrong screen in the wrong part.
+			theNewScreen.resetBonzoOnGround();
+			
 			// Ignore any other collisions for now.
 			return;
 		}

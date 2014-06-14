@@ -11,6 +11,7 @@ import org.erikaredmark.monkeyshines.resource.SoundManager;
 import org.erikaredmark.monkeyshines.tiles.CollapsibleTile;
 import org.erikaredmark.monkeyshines.tiles.ConveyerTile;
 import org.erikaredmark.monkeyshines.tiles.TileType;
+import org.erikaredmark.util.collection.RingArray;
 
 /**
  * 
@@ -37,6 +38,7 @@ public final class Bonzo {
 	
 	private int currentScreenID;
 	private Point2D currentLocation;
+	private final RingArray<LevelScreen> screenHistory;
 	
 	// Velocity applied to bonzo. Affected by the keyboard and falls.
 	private Point2D currentVelocity;
@@ -150,6 +152,7 @@ public final class Bonzo {
 		walkingDirection = 0;
 		currentSprite = 0;
 		affectedConveyer = Rotation.NONE;
+		screenHistory = new RingArray<>(GameConstants.SCREEN_HISTORY);
 		
 		
 		// Initialise starting points
@@ -159,15 +162,22 @@ public final class Bonzo {
 		
 		currentVelocity = Point2D.of(0, 0);
 		
-		restartBonzoOnScreen(worldPointer.getScreenByID(currentScreenID) );
+		restartBonzoOnScreen(currentScreen, currentScreen.getBonzoCameFrom() );
 		
 	}
-	
-	// The World events take care of moving Bonzo around, and Bonzo has methods to swap his position
-	// on screen when moving between them. restartBonzoOnScreen uses either bonzoStart, or, if not null,
-	// the location bonzo entered this screen from.
-	public void restartBonzoOnScreen(final LevelScreen screen) {
-		Point2D newLocation = screen.newPointFromWhereBonzoCame();
+	/**
+	 * 
+	 * Restarts bonzo on the given screen at the given starting location. 
+	 * 
+	 * @param screen
+	 * 
+	 * @param startingLocation
+	 * 
+	 */
+	public void restartBonzoOnScreen(final LevelScreen screen, ImmutablePoint2D startingLocation) {
+		// The World events take care of moving Bonzo around, and Bonzo has methods to swap his position
+		// on screen when moving between them.
+		Point2D newLocation = Point2D.from(startingLocation);
 		currentLocation = newLocation;
 		
 		// When bonzo is restarted, he is not dead or jumping
@@ -179,7 +189,16 @@ public final class Bonzo {
 		this.health = GameConstants.HEALTH_MAX;
 	}
 	
+	/**
+	 * 
+	 * Changes the current screen to the new id
+	 * 
+	 * @param newScreen
+	 */
 	public void changeScreen(final int newScreen) {
+		// keep history. We only commit to history when moving OFF a screen, so the current
+		// screen is not part of the history.
+		screenHistory.pushFront(worldPointer.getScreenByID(currentScreenID) );
 		this.currentScreenID = newScreen;
 	}
 	
@@ -272,6 +291,15 @@ public final class Bonzo {
 	
 	public int getScore() { return this.score; }
 	
+	/**
+	 * 
+	 * Returns the screen history up to {@code GameConstants.LEVEL_HISTORY}.
+	 * 
+	 * @return
+	 */
+	public RingArray<LevelScreen> getScreenHistory() {
+		return screenHistory;
+	}
 	/**
 	 * Determines if bonzo has hit the ground. Intended ONLY to be called if bonzo is currently in a jump state. If he
 	 * hits the ground, speed considerations may make it possible for him to go through the ground a couple units. The returned
@@ -709,6 +737,9 @@ public final class Bonzo {
 	private void setJumping(boolean jumping) {
 		this.isJumping = jumping;
 		if (unJumping)  setUnjumping(false);
+		
+		// Jumping from ground toggles the safe bonzo ground state for the screen
+		worldPointer.getScreenByID(currentScreenID).setBonzoLastOnGround(getCurrentLocation() );
 	}
 	
 	private void setUnjumping(boolean unjump) {
@@ -797,6 +828,8 @@ public final class Bonzo {
 				setJumping(false);
 				setUnjumping(true);
 				fallThreshold = GameConstants.SAFE_FALL_JUMP_TIME;
+				// Landing on ground makes this a safe respawn if required.
+				worldPointer.getScreenByID(currentScreenID).setBonzoLastOnGround(getCurrentLocation() );
 			} else {
 				fallThreshold = GameConstants.SAFE_FALL_TIME;
 			}

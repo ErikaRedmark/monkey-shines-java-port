@@ -29,51 +29,55 @@ public final class GameConstants {
 	
 	/* Terminal velocity must be at least one minus the verticle tile size, or hit ground collision calculations will fail.
 	 */
-	public static double TERMINAL_VELOCITY = 14.0;
-	public static double SPEED_MULTIPLIER = 1.0; // The speed of a sprite is multiplied by this to get how fast it moves across screen.
+	public static final double TERMINAL_VELOCITY = 14.0;
+	public static final double SPEED_MULTIPLIER = 1.0; // The speed of a sprite is multiplied by this to get how fast it moves across screen.
 	
 	// Notes
 	// 1) Bonzos speed multiplier combined with any speed increases (such as conveyers) must not exceed 10. If it does,
 	//	  collision detection in terms of 'snapping' him against walls will instead bounce him back.
 	// 2) If the total speed ever exceeds 20 the game becomes basically broken. Don't do that.
-	public static double BONZO_SPEED_MULTIPLIER = 2.6; // The speed Bonzo dashes across the landscape
-	public static double BONZO_JUMP_MULTIPLIER = 1.25; // The force of bonzo's jump
+	public static final double BONZO_SPEED_MULTIPLIER = 2.6; // The speed Bonzo dashes across the landscape
+	public static final double BONZO_JUMP_MULTIPLIER = 1.25; // The force of bonzo's jump
 	
 	// Bonzo accelerates downward until terminal velocity
-	public static double BONZO_FALL_ACCELERATION_JUMP = -0.3; // The acceleration bonzo falls during a jump. Significantly slower than normal.
-	public static double BONZO_FALL_ACCELERATION_NORMAL = -1.0; // The acceleration bonzo falls normally
+	public static final double BONZO_FALL_ACCELERATION_JUMP = -0.3; // The acceleration bonzo falls during a jump. Significantly slower than normal.
+	public static final double BONZO_FALL_ACCELERATION_NORMAL = -1.0; // The acceleration bonzo falls normally
 
 	// The number of pixels into bonzos sprite to start a fall. Bigger numbers make bonzo
 	// fall earlier (he can't tiptoe to the edge of his normal bounding box)
-	public static int FALL_SIZE = 4;
+	public static final int FALL_SIZE = 4;
+
+	// Number of screens 'remembered' as bonzo moves between screens. If respawn algorithms can't find a safe
+	// place on the current screen, they back up to other screens.
+	public static final int SCREEN_HISTORY = 5;
 	
 	/* -------------------------- Health --------------------------- */
 	// Total units of health bonzo starts with
-	public static int HEALTH_MAX = 100;
+	public static final int HEALTH_MAX = 100;
 	// Number of ticks bonzo can be not standing on ground (longer for coming from a jump)
-	public static int SAFE_FALL_TIME = 13;
-	public static int SAFE_FALL_JUMP_TIME = 46;
+	public static final int SAFE_FALL_TIME = 13;
+	public static final int SAFE_FALL_JUMP_TIME = 46;
 	
 	// Once bonzo passes the threshold for time, the number of ticks he is passed the
 	// threshold is put to the POWER of this value (important this be greater than 1).
 	// Bonzo damage from high heights should be exponential.
-	public static double FALL_DAMAGE_MULTIPLIER = 1.8;
+	public static final double FALL_DAMAGE_MULTIPLIER = 1.8;
 	// Units of health per TICK that are drained when bonzo is touching a
 	// health draining sprite. This effect is NOT cumulative (touching 2 health
 	// drainers at once is the same as touching 1)
-	public static int HEALTH_DRAIN_PER_TICK = 2; 
+	public static final int HEALTH_DRAIN_PER_TICK = 2; 
 	
 	// Amount of life recovered when an energy thingy is taken.
-	public static int LIFE_INCREASE = 15; 
+	public static final int LIFE_INCREASE = 15; 
 	
 	/* -------------------------- Score ---------------------------- */
-	public static double FRUIT_SCORE = 10.0; // Standard score for fruit.
-	public static double YUMMY_FRUIT_SCORE = 50.0; // score for Yummy fruit.
-	public static double EXIT_KEY_SCORE = 10.0; // Score for exit key
-	public static double BONUS_KEY_SCORE = 10.0; // Score for bonus keys
+	public static final double FRUIT_SCORE = 10.0; // Standard score for fruit.
+	public static final double YUMMY_FRUIT_SCORE = 50.0; // score for Yummy fruit.
+	public static final double EXIT_KEY_SCORE = 10.0; // Score for exit key
+	public static final double BONUS_KEY_SCORE = 10.0; // Score for bonus keys
 	
-	public static int BONUS_SCREEN = 10000; // The screenID of the bonus world; or where the bonus door takes one too.
-	public static double CONVEYER_SPEED = 1.4; // The number of pixels, per tick, to move Bonzo when he is under the effect of a conveyer belt.
+	public static final int BONUS_SCREEN = 10000; // The screenID of the bonus world; or where the bonus door takes one too.
+	public static final double CONVEYER_SPEED = 1.4; // The number of pixels, per tick, to move Bonzo when he is under the effect of a conveyer belt.
 	
 	public static final int WINDOW_WIDTH = 640;
 	public static final int WINDOW_HEIGHT = 480;

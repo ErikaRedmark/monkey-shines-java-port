@@ -36,6 +36,7 @@ public final class LevelScreen {
 	
 	// state information for the screen
 	private       ImmutablePoint2D bonzoCameFrom;
+	private       ImmutablePoint2D bonzoLastOnGround;
 
 	// Graphics
 	// These are all pointers to what is stored in world.
@@ -109,18 +110,16 @@ public final class LevelScreen {
 	
 	/**
 	 * 
-	 * Returns a new point representing a location on the screen that bonzo entered from. The returned point may be freely
-	 * modified and assigned as-is to any object.
-	 * <p/>
-	 * The returned point is in pixel coordinates
+	 * Returns the location bonzo came from when entering this level, or the startign location if bonzo started
+	 * on this screen.
 	 * 
 	 * @return
 	 * 		a new instance of a point that represents the location bonzo entered this screen. This initially is set to his
 	 * 		starting location on the screen but is changed as he moves through the screens. Value never {@code null}
 	 * 
 	 */
-	public Point2D newPointFromWhereBonzoCame() {
-		return Point2D.from(bonzoCameFrom);
+	public ImmutablePoint2D getBonzoCameFrom() {
+		return bonzoCameFrom;
 	}
 	
 	/**
@@ -327,6 +326,55 @@ public final class LevelScreen {
 	 */
 	public void setBonzoStartingLocation(ImmutablePoint2D point) {
 		this.bonzoStart = point;
+	}
+	
+	/**
+	 * 
+	 * Resets bonzos location last on the ground to 'null' The last on ground
+	 * location is only used when bonzo dies on a screen where he never had a
+	 * safe landing, and has to go back one or more screens to the last place he was
+	 * safe on ground.
+	 * <p/>
+	 * Otherwise, this variable is set whenever bonzo executes a jump from some
+	 * ground, or lands from a jump on ground. If bonzo dies from a jump or fall
+	 * this variable is not set to that value
+	 * 
+	 */
+	public void resetBonzoOnGround() {
+		bonzoLastOnGround = null;
+	}
+	
+	/**
+	 * 
+	 * Returns the last location on this screen bonzo was on the ground, or
+	 * {@code null} if he never was (which is possible for screens he just falls
+	 * through). Resetting bonzo to the last place on GROUND should be done only
+	 * if the screen he died on had no ground (as in, moving him to the last location
+	 * he entered the screen from may kill him again).
+	 * 
+	 * @return
+	 * 		the last location he was on the ground safely in the screen, or
+	 * 		{@code null} if he never landed on ground in the screen.
+	 * 
+	 */
+	public ImmutablePoint2D getBonzoLastOnGround() {
+		return bonzoLastOnGround;
+	}
+	
+	/**
+	 * 
+	 * Called during bonzo collison algorithms. Allows the screen
+	 * to store his last safe ground landing.
+	 * TODO there is a minute change that this location may be set to a place a sprite will
+	 * be if the screen is restarted. For now, keep it as this algorithm unless it is determined
+	 * to impede level design and become a major issue.
+	 * 
+	 * @param ground
+	 * 		safe ground location for a respawn
+	 * 
+	 */
+	void setBonzoLastOnGround(ImmutablePoint2D ground) {
+		bonzoLastOnGround = ground;
 	}
 	
 	/**
