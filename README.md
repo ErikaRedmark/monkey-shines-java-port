@@ -27,7 +27,7 @@ The basic game engine mechanics are coming together, but there is still quite a 
 - [x] UI Containing other information than just main game screen
 - [x] Health
 - [x] Health Draining Sprites
-- [ ] Lives
+- [x] Lives
 - [ ] Red keys and Exit Door
 - [ ] Blue keys and Bonus Door
 - [ ] Patterned backgrounds (Currently have full-screen backgrounds as stand-ins)
