@@ -146,6 +146,8 @@ public final class EncodedWorld {
 		final Map<String, Goodie> goodiesInWorld = protoToGoodies(world.getGoodiesList(), rsrc);
 		final List<Hazard> hazards = protoToHazards(world.getHazardsList() );
 		
+
+		
 		// Size of conveyers may be added to if the world is skinned with an updated
 		// resource containing new conveyers.
 		// generate as many conveyer instances as graphics resource allows. Decoding of the
@@ -156,7 +158,7 @@ public final class EncodedWorld {
 		// Finally, all the different kinds of tiles loaded, we can load the actually tilemap that requires references
 		// to those tiles
 		final Map<Integer, LevelScreen> worldScreens = protoToLevels(world.getLevelsList(), rsrc, hazards, conveyers);
-
+		
 		return new World(worldName, goodiesInWorld, worldScreens, hazards, conveyers, rsrc);	
 	}
 	

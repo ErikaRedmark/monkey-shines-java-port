@@ -91,7 +91,11 @@ public class Goodie {
 	 * 
 	 */
 	public void resetIfApplicable() {
-		if (goodieType.persistant)  taken = false;
+		if (goodieType.persistant) {
+			// Both must reset; together they make up taken, but not finished playing 'Yum', vs not taken.
+			taken = false;
+			dead = false;
+		}
 	}
 	
 	/**
@@ -179,8 +183,8 @@ public class Goodie {
 			}
 		},
 		X2MULTIPLIER(9, 0, GameSoundEffect.POWERUP_SHIELD, false),
-		WHITE_MELRODE_WINGS(10, 20, GameSoundEffect.POWERUP_WING, true),
-		SHIELD(11, 20, GameSoundEffect.POWERUP_SHIELD, true),
+		WHITE_MELRODE_WINGS(10, 0, GameSoundEffect.POWERUP_WING, true),
+		SHIELD(11, 0, GameSoundEffect.POWERUP_SHIELD, true),
 		EXTRA_LIFE(12, 100, GameSoundEffect.POWERUP_EXTRA_LIFE, false) {
 			@Override public void affectBonzo(Bonzo bonzo) {
 				bonzo.incrementLives(1);

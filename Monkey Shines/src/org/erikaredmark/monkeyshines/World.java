@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.erikaredmark.monkeyshines.Conveyer.Rotation;
 import org.erikaredmark.monkeyshines.bounds.Boundable;
@@ -14,6 +15,9 @@ import org.erikaredmark.monkeyshines.bounds.IPoint2D;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.tiles.HazardTile;
 import org.erikaredmark.monkeyshines.tiles.TileType;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * Holds all information about the entire world.
@@ -41,13 +45,18 @@ import org.erikaredmark.monkeyshines.tiles.TileType;
 public class World {
 	private final String worldName;
 	
-	// Goodies. Store as a hashmap. Why? For speed in collision detection.
+	
+	// TODO one of the first things implemented in this game. Not sure if hashes were REALLY the best way to
+	// go... may have been a case of premature optimisation.
 	// The screen string, concatenated with "X", and then the the tile co-ordinates. . .
 	// "1000X4,3"
 	// That way, Bonzo just checks four places by making a string and checking the hash. Although strings are slower, this means
 	// that no matter how many objects, it will take the same amount of time to detect collisions; won't need to loop and see if anything
 	// is at that point
 	private final Map<String, Goodie> goodiesInWorld;
+	// Holds a list of all goodies on a particlar screen. During screen reset, relevant goodies may
+	// need to be regenerated.
+	private final Multimap<LevelScreen, Goodie> goodiesPerScreen;
 	
 	// Screens: Hashmap. That way, when moving across screens, take the levelid and add/subtract a value, check it in hash,
 	// and quickly get the screen we need. It is fast and I believe the designers of the original did the same thing.
@@ -137,11 +146,11 @@ public class World {
 	 * 
 	 */
 	public World(final String worldName, 
-				  final Map<String, Goodie> goodiesInWorld, 
-				  final Map<Integer, LevelScreen> worldScreens,
-				  final List<Hazard> hazards,
-				  final List<Conveyer> conveyers,
-				  final WorldResource rsrc) {
+				 final Map<String, Goodie> goodiesInWorld,
+				 final Map<Integer, LevelScreen> worldScreens,
+				 final List<Hazard> hazards,
+				 final List<Conveyer> conveyers,
+				 final WorldResource rsrc) {
 		
 		/* Variable data		*/
 		this.worldName = worldName;
@@ -153,6 +162,21 @@ public class World {
 		/* Constant data		*/
 		this.currentScreen = 1000;
 		this.rsrc = rsrc;
+		
+		/* Data that can be computed */
+		
+		// We must pre-construct the mapping of screen to goodie list, for 
+		// speed in some reset algorithms
+		this.goodiesPerScreen = HashMultimap.create();
+		
+		for (Entry<String, Goodie> entry : goodiesInWorld.entrySet() ) {
+			// Extract just the level id. Assume it can convert to integer, because otherwise would
+			// indicate level corruption anyway.
+			String rawKey = entry.getKey();
+			Integer id = Integer.valueOf(rawKey.substring(0, rawKey.indexOf('X') ) );
+			LevelScreen screenForGoodie = worldScreens.get(id);
+			goodiesPerScreen.put(screenForGoodie, entry.getValue() );
+		}
 	}
 	
 	/**
@@ -204,7 +228,23 @@ public class World {
 	 */
 	public void restartBonzo(Bonzo theBonzo) {
 		theBonzo.restartBonzoOnScreen(getCurrentScreen() );
-		getCurrentScreen().resetScreen();
+		resetCurrentScreen();
+		
+	}
+	
+	/**
+	 * 
+	 * Resets the current screen. This involves not only the basic level screen reset, but it must
+	 * look for any world entities (like goodies) that need resetting if already grabbed.
+	 * 
+	 */
+	private void resetCurrentScreen() {
+		final LevelScreen currentScreen = getCurrentScreen();
+		currentScreen.resetScreen();
+		// reset goodies
+		for (Goodie goodie : goodiesPerScreen.get(currentScreen) ) {
+			goodie.resetIfApplicable();
+		}
 	}
 	
 	/**
@@ -244,7 +284,7 @@ public class World {
 	public boolean changeCurrentScreen(int screenId) {
 		if (screenIdExists(screenId) == false) return false;
 		else {
-			getCurrentScreen().resetScreen();
+			resetCurrentScreen();
 			this.currentScreen = screenId;
 			return true;
 		}
