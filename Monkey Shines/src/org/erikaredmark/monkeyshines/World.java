@@ -5,11 +5,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.erikaredmark.monkeyshines.Conveyer.Rotation;
+import org.erikaredmark.monkeyshines.Goodie.Type;
 import org.erikaredmark.monkeyshines.bounds.Boundable;
 import org.erikaredmark.monkeyshines.bounds.IPoint2D;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
@@ -58,6 +61,14 @@ public class World {
 	// Holds a list of all goodies on a particlar screen. During screen reset, relevant goodies may
 	// need to be regenerated.
 	private final Multimap<LevelScreen, Goodie> goodiesPerScreen;
+	// When a world is initialised, hold a set of all blue and red keys. When taken, they will
+	// be removed from the set. The moment a set becomes empty, it toggles the 'all blue keys' or
+	// 'all red keys' collected event.
+	// NOTE: If the editor adds keys, this goes out of sync. IT DOESN'T MATTER. When the level is saved
+	// and reloaded, this object is re-initialised for gameplay with the right values and keys can't be
+	// added during gameplay.
+	private final Set<Goodie> redKeys;
+	private final Set<Goodie> blueKeys;
 	
 	// Screens: Hashmap. That way, when moving across screens, take the levelid and add/subtract a value, check it in hash,
 	// and quickly get the screen we need. It is fast and I believe the designers of the original did the same thing.
@@ -167,8 +178,11 @@ public class World {
 		/* Data that can be computed */
 		
 		// We must pre-construct the mapping of screen to goodie list, for 
-		// speed in some reset algorithms
+		// speed in some reset algorithms, and we must precompute red/blue
+		// key sets.
 		this.goodiesPerScreen = HashMultimap.create();
+		this.redKeys = new HashSet<Goodie>();
+		this.blueKeys = new HashSet<Goodie>();
 		
 		for (Entry<String, Goodie> entry : goodiesInWorld.entrySet() ) {
 			// Extract just the level id. Assume it can convert to integer, because otherwise would
@@ -176,13 +190,19 @@ public class World {
 			String rawKey = entry.getKey();
 			Integer id = Integer.valueOf(rawKey.substring(0, rawKey.indexOf('X') ) );
 			LevelScreen screenForGoodie = worldScreens.get(id);
-			goodiesPerScreen.put(screenForGoodie, entry.getValue() );
+			
+			Goodie value = entry.getValue();
+			goodiesPerScreen.put(screenForGoodie, value);
+			
+			// Now fill in the proper red and blue keys as required
+			if (value.getGoodieType() == Goodie.Type.RED_KEY)  		 this.redKeys.add(value);
+			else if (value.getGoodieType() == Goodie.Type.BLUE_KEY)  this.blueKeys.add(value);
 		}
 	}
 	
 	/**
 	 * Returns a LevelScreen in this level pointed to by ID if that screen exists. 
-	 * @param id the id number of the screen to retrive. Remember that the first screen in the map will be
+	 * @param id the id number of the screen to retrieve. Remember that the first screen in the map will be
 	 * ID 1000. The id must resolve to a proper screen or an exception will be thrown. Use {@code #screenIdExists(int)} if unsure
 	 * @return
 	 */
@@ -219,6 +239,53 @@ public class World {
 	 */
 	public int getCurrentScreenId() {
 		return currentScreen;
+	}
+	
+	/**
+	 * 
+	 * Indicates the given key has been collected and removes if from the set. If this was
+	 * the last key, also toggles the 'allRedKeysTaken' method.
+	 * <p/>
+	 * If assertions are enabled, this throws an assertion error if the goodie type is not
+	 * a red key or if the set does not contain the key anymore. Program logic should prevent
+	 * collections for already taken goodies.
+	 * 
+	 * @param goodie
+	 * 		the key collected
+	 * 
+	 */
+	public void collectedRedKey(Goodie goodie) {
+		assert goodie.getGoodieType() == Type.RED_KEY : "Cannot collect a red key of " + goodie + " as that isn't a red key";
+		assert this.redKeys.contains(goodie) : "Red Key " + goodie + " already collected: Logic Error";
+		
+		this.redKeys.remove(goodie);
+		if (this.redKeys.isEmpty() )  allRedKeysTaken();
+	}
+	
+	/**
+	 * 
+	 * Same as {@code collectedRedKey} only for blue keys
+	 * 
+	 * @param goodie
+	 * 		the key collected
+	 * 
+	 */
+	public void collectedBlueKey(Goodie goodie) {
+		assert goodie.getGoodieType() == Type.BLUE_KEY : "Cannot collect a blue key of " + goodie + " as that isn't a blue key";
+		assert this.redKeys.contains(goodie) : "Blue Key " + goodie + " already collected: Logic Error";
+		
+		this.blueKeys.remove(goodie);
+		if (this.blueKeys.isEmpty() )  allBlueKeysTaken();
+	}
+	
+	public void allRedKeysTaken() {
+		this.rsrc.getSoundManager().playOnce(GameSoundEffect.LAST_RED_KEY);
+		System.out.println("If this game was complete the exit door would be appearing now");
+	}
+	
+	public void allBlueKeysTaken() {
+		this.rsrc.getSoundManager().playOnce(GameSoundEffect.YES);
+		System.out.println("Bonus door would be open now");
 	}
 	
 	/**
@@ -371,16 +438,16 @@ public class World {
 		
 		Goodie gotGoodie;
 		if ( (gotGoodie = goodiesInWorld.get(topLeftQuad) ) != null ) {
-			gotGoodie.take(theBonzo);
+			gotGoodie.take(theBonzo, this);
 		}
 		if ( (gotGoodie = goodiesInWorld.get(topRightQuad) ) != null ) {
-			gotGoodie.take(theBonzo);
+			gotGoodie.take(theBonzo, this);
 		}
 		if ( (gotGoodie = goodiesInWorld.get(bottomLeftQuad) ) != null ) {
-			gotGoodie.take(theBonzo);
+			gotGoodie.take(theBonzo, this);
 		}
 		if ( (gotGoodie = goodiesInWorld.get(bottomRightQuad) ) != null ) {
-			gotGoodie.take(theBonzo);
+			gotGoodie.take(theBonzo, this);
 		}
 	}
 	

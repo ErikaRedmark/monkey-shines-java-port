@@ -302,6 +302,8 @@ public final class Bonzo {
 	public RingArray<LevelScreen> getScreenHistory() {
 		return screenHistory;
 	}
+	
+
 	/**
 	 * Determines if bonzo has hit the ground. Intended ONLY to be called if bonzo is currently in a jump state. If he
 	 * hits the ground, speed considerations may make it possible for him to go through the ground a couple units. The returned

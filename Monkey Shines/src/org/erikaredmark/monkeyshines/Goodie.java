@@ -11,7 +11,8 @@ import org.erikaredmark.monkeyshines.resource.WorldResource;
  *
  */
 public class Goodie {
-	// These values indicate starting information for object construction
+	// These values indicate starting information for object construction. ONLY THESE
+	// THREE VALUES determine object equality and hashcode.
 	private final Type goodieType;
 	private final int screenID;
 	private final ImmutablePoint2D location;	
@@ -103,19 +104,22 @@ public class Goodie {
 	 * Tells the goodie that it has been taken. This starts the 'Yum' animation and plays the appropriate
 	 * sound. A goodie may normally only be taken once. If a goodie is already taken, this method does nothing.
 	 * <p/>
-	 * Some goodies are reset when a level screen is restarted. TODO this is not yet implemented.
+	 * Some goodies are reset when a level screen is restarted.
 	 * 
 	 * @param bonzo
 	 * 		a reference to bonzo, so that the goodies effects (score and misc.) may be applied to him.
 	 * 
+	 * @param world
+	 * 		a reference to the world, so that goodies effects (keys) can apply there
+	 * 
 	 */
-	public void take(final Bonzo bonzo) {
+	public void take(final Bonzo bonzo, final World world) {
 		if (taken)  return;
 		
 		taken = true;
 		rsrc.getSoundManager().playOnce(goodieType.soundEffect);
 		bonzo.incrementScore(goodieType.score);
-		goodieType.affectBonzo(bonzo);
+		goodieType.affectBonzo(this, bonzo, world);
 	}
 	
 	public int getScreenID() {
@@ -161,7 +165,30 @@ public class Goodie {
 	 */
 	public ImmutablePoint2D getLocation() { return location; }
 
-
+	/**
+	 * 
+	 * Two goodies are considered equal if they share the same, id, type, and location. State information (
+	 * such as taken or dying) is NOT a factor in equality. Two goodies can NOT share the same id, type, and location
+	 * and yet have different states.
+	 * 
+	 */
+	@Override public boolean equals(Object o) {
+		if (this == o)  return true;
+		if (!(o instanceof Goodie) )  return false;
+		
+		Goodie other = (Goodie) o;
+		return    this.goodieType.equals(other.goodieType)
+			   && this.screenID == other.screenID
+			   && this.location.equals(other.location);
+	}
+	
+	@Override public int hashCode() {
+		int result = 17;
+		result += result * 31 + goodieType.hashCode();
+		result += result * 31 + screenID;
+		result += result * 31 + location.hashCode();
+		return result;
+	}
 	
 	public enum Type {
 		// WARNING: xOffset is used as ID for encoding this in save file format!
@@ -169,8 +196,16 @@ public class Goodie {
 		// modifying that logic!
 		// TODO all scores are placeholders. Need to play original and determine score
 		// for each piece!
-		RED_KEY(0, 20, GameSoundEffect.YUM_COLLECT, false),
-		BLUE_KEY(1, 20, GameSoundEffect.YUM_COLLECT, false),
+		RED_KEY(0, 20, GameSoundEffect.YUM_COLLECT, false) {
+			@Override public void affectBonzo(Goodie goodie, Bonzo bonzo, World world) {
+				world.collectedRedKey(goodie);
+			}
+		},
+		BLUE_KEY(1, 20, GameSoundEffect.YUM_COLLECT, false) {
+			@Override public void affectBonzo(Goodie goodie, Bonzo bonzo, World world) {
+				world.collectedBlueKey(goodie);
+			}
+		},
 		APPLE(2, 20, GameSoundEffect.YUM_COLLECT, false),
 		ORANGE(3, 20, GameSoundEffect.YUM_COLLECT, false),
 		PEAR(4, 20,GameSoundEffect.YUM_COLLECT, false),
@@ -178,7 +213,7 @@ public class Goodie {
 		BLUE_GRAPES(6, 40, GameSoundEffect.YUM_COLLECT, false),
 		BANANA(7, 500, GameSoundEffect.YUM_COLLECT, false),
 		ENERGY(8, 20, GameSoundEffect.POWERUP_SHIELD, false) {
-			@Override public void affectBonzo(Bonzo bonzo) {
+			@Override public void affectBonzo(Goodie goodie, Bonzo bonzo, World world) {
 				bonzo.incrementHealth(GameConstants.LIFE_INCREASE);
 			}
 		},
@@ -186,7 +221,7 @@ public class Goodie {
 		WHITE_MELRODE_WINGS(10, 0, GameSoundEffect.POWERUP_WING, true),
 		SHIELD(11, 0, GameSoundEffect.POWERUP_SHIELD, true),
 		EXTRA_LIFE(12, 100, GameSoundEffect.POWERUP_EXTRA_LIFE, false) {
-			@Override public void affectBonzo(Bonzo bonzo) {
+			@Override public void affectBonzo(Goodie goodie, Bonzo bonzo, World world) {
 				bonzo.incrementLives(1);
 			}
 		},
@@ -281,11 +316,17 @@ public class Goodie {
 		 * Some goodies produce different effects on bonzo. The default is to do nothing (except increment
 		 * any, if valid, score).
 		 * 
+		 * @param goodie
+		 * 		reference to the actual goodie itself
+		 * 
 		 * @param bonzo
 		 * 		reference to bonzo to affect him
 		 * 
+		 * @param world
+		 * 		reference to world in case effects a more global, such as red and blue keys
+		 * 
 		 */
-		public void affectBonzo(Bonzo bonzo) { /* No op by default, overriden where required */ }
+		public void affectBonzo(Goodie goodie, Bonzo bonzo, World world) { /* No op by default, overriden where required */ }
 	}
 	
 }
