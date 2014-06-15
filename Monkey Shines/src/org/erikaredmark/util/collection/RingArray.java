@@ -129,10 +129,12 @@ public class RingArray<T> implements Iterable<T> {
 		// Start must point to the EARLIEST element, not the insertion point.
 		private RingIterator(final int start) {
 			curIndex = this.start = start;
+			// Precheck if this ring buffer is empty. If so, iterator isn't doing anything
+			if (array[curIndex] == null)  done = true;
 		}
 		
 		@Override public boolean hasNext() {
-			return done;
+			return !(done);
 		}
 
 		@Override public T next() {
@@ -145,6 +147,9 @@ public class RingArray<T> implements Iterable<T> {
 					   : array.length - 1;
 			
 			if (curIndex == start)  done = true;
+			// Precheck what is at next element. if it is null, this ring is not full and
+			// iteration must stop now
+			if (array[curIndex] == null)  done = true;
 			
 			return array[i];
 		}
