@@ -18,8 +18,10 @@ import javax.swing.JOptionPane;
 
 import org.erikaredmark.monkeyshines.*;
 import org.erikaredmark.monkeyshines.editor.LevelEditorMainCanvas.EditorState;
+import org.erikaredmark.monkeyshines.editor.WorldEditor.BonusRoomPair;
 import org.erikaredmark.monkeyshines.editor.dialog.GoToScreenDialog;
 import org.erikaredmark.monkeyshines.editor.dialog.NewWorldDialog;
+import org.erikaredmark.monkeyshines.editor.dialog.SelectScreenDialog;
 import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.encoder.WorldIO;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
@@ -185,16 +187,28 @@ public class LevelEditor extends JFrame {
 			currentWorld.actionPlaceBonzo();
 		}
 	});
-	
-	public void actionGoToScreen() {
+
+	// Returns false if a world is not loaded, after letting the user know
+	// a world is not loaded.
+	private boolean warnAndStopIfWorldNotLoaded() {
 		if (currentWorld.getVisibleScreenEditor() == null) {
 			JOptionPane.showMessageDialog(this,
-				    "You must load a world first before being able to load a specific screen",
-				    "World Not Loaded",
-				    JOptionPane.ERROR_MESSAGE);
+			    "You must load a world first before being able to load a specific screen",
+			    "World Not Loaded",
+			    JOptionPane.ERROR_MESSAGE);
+			return false;
 		}
+		
+		return true;
+	}
+	
+	public void actionGoToScreen() {
+		if (!(warnAndStopIfWorldNotLoaded() ) ) {
+			return;
+		}
+		
 		int oldScreenId = currentWorld.getVisibleScreenEditor().getId();
-		int screenId = GoToScreenDialog.displayAndGetId(oldScreenId, currentWorld.getWorldEditor().getWorld() );
+		int screenId = GoToScreenDialog.displayAndGetId(oldScreenId, currentWorld.getWorldEditor().getWorld(), true);
 		// If user changed screen id.
 		if (screenId != oldScreenId) {
 			if (currentWorld.screenExists(screenId ) ) {
@@ -208,6 +222,62 @@ public class LevelEditor extends JFrame {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * 
+	 * Checks the locations of the bonus rooms by looking for all bonus doors in the world. If
+	 * any issues prevent computation (such as more than two screens holding doors) this returns false and in
+	 * general that stops the save.
+	 * <p/>
+	 * Note that having NO bonus doors does not stop save. No bonus doors keeps bonus level information at defaults
+	 * which, in game terms, effectively means there is no bonus room for the level
+	 * <p/>
+	 * This will throw up a dialog if saving is prevented alerting the user to the issue. Even if two bonus doors are there,
+	 * if the actual bonus room hasn't been set to one of them (or has become outdated) it will ask the user to choose which
+	 * of the screens to be a bonus room.
+	 * 
+	 */
+	private boolean checkAndRecomputeBonusRooms() {
+		
+		// Must confirm two bonus doors (or two screens have x number of bonus doors on them) so we can set both
+		// the bonus room and the return room.
+		BonusRoomPair pair = currentWorld.getWorldEditor().bonusRooms();
+		if (pair.hasNone() )  return true; // no bonus doors are okay.
+		
+		// Wrong numbers of SCREENS with bonus doors are not okay.
+		if (!(pair.hasTwo() ) ) {
+			final String exactError =   pair.hasOnlyOne()
+									  ? "World only has one screen id with bonus doors " + pair.first()
+											  // Else it has too many: we already checked NONE and two
+									  : "World has too many screens with bonus doors (only two allowed). Screen ids are: " + pair.getAllAsString();
+			
+			JOptionPane.showMessageDialog(this,
+			    "You must have exactly two screens with bonus doors. There can be any number of bonus doors on the same screen, but exactly two screens must"
+			  + " contain bonus doors to properly set the bonus room."
+			  + System.lineSeparator()
+			  + exactError,
+			    "Not Enough Bonus Doors",
+			    JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		
+		// World has correct number of screens with bonus doors. Check bonus screen in world. If it matches the bonus screen id, all is well;
+		// we can auto-compute the return screen. Otherwise ask user to choose between the two
+		
+		int bonusRoom = currentWorld.getWorldEditor().getWorld().getBonusScreen();
+		if (!(pair.containsScreen(bonusRoom) ) ) {
+			bonusRoom = SelectScreenDialog.launch(pair.first(), pair.second() );
+			assert pair.containsScreen(bonusRoom) : "Incorrect bonus room id returned from UI: " + bonusRoom + ". Can only be one of " + pair.getAllAsString();
+
+		}
+		
+		int returnRoom = pair.getOther(bonusRoom);
+		
+		currentWorld.getWorldEditor().getWorld().setBonusScreen(bonusRoom);
+		currentWorld.getWorldEditor().getWorld().setReturnScreen(returnRoom);
+		
+		return true;
 	}
 	
 	/**

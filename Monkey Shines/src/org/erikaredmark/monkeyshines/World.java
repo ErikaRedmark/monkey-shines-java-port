@@ -91,6 +91,15 @@ public class World {
 	
 	private       int currentScreen;
 	
+	// This is defaults to either 10000 or from the save file. It is up to the level editor
+	// to set this. However, it should do so automatically on every save.
+	// Effectively final for game, mutable for level editor
+	private int bonusScreen;
+	// Screen bonzo returns to when leaving bonus world. Note that BOTH SCREENS must contain at 
+	// least one bonus door, and bonus doors may not appear on other screens. Level editor precomputes
+	// this and saves information to .world file.
+	private int returnScreen;
+	
 	
 	private final WorldResource rsrc;
 	
@@ -134,7 +143,14 @@ public class World {
 		List<Conveyer> conveyers = new ArrayList<>(rsrc.getConveyerCount() * 2);
 		generateConveyers(conveyers, rsrc.getConveyerCount() );
 		
-		return new World(name, new HashMap<String, Goodie>(), screens, new ArrayList<Hazard>(), conveyers, rsrc);
+		return new World(name, 
+						 new HashMap<String, Goodie>(), 
+						 screens, 
+						 new ArrayList<Hazard>(), 
+						 conveyers, 
+						 GameConstants.DEFAULT_BONUS_SCREEN, 
+						 GameConstants.DEFAULT_RETURN_SCREEN,
+						 rsrc);
 	}
 	
 	
@@ -162,6 +178,8 @@ public class World {
 				 final Map<Integer, LevelScreen> worldScreens,
 				 final List<Hazard> hazards,
 				 final List<Conveyer> conveyers,
+				 final int bonusScreen,
+				 final int returnScreen,
 				 final WorldResource rsrc) {
 		
 		/* Variable data		*/
@@ -170,6 +188,8 @@ public class World {
 		this.worldScreens = worldScreens;
 		this.hazards = hazards;
 		this.conveyers = conveyers;
+		this.bonusScreen = bonusScreen;
+		this.returnScreen = returnScreen;
 		
 		/* Constant data		*/
 		this.currentScreen = 1000;
@@ -221,25 +241,47 @@ public class World {
 	 * @return
 	 * 		{@code true} if the screen exists, {@code false} if otherwise
 	 */
-	public boolean screenIdExists(final int id) {
-		return (worldScreens.get(id) != null);
-	}
+	public boolean screenIdExists(final int id) { return (worldScreens.get(id) != null); }
 	
 	/**
 	 * Take the currentScreen integer and uses it to resolve the actual LevelScreen object
 	 * @return a LevelScreen object identified by the integer ID currentScreen. 
 	 */
-	public LevelScreen getCurrentScreen() {
-		return getScreenByID(currentScreen);
-	}
+	public LevelScreen getCurrentScreen() { return getScreenByID(currentScreen); }
 	
 	/**
 	 * Gets the currentScreen ID number. Does not return the actual LevelScreen object.
 	 * @return The ID number of the current screen.
 	 */
-	public int getCurrentScreenId() {
-		return currentScreen;
-	}
+	public int getCurrentScreenId() { return currentScreen; }
+	
+	/**
+	 * Gets the bonus screen id of the current bonus screen
+	 * @return id of bonus screen
+	 */
+	public int getBonusScreen() { return bonusScreen; }
+	
+	/** 
+	 * Changes the location the bonus door on the return screen should take bonzo.
+	 * Only to be called from level editor 
+	 * @param id
+	 */
+	public void setBonusScreen(int id) { this.bonusScreen = id; }
+	
+	/**
+	 * Gets the return screen id from the bonus screen. This is basically the location
+	 * of the source bonus door that brings bonzo to the bonus screen, so he may return
+	 * to the main world
+	 * @return id of return screen
+	 */
+	public int getReturnScreen() { return returnScreen; }
+	
+	/** 
+	 * Changes the location the bonus door on the bonus screen should take bonzo.
+	 * Only to be called from level editor 
+	 * @param id
+	 */
+	public void setReturnScreen(int id) { this.returnScreen = id; }
 	
 	/**
 	 * 

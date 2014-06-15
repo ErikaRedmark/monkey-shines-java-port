@@ -77,8 +77,8 @@ public final class EncodedWorld {
 		
 		diskWorld.setAuthor("Author Unimplemented");
 		diskWorld.setName(world.getWorldName() );
-		// TODO allow world to define bonus screen
-		diskWorld.setBonusScreen(10000);
+		diskWorld.setBonusScreen(world.getBonusScreen() );
+		diskWorld.setReturnScreen(world.getReturnScreen() );
 		diskWorld.addAllHazards(hazardsToProto(world.getHazards() ) );
 		diskWorld.addAllGoodies(goodiesToProto(world.getGoodies() ) );
 		diskWorld.addAllLevels(levelsToProto(world.getLevelScreens() ) );
@@ -145,8 +145,8 @@ public final class EncodedWorld {
 		final String worldName = world.getName();
 		final Map<String, Goodie> goodiesInWorld = protoToGoodies(world.getGoodiesList(), rsrc);
 		final List<Hazard> hazards = protoToHazards(world.getHazardsList() );
-		
-
+		final int bonusScreen = this.world.getBonusScreen();
+		final int returnScreen = this.world.getReturnScreen();
 		
 		// Size of conveyers may be added to if the world is skinned with an updated
 		// resource containing new conveyers.
@@ -159,7 +159,7 @@ public final class EncodedWorld {
 		// to those tiles
 		final Map<Integer, LevelScreen> worldScreens = protoToLevels(world.getLevelsList(), rsrc, hazards, conveyers);
 		
-		return new World(worldName, goodiesInWorld, worldScreens, hazards, conveyers, rsrc);	
+		return new World(worldName, goodiesInWorld, worldScreens, hazards, conveyers, bonusScreen, returnScreen, rsrc);	
 	}
 	
 	/* ------------------------------ Hazards -------------------------------- */

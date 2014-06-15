@@ -1,6 +1,6 @@
 package monkeyshines;
 
-option java_package = "edu.nova.erikaredmark.monkeyshines.encoder.proto";
+option java_package = "org.erikaredmark.monkeyshines.encoder.proto";
 option java_outer_classname = "WorldFormatProtos";
 
 // This proto file describes the file format for .world files that contain level data. World files are
@@ -8,7 +8,7 @@ option java_outer_classname = "WorldFormatProtos";
 // types. It is up to the resource pack to grant graphics and sounds to those types.
 
 // compile with
-// protoc -I=src --java_out=src src/edu/nova/erikaredmark/monkeyshines/encoder/proto/world_file_format.proto
+// protoc -I=src --java_out=src src/org/erikaredmark/monkeyshines/encoder/proto/world_file_format.proto
 message World {
   
   optional string name = 1;
@@ -22,6 +22,10 @@ message World {
   
   // Following fields were not available in original:
   optional string author = 6;
+  
+  // Addition field to bonus screen; return screen is required
+  // to be precomputed
+  optional uint32 return_screen = 7;
   
   message StringToGoodieTuple {
   	required string one = 1;

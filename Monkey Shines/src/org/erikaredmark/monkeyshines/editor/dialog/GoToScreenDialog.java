@@ -52,7 +52,10 @@ public final class GoToScreenDialog extends JDialog {
 	// World reference for generating thumbnails
 	private final World world;
 	
-	private GoToScreenDialog(final int currentId, final World world) {
+	private final boolean allowNew;
+	
+	private GoToScreenDialog(final int currentId, final World world, final boolean allowNew) {
+		this.allowNew = allowNew;
 		getContentPane().setLayout(new GridBagLayout() );
 		
 		// -------- Left side: Thumbnail
@@ -187,12 +190,20 @@ public final class GoToScreenDialog extends JDialog {
 	 * 
 	 * Modifies the current screen id this dialog displays. This is called by arrow buttons only, and
 	 * it syncs up with the main textbox to reflect the new value, as well as updating the model.
+	 * <p/>
+	 * The id will NOT change if the given screen does not exist AND the dialog is set to now allow
+	 * new screens.
 	 * 
 	 * @param value
 	 * 		amount to change level screen id; may be negative
 	 * 
 	 */
 	private void modifyIdBy(int value) {
+		int newValue = selectedScreenId + value;
+		if (!(this.allowNew) && !(this.world.screenIdExists(newValue) ) ) {
+			return;
+		}
+		
 		this.selectedScreenId += value;
 		screenIdText.setText(String.valueOf(selectedScreenId) );
 		updateThumbnail();
@@ -201,13 +212,20 @@ public final class GoToScreenDialog extends JDialog {
 	/**
 	 * 
 	 * Sets the current screen id. This is intended to be called ONLY from the text box so
-	 * now view syncing is done; the model value is simply set to the new value.
+	 * now view syncing is done; the model value is simply set to the new value. If the
+	 * goto screen is set to not allow new screens, this will NOT update the model, and
+	 * the thumbnail update will indicate the screen model has not changed
 	 * 
 	 * @param value
 	 * 
 	 */
 	private void setId(int value) {
-		this.selectedScreenId = value;
+		// Don't update model unless we either allow news, or are looking at existing screen
+		if (this.allowNew || this.world.screenIdExists(value) ) {
+			this.selectedScreenId = value;
+		}
+		
+
 		updateThumbnail();
 	}
 	
@@ -221,7 +239,11 @@ public final class GoToScreenDialog extends JDialog {
 		if (this.world.screenIdExists(selectedScreenId) ) {
 			this.levelThumbnailToDraw = EditorResource.generateThumbnailFor(world, selectedScreenId);
 		} else {
-			this.levelThumbnailToDraw = EditorResource.getNewScreenThumbnail();
+			if (this.allowNew) {
+				this.levelThumbnailToDraw = EditorResource.getNewScreenThumbnail();
+			} else {
+				this.levelThumbnailToDraw = EditorResource.getNoScreenHereThumbnail();
+			}
 		}
 		
 		this.levelThumbnail.repaint();
@@ -237,13 +259,18 @@ public final class GoToScreenDialog extends JDialog {
 	 * @param world
 	 * 		the current world. Used to show a thumbnail of the current screen
 	 * 
+	 * @param allowNew
+	 * 		if {@code true}, user can select screens that do not exist yet (intended for systems that
+	 * 		can make new screens). If the user MUST choose an existing screen, this must be {@code false}.
+	 * 		In that state, user may not close the dialog via 'okay' without selecting a valid screen
+	 * 
 	 * @return
 	 * 		the id of the screen the user asked for. If the user cancels, this returns the
 	 * 		same as the current id.
 	 * 
 	 */
-	public static int displayAndGetId(int currentId, World world) {
-		GoToScreenDialog dialog = new GoToScreenDialog(currentId, world);
+	public static int displayAndGetId(int currentId, World world, boolean allowNew) {
+		GoToScreenDialog dialog = new GoToScreenDialog(currentId, world, allowNew);
 		dialog.setLocationRelativeTo(null);
 		dialog.setSize(300, 200);
 		dialog.setModal(true);

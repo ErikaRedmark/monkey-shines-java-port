@@ -63,6 +63,18 @@ public class LevelScreenEditor {
 	public List<Sprite> getSpritesWithin(ImmutablePoint2D point, int size) {
 		return this.screen.getSpritesWithin(point, size);
 	}
+	
+	/**
+	 * 
+	 * Returns every sprite on the screen
+	 * 
+	 * @return
+	 * 		all sprites
+	 * 
+	 */
+	public List<Sprite> getSpritesOnScreen() {
+		return this.screen.getSpritesOnScreen();
+	}
 
 	/**
 	 * 

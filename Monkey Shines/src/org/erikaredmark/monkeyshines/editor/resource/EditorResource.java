@@ -22,12 +22,19 @@ public final class EditorResource {
 
 	
 	private static final BufferedImage newScreenThumbnail;
+	private static final BufferedImage noScreenHereThumbnail;
 	
 	static {
 		try {
 			newScreenThumbnail = ImageIO.read(EditorResource.class.getResourceAsStream("/resources/graphics/editor/newScreen.png") );
 		} catch (IOException e) {
 			throw new RuntimeException("Missing resource: new screen thumbnail: " + e.getMessage(), e);
+		}
+		
+		try {
+			noScreenHereThumbnail = ImageIO.read(EditorResource.class.getResourceAsStream("/resources/graphics/editor/noScreenHere.png") );
+		} catch (IOException e) {
+			throw new RuntimeException("Missing resource: no screen here thumbnail: " + e.getMessage(), e);
 		}
 	}
 	/**
@@ -41,6 +48,20 @@ public final class EditorResource {
 	 */
 	public static BufferedImage getNewScreenThumbnail() {
 		return newScreenThumbnail;
+	}
+	
+	/**
+	 * 
+	 * Returns 160x100 image, that indicates that there is no given screen at the given
+	 * id. Used for 'go to screen' dialog when the use case does not allow for selecting
+	 * non-existent screens. Acts as a replacement for 'new screen' in those circumstances
+	 * 
+	 * @return
+	 * 		image of the 'no screen here' thumbnail, 160x100
+	 * 
+	 */
+	public static BufferedImage getNoScreenHereThumbnail() {
+		return noScreenHereThumbnail;
 	}
 	
 	/**
