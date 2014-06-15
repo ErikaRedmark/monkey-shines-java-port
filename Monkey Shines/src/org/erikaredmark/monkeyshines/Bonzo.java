@@ -179,6 +179,8 @@ public final class Bonzo {
 		// on screen when moving between them.
 		Point2D newLocation = Point2D.from(startingLocation);
 		currentLocation = newLocation;
+		// Not adding the current screen to history is deliberate. 
+		currentScreenID = screen.getId();
 		
 		// When bonzo is restarted, he is not dead or jumping
 		setDying(false, this.deathAnimation);
@@ -739,7 +741,9 @@ public final class Bonzo {
 		if (unJumping)  setUnjumping(false);
 		
 		// Jumping from ground toggles the safe bonzo ground state for the screen
-		worldPointer.getScreenByID(currentScreenID).setBonzoLastOnGround(getCurrentLocation() );
+		if (jumping) {
+			worldPointer.getScreenByID(currentScreenID).setBonzoLastOnGround(getCurrentLocation() );
+		}
 	}
 	
 	private void setUnjumping(boolean unjump) {
@@ -802,6 +806,9 @@ public final class Bonzo {
 		// upward or downward, check now to bump us out of the ground
 		GroundState groundState = onGround(originalY);
 		
+		// Set to true if bonzo was jumping or falling previously before hitting the ground.
+		boolean landed = false;
+		
 		/* ------- Not on the ground, so start pulling downward ---------- */
 		// Conveyer state is MAINTAINED.
 		if ( groundState.snapUpBy == -1) {
@@ -828,8 +835,10 @@ public final class Bonzo {
 				setJumping(false);
 				setUnjumping(true);
 				fallThreshold = GameConstants.SAFE_FALL_JUMP_TIME;
-				// Landing on ground makes this a safe respawn if required.
-				worldPointer.getScreenByID(currentScreenID).setBonzoLastOnGround(getCurrentLocation() );
+				// Landing on ground makes this a safe respawn if required ONLY if it doesn't kill bonzo.
+				// We set a boolean that will toggle him being on the ground only if after health calculations
+				// he is still alive.
+				landed = true;
 			} else {
 				fallThreshold = GameConstants.SAFE_FALL_TIME;
 			}
@@ -842,6 +851,11 @@ public final class Bonzo {
 				// Do not fear the casts: Cast airDifference to double to apply multiplier, then back to int to
 				// get discrete units of damage to apply.
 				hurt((int)( (Math.pow( ((double)airDifference), GameConstants.FALL_DAMAGE_MULTIPLIER) ) ), DamageEffect.FALL);
+			}
+			
+			// If he is still alive, go ahead and set ground state
+			if (landed && !(isDying) ) {
+				worldPointer.getScreenByID(currentScreenID).setBonzoLastOnGround(getCurrentLocation() );
 			}
 			
 			// Whether fall damage or not, bonzo no longer in air.

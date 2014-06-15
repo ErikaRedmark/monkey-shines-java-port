@@ -240,6 +240,7 @@ public class World {
 		final LevelScreen currentScreen = getCurrentScreen();
 		ImmutablePoint2D ground = currentScreen.getBonzoLastOnGround();
 		if (ground != null) {
+			// No need to change screen in world; It's the same one
 			theBonzo.restartBonzoOnScreen(currentScreen, currentScreen.getBonzoCameFrom() );
 		} else {
 			// Uh oh! We need to progress backwards through screen history and find a good ground
@@ -248,6 +249,9 @@ public class World {
 				ImmutablePoint2D sGround = s.getBonzoLastOnGround();
 				if (sGround == null)  continue;
 				
+				// Must change world screen as well as bonzos reference
+				changeCurrentScreen(s.getId() );
+				
 				// Valid ground: Restart bonzo and end the method early.
 				theBonzo.restartBonzoOnScreen(s, sGround);
 				return;
@@ -255,6 +259,9 @@ public class World {
 			
 			// Reaching the end of the for loop normally signifies no valid ground in ALL
 			// history. That must be one LONG fall; move bonzo to the last screen
+			final LevelScreen lastResort = screenHistory.back();
+			changeCurrentScreen(lastResort.getId() );
+			theBonzo.restartBonzoOnScreen(lastResort, lastResort.getBonzoCameFrom() );
 		}
 	}
 	

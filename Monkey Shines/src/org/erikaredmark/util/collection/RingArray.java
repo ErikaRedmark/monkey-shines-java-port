@@ -58,7 +58,7 @@ public class RingArray<T> implements Iterable<T> {
 	
 	/**
 	 * 
-	 * Returns the element at the back, or the 'latest', of the ring that
+	 * Returns the element at the back, or the 'oldest', of the ring that
 	 * hasn't been deleted yet. 
 	 * <p/>
 	 * If the ring is empty this returns {@code null}
