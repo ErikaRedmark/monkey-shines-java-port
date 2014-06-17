@@ -133,7 +133,9 @@ public final class WorldEditor {
 		// Initial size assumes not too many bonus rooms and maybe some leeway
 		// for accidentally adding too many bonus doors
 		List<Integer> bonusRooms = new ArrayList<>(4);
-		for (LevelScreenEditor screen : levelScreenEditors.values() ) {
+		// Do NOT get levelScreenEditors. They may not have been constructed Yet. Always get
+		// the raw screens
+		for (LevelScreen screen : world.getLevelScreens().values() ) {
 			for (Sprite s : screen.getSpritesOnScreen() ) {
 				if (s.getType() == Sprite.SpriteType.BONUS_DOOR) {
 					bonusRooms.add(screen.getId() );

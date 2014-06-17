@@ -15,6 +15,7 @@ import org.erikaredmark.monkeyshines.tiles.TileType;
 /**
  * This object forwards changes to the level screen, but for every change made stores it and provides functionality to write
  * the level to a disk. This is intended ONLY for the level editor.
+ * TODO storing not implemented yet. Will become part of undo/redo system much later
  * 
  * @author Erika Redmark
  */
