@@ -73,7 +73,7 @@ Some third party worlds that I would like to port to this new version as well:
 Additional worlds may be added.
 
 # Final Words
-If anyone wishes to help, especially if you have played the game before, feel open to contect me (Erika Redmark) at maniacmonkeyinspace@gmail.com. 
+If anyone wishes to help, especially if you have played the game before, feel open to contact me (Erika Redmark) at maniacmonkeyinspace@gmail.com. 
 
 # Small About Me
 I just recently got into the workforce as a Java developer for an Eclipse plugin. Since I prefer to have my day job be something other than an EA Games inspired death march, I pretty much have decided that games would be a hobby. I do have a game idea that is original that I would like to work on but I already had this code lying around from when I worked on it at university, and I didn't want it to just rot away.
