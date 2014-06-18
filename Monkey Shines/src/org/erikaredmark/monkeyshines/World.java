@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.erikaredmark.monkeyshines.Conveyer.Rotation;
 import org.erikaredmark.monkeyshines.Goodie.Type;
+import org.erikaredmark.monkeyshines.Sprite.SpriteType;
 import org.erikaredmark.monkeyshines.bounds.Boundable;
 import org.erikaredmark.monkeyshines.bounds.IPoint2D;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
@@ -100,6 +101,10 @@ public class World {
 	// this and saves information to .world file.
 	private int returnScreen;
 	
+	// Lists of all bonus and exit doors so that setting them visible when all keys are collected doesn't
+	// require iterating over every sprite in the world.
+	private final List<Sprite> bonusDoors = new ArrayList<>(4); // initial size 4. 2 bonus doors, possibly double doored sprites for some worlds.
+	private final List<Sprite> exitDoors = new ArrayList<>(4); // Just in case multiple exits, or exit made up of multiple sprites.
 	
 	private final WorldResource rsrc;
 	
@@ -218,6 +223,15 @@ public class World {
 			if (value.getGoodieType() == Goodie.Type.RED_KEY)  		 this.redKeys.add(value);
 			else if (value.getGoodieType() == Goodie.Type.BLUE_KEY)  this.blueKeys.add(value);
 		}
+		
+		// Finally, to easily enable bonus and exit doors, we add all such sprites to lists
+		// based on type.
+		for (LevelScreen lvl : worldScreens.values() ) {
+			for (Sprite s : lvl.getSpritesOnScreen() ) {
+				if 		(s.getType() == SpriteType.EXIT_DOOR)   this.exitDoors.add(s);
+				else if (s.getType() == SpriteType.BONUS_DOOR)  this.bonusDoors.add(s);
+			}
+		}
 	}
 	
 	/**
@@ -322,12 +336,16 @@ public class World {
 	
 	public void allRedKeysTaken() {
 		this.rsrc.getSoundManager().playOnce(GameSoundEffect.LAST_RED_KEY);
-		System.out.println("If this game was complete the exit door would be appearing now");
+		for (Sprite s : exitDoors) {
+			s.setVisible(true);
+		}
 	}
 	
 	public void allBlueKeysTaken() {
 		this.rsrc.getSoundManager().playOnce(GameSoundEffect.YES);
-		System.out.println("Bonus door would be open now");
+		for (Sprite s : bonusDoors) {
+			s.setVisible(true);
+		}
 	}
 	
 	/**

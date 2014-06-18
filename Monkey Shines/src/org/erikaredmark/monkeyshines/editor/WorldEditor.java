@@ -61,6 +61,12 @@ public final class WorldEditor {
 	 */
 	public static WorldEditor fromEncoded(EncodedWorld encoded, WorldResource rsrc) {
 		World world = encoded.newWorldInstance(rsrc);
+		// Make all existing sprites visible
+		for (LevelScreen lvl : world.getLevelScreens().values() ) {
+			for (Sprite s : lvl.getSpritesOnScreen() ) {
+				s.setVisible(true);
+			}
+		}
 		
 		return new WorldEditor(world, rsrc);
 	}

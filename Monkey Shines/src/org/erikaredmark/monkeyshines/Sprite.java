@@ -40,6 +40,10 @@ public class Sprite {
 	// is of cycling
 	private boolean cycleDirection = true;
 	
+	// Determines if a sprite is visible. Only visible sprites are updated and can collide with Bonzo.
+	// Bonus and Exit doors start with this disabled. All others start with it enabled. 
+	private boolean visible;
+	
 	// Images
 	private ClippingRectangle currentClip;
 
@@ -129,6 +133,7 @@ public class Sprite {
 		this.speedX = initialSpeedX;
 		this.speedY = initialSpeedY;
 		this.currentLocation = Point2D.from(startLocation);
+		this.visible = !(spriteType == SpriteType.EXIT_DOOR || spriteType == SpriteType.BONUS_DOOR);
 		
 	}
 	
@@ -140,6 +145,21 @@ public class Sprite {
 			this.currentClip.setY(GameConstants.SPRITE_SIZE_Y);
 		}
 	}
+	
+	/**
+	 * 
+	 * Changes a sprites visibility, allowing it to update with the world and affect bonzo.
+	 * This is really only used for enabling bonus and exit doors when all keys are collected.
+	 * <p/>
+	 * This state is not saved. All sprites when a world is loaded are initialised the same. 
+	 * Invisible for doors, visible for instant kill, health drainer, and scenery sprites.
+	 * The editor will need to override sprite visibility during creation.
+	 * 
+	 * @param visible
+	 * 		{@code true} to make sprite visible, {@code false} to make invisible
+	 * 
+	 */
+	public void setVisible(boolean visible) { this.visible = visible; }
 
 	/**
 	 * 
@@ -206,6 +226,7 @@ public class Sprite {
 	 * 
 	 */
 	public void paint(Graphics2D g2d) {
+		if (!(visible) )  return;
 		g2d.drawImage(rsrc.getSpritesheetFor(this.id), currentLocation.x(), currentLocation.y(), 
 				currentLocation.x() + GameConstants.SPRITE_SIZE_X, 
 				currentLocation.y() + GameConstants.SPRITE_SIZE_Y,
@@ -219,6 +240,7 @@ public class Sprite {
 	 * 
 	 */
 	public void update() {
+		if (!(visible) )  return;
 		// Update position on screen
 		currentLocation.translateXFine(speedX);
 		currentLocation.translateYFine(speedY);
@@ -299,6 +321,7 @@ public class Sprite {
 	 *
 	 */
 	public boolean pixelCollision(Bonzo theBonzo, Boundable intersection) {
+		if (!(visible) )  return false;
 		// Got the images in memory. Get a bounding box representing which frame is being drawn at
 		// this time. those 40x40 regions will be used for pixel collision
 		BufferedImage bonzoSpriteSheet = CoreResource.INSTANCE.getBonzoSheet();

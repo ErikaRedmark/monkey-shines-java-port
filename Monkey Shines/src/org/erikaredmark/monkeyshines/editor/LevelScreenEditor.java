@@ -111,6 +111,9 @@ public class LevelScreenEditor {
 		Sprite s =
 			Sprite.newSprite(spriteId, spriteStartingLocation, spriteBoundingBox, spriteVelocity, animationType, animationSpeed, spriteType, rsrc);
 		
+		// Game rules for visibility do not apply in the editor.
+		s.setVisible(true);
+		
 		screen.addSprite(s);
 		
 	}

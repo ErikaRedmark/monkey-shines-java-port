@@ -37,6 +37,7 @@ public class SpriteAnimationCanvas extends Canvas {
 		this.rsrc = rsrc;
 		// Type is irrelevant for the canvas: no concept of collisions
 		this.animatingSprite = Sprite.newUnmovingSprite(spriteId, animationType, speed, SpriteType.NORMAL, rsrc);
+		this.animatingSprite.setVisible(true);
 		// Make sprite animate
 		Timer animationTimer = new Timer(100, new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
@@ -50,15 +51,18 @@ public class SpriteAnimationCanvas extends Canvas {
 	
 	public void setSpriteId(int id) {
 		this.animatingSprite = Sprite.newUnmovingSprite(id, this.animatingSprite.getAnimationType(), this.animatingSprite.getAnimationSpeed(), SpriteType.NORMAL, rsrc);
+		this.animatingSprite.setVisible(true);
 		this.repaint();
 	}
 	
 	public void setAnimationType(AnimationType type) {
 		this.animatingSprite = Sprite.newUnmovingSprite(this.animatingSprite.getId(), type, this.animatingSprite.getAnimationSpeed(), SpriteType.NORMAL, rsrc);
+		this.animatingSprite.setVisible(true);
 	}
 	
 	public void setAnimationSpeed(AnimationSpeed speed) {
 		this.animatingSprite = Sprite.newUnmovingSprite(this.animatingSprite.getId(), this.animatingSprite.getAnimationType(), speed, SpriteType.NORMAL, rsrc);
+		this.animatingSprite.setVisible(true);
 	}
 	
 	@Override public void paint(Graphics g) {
