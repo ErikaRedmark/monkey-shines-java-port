@@ -394,7 +394,7 @@ public class Sprite {
 		},
 		BONUS_DOOR("Bonus") {
 			@Override public void onBonzoCollision(Bonzo bonzo, World world) {
-				// TODO no bonus door code yet
+				world.bonusTransfer(bonzo);
 			}
 		},
 		SCENERY("Harmless") {

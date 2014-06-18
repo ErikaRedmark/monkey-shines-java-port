@@ -577,10 +577,8 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 			
 			// Draw bonzo starting location of screen
 			final BufferedImage bonz = CoreResource.INSTANCE.getTransparentBonzo();
-			final ImmutablePoint2D start = this.currentScreenEditor.getBonzoStartingLocation();
-			final int startX = start.x() * GameConstants.TILE_SIZE_X;
-			final int startY = start.y() * GameConstants.TILE_SIZE_Y;
-			g2d.drawImage(bonz, startX, startY, startX + bonz.getWidth(), startY + bonz.getHeight(),
+			final ImmutablePoint2D start = this.currentScreenEditor.getBonzoStartingLocationPixels();
+			g2d.drawImage(bonz, start.x(), start.y(), start.x() + bonz.getWidth(), start.y() + bonz.getHeight(),
 					0, 0, bonz.getWidth(), bonz.getHeight(),
 					null);
 			

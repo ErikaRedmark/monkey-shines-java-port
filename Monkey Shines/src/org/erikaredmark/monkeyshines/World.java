@@ -376,6 +376,32 @@ public class World {
 	
 	/**
 	 * 
+	 * Transfers bonzo to either the bonus room if he is not already in it, or the return room if in the bonus room.
+	 * 
+	 * @param bonzo
+	 * 
+	 */
+	public void bonusTransfer(Bonzo bonzo) {
+		// Thanks to precomputed values, we simply check which of the two 'bonus' screens bonzo is
+		// on. One is the real bonus screen and one is the return. Regardless of direction of
+		// collision, bonzo will be transported to a new screen at the bonzo starting location
+		// of that screen.
+		int transferScreenId =   currentScreen == bonusScreen
+							   ? returnScreen
+							   : bonusScreen;
+		
+		assert currentScreen == bonusScreen || currentScreen == returnScreen : "Transfer Issue: Can't use bonus screen transfer method on this screen: " + currentScreen + " as it is not a bonus or return screen";
+		
+		// Must change world screen as well as bonzos reference
+		// Unlike respawning, this DOES count as screen history!
+		final LevelScreen transferScreen = getScreenByID(transferScreenId);
+		changeCurrentScreen(transferScreenId);
+		bonzo.changeScreen(transferScreenId);
+		bonzo.setCurrentLocation(transferScreen.getBonzoStartingLocationPixels() );
+	}
+	
+	/**
+	 * 
 	 * Resets the current screen. This involves not only the basic level screen reset, but it must
 	 * look for any world entities (like goodies) that need resetting if already grabbed.
 	 * 
@@ -702,5 +728,7 @@ public class World {
 		this.hazards.clear();
 		this.hazards.addAll(newHazards);
 	}
+
+
 	
 }

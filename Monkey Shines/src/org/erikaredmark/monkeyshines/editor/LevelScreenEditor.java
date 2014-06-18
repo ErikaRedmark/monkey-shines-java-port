@@ -45,6 +45,8 @@ public class LevelScreenEditor {
 	public int getId() { return screen.getId(); }
 	
 	public ImmutablePoint2D getBonzoStartingLocation() { return screen.getBonzoStartingLocation(); }
+	
+	public ImmutablePoint2D getBonzoStartingLocationPixels() { return screen.getBonzoStartingLocationPixels(); }
 
 	/**
 	 * Creates a new level screen editor based on an existing level screen

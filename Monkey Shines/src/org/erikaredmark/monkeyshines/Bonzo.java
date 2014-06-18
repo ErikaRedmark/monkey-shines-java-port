@@ -156,7 +156,7 @@ public final class Bonzo {
 		
 		
 		// Initialise starting points
-		ImmutablePoint2D start = currentScreen.getBonzoStartingLocation().multiply(GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y);
+		ImmutablePoint2D start = currentScreen.getBonzoStartingLocationPixels();
 		currentLocation = Point2D.from(start);
 		currentScreen.setBonzoCameFrom(start);
 		
@@ -194,6 +194,8 @@ public final class Bonzo {
 	/**
 	 * 
 	 * Changes the current screen to the new id
+	 * <p/>
+	 * It is the responsibility of the caller to set Bonzos new location properly
 	 * 
 	 * @param newScreen
 	 */
@@ -987,11 +989,27 @@ public final class Bonzo {
 	 * 
 	 * Returns the actual mutable point representing Bonzo's position. This method should be used with care in the smallest
 	 * possible scope. Clients should never hold a reference to the returned point.
+	 * <p/>
+	 * This reference is <strong> not </strong> guaranteed to always remain valid with respect to Bonzo.
 	 * 
 	 * @return
+	 * 		mutable location
+	 * 
 	 */
 	public Point2D getMutableCurrentLocation() {
 		return this.currentLocation;
+	}
+	
+	
+	/**
+	 * 
+	 * Explicitly sets bonzos current location on the screen based on the immutable point
+	 * 
+	 * @param location
+	 * 
+	 */
+	public void setCurrentLocation(ImmutablePoint2D location) {
+		this.currentLocation = Point2D.from(location);
 	}
 
 	/**
@@ -1034,6 +1052,7 @@ public final class Bonzo {
 			return ImmutablePoint2D.of(takeFromX, JUMP_Y);
 		}
 	}
+
 	
 	
 }

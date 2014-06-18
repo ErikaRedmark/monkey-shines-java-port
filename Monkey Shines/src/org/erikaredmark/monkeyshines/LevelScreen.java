@@ -110,6 +110,16 @@ public final class LevelScreen {
 	
 	/**
 	 * 
+	 * Same as {@code getBonzoStartingLocation} but returns values as pixel co-ordinates.
+	 * 
+	 * @return
+	 */
+	public ImmutablePoint2D getBonzoStartingLocationPixels() {
+		return this.bonzoStart.multiply(GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y);
+	}
+	
+	/**
+	 * 
 	 * Returns the location bonzo came from when entering this level, or the startign location if bonzo started
 	 * on this screen.
 	 * 
