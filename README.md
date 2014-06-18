@@ -5,10 +5,11 @@
 Having heavy nostalgia for a game I can not run even in a emulator, I decided to take up as a challenge to see if I can re-create the game in a form that will be more accessible and still function mostly identical. I consider working on this a hobby. Since there is no reason to keep the code to myself I decided there is no harm in hosting it on github. I have no intention of making a profit from any of this; full credit goes to the employees at Fantasoft who created this game. I merely want to take that game idea and port it to be more accessible today. I have an affinity for games with simple premises that can be played quickly and present a challenge.
 
 # Getting Started
-There is no easily executable way of running the game and the level editor. I work in Eclipse so that IDE is probably best to use (EGit, clone repo and import all projects is probably the easiest way)
+To just start playing the game and using the level editor, jump to the wiki: https://github.com/ErikaRedmark/monkey-shines-java-port/wiki. If you wish to work with the source, my setup is Eclipse using EGit which would be the easiest way to get running. 
+
 There are two main points of entry in the code:
-- LevelEditor: This class starts the Level Editor. Both the main game and level editor share the same basic engine (only slowed down, as in the original). The best way to start is to create a new world and use the default resource pack. This default pack is basically a rip of the original game's 'Spooked' with only the Bee as an available sprite and two backgrounds that prove I don't design graphics well. 
-- MonkeyShines: This class allows you to start the actual game. It should open a file chooser from which you can select a .world file (this file chooser is temporary and easy way to just playtest worlds). I do NOT include any sample/demo .world files to run, so you will have to make one with the editor.
+- LevelEditor: This class starts the Level Editor. Both the main game and level editor share the same basic engine (only slowed down, as in the original). The best way to start is to create a new world and use the default resource pack. This default pack is basically a subset rip of the original game's 'Spooked'. 
+- MonkeyShines: This class allows you to start the actual game. It should open a file chooser from which you can select a .world file (this file chooser is temporary and easy way to just playtest worlds). You can find a debug world in the 'extras' folder at the root of this project.
 
 # Status
 The basic game engine mechanics are coming together, but there is still quite a lot to do. This list is more for my benefit (and is probably incomplete) but if you are familiar with the original game many items should be familiar. A check means the feature is implemented, but not necessarily fine-tuned or all bugs have been removed.
