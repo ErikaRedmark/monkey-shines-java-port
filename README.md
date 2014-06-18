@@ -29,7 +29,7 @@ The basic game engine mechanics are coming together, but there is still quite a 
 - [x] Health Draining Sprites
 - [x] Lives
 - [ ] Red keys and Exit Door
-- [ ] Blue keys and Bonus Door
+- [x] Blue keys and Bonus Door
 - [ ] Patterned backgrounds (Currently have full-screen backgrounds as stand-ins)
 - [ ] Shield Powerup
 - [ ] Wing Powerup
