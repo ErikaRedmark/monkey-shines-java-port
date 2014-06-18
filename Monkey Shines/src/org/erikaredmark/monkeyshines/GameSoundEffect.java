@@ -31,6 +31,9 @@ public enum GameSoundEffect {
 	LAST_RED_KEY {
 		@Override public String filename() { return "lastRedKey.ogg"; }
 	},
+	LAST_BLUE_KEY {
+		@Override public String filename() { return "lastBlueKey.ogg"; }
+	},
 	LEVEL_FINISHED {
 		@Override public String filename() { return "levelFinishedScreen.ogg"; }
 	},

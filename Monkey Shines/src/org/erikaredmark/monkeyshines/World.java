@@ -342,7 +342,7 @@ public class World {
 	}
 	
 	public void allBlueKeysTaken() {
-		this.rsrc.getSoundManager().playOnce(GameSoundEffect.YES);
+		this.rsrc.getSoundManager().playOnce(GameSoundEffect.LAST_BLUE_KEY);
 		for (Sprite s : bonusDoors) {
 			s.setVisible(true);
 		}
