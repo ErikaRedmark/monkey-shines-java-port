@@ -96,6 +96,12 @@ public class GameWindow extends JPanel {
 	// Each new game starts with 10000 countdown, represented by 9999
 	private int countdownDigits[] = new int[] {9, 9, 9, 9};
 	
+	// POWERUPS
+	private static final int POWERUP_DRAW_X = 418;
+	private static final int POWERUP_DRAW_Y = 37;
+	private static final int POWERUP_DRAW_X2 = POWERUP_DRAW_X + GameConstants.GOODIE_SIZE_X;
+	private static final int POWERUP_DRAW_Y2 = POWERUP_DRAW_Y + GameConstants.GOODIE_SIZE_Y;
+	
 	/**
 	 * Constructs a GameWindow listening to the keyboard.
 	 * 
@@ -390,6 +396,21 @@ public class GameWindow extends JPanel {
 								  drawFromX + SCORE_WIDTH, SCORE_HEIGHT,
 								  null);
 				} // else draw nothing TODO perhaps draw infinity symbol?
+			}
+			
+			/* ------------------------ Powerup --------------------------- */
+			{
+				if (bonzo.powerupUIVisible() ) {
+					Powerup powerup = bonzo.getCurrentPowerup();
+					assert powerup != null : "Powerup should be invisible if null";
+					
+					g2d.drawImage(rsrc.getGoodieSheet(),
+							      POWERUP_DRAW_X, POWERUP_DRAW_Y,
+							      POWERUP_DRAW_X2, POWERUP_DRAW_Y2,
+							      powerup.drawFromX(), Powerup.POWERUP_DRAW_FROM_Y,
+							      powerup.drawFromX2(), Powerup.POWERUP_DRAW_FROM_Y2,
+							      null);
+				}
 			}
 		}
 	}

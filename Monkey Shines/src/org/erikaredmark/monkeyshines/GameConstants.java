@@ -55,6 +55,12 @@ public final class GameConstants {
 	// this ticks down at this speed.
 	public static final int BONUS_COUNTDOWN_DELAY = 700;
 	
+	// Powerup lasts this many milliseconds before STARTING TO FADE.
+	public static final int MAX_POWERUP_TIME = 20 * 1000;
+	public static final int MAX_WARNINGS = 4;
+	// Milliseconds between flashes. This * 2 gives the time for each warning sound effect
+	public static final int TIME_BETWEEN_FLASHES = 500; 
+	
 	// When a world is first created and no bonus doors are added, it is given this default
 	// as bonus screen id.
 	public static final int DEFAULT_BONUS_SCREEN = 10000;

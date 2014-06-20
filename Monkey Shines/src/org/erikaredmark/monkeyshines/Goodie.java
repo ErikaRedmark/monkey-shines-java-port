@@ -120,6 +120,12 @@ public class Goodie {
 		rsrc.getSoundManager().playOnce(goodieType.soundEffect);
 		bonzo.incrementScore(goodieType.score);
 		goodieType.affectBonzo(this, bonzo, world);
+		
+		// Finally, if this is a powerup, grant bonzo the powerup.
+		Powerup powerup = goodieType.powerupForGoodie();
+		if (powerup != null) {
+			bonzo.powerupCollected(powerup);
+		}
 	}
 	
 	public int getScreenID() {
@@ -217,16 +223,26 @@ public class Goodie {
 				bonzo.incrementHealth(GameConstants.LIFE_INCREASE);
 			}
 		},
-		X2MULTIPLIER(9, 0, GameSoundEffect.POWERUP_SHIELD, false),
-		WHITE_MELRODE_WINGS(10, 0, GameSoundEffect.POWERUP_WING, true),
-		SHIELD(11, 0, GameSoundEffect.POWERUP_SHIELD, true),
+		X2MULTIPLIER(9, 0, GameSoundEffect.POWERUP_SHIELD, false) {
+			@Override public Powerup powerupForGoodie() { return Powerup.X2; }
+		},
+		WHITE_MELRODE_WINGS(10, 0, GameSoundEffect.POWERUP_WING, true) {
+			@Override public Powerup powerupForGoodie() { return Powerup.WING; }
+		},
+		SHIELD(11, 0, GameSoundEffect.POWERUP_SHIELD, true) {
+			@Override public Powerup powerupForGoodie() { return Powerup.SHIELD; }
+		},
 		EXTRA_LIFE(12, 100, GameSoundEffect.POWERUP_EXTRA_LIFE, false) {
 			@Override public void affectBonzo(Goodie goodie, Bonzo bonzo, World world) {
 				bonzo.incrementLives(1);
 			}
 		},
-		X3MULTIPLIER(13, 0, GameSoundEffect.POWERUP_SHIELD, false),
-		X4MULTIPLIER(14, 0, GameSoundEffect.POWERUP_SHIELD, false);
+		X3MULTIPLIER(13, 0, GameSoundEffect.POWERUP_SHIELD, false) {
+			@Override public Powerup powerupForGoodie() { return Powerup.X3; }
+		},
+		X4MULTIPLIER(14, 0, GameSoundEffect.POWERUP_SHIELD, false) {
+			@Override public Powerup powerupForGoodie() { return Powerup.X4; }
+		};
 		
 		private final int xOffset;
 		public final int score;
@@ -296,6 +312,16 @@ public class Goodie {
 			}
 			throw new IllegalArgumentException("Value out of range");
 		}
+		
+		/**
+		 * 
+		 * Returns the powerup that this goodie represents. If this goodie is not a powerup, returns {@code null}
+		 * 
+		 * @return
+		 * 		powerup for goodie or {@code null} if goodie not a powerup
+		 * 
+		 */
+		public Powerup powerupForGoodie() { return null; }
 
 		/**
 		 * 

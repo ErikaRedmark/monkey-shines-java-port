@@ -36,10 +36,21 @@ public final class Bonzo {
 								  // 1 for left, 0 for right.
 	private int currentSprite; // used everywhere for whatever sprite he is on for animation
 	
+	/* ----------------------- location and history ------------------------ */
 	private int currentScreenID;
 	private Point2D currentLocation;
 	private final RingArray<LevelScreen> screenHistory;
 	
+	
+	/* ----------------------------- powerups ------------------------------ */
+	// Initially set to null (no powerup). When bonzo grabs powerups this will be set until a
+	// degrade timer unsets it after a delay
+	private Powerup currentPowerup;
+	// Internal stuff powerup decay. NO SCHEDULED THREADS because we don't want the game
+	// loop to use multiple threads.
+	private PowerupState powerupState;
+	
+	/* ----------------------------- velocity ------------------------------ */
 	// Velocity applied to bonzo. Affected by the keyboard and falls.
 	private Point2D currentVelocity;
 	
@@ -143,6 +154,8 @@ public final class Bonzo {
 		this.worldPointer = worldPointer;
 		this.scoreCallback = scoreCallback;
 		this.lives = startingLives;
+		this.powerupState = new PowerupState();
+		this.powerupState.clear();
 		this.gameOverCallback = gameOverCallback;
 		this.lifeUpdatedCallback = lifeUpdatedCallback;
 		this.levelCompleteCallback = levelCompleteCallback;
@@ -570,7 +583,8 @@ public final class Bonzo {
 	 * which invincibility should not be protecting from.
 	 * <p/>
 	 * The thing hurting bonzo must pass in a death animation enum indicating what death type should be used
-	 * if bonzo was to die from being hurt.
+	 * if bonzo was to die from being hurt. Damage from fall is eliminated when in possesion of a wing
+	 * powerup.
 	 * 
 	 * @param amt
 	 * 		amount to hurt bonzos health
@@ -580,6 +594,8 @@ public final class Bonzo {
 	 * 
 	 */
 	public void hurt(int amt, DamageEffect effect) {
+		if (effect == DamageEffect.FALL && (currentPowerup != null && currentPowerup.isWing() ) )  return;
+		
 		health -= amt;
 		soundManager.playOnce(effect.soundEffect);
 		if (health < 0)  kill(effect.deathAnimation);
@@ -589,14 +605,16 @@ public final class Bonzo {
 	 * 
 	 * Tries to kill bonzo. This takes into account if bonzo if invincible: if he is, does
 	 * nothing. Otherwise, kills bonzo.
+	 * <p/>
+	 * this should not be used with the wing powerup, as falling from a high height and losing
+	 * health should always kill bonzo. Wing powerup needs to simply prevent fall damage.
 	 * 
 	 * @param
 	 * 		if bonzo does die, use this death animation
 	 * 
 	 */
 	public void tryKill(DeathAnimation animation) {
-		// TODO do invincibility checks. Right now this just forwards to kill()
-		kill(animation);
+		if (currentPowerup == null || !(currentPowerup.isShield() ) )  kill(animation);
 	}
 	
 	/**
@@ -780,6 +798,54 @@ public final class Bonzo {
 	
 	/**
 	 * 
+	 * Indicates that bonzo has collected a powerup. This is the entry point for giving Bonzo all
+	 * powerups; class internally handles scheduling time to expire rules and overriding current powerups
+	 * if any exist.
+	 * 
+	 * @param powerup
+	 * 		the poweup bonzo collected. May not be {@code null}
+	 * 
+	 */
+	public void powerupCollected(Powerup powerup) {
+		assert powerup != null : "Cannot collect a null powerup!";
+		
+		currentPowerup = powerup;
+		powerupState = new PowerupState();
+	}
+	
+	/**
+	 * 
+	 * Returns bonzos current powerup, or {@code null} if bonzo does not have one
+	 * 
+	 * @return
+	 * 		current powerup or {@code null}
+	 * 
+	 */
+	public Powerup getCurrentPowerup() {
+		return currentPowerup;
+	}
+
+	/**
+	 * 
+	 * Returns if the powerup is visible in the UI. A powerup is not visible if either
+	 * 1) Bonzo has no powerup
+	 * 2) Bonzo's powerup is fading and it is in a 'flash off' phase.
+	 * 
+	 * @return
+	 * 		{@code true} if a powerup exists that should be drawn, {@code false} otherwise.
+	 * 
+	 */
+	boolean powerupUIVisible() {
+		if (currentPowerup == null)  return false;
+		// Because of the way the flashCount is implemented in the state, odd numbers (which is what
+		// it starts with) represents a visible powerup, where as even numbers including zero represent
+		// show nothing.
+		return powerupState.flashCount % 2 == 1;
+	}
+	
+	
+	/**
+	 * 
 	 * Sets if bonzo is under the effects of a conveyer belt. Just as in the original game,
 	 * this can overlap with jumping.
 	 * <p/>
@@ -887,9 +953,11 @@ public final class Bonzo {
 			}
 		} 
 		
+		/* ------------------------ Collision Checking --------------------------- */
 		// Give all collisions to World
 		worldPointer.checkCollisions(this);
 		
+		/* ---------------------------- Jump Logic ------------------------------- */
 		// if we are jumping, slowly increment the sprite until we get to the end, then leave it there.
 		if (isJumping) {
 			// check for a tile above us
@@ -916,6 +984,8 @@ public final class Bonzo {
 			else				    setUnjumping(false);
 		}
 		
+		/* ----------------------------- Conveyers ------------------------------ */
+		
 		// If we are affected by a conveyer, we are moved. If we are moved into a wall, we move just enough
 		// to touch it.
 		double conveyerMovement = this.affectedConveyer.translationX();
@@ -936,6 +1006,9 @@ public final class Bonzo {
 				break;
 			}
 		}
+		
+		/* ------------------------------ Powerup Decay ------------------------------ */
+		powerupState.update();
 		
 		updateReadyToAnimate();
 		
@@ -1066,6 +1139,79 @@ public final class Bonzo {
 		}
 	}
 
+	/**
+	 * 
+	 * Encapsulates the state of a powerup. When a powerup is collected, it goes through several states. First
+	 * is normal; it simply is there and has an effect. After a given number of ticks, it transitions into
+	 * warning state, where it flashes visible and invisible for a given number of ticks. Finally the powerup
+	 * is removed from bonzo.
+	 * <p/>
+	 * If at any time a new powerup is collected, the current state object will be destroyed and replaced with
+	 * a new one. This effectively means bonzo may only carry one powerup at a time.
+	 * 
+	 * @author Erika Redmark
+	 *
+	 */
+	private final class PowerupState {
+
+		
+		// Convert game speed (in game constants) to number of ticks to apporximate the speed
+		private static final int START_TICKS = GameConstants.MAX_POWERUP_TIME / GameConstants.GAME_SPEED;
+		private static final int FLASH_TICKS = GameConstants.TIME_BETWEEN_FLASHES / GameConstants.GAME_SPEED;
+		// + 1 is for the initial decrement of flashCount when ticksForDegrade first hits zero.
+		private static final int TOTAL_FLASHES = (GameConstants.MAX_WARNINGS * 2) + 1;
+		
+		// Set to a value and decremented until zero when a powerup is active.
+		private int ticksForDegrade;
+		private int flashCount;
+		private boolean done;
+		
+		// Creates a new powerup state instance. Since powerup information is stored in bonzo, this only
+		// initialises timing relevant data.
+		private PowerupState() {
+			// Ticks to degrade is re-used after hitting zero; it resets itself
+			// and decrements flash count. Each decrement changes a special state in
+			// bonzo that changes whether the powerup should be drawn even if it is still
+			// active. When both hit zero, the state is 'finished'
+			
+			// Note: we are converting 
+			ticksForDegrade = START_TICKS;
+			flashCount = TOTAL_FLASHES;
+			done = false;
+		}
+		
+		// Updates the state. If the state reaches final state (powerup completely faded)
+		// has the side effect of setting bonzos current powerup to null
+		private void update() {
+			if (done)  return;
+			
+			if (ticksForDegrade <= 0) {
+				if (flashCount <= 0) {
+					done = true;
+					currentPowerup = null;
+					return;
+				}
+				
+				--flashCount;
+				ticksForDegrade = FLASH_TICKS;
+				// Play warning sound for each even flash count
+				if (flashCount % 2 == 0)  soundManager.playOnce(GameSoundEffect.POWERUP_FADE);
+			}
+			
+			--ticksForDegrade;
+		}
+		
+		// Puts this state into the end state promptly. Only used by constructor for initial state.
+		private void clear() {
+			ticksForDegrade = 0;
+			flashCount = 0;
+			done = true;
+		}
+	}
 	
+	// Intialises immutable singleton to be used as inital state (when there is no powerup)
+	// so calling update does nothing. After bonzo collects his first powerup, this won't be
+	// used anymore (all powerup states naturally decay to this state)
+
 	
 }
