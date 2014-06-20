@@ -53,6 +53,7 @@ public final class Bonzo {
 	private int lives;
 	private final Runnable gameOverCallback;
 	private final Runnable lifeUpdatedCallback;
+	private final Runnable levelCompleteCallback;
 	public static final int INFINITE_LIVES = -2;
 	
 	// Score starts at zero and goes up until the game is over.
@@ -136,13 +137,15 @@ public final class Bonzo {
 			     final int startingLives, 
 			     final Runnable scoreCallback, 
 			     final Runnable gameOverCallback,
-			     final Runnable lifeUpdatedCallback) {
+			     final Runnable lifeUpdatedCallback,
+			     final Runnable levelCompleteCallback) {
 		
 		this.worldPointer = worldPointer;
 		this.scoreCallback = scoreCallback;
 		this.lives = startingLives;
 		this.gameOverCallback = gameOverCallback;
 		this.lifeUpdatedCallback = lifeUpdatedCallback;
+		this.levelCompleteCallback = levelCompleteCallback;
 		this.health = GameConstants.HEALTH_MAX;
 		this.soundManager = worldPointer.getResource().getSoundManager();
 		currentScreenID = 1000; // Always 1000. Everything starts on 1000
@@ -303,6 +306,16 @@ public final class Bonzo {
 	 */
 	public RingArray<LevelScreen> getScreenHistory() {
 		return screenHistory;
+	}
+	
+	/**
+	 * 
+	 * Called upon collision with the exit door. This effectively is part of the 
+	 * control flow that ends the game.
+	 * 
+	 */
+	void hitExitDoor() {
+		levelCompleteCallback.run();
 	}
 	
 

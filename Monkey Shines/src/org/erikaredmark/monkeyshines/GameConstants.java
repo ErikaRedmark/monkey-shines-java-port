@@ -51,6 +51,10 @@ public final class GameConstants {
 	// place on the current screen, they back up to other screens.
 	public static final int SCREEN_HISTORY = 5;
 	
+	// Bonus tick speed handles how many milliseconds between countdown ticks. Once the last red key is grabbed,
+	// this ticks down at this speed.
+	public static final int BONUS_COUNTDOWN_DELAY = 700;
+	
 	// When a world is first created and no bonus doors are added, it is given this default
 	// as bonus screen id.
 	public static final int DEFAULT_BONUS_SCREEN = 10000;

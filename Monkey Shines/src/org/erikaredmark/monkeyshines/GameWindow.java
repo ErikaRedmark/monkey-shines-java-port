@@ -27,13 +27,14 @@ import org.erikaredmark.monkeyshines.resource.WorldResource;
  * @author Erika Redmark
  *
  */
-public class GameWindow extends JPanel implements ActionListener {
+public class GameWindow extends JPanel {
 	private static final long serialVersionUID = -1418470684111076474L;
 
 	private final Timer gameTimer;
 	
-	private final KeyboardInput keys;
-	
+	// Started when the last key is collected, stopped when the 'bonus score' hits zero.
+	private final Timer bonusTimer;
+
 	// Main drawing happens on gameplay. The world itself is the 'model' to this view.
 	private final GameplayPanel gameplayCanvas;
 	private Bonzo bonzo;
@@ -85,6 +86,16 @@ public class GameWindow extends JPanel implements ActionListener {
 	private static final int LIFE_DRAW_X2 = LIFE_DRAW_X + SCORE_WIDTH;
 	private static final int LIFE_DRAW_Y2 = LIFE_DRAW_Y + SCORE_HEIGHT;
 
+	
+	// Bonus digits
+	private static int BONUS_NUM_DIGITS = 4;
+	private static int BONUS_DRAW_X = 152;
+	// Bonus draw Y is same as score; same y level
+	// widths and height same as score
+	
+	// Each new game starts with 10000 countdown, represented by 9999
+	private int countdownDigits[] = new int[] {9, 9, 9, 9};
+	
 	/**
 	 * Constructs a GameWindow listening to the keyboard.
 	 * 
@@ -94,7 +105,6 @@ public class GameWindow extends JPanel implements ActionListener {
 	 */
 	public GameWindow(final KeyboardInput keys, final Runnable endGame) {
 		super();
-		this.keys = keys;
 		this.addKeyListener(keys);
 		
 		// DEBUG placeholder for better menu system
@@ -118,7 +128,46 @@ public class GameWindow extends JPanel implements ActionListener {
 		add(uiCanvas);
 		add(gameplayCanvas);
 		
-		gameTimer = new Timer(GameConstants.GAME_SPEED, this);
+		gameTimer = new Timer(GameConstants.GAME_SPEED, new ActionListener() {
+			/**
+			 * Polls the keyboard for valid operations the player may make on Bonzo. During gameplay, 
+			 * the only allowed operations are moving left/right or jumping. 
+			 * This is the method called every tick to run the game logic. This is effectively the
+			 * 'entry point' to the main game loop.
+			 */
+			public void actionPerformed(ActionEvent e) {
+				// Poll Keyboard
+				keys.poll();
+				if (keys.keyDown(KeyEvent.VK_LEFT) ) {
+					bonzo.move(-1);
+					//System.out.println("left");
+				}
+				if (keys.keyDown(KeyEvent.VK_RIGHT) ) {
+					bonzo.move(1);
+				}
+				if (keys.keyDown(KeyEvent.VK_UP) ) {
+					bonzo.jump(4);
+				}
+				
+				repaint();
+			}
+		});
+		
+		bonusTimer = new Timer(GameConstants.BONUS_COUNTDOWN_DELAY, new ActionListener() {
+			/**
+			 * Counts down the bonus score for this game session. Stops itself at zero. This will
+			 * also be stopped when bonzo reaches the exit door or dies.
+			 */
+			public void actionPerformed(ActionEvent e) {
+				// Note: Bonus starts at 10000. We only DISPLAY 9999 and because the
+				// update function never runs until the first update and painting, it will end
+				// up redrawing the value 9990.
+				boolean keepCounting = currentWorld.bonusCountdown();
+				createDigits(countdownDigits, BONUS_NUM_DIGITS, currentWorld.getCurrentBonus() );
+				
+				if (!(keepCounting) )  bonusTimer.stop();
+			}
+		});
 		
 		setVisible(true);
 		
@@ -182,9 +231,17 @@ public class GameWindow extends JPanel implements ActionListener {
 				4,
 				new Runnable() { @Override public void run() { scoreUpdate(); } },
 				new Runnable() { @Override public void run() { gameOver(); } },
-				new Runnable() { @Override public void run() { updateLives(); } });
+				new Runnable() { @Override public void run() { updateLives(); } },
+				new Runnable() { @Override public void run() { levelComplete(); } });
 			// DEBUG: Will eventually be based on difficulty
 			lifeDigit = 4;
+			
+			currentWorld.setAllRedKeysCollectedCallback(
+				new Runnable() { 
+					@Override public void run() { 
+						redKeysCollected(); 
+					} 
+				});
 			
 			return true;
 		} else {
@@ -197,10 +254,15 @@ public class GameWindow extends JPanel implements ActionListener {
 	// score redraw.
 	private void scoreUpdate() {
 		int rawScore = bonzo.getScore();
-		
+		createDigits(digits, SCORE_NUM_DIGITS, rawScore);
+	}
+	
+	// Given a raw value that is the right size to fit each digit into an index of the
+	// array, transforms it into an array of 0-9 integers for drawing algorithms.
+	private static void createDigits(int[] digitArray, int numOfDigits, int rawValue) {
 		// modulations are computed from biggest to smallest singificant digit.
 		// We must store them in the opposite direction to properly handle digits.
-		for (int i = SCORE_NUM_DIGITS - 1, modular = GameConstants.TEN_POWERS[i + 1], digitIndex = 0;
+		for (int i = numOfDigits - 1, modular = GameConstants.TEN_POWERS[i + 1], digitIndex = 0;
 			 i >= 0;
 			 --i, ++digitIndex) {
 			// Note: We need to compute the divisor to normalise to a number between 0-9, which
@@ -211,7 +273,7 @@ public class GameWindow extends JPanel implements ActionListener {
 			// is not divided again.
 			// if (divisor == 0)  divisor = 1;
 			
-			digits[digitIndex] = (rawScore % modular) / divisor;
+			digitArray[digitIndex] = (rawValue % modular) / divisor;
 			// readies the next digit extraction for next loop.
 			modular = divisor;
 		}
@@ -219,6 +281,7 @@ public class GameWindow extends JPanel implements ActionListener {
 	
 	// Called during a game over.
 	private void gameOver() {
+		bonusTimer.stop();
 		// TODO soft fade out and return to main menu. Right now we just return to
 		// choosing a world.
 		// for now, we just give bonzo more lives
@@ -238,6 +301,18 @@ public class GameWindow extends JPanel implements ActionListener {
 		assert lives != -1;
 		
 		lifeDigit = lives;
+	}
+	
+	// Called when bonzo has collected all the red keys.
+	private void redKeysCollected() {
+		// Start the countdown timer
+		bonusTimer.start();
+	}
+	
+	// Called when bonzo collides with the exit door.
+	private void levelComplete() {
+		bonusTimer.stop();
+		System.out.println("If this was the final game you would have just finished the level. Congratulations!");
 	}
 			
 	private final class GameplayPanel extends JPanel {
@@ -288,6 +363,20 @@ public class GameWindow extends JPanel implements ActionListener {
 							  null);
 			}
 			
+			/* -------------------- Bonus Countdown ---------------------- */
+			for (int i = 0; i < BONUS_NUM_DIGITS; i++) {
+				int drawToX = BONUS_DRAW_X + (SCORE_WIDTH * i);
+				// draw to Y is always the same
+				int drawFromX = SCORE_WIDTH * countdownDigits[i];
+				// draw from Y is always the same, 0
+				g2d.drawImage(rsrc.getBonusNumbersSheet(),
+							  drawToX, SCORE_DRAW_Y,
+							  drawToX + SCORE_WIDTH, SCORE_DRAW_Y2,
+							  drawFromX, 0,
+							  drawFromX + SCORE_WIDTH, SCORE_HEIGHT,
+							  null);
+			}
+			
 			/* ------------------------- Lives --------------------------- */
 			{
 				if (lifeDigit >= 0) {
@@ -305,27 +394,4 @@ public class GameWindow extends JPanel implements ActionListener {
 		}
 	}
 
-
-	/**
-	 * Polls the keyboard for valid operations the player may make on Bonzo. During gameplay, 
-	 * the only allowed operations are moving left/right or jumping. 
-	 * This is the method called every tick to run the game logic. This is effectively the
-	 * 'entry point' to the main game loop.
-	 */
-	public void actionPerformed(ActionEvent e) {
-		// Poll Keyboard
-		keys.poll();
-		if (keys.keyDown(KeyEvent.VK_LEFT) ) {
-			bonzo.move(-1);
-			//System.out.println("left");
-		}
-		if (keys.keyDown(KeyEvent.VK_RIGHT) ) {
-			bonzo.move(1);
-		}
-		if (keys.keyDown(KeyEvent.VK_UP) ) {
-			bonzo.jump(4);
-		}
-		
-		repaint();
-	}
 }

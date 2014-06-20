@@ -412,7 +412,7 @@ public class Sprite {
 		},
 		EXIT_DOOR("Exit") {
 			@Override public void onBonzoCollision(Bonzo bonzo, World world) {
-				// TODO no exit code yet
+				bonzo.hitExitDoor();
 			}
 		},
 		BONUS_DOOR("Bonus") {

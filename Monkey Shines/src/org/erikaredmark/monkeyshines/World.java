@@ -101,10 +101,18 @@ public class World {
 	// this and saves information to .world file.
 	private int returnScreen;
 	
+	// When a world is first created, it has an associated bonus countdown of 10000. Once all red keys are collected,
+	// the main game session will start to decrement this every second or so.
+	private int bonusCountdown;
+	
 	// Lists of all bonus and exit doors so that setting them visible when all keys are collected doesn't
 	// require iterating over every sprite in the world.
 	private final List<Sprite> bonusDoors = new ArrayList<>(4); // initial size 4. 2 bonus doors, possibly double doored sprites for some worlds.
 	private final List<Sprite> exitDoors = new ArrayList<>(4); // Just in case multiple exits, or exit made up of multiple sprites.
+	
+	// Intended for callback to UI when certain victory or defeat conditions are met
+	// not set in constructor; will not be run if never set.
+	private Runnable allRedKeysCollectedCallback;
 	
 	private final WorldResource rsrc;
 	
@@ -198,6 +206,7 @@ public class World {
 		
 		/* Constant data		*/
 		this.currentScreen = 1000;
+		this.bonusCountdown = 10000;
 		this.rsrc = rsrc;
 		
 		/* Data that can be computed */
@@ -339,6 +348,10 @@ public class World {
 		for (Sprite s : exitDoors) {
 			s.setVisible(true);
 		}
+		
+		if (allRedKeysCollectedCallback != null) {
+			allRedKeysCollectedCallback.run();
+		}
 	}
 	
 	public void allBlueKeysTaken() {
@@ -346,6 +359,49 @@ public class World {
 		for (Sprite s : bonusDoors) {
 			s.setVisible(true);
 		}
+	}
+	
+	/**
+	 * 
+	 * Sets the callback function to be called when all the red keys have been collected. This object has
+	 * its own game logic handling for all red keys (making exit visible) but it is up to UI to start the 
+	 * bonus countdown timer.
+	 * 
+	 * @param runnable
+	 * 		the runnable that will run as soon as all the red keys are collected.
+	 * 
+	 */
+	void setAllRedKeysCollectedCallback(final Runnable runnable) {
+		this.allRedKeysCollectedCallback = runnable;
+	}
+	
+	/**
+	 * 
+	 * Decrements the bonus for this world by 10. When the bonus hits zero, this
+	 * returns false to indicate no more countdowns can be down. Returns true otherwise.
+	 * <p/>
+	 * Has the sideffect of playing the bonus countdown sound effect.
+	 * 
+	 * @return
+	 * 		{@code true} if the bonus can be decremented again, {@code false} if otherwise
+	 * 
+	 */
+	public boolean bonusCountdown() {
+		assert bonusCountdown > 9 : "Cannot decrement bonus anymore; timer should have stopped";
+		bonusCountdown -= 10;
+		rsrc.getSoundManager().playOnce(GameSoundEffect.TICK);
+		return bonusCountdown > 0;
+	}
+	
+	/**
+	 * 
+	 * @return
+	 * 		the current bonus for the world. This is the bonus shown in red numbers that counts down
+	 * 		once all red keys are found.
+	 * 
+	 */
+	public int getCurrentBonus() {
+		return bonusCountdown;
 	}
 	
 	/**
