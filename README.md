@@ -29,13 +29,14 @@ The basic game engine mechanics are coming together, but there is still quite a 
 - [x] Health
 - [x] Health Draining Sprites
 - [x] Lives
-- [ ] Red keys and Exit Door
+- [x] Red keys and Exit Door (requires main menu to fully work)
 - [x] Blue keys and Bonus Door
-- [ ] Patterned backgrounds (Currently have full-screen backgrounds as stand-ins)
+- [x] Score
 - [ ] Shield Powerup
 - [ ] Wing Powerup
-- [x] Score
 - [ ] Multipliers
+- [ ] Patterned backgrounds (Currently have full-screen backgrounds as stand-ins)
+- [ ] Solid Colour backgrounds
 - [ ] Main menu (A large task that I will break into smaller ones when the rest of the engine/level editor is complete)
 
 ##Level Editor
@@ -46,7 +47,7 @@ The save file format for the level editor has been rewritten. Worlds created wit
 - [x] Creating a new screen
 - [x] Adding Sprites
 - [x] Deleting Sprites
-- [ ] Editing Sprites (Currently a bit clunky)
+- [ ] Editing Sprites (When selecting engine needs to stop to make clicking easier)
 - [x] Adding goodies
 - [x] Placing Bonzo starting position
 - [x] Slowdown animations of sprites
