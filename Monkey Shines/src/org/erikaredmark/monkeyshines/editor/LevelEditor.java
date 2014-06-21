@@ -492,6 +492,7 @@ public class LevelEditor extends JFrame {
 		screenMenu.setEnabled(enable);
 		hazardMenu.setEnabled(enable);
 		specialMenu.setEnabled(enable);
+		spritesMenu.setEnabled(enable);
 //		placeThrus.setEnabled(enable);
 //		placeScenes.setEnabled(enable);
 //		placeSprites.setEnabled(enable);

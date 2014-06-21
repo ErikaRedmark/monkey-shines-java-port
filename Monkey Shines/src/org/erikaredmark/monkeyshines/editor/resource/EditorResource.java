@@ -8,6 +8,7 @@ import javax.imageio.ImageIO;
 
 import org.erikaredmark.monkeyshines.LevelScreen;
 import org.erikaredmark.monkeyshines.World;
+import org.erikaredmark.monkeyshines.background.FullBackground;
 
 /**
  * 
@@ -108,6 +109,29 @@ public final class EditorResource {
 		}
 		
 		tempLevelGraphics.dispose();
+		
+		return thumbnail;
+	}
+	
+	/**
+	 * 
+	 * Generates a 160x100 thumbail of the given background only.
+	 * 
+	 * @param b
+	 * 
+	 * @return
+	 * 		160x100 thumbnail
+	 */
+	public static BufferedImage generateThumbnailForBackground(FullBackground b) {
+		BufferedImage thumbnail = new BufferedImage(160, 100, BufferedImage.TYPE_INT_ARGB);
+		BufferedImage rawImage = b.getRawImage();
+		
+		for (int i = 0; i < 160; i++) {
+			for (int j = 0; j < 100; j++) {
+				int srcPixel = rawImage.getRGB(i * 4, j * 4);
+				thumbnail.setRGB(i, j, srcPixel);
+			}
+		}
 		
 		return thumbnail;
 	}

@@ -142,4 +142,15 @@ public class FullBackground extends Background {
 		return isPattern;
 	}
 	
+	/**
+	 * 
+	 * Returns the raw background as an image. Intended only for certain editor operations.
+	 * 
+	 * @return
+	 * 
+	 */
+	public BufferedImage getRawImage() {
+		return background;
+	}
+	
 }

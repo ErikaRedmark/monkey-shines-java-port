@@ -43,6 +43,10 @@ public class LevelScreenEditor {
 		this.screen.eraseTile(i, j);
 	}
 	
+	public Background getBackground() {
+		return this.screen.getBackground();
+	}
+	
 	/**
 	 * Forwards call to {@code setBackground}
 	 */
@@ -130,6 +134,5 @@ public class LevelScreenEditor {
 	public void removeSprite(Sprite sprite) {
 		screen.remove(sprite);
 	}
-
 
 }

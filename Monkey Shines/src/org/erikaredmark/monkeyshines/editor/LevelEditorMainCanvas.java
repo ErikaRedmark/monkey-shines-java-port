@@ -455,10 +455,8 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	 * 
 	 */
 	public void actionChangeBackground() {
-		Background newBackground = SetBackgroundDialog.launch(this.currentWorldEditor.getWorldResource() );
-		if (newBackground != null) {
-			currentScreenEditor.setBackground(newBackground);
-		}
+		Background newBackground = SetBackgroundDialog.launch(this.currentWorldEditor.getWorldResource(), this.currentScreenEditor.getBackground() );
+	    currentScreenEditor.setBackground(newBackground);
 	}
 	/**
 	 * 

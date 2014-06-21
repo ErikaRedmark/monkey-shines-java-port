@@ -214,12 +214,14 @@ public final class WorldResource {
 		BufferedImage collapsingTiles = null;
 		// Max index will be used to tell the validator how far to count to in the array list to confirm 
 		// contiguous entries. (as in, if 'background4' exists, then 'background0, background1, etc' MUST exist.
+		// Initially -1. That means no elements. The max index is NOT size, so 0 still would mean at least 1, which
+		// we don't know yet.
 		List<BufferedImage> backgrounds = new ArrayList<>();
-		int maxBackgroundIndex = 0;
+		int maxBackgroundIndex = -1;
 		List<BufferedImage> patterns = new ArrayList<>();
-		int maxPatternIndex = 0;
+		int maxPatternIndex = -1;
 		List<BufferedImage> sprites		= new ArrayList<>();
-		int maxSpriteIndex = 0;
+		int maxSpriteIndex = -1;
 		BufferedImage goodieSheet	= null;
 		BufferedImage yumSheet		= null;
 		BufferedImage bannerSheet = null;
@@ -360,6 +362,9 @@ public final class WorldResource {
 		checkResourceNotNull(scoreNumbersSheet, "scoreNumbers.png");
 		checkResourceNotNull(bonusNumbersSheet, "bonusNumbers.png");
 		checkResourceNotNull(bannerSheet, "uibanner.png");
+		
+		// Backgrounds and Patterns may be empty, but sprites must contain at least 1
+		if (sprites.isEmpty() )  throw new ResourcePackException(Type.NO_DEFINITION, "There are no sprites for this world; must contain at least one");
 		
 		// Sounds may be null
 		// No null checks
