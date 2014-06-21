@@ -26,6 +26,8 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.GameSoundEffect;
+import org.erikaredmark.monkeyshines.background.Background;
+import org.erikaredmark.monkeyshines.background.FullBackground;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException.Type;
 import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
@@ -71,7 +73,8 @@ public final class WorldResource {
 	private BufferedImage editorCollapsingTiles;
 	
 	/* -------------------------- BACKGROUND -------------------------- */
-	private final BufferedImage backgrounds[];
+	private final Background backgrounds[];
+	private final Background patterns[];
 	
 	/* --------------------------- SPRITES ---------------------------- */
 	private final BufferedImage sprites[];
@@ -113,7 +116,8 @@ public final class WorldResource {
 					      final BufferedImage hazardTiles,
 					      final BufferedImage conveyerTiles,
 					      final BufferedImage collapsingTiles,
-					      final BufferedImage[] backgrounds,
+					      final Background[] backgrounds,
+					      final Background[] patterns,
 					      final BufferedImage[] sprites,
 					      final BufferedImage goodieSheet,
 					      final BufferedImage yumSheet,
@@ -129,6 +133,7 @@ public final class WorldResource {
 		this.hazardTiles = hazardTiles;
 		this.collapsingTiles = collapsingTiles;
 		this.backgrounds = backgrounds;
+		this.patterns = patterns;
 		this.sprites = sprites;
 		this.conveyerTiles = conveyerTiles;
 		this.goodieSheet = goodieSheet;
@@ -168,10 +173,15 @@ public final class WorldResource {
 	 * <li>hazards.png</li>
 	 * <li>conveyers.png</li>
 	 * <li>collapsing.png</li>
+	 * <li>bonusNumbers.png</li>
+	 * <li>scoreNumbers.png</li>
 	 * <li>background[#].png (from 0 to some value with no breaks)</li>
+	 * <li>pattern[#].png (from 0 to some value with no breaks)</li>
 	 * <li>sprite[#].png (from 0 to some value with no breaks)</li>
 	 * <li>goodies.png</li>
 	 * <li>yums.png</li>
+	 * <li>explosion.png</li>
+	 * <li>uibanner.png</li>
 	 * </ol>
 	 * TODO add sounds and music when names are finalised
 	 * If there is any issue with the pack (missing resource, background2.png with no background1.png, for examples) this
@@ -206,6 +216,8 @@ public final class WorldResource {
 		// contiguous entries. (as in, if 'background4' exists, then 'background0, background1, etc' MUST exist.
 		List<BufferedImage> backgrounds = new ArrayList<>();
 		int maxBackgroundIndex = 0;
+		List<BufferedImage> patterns = new ArrayList<>();
+		int maxPatternIndex = 0;
 		List<BufferedImage> sprites		= new ArrayList<>();
 		int maxSpriteIndex = 0;
 		BufferedImage goodieSheet	= null;
@@ -305,6 +317,14 @@ public final class WorldResource {
 					// Due to the nature of graphics amounts being unknown,
 					// but types of sounds being finite, any name of any file
 					// not matching any other pattern IS a sound.
+					} else if (entryName.matches("^pattern[0-9]+\\.png$") ) {
+						int index = indexFromName(entryName);
+						if (patterns.size() > index) {
+							if (patterns.get(index) != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
+						}
+						if (index > maxPatternIndex) maxPatternIndex = index;
+						BufferedImage tempPattern = ImageIO.read(zipFile.getInputStream(entry) );
+						patterns.add(index, tempPattern);
 					} else {
 						GameSoundEffect sound = GameSoundEffect.filenameToEnum(entryName);
 						if (sound == null) {
@@ -335,6 +355,7 @@ public final class WorldResource {
 		checkResourceNotNull(collapsingTiles, "collapsing.png");
 		checkResourceContiguous(backgrounds, maxBackgroundIndex, "background");
 		checkResourceContiguous(sprites, maxSpriteIndex, "sprite");
+		checkResourceContiguous(patterns, maxPatternIndex, "pattern");
 		checkResourceNotNull(explosionSheet, "explosion.png");
 		checkResourceNotNull(scoreNumbersSheet, "scoreNumbers.png");
 		checkResourceNotNull(bonusNumbersSheet, "bonusNumbers.png");
@@ -343,6 +364,18 @@ public final class WorldResource {
 		// Sounds may be null
 		// No null checks
 		
+		// We must convert backgrounds and patterns into proper background objects
+		Background[] fullBackgrounds = new Background[backgrounds.size()];
+		Background[] patternBackgrounds = new Background[patterns.size()];
+		
+		for (int i = 0; i < backgrounds.size() ; i++) {
+			fullBackgrounds[i] = FullBackground.of(backgrounds.get(i), i);
+		}
+		
+		for (int i = 0; i < patterns.size() ; i++) {
+			patternBackgrounds[i] = FullBackground.fromPattern(patterns.get(i), i);
+		}
+		
 		WorldResource worldRsrc =
 			new WorldResource(solidTiles, 
 							  thruTiles, 
@@ -350,7 +383,8 @@ public final class WorldResource {
 							  hazardTiles,
 							  conveyerTiles,
 							  collapsingTiles,
-							  backgrounds.toArray(new BufferedImage[backgrounds.size()]), 
+							  fullBackgrounds,
+							  patternBackgrounds,
 							  sprites.toArray(new BufferedImage[sprites.size()]),
 							  goodieSheet, 
 							  yumSheet,
@@ -547,13 +581,45 @@ public final class WorldResource {
 	 * @return
 	 * 		a background for the screen to use
 	 * 
-	 * @throws
-	 * 		ArrayIndexOutOfBoundsException
-	 * 			if the given id is more than the number of backgrounds this resource contains
+	 * @throws ArrayIndexOutOfBoundsException
+	 * 		if the given id is more than the number of backgrounds this resource contains
 	 * 
 	 */
-	public BufferedImage getBackground(int id) {
+	public Background getBackground(int id) {
 		return backgrounds[id];
+	}
+	
+	/**
+	 * 
+	 * Returns the number of non-repeating backgrounds in this world
+	 * 
+	 * @return
+	 * 
+	 */
+	public int getBackgroundCount() {
+		return backgrounds.length;
+	}
+	
+	/**
+	 * 
+	 * Returns the background pattern given by the current id
+	 * 
+	 * @param id
+	 * 		id of pattern
+	 * 
+	 * @return
+	 * 		a background created from tiling the pattern across 640x400 pixels of space
+	 * 
+	 * @throws ArrayIndexOutOfBoundsException
+	 * 		if the given id is more than the number of patterns this resource contains
+	 * 
+	 */
+	public Background getPattern(int id) {
+		return patterns[id];
+	}
+	
+	public int getPatternCount() {
+		return patterns.length;
 	}
 
 	/**

@@ -26,8 +26,10 @@ import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.KeyboardInput;
 import org.erikaredmark.monkeyshines.Point2D;
 import org.erikaredmark.monkeyshines.Sprite;
+import org.erikaredmark.monkeyshines.background.Background;
 import org.erikaredmark.monkeyshines.editor.dialog.EditHazardsDialog;
 import org.erikaredmark.monkeyshines.editor.dialog.EditHazardsModel;
+import org.erikaredmark.monkeyshines.editor.dialog.SetBackgroundDialog;
 import org.erikaredmark.monkeyshines.editor.dialog.SpriteChooserDialog;
 import org.erikaredmark.monkeyshines.editor.dialog.SpritePropertiesDialog;
 import org.erikaredmark.monkeyshines.editor.dialog.SpritePropertiesModel;
@@ -444,6 +446,19 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		if (this.currentState == EditorState.NO_WORLD_LOADED)  return;
 		
 		changeState(EditorState.SELECTING_HAZARDS);
+	}
+	
+	/**
+	 * 
+	 * Loads up a background picker for the world. Whatever the user's selection is, the background will be set
+	 * to that.
+	 * 
+	 */
+	public void actionChangeBackground() {
+		Background newBackground = SetBackgroundDialog.launch(this.currentWorldEditor.getWorldResource() );
+		if (newBackground != null) {
+			currentScreenEditor.setBackground(newBackground);
+		}
 	}
 	/**
 	 * 
@@ -914,6 +929,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	public LevelScreenEditor getVisibleScreenEditor() {
 		return this.currentScreenEditor;
 	}
+
 
 	
 

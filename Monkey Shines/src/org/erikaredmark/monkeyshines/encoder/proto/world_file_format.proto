@@ -83,6 +83,9 @@ message World {
   	repeated Tile tiles = 5;
   }
   
+  
+  // Note: the id of the background is used for Patterns and Full backgrounds as that; an id. But
+  // for Solid Color, it is a 32 bit ARGB color code.
   message Background {
   	optional uint32 id = 1;
   	optional BackgroundType type = 2; 

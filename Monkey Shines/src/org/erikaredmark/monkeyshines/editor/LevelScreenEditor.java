@@ -9,6 +9,7 @@ import org.erikaredmark.monkeyshines.ImmutableRectangle;
 import org.erikaredmark.monkeyshines.LevelScreen;
 import org.erikaredmark.monkeyshines.Sprite;
 import org.erikaredmark.monkeyshines.Sprite.SpriteType;
+import org.erikaredmark.monkeyshines.background.Background;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.tiles.TileType;
 
@@ -29,17 +30,24 @@ public class LevelScreenEditor {
 	}
 	
 	/**
-	 *  Forwards call to the wrapped {@link LevelScreen}, and stores the change.
+	 *  Forwards call to the wrapped {@link LevelScreen}
 	 */
 	public void setTile(int tileX, int tileY, TileType tileType, int tileId) {
 		this.screen.setTile(tileX, tileY, tileType, tileId);
 	}
 	
 	/**
-	 * Forwards call to the wrapped {@link LevelScreen}, and stores the change.
+	 * Forwards call to the wrapped {@link LevelScreen}
 	 */
 	public void eraseTile(int i, int j) {
 		this.screen.eraseTile(i, j);
+	}
+	
+	/**
+	 * Forwards call to {@code setBackground}
+	 */
+	public void setBackground(Background newBackground) {
+		this.screen.setBackground(newBackground);
 	}
 
 	public int getId() { return screen.getId(); }
@@ -122,5 +130,6 @@ public class LevelScreenEditor {
 	public void removeSprite(Sprite sprite) {
 		screen.remove(sprite);
 	}
+
 
 }

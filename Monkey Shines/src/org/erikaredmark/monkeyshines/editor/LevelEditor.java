@@ -123,6 +123,8 @@ public class LevelEditor extends JFrame {
 			currentWorld.actionEraser();
 		}
 	});
+	
+	private JMenu spritesMenu = new JMenu("Sprites");
 	/* ------------------------- MENU ITEM PLACE SPRITES -------------------------- */
 	private JMenuItem placeSprites =  new JMenuItem(new AbstractAction("Place Sprites") { 
 		private static final long serialVersionUID = 1L;
@@ -175,6 +177,13 @@ public class LevelEditor extends JFrame {
 		private static final long serialVersionUID = 1L;
 		@Override public void actionPerformed(ActionEvent e) {
 			actionGoToScreen();
+		}
+	});
+	
+	private JMenuItem changeBackground = new JMenuItem(new AbstractAction("Change Background...") {
+		private static final long serialVersionUID = 1L;
+		@Override public void actionPerformed(ActionEvent e) {
+			currentWorld.actionChangeBackground();
 		}
 	});
 	
@@ -514,13 +523,14 @@ public class LevelEditor extends JFrame {
 		placeTiles.add(placeConveyers);
 		placeTiles.add(placeCollapsibles);
 		placeTiles.add(eraser);
-		placeTiles.addSeparator();
-		placeTiles.add(placeGoodies);
-		placeTiles.add(placeSprites);
-		placeTiles.add(editSprites);
-		placeTiles.add(deleteSprites);
 		
 		mainMenuBar.add(placeTiles);
+		
+		spritesMenu.add(placeGoodies);
+		spritesMenu.add(placeSprites);
+		spritesMenu.add(editSprites);
+		spritesMenu.add(deleteSprites);
+		mainMenuBar.add(spritesMenu);
 		
 		hazardMenu.add(placeHazard);
 		hazardMenu.add(editHazards);
@@ -528,6 +538,7 @@ public class LevelEditor extends JFrame {
 		mainMenuBar.add(hazardMenu);
 		
 		screenMenu.add(gotoScreen);
+		screenMenu.add(changeBackground);
 		
 		mainMenuBar.add(screenMenu);
 		

@@ -1,5 +1,6 @@
 package org.erikaredmark.monkeyshines.encoder;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -25,11 +26,15 @@ import org.erikaredmark.monkeyshines.Tile;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.Conveyer.Rotation;
 import org.erikaredmark.monkeyshines.Sprite.SpriteType;
+import org.erikaredmark.monkeyshines.background.Background;
+import org.erikaredmark.monkeyshines.background.FullBackground;
+import org.erikaredmark.monkeyshines.background.SingleColorBackground;
 import org.erikaredmark.monkeyshines.bounds.Boundable;
 import org.erikaredmark.monkeyshines.bounds.IPoint2D;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 import org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos;
+import org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.BackgroundType;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.tiles.CollapsibleTile;
 import org.erikaredmark.monkeyshines.tiles.CommonTile;
@@ -279,12 +284,7 @@ public final class EncodedWorld {
 		WorldFormatProtos.World.LevelScreen.Builder protoLevel = WorldFormatProtos.World.LevelScreen.newBuilder();
 		protoLevel.setId(level.getId() );
 		protoLevel.setBonzoLocation(pointToProto(level.getBonzoStartingLocation() ) );
-		// TODO no concept of background in level, just an id of a FULL background. Hence, no
-		// current conversion method.
-		WorldFormatProtos.World.Background.Builder background = WorldFormatProtos.World.Background.newBuilder();
-		background.setType(WorldFormatProtos.World.BackgroundType.FULL);
-		background.setId(level.getBackgroundId() );
-		protoLevel.setBackground(background.build() );
+		protoLevel.setBackground(backgroundToProto(level.getBackground() ) );
 		
 		protoLevel.addAllSprites(spritesToProto(level.getSpritesOnScreen() ) );
 		protoLevel.addAllTiles(tilesToProto(level.internalGetTiles() ) );
@@ -302,12 +302,55 @@ public final class EncodedWorld {
 	
 	static LevelScreen protoToLevel(WorldFormatProtos.World.LevelScreen protoLevel, WorldResource rsrc, List<Hazard> hazards, List<Conveyer> conveyers) {
 		return new LevelScreen(protoLevel.getId(), 
-							   // TODO background not fully implemented in engine.
-							   protoLevel.getBackground().getId(), 
+							   protoToBackground(protoLevel.getBackground(), rsrc), 
 							   protoToTiles(protoLevel.getTilesList(), rsrc, hazards, conveyers), 
 							   protoToPoint(protoLevel.getBonzoLocation() ), 
 							   protoToSprites(protoLevel.getSpritesList(), rsrc ),
 							   rsrc);
+	}
+	
+	/* ---------------------------- Backgrounds ------------------------------ */
+	static WorldFormatProtos.World.Background backgroundToProto(Background b) {
+		WorldFormatProtos.World.Background.Builder protoBackground = WorldFormatProtos.World.Background.newBuilder();
+		if (b instanceof FullBackground) {
+			FullBackground full = (FullBackground)b;
+			protoBackground.setId(full.getId() );
+			BackgroundType backgroundType =   full.isPattern()
+											? BackgroundType.PATTERN
+											: BackgroundType.FULL;
+			protoBackground.setType(backgroundType);
+		} else {
+			// Solid color
+			Color color = ((SingleColorBackground)b).getColor();
+			// Store as ARGB. Just in case the colour model ISN'T ARGB, we manually create
+			// the integer. Alpha will be lost anyway, for now, but store it in case we ever decide not
+			// to lose it during decoding.
+			int argb = (color.getAlpha() << 24) | (color.getRed() << 16) | (color.getGreen() << 8) | (color.getBlue() );
+			protoBackground.setId(argb);
+			protoBackground.setType(BackgroundType.SOLID_COLOR);
+		}
+		
+		return protoBackground.build();
+	}
+	
+	static Background protoToBackground(WorldFormatProtos.World.Background protoBackground, WorldResource rsrc) {
+		int id = protoBackground.getId();
+		switch (protoBackground.getType() ) {
+		case FULL:
+			if (id >= rsrc.getBackgroundCount() )  throw new RuntimeException("Requested full background id " + id + " does not exist in resource pack");
+			return rsrc.getBackground(id);
+		case PATTERN:
+			if (id >= rsrc.getPatternCount() )  throw new RuntimeException("Requested pattern id " + id + " does not exist in resource pack");
+			return rsrc.getPattern(id);
+		case SOLID_COLOR:
+			// Id is an ARGB encoded Color object.
+			
+			// Alpha is lost in this constructor. However, backgrounds should not
+			// HAVE an alpha to begin with. For now, just be content with losing it.
+			Color color = new Color(id);
+			return new SingleColorBackground(color);
+		default:  throw new RuntimeException("Decoder cannot handle background type " + protoBackground.getType() );
+		}
 	}
 	
 	/* ------------------------------ Sprites -------------------------------- */

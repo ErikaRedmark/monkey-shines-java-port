@@ -1,9 +1,12 @@
 package org.erikaredmark.monkeyshines;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.erikaredmark.monkeyshines.background.Background;
+import org.erikaredmark.monkeyshines.background.SingleColorBackground;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.tiles.CommonTile;
 import org.erikaredmark.monkeyshines.tiles.TileType;
@@ -28,7 +31,7 @@ public final class LevelScreen {
 	
 	// Initialisation datas for a level screen
 	private final int screenId;
-	private final int backgroundId;
+	private       Background background;
 	private final Tile screenTiles[][]; // 20 rows, 32 cols
 	// Whilst this is generally final in gameplay, it is left non-final here so it may be modified by the level editor.
 	private       ImmutablePoint2D bonzoStart;
@@ -45,7 +48,9 @@ public final class LevelScreen {
 
 	/**
 	 * 
-	 * Creates an empty level screen initialised to no tiles or sprites with a background id of 0.
+	 * Creates an empty level screen initialised to no tiles or sprites with a default background. The default
+	 * background is either the first full background in the resource, the first pattern in the resource, or
+	 * failing that, a solid colour of black.
 	 * 
 	 * @param screenId
 	 * 		the id of the screen, which must match with the id of the key that maps to this screen value in the world
@@ -59,8 +64,14 @@ public final class LevelScreen {
 	 * 
 	 */
 	public static final LevelScreen newScreen(int screenId, WorldResource rsrc) {
+		Background defaultBackground =   rsrc.getBackgroundCount() > 0
+									   ? rsrc.getBackground(0)
+									   :    rsrc.getPatternCount() > 0
+									   	  ? rsrc.getPattern(0)
+									   	  : new SingleColorBackground(Color.BLACK);
+		
 		return new LevelScreen(screenId,
-					           0,
+							   defaultBackground,
 							   Tile.createBlankTileMap(),
 							   ImmutablePoint2D.of(0, 0),
 							   new ArrayList<Sprite>(),
@@ -74,14 +85,14 @@ public final class LevelScreen {
 	 * 
 	 */
 	public LevelScreen(final int screenId, 
-			 		   final int backgroundId,
+			 		   final Background background,
 					   final Tile[][] screenTiles, 
 					   final ImmutablePoint2D bonzoStart, 
 					   final List<Sprite> spritesOnScreen,
 					   final WorldResource rsrc) {
 		
 		this.screenId = screenId;
-		this.backgroundId = backgroundId;
+		this.background = background;
 		this.screenTiles = screenTiles;
 		this.bonzoStart = bonzoStart;
 		this.spritesOnScreen = spritesOnScreen;
@@ -91,8 +102,26 @@ public final class LevelScreen {
 	/** Returns the screen id of this screen																			*/
 	public int getId() { return this.screenId; }
 	
-	/** Returns the background id. This indicates which background to display for the screen.							*/
-	public int getBackgroundId() { return backgroundId; }
+	/**
+	 * Returns the background for this screen
+	 * @return
+	 */
+	public Background getBackground() { 
+		return this.background; 
+	}
+	
+	/**
+	 * 
+	 * Only intended to be called from level editor: sets the background for the current screen.
+	 * 
+	 * @param newBackground
+	 * 		new background for this screen
+	 * 
+	 */
+	public void setBackground(Background newBackground) {
+		this.background = newBackground;
+	}
+
 	
 	/**
 	 * 
@@ -398,7 +427,7 @@ public final class LevelScreen {
 	 * 
 	 */
 	public void paintAndUpdate(Graphics2D g2d) {
-		g2d.drawImage(rsrc.getBackground(this.backgroundId), 0, 0, null);
+		background.draw(g2d);
 		for (int i = 0; i < GameConstants.TILES_IN_COL; i++) { // for every tile in the row
 			for (int j = 0; j < GameConstants.TILES_IN_ROW; j++) {
 				if (screenTiles[i][j] != null) {
@@ -421,7 +450,7 @@ public final class LevelScreen {
 	 * 
 	 */
 	public void paintForThumbnail(Graphics2D g2d) {
-		g2d.drawImage(rsrc.getBackground(this.backgroundId), 0, 0, null);
+		background.draw(g2d);
 		for (int i = 0; i < GameConstants.TILES_IN_COL; i++) { // for every tile in the row
 			for (int j = 0; j < GameConstants.TILES_IN_ROW; j++) {
 				if (screenTiles[i][j] != null) {
