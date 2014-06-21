@@ -631,6 +631,8 @@ public final class Bonzo {
 		currentVelocity.setY(0);
 		currentSprite = 0;
 		timeInAir = 0;
+		currentPowerup = null;
+		powerupState.clear();
 		setDying(true, animation);
 		soundManager.playOnce(animation.soundEffect() );
 	}
