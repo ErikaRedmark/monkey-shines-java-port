@@ -58,6 +58,9 @@ public enum GameSoundEffect {
 	BOMB_DEATH {
 		@Override public String filename() { return "bonzoBombDeath.ogg"; }
 	},
+	EXPLOSION {
+		@Override public String filename() { return "explosion.ogg"; }
+	},
 	ENERGY_RESTORE {
 		@Override public String filename() { return "energyRestore.ogg"; }
 	},

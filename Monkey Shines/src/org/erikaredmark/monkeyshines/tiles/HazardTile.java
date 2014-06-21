@@ -204,6 +204,9 @@ public class HazardTile implements TileType {
 	 * 
 	 * Called when bonzo hits the hazard. This does not kill or affect bonzo; it affects the state of the hazard (exploding
 	 * hazards must now begin explodin). Does nothing if the hazard is dead.
+	 * <p/>
+	 * This does not play sounds. Calling code must decide whether to play the 'bonzos dies by explosion' vs 'explosion' depending
+	 * on if he had a shield.
 	 * 
 	 */
 	public void hazardHit() {

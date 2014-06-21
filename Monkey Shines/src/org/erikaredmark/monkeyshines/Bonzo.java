@@ -608,13 +608,21 @@ public final class Bonzo {
 	 * <p/>
 	 * this should not be used with the wing powerup, as falling from a high height and losing
 	 * health should always kill bonzo. Wing powerup needs to simply prevent fall damage.
+	 * <p/>
+	 * If bonzo would otherwise explode, this also plays the explosion sound but still does not
+	 * kill him
 	 * 
 	 * @param
 	 * 		if bonzo does die, use this death animation
 	 * 
 	 */
 	public void tryKill(DeathAnimation animation) {
-		if (currentPowerup == null || !(currentPowerup.isShield() ) )  kill(animation);
+		if (currentPowerup == null || !(currentPowerup.isShield() ) ) {
+			kill(animation);
+		} else {
+			// He has a shield. Play explosion sound only.
+			soundManager.playOnce(GameSoundEffect.EXPLOSION);
+		}
 	}
 	
 	/**
