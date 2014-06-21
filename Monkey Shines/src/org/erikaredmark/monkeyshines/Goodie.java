@@ -118,7 +118,12 @@ public class Goodie {
 		
 		taken = true;
 		rsrc.getSoundManager().playOnce(goodieType.soundEffect);
-		bonzo.incrementScore(goodieType.score);
+		// If bonzo under the effects if a powerup? Multiply the score
+		int extraScore =   bonzo.getCurrentPowerup() == null
+						 ? goodieType.score
+						 : bonzo.getCurrentPowerup().multiplier() * goodieType.score;
+		
+		bonzo.incrementScore(extraScore);
 		goodieType.affectBonzo(this, bonzo, world);
 		
 		// Finally, if this is a powerup, grant bonzo the powerup.
