@@ -32,9 +32,9 @@ The basic game engine mechanics are coming together, but there is still quite a 
 - [x] Red keys and Exit Door (requires main menu to fully work)
 - [x] Blue keys and Bonus Door
 - [x] Score
-- [ ] Shield Powerup
-- [ ] Wing Powerup
-- [ ] Multipliers
+- [x] Shield Powerup
+- [x] Wing Powerup
+- [x] Multipliers
 - [ ] Patterned backgrounds (Currently have full-screen backgrounds as stand-ins)
 - [ ] Solid Colour backgrounds
 - [ ] Main menu (A large task that I will break into smaller ones when the rest of the engine/level editor is complete)
