@@ -7,9 +7,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -85,7 +82,7 @@ public class SetBackgroundDialog extends JDialog {
 		differentBackgroundsPane.addTab("Full", fullBackgroundPanel);
 		differentBackgroundsPane.addTab("Pattern", patternPanel);
 		differentBackgroundsPane.addTab("Solid", singleColorPane);
-		differentBackgroundsPane.setPreferredSize(new Dimension(560, 200) );
+		differentBackgroundsPane.setPreferredSize(new Dimension(700, 420) );
 		
 
 		
@@ -130,16 +127,16 @@ public class SetBackgroundDialog extends JDialog {
 		
 		/* --------------- Layout Components -------------- */
 		add(differentBackgroundsPane);
-		springLayout.putConstraint(SpringLayout.WEST, backgroundViewer, 10, SpringLayout.EAST, differentBackgroundsPane);
-		springLayout.putConstraint(SpringLayout.VERTICAL_CENTER, backgroundViewer, 0, SpringLayout.VERTICAL_CENTER, differentBackgroundsPane);
+		springLayout.putConstraint(SpringLayout.WEST, backgroundViewer, 0, SpringLayout.EAST, this);
+		springLayout.putConstraint(SpringLayout.NORTH, backgroundViewer, 0, SpringLayout.SOUTH, differentBackgroundsPane);
 		add(backgroundViewer, BorderLayout.EAST);
-		springLayout.putConstraint(SpringLayout.NORTH, okay, 10, SpringLayout.SOUTH, differentBackgroundsPane);
+		springLayout.putConstraint(SpringLayout.NORTH, okay, 2, SpringLayout.SOUTH, backgroundViewer);
 		add(okay, BorderLayout.SOUTH);
 		springLayout.putConstraint(SpringLayout.WEST, cancel, 4, SpringLayout.EAST, okay);
 		springLayout.putConstraint(SpringLayout.NORTH, cancel, 0, SpringLayout.NORTH, okay);
 		add(cancel, BorderLayout.SOUTH);
 		
-		setSize(800, 400);
+		setSize(710, 600);
 	}
 	
 	/**
@@ -171,15 +168,11 @@ public class SetBackgroundDialog extends JDialog {
 					setSelectedBackground(next);
 				}
 			});
-			// Set the location in the grid based on iteration
-//			GridBagConstraints gbc = new GridBagConstraints();
-//			gbc.gridx = i % 3;
-//			gbc.gridy = i / 3;
 			panel.add(button);
 		}
 		
 		// Height will be dynamically calculated
-		panel.setSize(560, 1);
+		panel.setSize(700, 1);
 
 	}
 	
@@ -212,6 +205,7 @@ public class SetBackgroundDialog extends JDialog {
 	 */
 	public static Background launch(WorldResource rsrc, Background currentBackground) {
 		SetBackgroundDialog dialog = new SetBackgroundDialog(rsrc, currentBackground);
+		dialog.setModal(true);
 		dialog.setVisible(true);
 		
 		return dialog.selectedBackground;
