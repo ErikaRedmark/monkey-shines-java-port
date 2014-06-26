@@ -130,9 +130,30 @@ public class LevelScreenEditor {
 		
 	}
 
-	
 	public void removeSprite(Sprite sprite) {
 		screen.remove(sprite);
 	}
+	
+	/**
+	 * 
+	 * Forwards to an internal, special method in World that stops sprites from moving. They no longer
+	 * update or animate. This is intended ONLY for the level editor. Has no effect if sprites are already
+	 * not animating.
+	 * The editor is in a default state of animating sprites.
+	 * 
+	 */
+	public void stopAnimatingSprites() {
+		screen.setSpriteAnimation(false);
+	}
+
+	/**
+	 * 
+	 * Starts up the sprite animation if it was already stopped. Has no effect if sprites are already animating.
+	 * 
+	 */
+	public void startAnimatingSprites() {
+		screen.setSpriteAnimation(true);
+	}
+	
 
 }

@@ -466,6 +466,17 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	 * 
 	 */
 	private void changeState(EditorState newState) {
+		// Make no state changes if the state isn't actually changing.
+		if (currentState == newState)  return;
+		
+		if (newState == EditorState.EDITING_SPRITES) {
+			// Set a condition for the game timer to stop animating sprites.
+			// Stopping the timer completely would look like a freeze, so we don't do that.
+			currentScreenEditor.stopAnimatingSprites();
+		} else {
+			// Transitioning out of editing sprites state always restores the sprite animation.
+			currentScreenEditor.startAnimatingSprites();
+		}
 		currentState = newState;
 	}
 	

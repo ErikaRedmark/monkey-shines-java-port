@@ -203,11 +203,11 @@ public class World {
 		this.conveyers = conveyers;
 		this.bonusScreen = bonusScreen;
 		this.returnScreen = returnScreen;
+		this.rsrc = rsrc;
 		
 		/* Constant data		*/
 		this.currentScreen = 1000;
 		this.bonusCountdown = 10000;
-		this.rsrc = rsrc;
 		
 		/* Data that can be computed */
 		
@@ -802,7 +802,5 @@ public class World {
 		this.hazards.clear();
 		this.hazards.addAll(newHazards);
 	}
-
-
 	
 }

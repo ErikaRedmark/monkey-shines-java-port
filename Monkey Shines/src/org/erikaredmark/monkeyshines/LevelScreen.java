@@ -41,9 +41,15 @@ public final class LevelScreen {
 	private       ImmutablePoint2D bonzoCameFrom;
 	private       ImmutablePoint2D bonzoLastOnGround;
 
+	
+	// defaults to true on constructions; intended to allow level editor to stop sprite animations for easier
+	// selection and editing.
+	private boolean animateSprites;
+	
 	// Graphics
 	// These are all pointers to what is stored in world.
 	private WorldResource rsrc;
+
 	
 
 	/**
@@ -58,6 +64,10 @@ public final class LevelScreen {
 	 * 
 	 * @param rsrc
 	 * 		a graphics resource to skin this level
+	 * 
+	 * @param world
+	 * 		a reference to the world that contains this level screen. Required for some world-level properties
+	 * 		that affect all screens
 	 * 
 	 * @return
 	 * 		a new level screen
@@ -97,6 +107,7 @@ public final class LevelScreen {
 		this.bonzoStart = bonzoStart;
 		this.spritesOnScreen = spritesOnScreen;
 		this.rsrc = rsrc;
+		this.animateSprites = true;
 	}
 	
 	/** Returns the screen id of this screen																			*/
@@ -436,9 +447,10 @@ public final class LevelScreen {
 				}
 			}
 		}
+		
 		for (Sprite s : spritesOnScreen) {
 			s.paint(g2d);
-			s.update();
+			if (animateSprites)  s.update();
 		}
 	}
 	
@@ -469,5 +481,19 @@ public final class LevelScreen {
 	 * 		2d array of tiles. Changes to the array <strong> will cause issues. Do not modify</strong>
 	 */
 	public Tile[][] internalGetTiles() { return this.screenTiles; }
+	
+	
+	/** 
+	 * 
+	 * Intended for level editor only; turns on and off sprite animations. If sprite animations are turned off,
+	 * the sprites do not animate or move around the screen in any way.
+	 * 
+	 * @param animation
+	 * 		{@code true} to start animating, {@code false} to stop animating
+	 * 
+	 */
+	public void setSpriteAnimation(boolean animation) {
+		this.animateSprites = animation;
+	}
 
 }
