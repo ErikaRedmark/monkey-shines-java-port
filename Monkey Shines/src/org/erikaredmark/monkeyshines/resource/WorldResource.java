@@ -6,10 +6,8 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -216,14 +214,16 @@ public final class WorldResource {
 		// contiguous entries. (as in, if 'background4' exists, then 'background0, background1, etc' MUST exist.
 		// Initially -1. That means no elements. The max index is NOT size, so 0 still would mean at least 1, which
 		// we don't know yet.
-		List<BufferedImage> backgrounds = new ArrayList<>();
+		// TODO we assume no more than 256 backgrounds, 256 patterns, and 256 sprites. This is simply because we might
+		// hit a later indexed item out of order and List implementations don't allow adding at specific future indexes.
+		BufferedImage[] backgrounds = new BufferedImage[256];
 		int maxBackgroundIndex = -1;
-		List<BufferedImage> patterns = new ArrayList<>();
+		BufferedImage[] patterns = new BufferedImage[256];
 		int maxPatternIndex = -1;
-		List<BufferedImage> sprites		= new ArrayList<>();
+		BufferedImage[] sprites = new BufferedImage[256];
 		int maxSpriteIndex = -1;
-		BufferedImage goodieSheet	= null;
-		BufferedImage yumSheet		= null;
+		BufferedImage goodieSheet = null;
+		BufferedImage yumSheet = null;
 		BufferedImage bannerSheet = null;
 		BufferedImage scoreNumbersSheet = null;
 		BufferedImage bonusNumbersSheet = null;
@@ -300,33 +300,33 @@ public final class WorldResource {
 						int index = indexFromName(entryName);
 						// Index out of bounds exception if we check and the array isn't big enough. If index is greater than size, then
 						// there was no previous anyway. If it isn't, make sure it is null
-						if (backgrounds.size() > index) {
-							if (backgrounds.get(index) != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
+						if (backgrounds.length > index) {
+							if (backgrounds[index] != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
 						}
 						if (index > maxBackgroundIndex) maxBackgroundIndex = index;
 						BufferedImage tempBackground = ImageIO.read(zipFile.getInputStream(entry) );
-						backgrounds.add(index, tempBackground);
+						backgrounds[index] = tempBackground;
 					/* ---------------------- Sprites ---------------------- */
 					} else if (entryName.matches("^sprite[0-9]+\\.png$") ) {
 						int index = indexFromName(entryName);
-						if (sprites.size() > index) {
-							if (sprites.get(index) != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
+						if (sprites.length > index) {
+							if (sprites[index] != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
 						}
 						if (index > maxSpriteIndex) maxSpriteIndex = index;
 						BufferedImage tempSprite = ImageIO.read(zipFile.getInputStream(entry) );
-						sprites.add(index, tempSprite);
+						sprites[index] = tempSprite;
 					/* ---------------------- Sounds ----------------------- */
 					// Due to the nature of graphics amounts being unknown,
 					// but types of sounds being finite, any name of any file
 					// not matching any other pattern IS a sound.
 					} else if (entryName.matches("^pattern[0-9]+\\.png$") ) {
 						int index = indexFromName(entryName);
-						if (patterns.size() > index) {
-							if (patterns.get(index) != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
+						if (patterns.length > index) {
+							if (patterns[index] != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
 						}
 						if (index > maxPatternIndex) maxPatternIndex = index;
 						BufferedImage tempPattern = ImageIO.read(zipFile.getInputStream(entry) );
-						patterns.add(index, tempPattern);
+						patterns[index] = tempPattern;
 					} else {
 						GameSoundEffect sound = GameSoundEffect.filenameToEnum(entryName);
 						if (sound == null) {
@@ -364,21 +364,27 @@ public final class WorldResource {
 		checkResourceNotNull(bannerSheet, "uibanner.png");
 		
 		// Backgrounds and Patterns may be empty, but sprites must contain at least 1
-		if (sprites.isEmpty() )  throw new ResourcePackException(Type.NO_DEFINITION, "There are no sprites for this world; must contain at least one");
+		if (sprites[0] == null)  throw new ResourcePackException(Type.NO_DEFINITION, "There are no sprites for this world; must contain at least one");
 		
 		// Sounds may be null
 		// No null checks
 		
 		// We must convert backgrounds and patterns into proper background objects
-		Background[] fullBackgrounds = new Background[backgrounds.size()];
-		Background[] patternBackgrounds = new Background[patterns.size()];
+		Background[] fullBackgrounds = new Background[maxBackgroundIndex + 1];
+		Background[] patternBackgrounds = new Background[maxPatternIndex + 1];
 		
-		for (int i = 0; i < backgrounds.size() ; i++) {
-			fullBackgrounds[i] = FullBackground.of(backgrounds.get(i), i);
+		for (int i = 0; i <= maxBackgroundIndex ; i++) {
+			fullBackgrounds[i] = FullBackground.of(backgrounds[i], i);
 		}
 		
-		for (int i = 0; i < patterns.size() ; i++) {
-			patternBackgrounds[i] = FullBackground.fromPattern(patterns.get(i), i);
+		for (int i = 0; i <= maxPatternIndex ; i++) {
+			patternBackgrounds[i] = FullBackground.fromPattern(patterns[i], i);
+		}
+		
+		// We need to construct an array of sprites that has identical references save for being a lot smaller
+		BufferedImage cutSprites[] = new BufferedImage[maxSpriteIndex + 1];
+		for (int i = 0; i <= maxSpriteIndex; i++) {
+			cutSprites[i] = sprites[i];
 		}
 		
 		WorldResource worldRsrc =
@@ -390,7 +396,7 @@ public final class WorldResource {
 							  collapsingTiles,
 							  fullBackgrounds,
 							  patternBackgrounds,
-							  sprites.toArray(new BufferedImage[sprites.size()]),
+							  cutSprites,
 							  goodieSheet, 
 							  yumSheet,
 							  bannerSheet,
@@ -508,11 +514,11 @@ public final class WorldResource {
 		if (img == null) throw new ResourcePackException(Type.NO_DEFINITION, name);
 	}
 	
-	/** Ensures that a list counts from 0 to max index, with no skips in between (skips mean a null entry)
+	/** Ensures that an array counts from 0 to max index, with no skips in between (skips mean a null entry)
 	 */
-	private static void checkResourceContiguous(final List<?> items, int maxIndex, String name) throws ResourcePackException {
+	private static void checkResourceContiguous(final Object[] items, int maxIndex, String name) throws ResourcePackException {
 		for (int i = 0; i <= maxIndex; i++) {
-			if (items.get(i) == null) throw new ResourcePackException(Type.NON_CONTIGUOUS, name + i + ".png");
+			if (items[i] == null) throw new ResourcePackException(Type.NON_CONTIGUOUS, name + i + ".png");
 		}
 	}
 	
