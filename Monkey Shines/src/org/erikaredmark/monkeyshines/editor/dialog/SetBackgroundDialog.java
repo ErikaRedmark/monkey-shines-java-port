@@ -205,6 +205,7 @@ public class SetBackgroundDialog extends JDialog {
 	public static Background launch(WorldResource rsrc, Background currentBackground) {
 		SetBackgroundDialog dialog = new SetBackgroundDialog(rsrc, currentBackground);
 		dialog.setModal(true);
+		dialog.setLocationRelativeTo(null);
 		dialog.setVisible(true);
 		
 		return dialog.selectedBackground;

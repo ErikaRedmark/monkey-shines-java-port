@@ -114,6 +114,9 @@ public class World {
 	// not set in constructor; will not be run if never set.
 	private Runnable allRedKeysCollectedCallback;
 	
+	// The author of the world. Defaults to "Unknown"
+	private String author;
+	
 	private final WorldResource rsrc;
 	
 	/**
@@ -208,6 +211,9 @@ public class World {
 		/* Constant data		*/
 		this.currentScreen = 1000;
 		this.bonusCountdown = 10000;
+		
+		/* Default data 		*/
+		this.author = "Unknown";
 		
 		/* Data that can be computed */
 		
@@ -305,6 +311,11 @@ public class World {
 	 * @param id
 	 */
 	public void setReturnScreen(int id) { this.returnScreen = id; }
+	
+	public String getAuthor() { return this.author; }
+	
+	public void setAuthor(final String author) { this.author = author; }
+	
 	
 	/**
 	 * 
@@ -802,5 +813,5 @@ public class World {
 		this.hazards.clear();
 		this.hazards.addAll(newHazards);
 	}
-	
+
 }

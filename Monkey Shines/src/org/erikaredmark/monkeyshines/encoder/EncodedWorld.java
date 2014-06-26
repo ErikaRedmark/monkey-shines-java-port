@@ -80,7 +80,7 @@ public final class EncodedWorld {
 	public static EncodedWorld fromMemory(final World world) {
 		WorldFormatProtos.World.Builder diskWorld = WorldFormatProtos.World.newBuilder();
 		
-		diskWorld.setAuthor("Author Unimplemented");
+		diskWorld.setAuthor(world.getAuthor() );
 		diskWorld.setName(world.getWorldName() );
 		diskWorld.setBonusScreen(world.getBonusScreen() );
 		diskWorld.setReturnScreen(world.getReturnScreen() );
@@ -610,7 +610,7 @@ public final class EncodedWorld {
 	public static EncodedWorld fresh(String name) {
 		// Set up all defaults
 		WorldFormatProtos.World.Builder newWorld = WorldFormatProtos.World.newBuilder();
-		newWorld.setAuthor("Author Unimplemented");
+		newWorld.setAuthor("Unknown");
 		newWorld.setName(name);
 		newWorld.setBonusScreen(10000);
 		// Goodies and hazards have no entries.

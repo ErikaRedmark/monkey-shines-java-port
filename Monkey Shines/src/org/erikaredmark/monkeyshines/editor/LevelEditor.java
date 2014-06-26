@@ -196,6 +196,13 @@ public class LevelEditor extends JFrame {
 			currentWorld.actionPlaceBonzo();
 		}
 	});
+	
+	private JMenuItem setAuthor = new JMenuItem(new AbstractAction("Author...") {
+		private static final long serialVersionUID = 1L;
+		@Override public void actionPerformed(ActionEvent e) {
+			currentWorld.actionSetAuthor();
+		}
+	});
 
 	// Returns false if a world is not loaded, after letting the user know
 	// a world is not loaded.
@@ -289,9 +296,6 @@ public class LevelEditor extends JFrame {
 		}
 		
 		int returnRoom = pair.getOther(bonusRoom);
-		
-		System.out.println("Bonus room set to " + bonusRoom);
-		System.out.println("Return room set to " + returnRoom);
 		
 		levelEditor.getWorldEditor().getWorld().setBonusScreen(bonusRoom);
 		levelEditor.getWorldEditor().getWorld().setReturnScreen(returnRoom);
@@ -544,6 +548,7 @@ public class LevelEditor extends JFrame {
 		mainMenuBar.add(screenMenu);
 		
 		specialMenu.add(placeBonzo);
+		specialMenu.add(setAuthor);
 		
 		mainMenuBar.add(specialMenu);
 		

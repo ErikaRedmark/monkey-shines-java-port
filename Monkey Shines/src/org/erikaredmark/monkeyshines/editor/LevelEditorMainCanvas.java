@@ -27,6 +27,7 @@ import org.erikaredmark.monkeyshines.KeyboardInput;
 import org.erikaredmark.monkeyshines.Point2D;
 import org.erikaredmark.monkeyshines.Sprite;
 import org.erikaredmark.monkeyshines.background.Background;
+import org.erikaredmark.monkeyshines.editor.dialog.AuthorshipDialog;
 import org.erikaredmark.monkeyshines.editor.dialog.EditHazardsDialog;
 import org.erikaredmark.monkeyshines.editor.dialog.EditHazardsModel;
 import org.erikaredmark.monkeyshines.editor.dialog.SetBackgroundDialog;
@@ -458,6 +459,18 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		Background newBackground = SetBackgroundDialog.launch(this.currentWorldEditor.getWorldResource(), this.currentScreenEditor.getBackground() );
 	    currentScreenEditor.setBackground(newBackground);
 	}
+	
+	/**
+	 * 
+	 * Gives the user a text field to enter the name of the author or authors of the world, or technically speaking whatever they want.
+	 * If the dialog is cancelled the author is unchanged.
+	 * 
+	 */
+	public void actionSetAuthor() {
+		final String newAuthor = AuthorshipDialog.launch(currentWorldEditor.getWorld().getAuthor() );
+		currentWorldEditor.getWorld().setAuthor(newAuthor);
+	}
+	
 	/**
 	 * 
 	 * Changes the internal state of the editor from one state to the other, making any additional updates as needed.
@@ -938,10 +951,5 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	public LevelScreenEditor getVisibleScreenEditor() {
 		return this.currentScreenEditor;
 	}
-
-
-	
-
-
 
 }
