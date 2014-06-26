@@ -1,6 +1,5 @@
 package org.erikaredmark.monkeyshines.editor.dialog;
 
-import java.awt.BorderLayout;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -52,15 +51,15 @@ public class SetBackgroundDialog extends JDialog {
 		setLayout(springLayout);
 		
 		/* --------------------- Full background Panel  --------------------- */
-		JPanel fullBackgroundPanel = new JPanel();
+		final JPanel fullBackgroundPanel = new JPanel();
 		createThumbnailSpan(fullBackgroundPanel, rsrc, true);
-		JScrollPane fullBackgroundScrollPane = new JScrollPane(fullBackgroundPanel);
+		final JScrollPane fullBackgroundScrollPane = new JScrollPane(fullBackgroundPanel);
 		fullBackgroundScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		
 		/* ------------------------- Pattern Panel  ------------------------- */
-		JPanel patternPanel = new JPanel();
+		final JPanel patternPanel = new JPanel();
 		createThumbnailSpan(patternPanel, rsrc, false);
-		JScrollPane patternScrollPane = new JScrollPane(patternPanel);
+		final JScrollPane patternScrollPane = new JScrollPane(patternPanel);
 		patternScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		
 		/* ----------------------------- Colour  ---------------------------- */
@@ -76,13 +75,13 @@ public class SetBackgroundDialog extends JDialog {
 			}
 		});
 		
-		JScrollPane singleColorPane = new JScrollPane(colorChooser);
+		final JScrollPane singleColorPane = new JScrollPane(colorChooser);
 		
-		JTabbedPane differentBackgroundsPane = new JTabbedPane();
-		differentBackgroundsPane.addTab("Full", fullBackgroundPanel);
-		differentBackgroundsPane.addTab("Pattern", patternPanel);
+		final JTabbedPane differentBackgroundsPane = new JTabbedPane();
+		differentBackgroundsPane.addTab("Full", fullBackgroundScrollPane);
+		differentBackgroundsPane.addTab("Pattern", patternScrollPane);
 		differentBackgroundsPane.addTab("Solid", singleColorPane);
-		differentBackgroundsPane.setPreferredSize(new Dimension(700, 420) );
+		differentBackgroundsPane.setPreferredSize(new Dimension(720, 420) );
 		
 
 		
@@ -106,7 +105,7 @@ public class SetBackgroundDialog extends JDialog {
 
 		
 		/* ------------------------ Okay and Cancel -------------------------- */
-		JButton okay = new JButton(new AbstractAction("Okay") {
+		final JButton okay = new JButton(new AbstractAction("Okay") {
 			private static final long serialVersionUID = 1L;
 			@Override public void actionPerformed(ActionEvent e) {
 				setVisible(false);
@@ -115,7 +114,7 @@ public class SetBackgroundDialog extends JDialog {
 
 
 		
-		JButton cancel = new JButton(new AbstractAction("Cancel") {
+		final JButton cancel = new JButton(new AbstractAction("Cancel") {
 			private static final long serialVersionUID = 1L;
 			@Override public void actionPerformed(ActionEvent e) {
 				// reset selected to original
@@ -129,14 +128,14 @@ public class SetBackgroundDialog extends JDialog {
 		add(differentBackgroundsPane);
 		springLayout.putConstraint(SpringLayout.WEST, backgroundViewer, 0, SpringLayout.EAST, this);
 		springLayout.putConstraint(SpringLayout.NORTH, backgroundViewer, 0, SpringLayout.SOUTH, differentBackgroundsPane);
-		add(backgroundViewer, BorderLayout.EAST);
+		add(backgroundViewer);
 		springLayout.putConstraint(SpringLayout.NORTH, okay, 2, SpringLayout.SOUTH, backgroundViewer);
-		add(okay, BorderLayout.SOUTH);
+		add(okay);
 		springLayout.putConstraint(SpringLayout.WEST, cancel, 4, SpringLayout.EAST, okay);
 		springLayout.putConstraint(SpringLayout.NORTH, cancel, 0, SpringLayout.NORTH, okay);
-		add(cancel, BorderLayout.SOUTH);
+		add(cancel);
 		
-		setSize(710, 600);
+		setSize(730, 600);
 	}
 	
 	/**
