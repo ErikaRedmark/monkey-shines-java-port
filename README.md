@@ -35,9 +35,8 @@ The basic game engine mechanics are coming together, but there is still quite a 
 - [x] Shield Powerup
 - [x] Wing Powerup
 - [x] Multipliers
-- [ ] Patterned backgrounds (Currently have full-screen backgrounds as stand-ins)
-- [ ] Solid Colour backgrounds
-- [ ] Main menu (A large task that I will break into smaller ones when the rest of the engine/level editor is complete)
+- [x] Patterned backgrounds (Currently have full-screen backgrounds as stand-ins)
+- [x] Solid Colour background
 
 ##Level Editor
 The save file format for the level editor has been rewritten. Worlds created with the level editor will not become unreadable with future versions of the game.
@@ -47,15 +46,26 @@ The save file format for the level editor has been rewritten. Worlds created wit
 - [x] Creating a new screen
 - [x] Adding Sprites
 - [x] Deleting Sprites
-- [ ] Editing Sprites (When selecting engine needs to stop to make clicking easier)
+- [x] Editing Sprites
 - [x] Adding goodies
 - [x] Placing Bonzo starting position
 - [x] Slowdown animations of sprites
 - [x] Adding Hazards
 - [x] Adding conveyer belts
 - [x] Adding collapsible tiles
-- [ ] Setting level background
-- [ ] Indicating Authorship (Not part of original game)
+- [x] Setting level background
+- [x] Indicating Authorship (Not part of original game)
+
+##Menu System
+So that the game can still be played whilst the menu system is being developed, there will always be a fallback way to load a level to play. Note that the level editor has no main menu system. Also note that this port has no concept of registration so all registration information is removed.
+- [ ] Initial landing screen when game starts up
+- [ ] Original Game Credits and New Game Credits
+- [ ] Sound Control
+- [ ] Keyboard Mapping
+- [ ] 'Other' world selection (similiar to current system
+- [ ] Ability to select a 'core' world that gets loaded up from a known location automatically
+
+More to come as I break this down further.
 
 ##Game Content
 Save file format is done; it is possible to work on worlds. Not all engine features exist though.
@@ -72,6 +82,9 @@ Some third party worlds that I would like to port to this new version as well:
 - [ ] Present for Phil
 
 Additional worlds may be added.
+
+##Extra Points
+Original game allowed one to start in Spooked, go through all five core worlds maintaining lives from the past world. This could be generalised to the concept of a 'World Pack' which could somehow allow a set of worlds to be combined together such that the game plays through all worlds until complete loss of lives or beating every world. This could be extended to the level editor to allow custom 'packs' of levels. Far future goal.
 
 # Final Words
 If anyone wishes to help, especially if you have played the game before, feel open to contact me (Erika Redmark) at maniacmonkeyinspace@gmail.com. 
