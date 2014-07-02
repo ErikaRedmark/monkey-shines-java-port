@@ -845,7 +845,7 @@ public final class Bonzo {
 	 * 		{@code true} if a powerup exists that should be drawn, {@code false} otherwise.
 	 * 
 	 */
-	boolean powerupUIVisible() {
+	public boolean powerupUIVisible() {
 		if (currentPowerup == null)  return false;
 		// Because of the way the flashCount is implemented in the state, odd numbers (which is what
 		// it starts with) represents a visible powerup, where as even numbers including zero represent

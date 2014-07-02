@@ -1,4 +1,4 @@
-package org.erikaredmark.monkeyshines;
+package org.erikaredmark.monkeyshines.menu;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -15,6 +15,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
+import org.erikaredmark.monkeyshines.Bonzo;
+import org.erikaredmark.monkeyshines.GameConstants;
+import org.erikaredmark.monkeyshines.KeyboardInput;
+import org.erikaredmark.monkeyshines.Powerup;
+import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.encoder.WorldIO;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
@@ -102,8 +107,12 @@ public class GameWindow extends JPanel {
 	private static final int POWERUP_DRAW_X2 = POWERUP_DRAW_X + GameConstants.GOODIE_SIZE_X;
 	private static final int POWERUP_DRAW_Y2 = POWERUP_DRAW_Y + GameConstants.GOODIE_SIZE_Y;
 	
+	private final Runnable endGameCallback;
+	
 	/**
-	 * Constructs a GameWindow listening to the keyboard.
+	 * Constructs a GameWindow listening to the keyboard. The window will bring up a dialog asking the user to choose a level
+	 * and then will start the game.
+	 * TODO remove 'choose a level' responsibility and move it to main menu functions.
 	 * 
 	 * When the game is over, the callback is called. 
 	 * 
@@ -111,6 +120,7 @@ public class GameWindow extends JPanel {
 	 */
 	public GameWindow(final KeyboardInput keys, final Runnable endGame) {
 		super();
+		this.endGameCallback = endGame;
 		this.addKeyListener(keys);
 		
 		// DEBUG placeholder for better menu system
@@ -290,12 +300,15 @@ public class GameWindow extends JPanel {
 		bonusTimer.stop();
 		// TODO soft fade out and return to main menu. Right now we just return to
 		// choosing a world.
+		
+		endGameCallback.run();
+		
 		// for now, we just give bonzo more lives
 		// +1 against the -1 goes to 0, resulting in 4
-		bonzo.incrementLives(5);
-		updateLives();
-		currentWorld.restartBonzo(bonzo);
-		System.out.println("This would normally be a game over.");
+		//bonzo.incrementLives(5);
+		//updateLives();
+		//currentWorld.restartBonzo(bonzo);
+		//System.out.println("This would normally be a game over.");
 	}
 	
 	// Called when bonzos life is lost. Sets life digit for drawing.

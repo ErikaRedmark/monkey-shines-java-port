@@ -382,7 +382,7 @@ public class World {
 	 * 		the runnable that will run as soon as all the red keys are collected.
 	 * 
 	 */
-	void setAllRedKeysCollectedCallback(final Runnable runnable) {
+	public void setAllRedKeysCollectedCallback(final Runnable runnable) {
 		this.allRedKeysCollectedCallback = runnable;
 	}
 	
