@@ -7,11 +7,6 @@ import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
-import java.nio.file.Path;
-
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -20,10 +15,6 @@ import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.KeyboardInput;
 import org.erikaredmark.monkeyshines.Powerup;
 import org.erikaredmark.monkeyshines.World;
-import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
-import org.erikaredmark.monkeyshines.encoder.WorldIO;
-import org.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
-import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 
 /**
@@ -117,16 +108,39 @@ public class GameWindow extends JPanel {
 	 * When the game is over, the callback is called. 
 	 * 
 	 * @param keys
+	 * 		keyboard input device to register
+	 * 
+	 * @param endGame
+	 * 		callback for when the game is over
+	 * 
+	 * @param world
+	 * 		world to start a game for
+	 * 
 	 */
-	public GameWindow(final KeyboardInput keys, final Runnable endGame) {
+	public GameWindow(final KeyboardInput keys, final Runnable endGame, final World world) {
 		super();
 		this.endGameCallback = endGame;
 		this.addKeyListener(keys);
+		this.currentWorld = world;
+		// DEBUG: Will eventually be based on difficulty
+		this.lifeDigit = 4;
 		
-		// DEBUG placeholder for better menu system
-		if (!(loadCustomWorld() ) ) {
-			System.exit(0);
-		}
+		bonzo = new Bonzo(currentWorld,
+			// DEBUG: Will eventually be based on difficulty
+			4,
+			new Runnable() { @Override public void run() { scoreUpdate(); } },
+			new Runnable() { @Override public void run() { gameOver(); } },
+			new Runnable() { @Override public void run() { updateLives(); } },
+			new Runnable() { @Override public void run() { levelComplete(); } });
+		
+		
+		currentWorld.setAllRedKeysCollectedCallback(
+			new Runnable() { 
+				@Override public void run() { 
+					redKeysCollected(); 
+				} 
+			});
+		
 		
 		setDoubleBuffered(true);
 		// Accommodate the UI and the game. UI is a banner and width is equal to screen width
@@ -190,82 +204,7 @@ public class GameWindow extends JPanel {
 		gameTimer.start();
 	}
 	
-	/**
-	 * 
-	 * Attempts to load a world by giving the user a file chooser. If a world is loaded, bonzo is set and
-	 * gameplay begins proper. This is used for both GameWindow initialisation and it can replace a world with
-	 * another without closing the game window.
-	 * <p/>
-	 * At the conclusion of this method, if it returns {@code true}, both the world and bonzo will be set to
-	 * valid, non-null values and gameplay can commence.
-	 * 
-	 * @return
-	 * 		{@code true} if a custom world is loaded, {@code false} if otherwise
-	 * 
-	 */
-	public boolean loadCustomWorld() {
-		// TODO DEBUG jump straight to file browser to select a world. Obviously a better menu
-		// system should be in place 
-		JFileChooser fileChooser = new JFileChooser();
-		if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-			Path worldFile = fileChooser.getSelectedFile().toPath();
-			
-			try {
-				EncodedWorld world = WorldIO.restoreWorld(worldFile);
-				// Try to load the resource pack
-				String fileName = worldFile.getFileName().toString();
-				// Remove .world extension so we can substitute with .zip.
-				String worldName = fileName.substring(0, fileName.lastIndexOf('.') );
-				Path packFile = worldFile.getParent().resolve(worldName + ".zip");
-				WorldResource rsrc = WorldResource.fromPack(packFile);
-				currentWorld = world.newWorldInstance(rsrc);
-			} catch (WorldRestoreException ex) {
-				JOptionPane.showMessageDialog(this,
-				    "Cannot load world: Possibly corrupt or not a world file: " + ex.getMessage(),
-				    "Loading Error",
-				    JOptionPane.ERROR_MESSAGE);
-				ex.printStackTrace();
-				return false;
-			} catch (ResourcePackException ex) {
-				JOptionPane.showMessageDialog(this,
-				    "Resource pack issues: " + ex.getMessage(),
-				    "Loading Error",
-				    JOptionPane.ERROR_MESSAGE);
-				ex.printStackTrace();
-				return false;
-			} catch (IOException ex) {
-				JOptionPane.showMessageDialog(this,
-				    "Low level I/O error: " + ex.getMessage(),
-				    "Loading Error",
-				    JOptionPane.ERROR_MESSAGE);
-				ex.printStackTrace();
-				return false;
-			}
-			
-			bonzo = new Bonzo(currentWorld,
-				// DEBUG: Will eventually be based on difficulty
-				4,
-				new Runnable() { @Override public void run() { scoreUpdate(); } },
-				new Runnable() { @Override public void run() { gameOver(); } },
-				new Runnable() { @Override public void run() { updateLives(); } },
-				new Runnable() { @Override public void run() { levelComplete(); } });
-			// DEBUG: Will eventually be based on difficulty
-			lifeDigit = 4;
-			
-			currentWorld.setAllRedKeysCollectedCallback(
-				new Runnable() { 
-					@Override public void run() { 
-						redKeysCollected(); 
-					} 
-				});
-			
-			return true;
-		} else {
-			// No world chosen
-			return false;
-		}
-	}
-	
+
 	// Called from callback when bonzos score is updated in game. Sets digit values for
 	// score redraw.
 	private void scoreUpdate() {
@@ -332,6 +271,8 @@ public class GameWindow extends JPanel {
 	private void levelComplete() {
 		bonusTimer.stop();
 		System.out.println("If this was the final game you would have just finished the level. Congratulations!");
+		// TODO differentiate between ending game BAD vs ending game GOOD
+		endGameCallback.run();
 	}
 			
 	private final class GameplayPanel extends JPanel {

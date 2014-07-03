@@ -415,7 +415,7 @@ public final class LevelScreen {
 	 * 
 	 * Called during bonzo collison algorithms. Allows the screen
 	 * to store his last safe ground landing.
-	 * TODO there is a minute change that this location may be set to a place a sprite will
+	 * TODO there is a minute chance that this location may be set to a place a sprite will
 	 * be if the screen is restarted. For now, keep it as this algorithm unless it is determined
 	 * to impede level design and become a major issue.
 	 * 

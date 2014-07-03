@@ -10,6 +10,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+
 /**
  * 
  * The main menu. What the user sees when they initialise the game.
@@ -34,44 +35,30 @@ public class MainMenuWindow extends JPanel {
 	// --------------- Play Game
 	private static final int PLAY_GAME_X = 35;
 	private static final int PLAY_GAME_Y = 150;
-	private static final int PLAY_GAME_X2 = PLAY_GAME_X + BUTTON_SIZE_X;
-	private static final int PLAY_GAME_Y2 = PLAY_GAME_Y + BUTTON_SIZE_Y;
 	
 	// --------------- Controls
 	private static final int CONTROLS_X = 35;
 	private static final int CONTROLS_Y = 215;
-	private static final int CONTROLS_X2 = CONTROLS_X + BUTTON_SIZE_X;
-	private static final int CONTROLS_Y2 = CONTROLS_Y + BUTTON_SIZE_Y;
 	
 	// --------------- Music
 	private static final int MUSIC_X = 35;
 	private static final int MUSIC_Y = 280;
-	private static final int MUSIC_X2 = MUSIC_X + BUTTON_SIZE_X;
-	private static final int MUSIC_Y2 = MUSIC_Y + BUTTON_SIZE_Y;
 	
 	// --------------- Sound
 	private static final int SOUND_X = 35;
 	private static final int SOUND_Y = 345;
-	private static final int SOUND_X2 = SOUND_X + BUTTON_SIZE_X;
-	private static final int SOUND_Y2 = SOUND_Y + BUTTON_SIZE_Y;
 	
 	// --------------- High Scores
 	private static final int HIGH_X = 87;
 	private static final int HIGH_Y = 410;
-	private static final int HIGH_X2 = HIGH_X + BUTTON_SIZE_X;
-	private static final int HIGH_Y2 = HIGH_Y + BUTTON_SIZE_Y;
 	
 	// --------------- Help
 	private static final int HELP_X = 453;
 	private static final int HELP_Y = 345;
-	private static final int HELP_X2 = HELP_X + BUTTON_SIZE_X;
-	private static final int HELP_Y2 = HELP_Y + BUTTON_SIZE_Y;
 	
 	// --------------- Exit
 	private static final int EXIT_X = 400;
 	private static final int EXIT_Y = 410;
-	private static final int EXIT_X2 = EXIT_X + BUTTON_SIZE_X;
-	private static final int EXIT_Y2 = EXIT_Y + BUTTON_SIZE_Y;
 	
 	// --------------- Border
 	private static final int BORDER_X = 262; 
@@ -89,14 +76,21 @@ public class MainMenuWindow extends JPanel {
 	private static final int INFORMATIONAL_SIZE_X = INFORMATIONAL_X2 - INFORMATIONAL_X;
 	private static final int INFORMATIONAL_SIZE_Y = INFORMATIONAL_Y2 - INFORMATIONAL_Y;
 	
-	public MainMenuWindow() {
+	/**
+	 * 
+	 * Constructs the main menu window, with callables back to the window manager whenever an action is performed that
+	 * requires transitioning to a different game state
+	 * 
+	 * @param playGame
+	 */
+	public MainMenuWindow(final Runnable playGameCallback) {
 		// The buttons are the only thing that uses a Swing component; everything else is explicitly painted
 		// on. Hence we are mainly focusing on button positioning and functionality here.
 		setLayout(null);
 		
 		JButton playGame = menuButton(
 			new Runnable() {
-				@Override public void run() { System.err.println("Playing Not Implemented Yet"); }
+				@Override public void run() { playGameCallback.run(); }
 			},
 			rsrc.BUTTON_PLAY_GAME,
 			PLAY_GAME_X,
@@ -229,7 +223,8 @@ public class MainMenuWindow extends JPanel {
 					INFORMATIONAL_SIZE_X, INFORMATIONAL_SIZE_Y,
 					null);
 		
-		// Now draw the actual components on this page
-		//super.paintComponent(g);
+		// Do not call; destroys background. Components are still painted regardless.
+		// super.paintComponent(g);
 	}
+	
 }
