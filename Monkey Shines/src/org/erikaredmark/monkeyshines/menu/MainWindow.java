@@ -1,5 +1,7 @@
 package org.erikaredmark.monkeyshines.menu;
 
+import java.awt.Dimension;
+
 import javax.swing.JFrame;
 
 import org.erikaredmark.monkeyshines.KeyboardInput;
@@ -23,7 +25,7 @@ public final class MainWindow extends JFrame {
 	// Main menu displayed. May be null if the main menu is no longer displayed
 	private MainMenuWindow menu;
 	
-	private GameState state;
+	private GameState state = GameState.NONE;
 	
 	// current key setup is stored so it can be removed as an observer from the main window during state
 	// transitions
@@ -35,6 +37,9 @@ public final class MainWindow extends JFrame {
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
 		setResizable(false);
+		// Do not set size here: It would include title bar. JPanel is added and packed
+		// during state transition to size window correctly.
+		
 		// Initial state is menu.
 		setGameState(GameState.MENU);
 		setVisible(true);
@@ -56,8 +61,8 @@ public final class MainWindow extends JFrame {
 	private enum GameState {
 		PLAYING {
 			@Override public void transitionTo(final MainWindow mainWindow) {
+				mainWindow.state.transitionFrom(mainWindow);
 				
-				// TODO clean up menu before showing game window
 				mainWindow.currentKeyListener = new KeyboardInput();
 				mainWindow.runningGame = new GameWindow(mainWindow.currentKeyListener, mainWindow.resetCallback);
 				// Must add to both.
@@ -80,7 +85,9 @@ public final class MainWindow extends JFrame {
 		},
 		MENU {
 			@Override public void transitionTo(MainWindow mainWindow) {
+				mainWindow.state.transitionFrom(mainWindow);
 				mainWindow.menu = new MainMenuWindow();
+				mainWindow.add(mainWindow.menu);
 				mainWindow.pack();
 			}
 
@@ -91,6 +98,11 @@ public final class MainWindow extends JFrame {
 				}
 			}
 			
+		},
+		// Represents no state, so null checks aren't required on state object
+		NONE {
+			@Override public void transitionTo(MainWindow mainWindow) { }
+			@Override protected void transitionFrom(MainWindow mainWindow) { }
 		};
 		
 		/**
