@@ -41,6 +41,7 @@ public final class MainMenuResource {
 	final String TEXT_MUSIC = "Music";
 	final String TEXT_SOUND = "Sound";
 	final String TEXT_HIGH = "High Scores";
+	final String TEXT_HELP = "Help";
 	final String TEXT_EXIT = "Quit";
 	
 	

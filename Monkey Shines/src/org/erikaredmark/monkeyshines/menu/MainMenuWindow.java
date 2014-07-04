@@ -1,6 +1,8 @@
 package org.erikaredmark.monkeyshines.menu;
 
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
@@ -32,33 +34,52 @@ public class MainMenuWindow extends JPanel {
 	private static final int BUTTON_SIZE_X = 60;
 	private static final int BUTTON_SIZE_Y = 60;
 	
+	// All drawn text indicating the name of the button is drawn this many units to the right
+	// side of the actual button
+	private static final int TEXT_MARGIN = 10;
+	private static final int FONT_HEIGHT = 12;
+	
 	// --------------- Play Game
 	private static final int PLAY_GAME_X = 35;
 	private static final int PLAY_GAME_Y = 150;
+	private static final int PLAY_GAME_TEXT_X = calcTextX(PLAY_GAME_X);
+	private static final int PLAY_GAME_TEXT_Y = calcTextY(PLAY_GAME_Y);
 	
 	// --------------- Controls
 	private static final int CONTROLS_X = 35;
 	private static final int CONTROLS_Y = 215;
+	private static final int CONTROLS_TEXT_X = calcTextX(CONTROLS_X);
+	private static final int CONTROLS_TEXT_Y = calcTextY(CONTROLS_Y);
 	
 	// --------------- Music
 	private static final int MUSIC_X = 35;
 	private static final int MUSIC_Y = 280;
+	private static final int MUSIC_TEXT_X = calcTextX(MUSIC_X);
+	private static final int MUSIC_TEXT_Y = calcTextY(MUSIC_Y);
 	
 	// --------------- Sound
 	private static final int SOUND_X = 35;
 	private static final int SOUND_Y = 345;
+	private static final int SOUND_TEXT_X = calcTextX(SOUND_X);
+	private static final int SOUND_TEXT_Y = calcTextY(SOUND_Y);
 	
 	// --------------- High Scores
 	private static final int HIGH_X = 87;
 	private static final int HIGH_Y = 410;
+	private static final int HIGH_TEXT_X = calcTextX(HIGH_X);
+	private static final int HIGH_TEXT_Y = calcTextY(HIGH_Y);
 	
 	// --------------- Help
 	private static final int HELP_X = 453;
 	private static final int HELP_Y = 345;
+	private static final int HELP_TEXT_X = calcTextX(HELP_X);
+	private static final int HELP_TEXT_Y = calcTextY(HELP_Y);
 	
 	// --------------- Exit
 	private static final int EXIT_X = 400;
 	private static final int EXIT_Y = 410;
+	private static final int EXIT_TEXT_X = calcTextX(EXIT_X);
+	private static final int EXIT_TEXT_Y = calcTextY(EXIT_Y);
 	
 	// --------------- Border
 	private static final int BORDER_X = 262; 
@@ -75,6 +96,12 @@ public class MainMenuWindow extends JPanel {
 	private static final int INFORMATIONAL_Y2 = 328;
 	private static final int INFORMATIONAL_SIZE_X = INFORMATIONAL_X2 - INFORMATIONAL_X;
 	private static final int INFORMATIONAL_SIZE_Y = INFORMATIONAL_Y2 - INFORMATIONAL_Y;
+	
+	/*
+	 * Static const-expressions to calculate X and Y locations of a given set of text based on button location
+	 */
+	private static final int calcTextX(int buttonX) { return buttonX + BUTTON_SIZE_X + TEXT_MARGIN; }
+	private static final int calcTextY(int buttonY) { return buttonY + ( (BUTTON_SIZE_Y / 2) + FONT_HEIGHT); }
 	
 	/**
 	 * 
@@ -138,7 +165,9 @@ public class MainMenuWindow extends JPanel {
 		
 		JButton exit = menuButton(
 			new Runnable() {
-				@Override public void run() { System.err.println("Exit Not Implemented Yet"); }
+				@Override public void run() { 
+					System.exit(0);
+				}
 			},
 			rsrc.BUTTON_EXIT,
 			EXIT_X,
@@ -177,7 +206,8 @@ public class MainMenuWindow extends JPanel {
 		button.setLocation(locationX, locationY);
 		button.setSize(BUTTON_SIZE_X, BUTTON_SIZE_Y);
 		button.setPressedIcon(new ImageIcon(images[1]) );
-		button.setSelectedIcon(new ImageIcon(images[2]) );
+		button.setRolloverEnabled(true);
+		button.setRolloverIcon(new ImageIcon(images[2]) );
 		renderImageOnly(button);
 		return button;
 	}
@@ -198,7 +228,6 @@ public class MainMenuWindow extends JPanel {
 	 * 
 	 * Paint the standard button components for clicking, but everything else can easily just be painted on since they
 	 * aren't interactive.
-	 * Component painting (calling super) takes place after backgrounds have been painted.
 	 * 
 	 */
 	@Override public void paintComponent(Graphics g) {
@@ -222,6 +251,17 @@ public class MainMenuWindow extends JPanel {
 					0, 0,
 					INFORMATIONAL_SIZE_X, INFORMATIONAL_SIZE_Y,
 					null);
+		
+		// Now for text.
+		g.setColor(Color.GREEN);
+		g.setFont(new Font("sansserif", Font.BOLD, 24) );
+		g.drawString(rsrc.TEXT_PLAY_GAME, PLAY_GAME_TEXT_X, PLAY_GAME_TEXT_Y);
+		g.drawString(rsrc.TEXT_SOUND, SOUND_TEXT_X, SOUND_TEXT_Y);
+		g.drawString(rsrc.TEXT_MUSIC, MUSIC_TEXT_X, MUSIC_TEXT_Y);
+		g.drawString(rsrc.TEXT_CONTROLS, CONTROLS_TEXT_X, CONTROLS_TEXT_Y);
+		g.drawString(rsrc.TEXT_HIGH, HIGH_TEXT_X, HIGH_TEXT_Y);
+		g.drawString(rsrc.TEXT_EXIT, EXIT_TEXT_X, EXIT_TEXT_Y);
+		g.drawString(rsrc.TEXT_HELP, HELP_TEXT_X, HELP_TEXT_Y);
 		
 		// Do not call; destroys background. Components are still painted regardless.
 		// super.paintComponent(g);
