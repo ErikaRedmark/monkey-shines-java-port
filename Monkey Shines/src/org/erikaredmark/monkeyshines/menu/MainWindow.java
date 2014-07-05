@@ -15,6 +15,7 @@ import org.erikaredmark.monkeyshines.encoder.WorldIO;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
+import org.erikaredmark.monkeyshines.resource.WorldResource.UseIntent;
 
 /**
  * 
@@ -104,7 +105,7 @@ public final class MainWindow extends JFrame {
 				// Remove .world extension so we can substitute with .zip.
 				String worldName = fileName.substring(0, fileName.lastIndexOf('.') );
 				Path packFile = worldFile.getParent().resolve(worldName + ".zip");
-				WorldResource rsrc = WorldResource.fromPack(packFile);
+				WorldResource rsrc = WorldResource.fromPack(packFile, UseIntent.GAME);
 				return world.newWorldInstance(rsrc);
 			} catch (WorldRestoreException ex) {
 				JOptionPane.showMessageDialog(parent,

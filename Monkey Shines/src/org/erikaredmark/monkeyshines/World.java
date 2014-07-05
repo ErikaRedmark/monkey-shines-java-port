@@ -444,7 +444,7 @@ public class World {
 				if (sGround == null)  continue;
 				
 				// Must change world screen as well as bonzos reference
-				changeCurrentScreen(s.getId() );
+				changeCurrentScreen(s.getId(), theBonzo);
 				
 				// Valid ground: Restart bonzo and end the method early.
 				theBonzo.restartBonzoOnScreen(s, sGround);
@@ -454,7 +454,7 @@ public class World {
 			// Reaching the end of the for loop normally signifies no valid ground in ALL
 			// history. That must be one LONG fall; move bonzo to the last screen
 			final LevelScreen lastResort = screenHistory.back();
-			changeCurrentScreen(lastResort.getId() );
+			changeCurrentScreen(lastResort.getId(), theBonzo);
 			theBonzo.restartBonzoOnScreen(lastResort, lastResort.getBonzoCameFrom() );
 		}
 	}
@@ -479,9 +479,14 @@ public class World {
 		
 		// Must change world screen as well as bonzos reference
 		// Unlike respawning, this DOES count as screen history!
-		final LevelScreen transferScreen = getScreenByID(transferScreenId);
-		changeCurrentScreen(transferScreenId);
-		bonzo.changeScreen(transferScreenId);
+		LevelScreen transferScreen = getScreenByID(transferScreenId);
+		
+		// No transfer screen indicates uncommon level design. Pacman it and just send Bonzo to the
+		// other side of the same screen, pretending that the transfer screen is this one.
+		if (transferScreen == null) {
+			transferScreen = getCurrentScreen();
+		}
+		changeCurrentScreen(transferScreenId, bonzo);
 		bonzo.setCurrentLocation(transferScreen.getBonzoStartingLocationPixels() );
 	}
 	
@@ -529,16 +534,21 @@ public class World {
 	 * @param screenId
 	 * 		the id of the screen to change to
 	 * 
+	 * @param bonzo
+	 * 		reference to bonzo to update his screen location. Both values must stay synced. This May be {@code null}
+	 * 		only if there is no bonzo at all (such as being called from the level editor)
+	 * 
 	 * @return
 	 * 		{@code true} if changing the screen was successful, {@code false} if the screen does not exist and thus
 	 * 		could not be switched
 	 * 
 	 */
-	public boolean changeCurrentScreen(int screenId) {
+	public boolean changeCurrentScreen(int screenId, Bonzo bonzo) {
 		if (screenIdExists(screenId) == false) return false;
 		else {
 			resetCurrentScreen();
 			this.currentScreen = screenId;
+			if (bonzo != null)  bonzo.changeScreen(screenId);
 			return true;
 		}
 	}
@@ -549,9 +559,7 @@ public class World {
 		ScreenDirection dir = ScreenDirection.fromLocation(currentLocation, Bonzo.BONZO_SIZE);
 		if (dir != ScreenDirection.CURRENT) {
 			int newId = dir.getNextScreenId(this.currentScreen);
-			changeCurrentScreen(newId);
-			// Update bonzos location to the new screen location
-			theBonzo.changeScreen(newId);
+			changeCurrentScreen(newId, theBonzo);
 			dir.transferLocation(theBonzo.getMutableCurrentLocation(), Bonzo.BONZO_SIZE);
 			final LevelScreen theNewScreen = getCurrentScreen();
 			// Update the new screen with data about where we came from so deaths bring us to the same place

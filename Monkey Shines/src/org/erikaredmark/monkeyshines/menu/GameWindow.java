@@ -201,6 +201,9 @@ public class GameWindow extends JPanel {
 		
 		setVisible(true);
 		
+		// Start game proper. Turn on timer to create the 'world' and start the background music
+		// if needed.
+		this.currentWorld.getResource().getSoundManager().playMusic();
 		gameTimer.start();
 	}
 	
@@ -237,6 +240,7 @@ public class GameWindow extends JPanel {
 	// Called during a game over.
 	private void gameOver() {
 		bonusTimer.stop();
+		this.currentWorld.getResource().getSoundManager().stopPlayingMusic();
 		// TODO soft fade out and return to main menu. Right now we just return to
 		// choosing a world.
 		
@@ -270,6 +274,7 @@ public class GameWindow extends JPanel {
 	// Called when bonzo collides with the exit door.
 	private void levelComplete() {
 		bonusTimer.stop();
+		currentWorld.getResource().getSoundManager().stopPlayingMusic();
 		System.out.println("If this was the final game you would have just finished the level. Congratulations!");
 		// TODO differentiate between ending game BAD vs ending game GOOD
 		endGameCallback.run();

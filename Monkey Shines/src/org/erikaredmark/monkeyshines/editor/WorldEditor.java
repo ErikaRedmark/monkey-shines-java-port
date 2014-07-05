@@ -119,7 +119,7 @@ public final class WorldEditor {
 	 * 		engine will be running this level
 	 */
 	public void changeCurrentScreen(LevelScreenEditor editor) {
-		boolean couldChange = world.changeCurrentScreen(editor.getId() );
+		boolean couldChange = world.changeCurrentScreen(editor.getId(), null);
 		if (!(couldChange) ) {
 			System.err.println("Could not change screen to " + editor.getId() );
 		}

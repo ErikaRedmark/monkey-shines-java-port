@@ -99,6 +99,9 @@ public final class WorldResource {
 	// that there is no sound available for a particular event.
 	private final Map<GameSoundEffect, Clip> sounds;
 	
+	// Package-private: Only intended for SoundManager
+	final Clip backgroundMusic;
+	
 	// Generated automatically in constructor
 	private final SoundManager soundManager;
 	private int conveyerCount;
@@ -123,7 +126,8 @@ public final class WorldResource {
 					      final BufferedImage scoreNumbers,
 					      final BufferedImage bonusNumbers,
 					      final BufferedImage explosionSheet,
-					      final Map<GameSoundEffect, Clip> sounds) {
+					      final Map<GameSoundEffect, Clip> sounds,
+					      final Clip backgroundMusic) {
 		
 		this.solidTiles = solidTiles;
 		this.thruTiles = thruTiles;
@@ -137,6 +141,8 @@ public final class WorldResource {
 		this.goodieSheet = goodieSheet;
 		this.yumSheet = yumSheet;
 		this.sounds = sounds;
+		// May be null
+		this.backgroundMusic = backgroundMusic;
 		this.banner = banner;
 		this.scoreNumbers = scoreNumbers;
 		this.bonusNumbers = bonusNumbers;
@@ -189,6 +195,11 @@ public final class WorldResource {
 	 * @param packFile
 	 * 		a .zip file containing the resource pack
 	 * 
+	 * @param intent
+	 * 		an 'intent' enumeration that determines how the resource pack will be used, such as via editor or
+	 * 		the game. Information from a resource pack is only loaded in memory if the given subsystem specified
+	 * 		by the intent will be using it.
+	 * 
 	 * @return
 	 * 		a resource object with the pack loaded into memory
 	 * 
@@ -199,7 +210,7 @@ public final class WorldResource {
 	 * 		if the given path is not even a .zip file
 	 * 
 	 */
-	public static WorldResource fromPack(final Path packFile) throws ResourcePackException {
+	public static WorldResource fromPack(final Path packFile, UseIntent intent) throws ResourcePackException {
 		// TODO replace with reading magic number http://www.coderanch.com/t/381509/java/java/check-file-zip-file-java
 		
 		// Declare non final versions of instance data. However, we enforce only replacing null in other ways in the below code.
@@ -229,10 +240,14 @@ public final class WorldResource {
 		BufferedImage bonusNumbersSheet = null;
 		BufferedImage explosionSheet = null;
 		
+		
 		// Sound clips
 		// Unlike graphics, some sounds may not exist, and that is okay. The game just won't play
 		// any sound when requested.
 		Map<GameSoundEffect, Clip> gameSounds = new IdentityHashMap<>();
+		
+		// It is okay for this to be null. No music simply means none will be played
+		Clip backgroundMusic = null;
 		
 		try (ZipFile zipFile = new ZipFile(packFile.toFile() ) ) {
 			// for (ZipEntry e : file.entries)
@@ -292,6 +307,11 @@ public final class WorldResource {
 					if (explosionSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "explosion.png");
 					explosionSheet = ImageIO.read(zipFile.getInputStream(entry) );
 					break;
+				case "music.ogg":
+					if (intent != UseIntent.GAME)  continue; 
+					if (backgroundMusic != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "music.ogg");
+					backgroundMusic = loadSoundClip(zipFile, entry);
+					break;
 				// All other types are handled in default, as many different names may belong to one 'class' of things.
 				default:
 					// TODO repeated code here: consider refactoring?
@@ -315,10 +335,6 @@ public final class WorldResource {
 						if (index > maxSpriteIndex) maxSpriteIndex = index;
 						BufferedImage tempSprite = ImageIO.read(zipFile.getInputStream(entry) );
 						sprites[index] = tempSprite;
-					/* ---------------------- Sounds ----------------------- */
-					// Due to the nature of graphics amounts being unknown,
-					// but types of sounds being finite, any name of any file
-					// not matching any other pattern IS a sound.
 					} else if (entryName.matches("^pattern[0-9]+\\.png$") ) {
 						int index = indexFromName(entryName);
 						if (patterns.length > index) {
@@ -327,6 +343,12 @@ public final class WorldResource {
 						if (index > maxPatternIndex) maxPatternIndex = index;
 						BufferedImage tempPattern = ImageIO.read(zipFile.getInputStream(entry) );
 						patterns[index] = tempPattern;
+					/* ---------------------- Sounds ----------------------- */
+					// Due to the nature of graphics amounts being unknown,
+					// but types of sounds being finite, any name of any file
+					// not matching any other pattern IS a sound.
+					// TODO may not be best plan. May cause issues if we wish to allow
+					// additional 'stuff' as part of the resource pack, like readmes and whatnot.
 					} else {
 						GameSoundEffect sound = GameSoundEffect.filenameToEnum(entryName);
 						if (sound == null) {
@@ -403,7 +425,8 @@ public final class WorldResource {
 							  scoreNumbersSheet,
 							  bonusNumbersSheet,
 							  explosionSheet,
-							  gameSounds);
+							  gameSounds,
+							  backgroundMusic);
 		
 		return worldRsrc;
 	}
@@ -932,4 +955,9 @@ public final class WorldResource {
 	 */
 	public int getConveyerCount() { return conveyerCount; }
 
+	public enum UseIntent {
+		GAME,
+		EDITOR;
+	}
+	
 }

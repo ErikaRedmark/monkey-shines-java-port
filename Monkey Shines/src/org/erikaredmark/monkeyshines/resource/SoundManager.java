@@ -46,59 +46,34 @@ public final class SoundManager {
 			clip.start();
 		}
 	}
+
 	
 	/**
 	 * 
-	 * Plays the given sound effect for {@code amount} times, with {@code delayBetween} milliseconds between
-	 * each successive playback.
-	 * 
-	 * @param effect
-	 * 		the sound effect to play
-	 * 
-	 * @param amount
-	 * 		the number of times to play
-	 * 
-	 * @param delayBetween
-	 * 		time between each play of the sound
+	 * Plays the given background music for this world. This is typically called once the game has started.
+	 * If the world has no background music, this method does nothing.
 	 * 
 	 */
-	public void playRepeated(GameSoundEffect effect, int amount, int delayBetween) {
-		// TODO method stub
+	public void playMusic() {
+		if (rsrc.backgroundMusic == null)  return;
+		if (rsrc.backgroundMusic.isActive() )  return;
+		
+		rsrc.backgroundMusic.setFramePosition(0);
+		rsrc.backgroundMusic.loop(Clip.LOOP_CONTINUOUSLY);
 	}
 	
 	/**
 	 * 
-	 * Plays the given sound effect in a loop, with {@code delayBetween} milliseconds between
-	 * each successive playback. This does not stop playing the sound until {@code stopPlay} is
-	 * used with the given sound. Be careful with this method, as not stopping a sound from looping
-	 * in a reasonable amount of time will be very, very annoying.
-	 * 
-	 * @param effect
-	 * 		the sound effect to play
-	 * 
-	 * @param delayBetween
-	 * 		time between each play of the sound
+	 * Stops playing the background music for this world. Should be called before ending the game in progress.
+	 * If no music is currently playing, this method does nothing.
 	 * 
 	 */
-	public void playLoop(GameSoundEffect effect, int delayBetween) {
-		// TODO method stub
-	}
-	
-	/**
-	 * 
-	 * Stops the playback of a sound. If a sound was looping, either repated a certain number
-	 * of times or infinite, it will no longer do so.
-	 * 
-	 * @param effect
-	 * 		the sound effect to stop playing
-	 * 
-	 * @param immediate
-	 * 		{@code true} to stop the sound instantly, {@code false} to let an already playing
-	 * 		sound finish playing (although it won't be replayed)
-	 * 
-	 */
-	public void stopPlay(GameSoundEffect effect, boolean immediate) {
-		// TODO method stub
+	public void stopPlayingMusic() {
+		if (rsrc.backgroundMusic == null)  return;
+		if (rsrc.backgroundMusic.isActive() ) {
+			rsrc.backgroundMusic.stop();
+		}
+		
 	}
 	
 }
