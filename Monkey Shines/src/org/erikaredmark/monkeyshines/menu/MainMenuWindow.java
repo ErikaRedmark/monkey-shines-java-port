@@ -157,7 +157,7 @@ public class MainMenuWindow extends JPanel {
 		
 		JButton help = menuButton(
 			new Runnable() {
-				@Override public void run() { System.err.println("Help Not Implemented Yet"); }
+				@Override public void run() { HelpDialog.launch(); }
 			},
 			rsrc.BUTTON_HELP,
 			HELP_X,
