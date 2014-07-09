@@ -207,7 +207,7 @@ public final class LevelScreen {
 	 */
 	private void resetSprites() {
 		for (Sprite nextSprite : spritesOnScreen) {
-			nextSprite.resetSpritePosition();
+			nextSprite.resetSprite();
 		}
 	}
 	

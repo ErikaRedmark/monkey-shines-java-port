@@ -35,16 +35,16 @@ public class Sprite {
 	private final AnimationSpeed animationSpeed;
 	// Update tick will go from 1->animationSpeed.getTicksToUpdate(). When it reaches that value it will reset to 1.
 	// THIS VARIABLE SHOULD ONLY BE MODIFIED AND CHECKED IN THE update() METHOD!
-	private int updateTick = 1;
+	private int updateTick;
 	// True means 0,1,2,3, etc.., and false means 3,2,1. This is only ever toggled to false and back if the animation type
 	// is of cycling
-	private boolean cycleDirection = true;
+	private boolean cycleDirection;
 	
 	// Determines if a sprite is visible. Only visible sprites are updated and can collide with Bonzo.
 	// Bonus and Exit doors start with this disabled. All others start with it enabled. 
 	private boolean visible;
 	
-	// Images
+	// Images. Controls where the sprite will draw from
 	private ClippingRectangle currentClip;
 
 	// this boolean will be set dynamically depending on the size of the graphics context. Graphics that have
@@ -130,17 +130,39 @@ public class Sprite {
 		setUpGraphics(rsrc);
 		
 		// State information
+		setStateToDefaults();
+	}
+	
+	/**
+	 * 
+	 * Called from construtor or during reset: Sets all mutable state information to initial-constructed defaults.
+	 * 
+	 */
+	private void setStateToDefaults() {
 		this.speedX = initialSpeedX;
 		this.speedY = initialSpeedY;
 		this.currentLocation = Point2D.from(startLocation);
-		this.visible = !(spriteType == SpriteType.EXIT_DOOR || spriteType == SpriteType.BONUS_DOOR);
+		this.visible = !(type == SpriteType.EXIT_DOOR || type == SpriteType.BONUS_DOOR);
+		this.cycleDirection = true;
+		this.updateTick = 1;
+		resetClip();
 		
 	}
 	
 	private void setUpGraphics(final WorldResource rsrc) {
 		this.rsrc = rsrc;
-		currentClip = ClippingRectangle.of(GameConstants.SPRITE_SIZE_X, GameConstants.SPRITE_SIZE_Y);
 		twoWayFacing = (rsrc.getSpritesheetFor(this.id).getHeight() > GameConstants.SPRITE_SIZE_Y);
+	}
+	
+	/**
+	 * 
+	 * Resets the drawing from clip to default. This is either the top row for moving right, and bottom for moving left.
+	 * 
+	 */
+	private void resetClip() {
+		currentClip = ClippingRectangle.of(GameConstants.SPRITE_SIZE_X, GameConstants.SPRITE_SIZE_Y);
+		currentClip.setX(0);
+		currentClip.setY(0);
 		if (twoWayFacing && speedX >= 0) {
 			this.currentClip.setY(GameConstants.SPRITE_SIZE_Y);
 		}
@@ -202,7 +224,14 @@ public class Sprite {
 	 */
 	public Point2D newPointFromSpritePosition() { return Point2D.of(currentLocation); }
 	
-	public void resetSpritePosition() { currentLocation = Point2D.from(startLocation); }
+	/**
+	 * 
+	 * Resets the sprite's position as well as all state animation to defaults
+	 * 
+	 */
+	public void resetSprite() { 
+		setStateToDefaults(); 
+	}
 	
 	/**
 	 * 
