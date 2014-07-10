@@ -239,7 +239,7 @@ public class World {
 			else if (value.getGoodieType() == Goodie.Type.BLUE_KEY)  this.blueKeys.add(value);
 		}
 		
-		// Finally, to easily enable bonus and exit doors, we add all such sprites to lists
+		// To easily enable bonus and exit doors, we add all such sprites to lists
 		// based on type.
 		for (LevelScreen lvl : worldScreens.values() ) {
 			for (Sprite s : lvl.getSpritesOnScreen() ) {
@@ -247,6 +247,12 @@ public class World {
 				else if (s.getType() == SpriteType.BONUS_DOOR)  this.bonusDoors.add(s);
 			}
 		}
+		
+		// Finally, if for some reason bonzo dies on the first screen, we set the initial safe place to be
+		// the starting location, as this is the ONLY point in the entire game that our ring buffer of screens
+		// will be empty.
+		final LevelScreen currentScreen = getCurrentScreen();
+		currentScreen.setBonzoLastOnGround(currentScreen.getBonzoStartingLocation() );
 	}
 	
 	/**
@@ -631,7 +637,7 @@ public class World {
 				// a bomb, the bomb is technically already no longer a hurt for Bonzo.
 				if (hazard.isDead() || hazard.isExploding() )  continue;
 				
-				hazard.hazardHit();
+				hazard.hazardHit(rsrc.getSoundManager() );
 				// Send a kill message to bonzo. Only invincibility will save him
 				bonzo.tryKill(hazard.getHazard().getDeathAnimation() );
 				return;

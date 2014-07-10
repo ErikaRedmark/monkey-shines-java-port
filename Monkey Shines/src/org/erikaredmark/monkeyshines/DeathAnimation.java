@@ -36,7 +36,8 @@ public enum DeathAnimation {
 		@Override public ImmutablePoint2D deathStart() { return start; }
 		@Override public ImmutablePoint2D deathSize() { return size; }
 		@Override public int framesPerRow() { return 16; }
-		@Override public GameSoundEffect soundEffect() { return GameSoundEffect.BOMB_DEATH; }
+		// Note: Standard death has explosion effect because explosion is sounded elsewhere.
+		@Override public GameSoundEffect soundEffect() { return GameSoundEffect.STANDARD_DEATH; }
 	},
 	ELECTRIC {
 		private final ImmutablePoint2D start = ImmutablePoint2D.of(0, 240);

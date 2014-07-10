@@ -595,6 +595,7 @@ public final class Bonzo {
 	 */
 	public void hurt(int amt, DamageEffect effect) {
 		if (effect == DamageEffect.FALL && (currentPowerup != null && currentPowerup.isWing() ) )  return;
+		if (effect == DamageEffect.BEE && (currentPowerup != null && currentPowerup.isShield() ) )  return;
 		
 		health -= amt;
 		soundManager.playOnce(effect.soundEffect);
@@ -619,9 +620,6 @@ public final class Bonzo {
 	public void tryKill(DeathAnimation animation) {
 		if (currentPowerup == null || !(currentPowerup.isShield() ) ) {
 			kill(animation);
-		} else {
-			// He has a shield. Play explosion sound only.
-			soundManager.playOnce(GameSoundEffect.EXPLOSION);
 		}
 	}
 	

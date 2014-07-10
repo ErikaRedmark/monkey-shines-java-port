@@ -3,7 +3,9 @@ package org.erikaredmark.monkeyshines.tiles;
 import java.awt.Graphics2D;
 
 import org.erikaredmark.monkeyshines.GameConstants;
+import org.erikaredmark.monkeyshines.GameSoundEffect;
 import org.erikaredmark.monkeyshines.Hazard;
+import org.erikaredmark.monkeyshines.resource.SoundManager;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 
 /**
@@ -205,16 +207,16 @@ public class HazardTile implements TileType {
 	 * Called when bonzo hits the hazard. This does not kill or affect bonzo; it affects the state of the hazard (exploding
 	 * hazards must now begin explodin). Does nothing if the hazard is dead.
 	 * <p/>
-	 * This does not play sounds. Calling code must decide whether to play the 'bonzos dies by explosion' vs 'explosion' depending
-	 * on if he had a shield.
+	 * Requires a sound manager in case the hazard needs to play a sound upon collision.
 	 * 
 	 */
-	public void hazardHit() {
+	public void hazardHit(SoundManager soundManager) {
 		if (isDead() )  return;
 		
 		if (hazard.explodes() ) {
 			exploding = true;
 			animationPoint = 0;
+			soundManager.playOnce(GameSoundEffect.EXPLOSION);
 		}
 	}
 
