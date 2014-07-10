@@ -133,11 +133,13 @@ public class Sprite {
 		
 		// State information
 		setStateToDefaults();
+		this.visible = !(type == SpriteType.EXIT_DOOR || type == SpriteType.BONUS_DOOR);
 	}
 	
 	/**
 	 * 
 	 * Called from construtor or during reset: Sets all mutable state information to initial-constructed defaults.
+	 * Note that the initial visibility is NOT set. That is set in constructor only. Visibility is never reset.
 	 * 
 	 */
 	private void setStateToDefaults() {
@@ -146,7 +148,6 @@ public class Sprite {
 		this.speedX = initialSpeedX * GameConstants.SPEED_MULTIPLIER;
 		this.speedY = initialSpeedY * GameConstants.SPEED_MULTIPLIER;
 		this.currentLocation = Point2D.from(startLocation);
-		this.visible = !(type == SpriteType.EXIT_DOOR || type == SpriteType.BONUS_DOOR);
 		this.cycleDirection = true;
 		this.updateTick = 1;
 		resetClip();
@@ -180,6 +181,8 @@ public class Sprite {
 	 * This state is not saved. All sprites when a world is loaded are initialised the same. 
 	 * Invisible for doors, visible for instant kill, health drainer, and scenery sprites.
 	 * The editor will need to override sprite visibility during creation.
+	 * <p/>
+	 * This state, unlike others, is NEVER reset when bonzo leaves the screen.
 	 * 
 	 * @param visible
 	 * 		{@code true} to make sprite visible, {@code false} to make invisible
