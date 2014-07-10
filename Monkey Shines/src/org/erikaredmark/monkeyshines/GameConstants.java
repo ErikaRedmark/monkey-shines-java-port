@@ -91,7 +91,10 @@ public final class GameConstants {
 	public static final int HEALTH_MAX = 100;
 	// Number of ticks bonzo can be not standing on ground (longer for coming from a jump)
 	public static final int SAFE_FALL_TIME = (int)((double)FRAMES_PER_SECOND / 3.2);
-	public static final int SAFE_FALL_JUMP_TIME = (int)((double)FRAMES_PER_SECOND * 2.6);
+	// The number used here (until I decide a better way to auto calculate) is effectively the amount
+	// of time bonzo spends doing a complete arc from start of jump to bottom of jump before he falls more
+	// than he rose.
+	public static final int SAFE_FALL_JUMP_TIME = SAFE_FALL_TIME + 46;
 	
 	// Once bonzo passes the threshold for time, the number of ticks he is passed the
 	// threshold is put to the POWER of this value (important this be greater than 1).
