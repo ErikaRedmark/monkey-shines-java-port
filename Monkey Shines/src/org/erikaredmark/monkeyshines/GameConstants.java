@@ -30,7 +30,6 @@ public final class GameConstants {
 	/* Terminal velocity must be at least one minus the verticle tile size, or hit ground collision calculations will fail.
 	 */
 	public static final double TERMINAL_VELOCITY = 14.0;
-	public static final double SPEED_MULTIPLIER = 1.0; // The speed of a sprite is multiplied by this to get how fast it moves across screen.
 	
 	// Notes
 	// 1) Bonzos speed multiplier combined with any speed increases (such as conveyers) must not exceed 10. If it does,
@@ -38,6 +37,10 @@ public final class GameConstants {
 	// 2) If the total speed ever exceeds 20 the game becomes basically broken. Don't do that.
 	public static final double BONZO_SPEED_MULTIPLIER = 2.6; // The speed Bonzo dashes across the landscape
 	public static final double BONZO_JUMP_MULTIPLIER = 1.25; // The force of bonzo's jump
+	
+	// User selects an integer value (0 and up) for a sprite's 'speed', and that value is multiplied by this to get the actual
+	// pixel speed. This is always set such that a sprite of 'speed' 2 will match Bonzo's speed.
+	public static final double SPEED_MULTIPLIER = BONZO_SPEED_MULTIPLIER / 2.0;
 	
 	// Bonzo accelerates downward until terminal velocity
 	public static final double BONZO_FALL_ACCELERATION_JUMP = -0.3; // The acceleration bonzo falls during a jump. Significantly slower than normal.
@@ -117,7 +120,11 @@ public final class GameConstants {
 	// Smaller numbers mean more ticks per second which means more fine control over how fast things are by allowing
 	// certain things to wait for n ticks before performing an action.
 	public static final int GAME_SPEED = 30; // 20 = 50 ticks per second
-	public static final int EDITOR_SPEED = GAME_SPEED + 30;
+	
+	// Originally editor was to use different speed. It is, however, easier to place sprites and get a feel for their
+	// movement with the same speed as game speed. The new features that pause the sprites when editing them makes
+	// the need for a 'slower' editor speed moot.
+	public static final int EDITOR_SPEED = GAME_SPEED;
 	
 	// 10 to the power of 0 through 7. Used for digit calculation when drawing the score sprites
 	// index is the 'exponent', and result is the calculation. Base is 10.

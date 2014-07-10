@@ -28,8 +28,10 @@ public class Sprite {
 	// Movement: Classic Monkeyshines bounding box movement
 	// Realtime state movement
 	private       Point2D currentLocation;
-	private       int speedX;
-	private       int speedY;
+	
+	// These values are SET as the final speed (sprite speed times game constant multiplier)
+	private       double speedX;
+	private       double speedY;
 	
 	private final AnimationType animationType;
 	private final AnimationSpeed animationSpeed;
@@ -139,8 +141,10 @@ public class Sprite {
 	 * 
 	 */
 	private void setStateToDefaults() {
-		this.speedX = initialSpeedX;
-		this.speedY = initialSpeedY;
+		// The only place speed is directly set OTHER THAN negation (which is fine and
+		// doesn't require reapplying the multiplier)
+		this.speedX = initialSpeedX * GameConstants.SPEED_MULTIPLIER;
+		this.speedY = initialSpeedY * GameConstants.SPEED_MULTIPLIER;
 		this.currentLocation = Point2D.from(startLocation);
 		this.visible = !(type == SpriteType.EXIT_DOOR || type == SpriteType.BONUS_DOOR);
 		this.cycleDirection = true;
