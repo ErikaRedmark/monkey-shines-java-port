@@ -11,6 +11,14 @@ package org.erikaredmark.monkeyshines;
 public final class GameConstants {
 	
 	private GameConstants() { }
+	
+	// How many frames occur per second in terms of BOTH graphic redraw AND game logic update. In this game,
+	// redrawing and update are done on the same frame. It's a simple game and the FPS isn't that fast so this
+	// really shouldn't be an issue.
+	// The 'actual' frames per second may be slightly different, as the sleep time is calculated from this and
+	// may not divide into 1000 evenly. For non-divisors of 1000, this ends up being an approximation.
+	public static final int FRAMES_PER_SECOND = 42;
+	
 	/*
 	 * Items that are made final are hard coded into the engine and would disrupt the game if they were changed
 	 */
@@ -35,16 +43,24 @@ public final class GameConstants {
 	// 1) Bonzos speed multiplier combined with any speed increases (such as conveyers) must not exceed 10. If it does,
 	//	  collision detection in terms of 'snapping' him against walls will instead bounce him back.
 	// 2) If the total speed ever exceeds 20 the game becomes basically broken. Don't do that.
-	public static final double BONZO_SPEED_MULTIPLIER = 2.6; // The speed Bonzo dashes across the landscape
-	public static final double BONZO_JUMP_MULTIPLIER = 1.25; // The force of bonzo's jump
+	public static final int BONZO_SPEED_MULTIPLIER = 2; // The speed Bonzo dashes across the landscape
+	public static final double BONZO_JUMP_MULTIPLIER = (double)FRAMES_PER_SECOND / 40; // The force of bonzo's jump
 	
 	// User selects an integer value (0 and up) for a sprite's 'speed', and that value is multiplied by this to get the actual
 	// pixel speed. This is always set such that a sprite of 'speed' 2 will match Bonzo's speed.
-	public static final double SPEED_MULTIPLIER = BONZO_SPEED_MULTIPLIER / 2.0;
+	// Sprite movement can NOT be a double. It must be an integer. Sprites moving left and right must be able to traverse
+	// the same distance in the same amount of time (truncation screws that up) so they remain synced up if the author
+	// intended them to be so.
+	public static final int SPEED_MULTIPLIER = BONZO_SPEED_MULTIPLIER / 2;
+	
+	// The number of pixels, per tick, to move Bonzo when he is under the effect of a conveyer belt.
+	public static final double CONVEYER_SPEED = (double)FRAMES_PER_SECOND / 48.0; 
 	
 	// Bonzo accelerates downward until terminal velocity
-	public static final double BONZO_FALL_ACCELERATION_JUMP = -0.3; // The acceleration bonzo falls during a jump. Significantly slower than normal.
-	public static final double BONZO_FALL_ACCELERATION_NORMAL = -1.0; // The acceleration bonzo falls normally
+	// The acceleration bonzo falls during a jump. Significantly slower than normal.
+	public static final double BONZO_FALL_ACCELERATION_JUMP = -((double)FRAMES_PER_SECOND / 200.0); 
+	// The acceleration bonzo falls normally
+	public static final double BONZO_FALL_ACCELERATION_NORMAL = -((double)FRAMES_PER_SECOND / 42.0);
 
 	// The number of pixels into bonzos sprite to start a fall. Bigger numbers make bonzo
 	// fall earlier (he can't tiptoe to the edge of his normal bounding box)
@@ -74,8 +90,8 @@ public final class GameConstants {
 	// Total units of health bonzo starts with
 	public static final int HEALTH_MAX = 100;
 	// Number of ticks bonzo can be not standing on ground (longer for coming from a jump)
-	public static final int SAFE_FALL_TIME = 13;
-	public static final int SAFE_FALL_JUMP_TIME = 46;
+	public static final int SAFE_FALL_TIME = (int)((double)FRAMES_PER_SECOND / 3.2);
+	public static final int SAFE_FALL_JUMP_TIME = (int)((double)FRAMES_PER_SECOND * 2.6);
 	
 	// Once bonzo passes the threshold for time, the number of ticks he is passed the
 	// threshold is put to the POWER of this value (important this be greater than 1).
@@ -88,15 +104,9 @@ public final class GameConstants {
 	
 	// Amount of life recovered when an energy thingy is taken.
 	public static final int LIFE_INCREASE = 15; 
-	
-	/* -------------------------- Score ---------------------------- */
-	public static final double FRUIT_SCORE = 10.0; // Standard score for fruit.
-	public static final double YUMMY_FRUIT_SCORE = 50.0; // score for Yummy fruit.
-	public static final double EXIT_KEY_SCORE = 10.0; // Score for exit key
-	public static final double BONUS_KEY_SCORE = 10.0; // Score for bonus keys
-	
+
 	public static final int BONUS_SCREEN = 10000; // The screenID of the bonus world; or where the bonus door takes one too.
-	public static final double CONVEYER_SPEED = 1.4; // The number of pixels, per tick, to move Bonzo when he is under the effect of a conveyer belt.
+
 	
 	public static final int WINDOW_WIDTH = 640;
 	public static final int WINDOW_HEIGHT = 480;
@@ -116,10 +126,8 @@ public final class GameConstants {
 	
 	// Speed
 	// Number of milliseconds that make up a 'tick' of gameplay. Lower numbers mean faster gameplay and animation,
-	// and bigger numbers mean slower.
-	// Smaller numbers mean more ticks per second which means more fine control over how fast things are by allowing
-	// certain things to wait for n ticks before performing an action.
-	public static final int GAME_SPEED = 30; // 20 = 50 ticks per second
+	// and bigger numbers mean slower. This is automatically calculated from frames per second
+	public static final int GAME_SPEED = 1000 / FRAMES_PER_SECOND;
 	
 	// Originally editor was to use different speed. It is, however, easier to place sprites and get a feel for their
 	// movement with the same speed as game speed. The new features that pause the sprites when editing them makes

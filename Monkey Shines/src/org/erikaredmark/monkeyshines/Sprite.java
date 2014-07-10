@@ -30,8 +30,8 @@ public class Sprite {
 	private       Point2D currentLocation;
 	
 	// These values are SET as the final speed (sprite speed times game constant multiplier)
-	private       double speedX;
-	private       double speedY;
+	private int speedX;
+	private int speedY;
 	
 	private final AnimationType animationType;
 	private final AnimationSpeed animationSpeed;
