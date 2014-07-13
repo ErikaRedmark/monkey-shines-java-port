@@ -8,7 +8,7 @@ Having heavy nostalgia for a game I can not run even in a emulator, I decided to
 To just start playing the game and using the level editor, jump to the wiki: https://github.com/ErikaRedmark/monkey-shines-java-port/wiki. If you wish to work with the source, my setup is Eclipse using EGit which would be the easiest way to get running. 
 
 There are two main points of entry in the code:
-- LevelEditor: This class starts the Level Editor. Both the main game and level editor share the same basic engine (only slowed down, as in the original). The best way to start is to create a new world and use the default resource pack. This default pack is basically a subset rip of the original game's 'Spooked'. 
+- LevelEditor: This class starts the Level Editor. Both the main game and level editor share the same basic engine. The best way to start is to create a new world and use the default resource pack. This default pack is basically a subset rip of the original game's 'Spooked'. 
 - MonkeyShines: This class allows you to start the actual game. It should open a file chooser from which you can select a .world file (this file chooser is temporary and easy way to just playtest worlds). You can find a debug world in the 'extras' folder at the root of this project.
 
 # Status
