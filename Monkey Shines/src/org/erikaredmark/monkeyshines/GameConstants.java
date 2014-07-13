@@ -44,7 +44,7 @@ public final class GameConstants {
 	//	  collision detection in terms of 'snapping' him against walls will instead bounce him back.
 	// 2) If the total speed ever exceeds 20 the game becomes basically broken. Don't do that.
 	public static final int BONZO_SPEED_MULTIPLIER = 2; // The speed Bonzo dashes across the landscape
-	public static final double BONZO_JUMP_MULTIPLIER = (double)FRAMES_PER_SECOND / 40; // The force of bonzo's jump
+	public static final double BONZO_JUMP_MULTIPLIER = (double)FRAMES_PER_SECOND / 39; // The force of bonzo's jump
 	
 	// User selects an integer value (0 and up) for a sprite's 'speed', and that value is multiplied by this to get the actual
 	// pixel speed. This is always set such that a sprite of 'speed' 2 will match Bonzo's speed.
@@ -54,11 +54,11 @@ public final class GameConstants {
 	public static final int SPEED_MULTIPLIER = BONZO_SPEED_MULTIPLIER / 2;
 	
 	// The number of pixels, per tick, to move Bonzo when he is under the effect of a conveyer belt.
-	public static final double CONVEYER_SPEED = (double)FRAMES_PER_SECOND / 48.0; 
+	public static final double CONVEYER_SPEED = (double)FRAMES_PER_SECOND / 45.0; 
 	
 	// Bonzo accelerates downward until terminal velocity
 	// The acceleration bonzo falls during a jump. Significantly slower than normal.
-	public static final double BONZO_FALL_ACCELERATION_JUMP = -((double)FRAMES_PER_SECOND / 200.0); 
+	public static final double BONZO_FALL_ACCELERATION_JUMP = -((double)FRAMES_PER_SECOND / 210.0); 
 	// The acceleration bonzo falls normally
 	public static final double BONZO_FALL_ACCELERATION_NORMAL = -((double)FRAMES_PER_SECOND / 42.0);
 
