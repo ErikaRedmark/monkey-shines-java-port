@@ -417,6 +417,11 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		
 		changeState(EditorState.ERASING_TILES);
 	}
+	public void actionResetScreen() {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		
+		reloadCurrentScreen();
+	}
 	
 	/**
 	 * 
@@ -498,6 +503,17 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		
 		currentScreenEditor = currentWorldEditor.getLevelScreenEditor(screenId);
 		currentWorldEditor.changeCurrentScreen(currentScreenEditor);
+	}
+	
+	/**
+	 * 
+	 * Reloads the current screen, resyncing the modified sprites and all animations together to how it will look when
+	 * bonzo enters the screen in-game. In-between states that are possible in the editor are not saved; a screen after reset
+	 * is how it will appear when bonzo enters it. Useful when aligning sprites that need to work with each other.
+	 * 
+	 */
+	public void reloadCurrentScreen() {
+		currentScreenEditor.resetCurrentScreen();
 	}
 	
 	/**
@@ -951,5 +967,6 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	public LevelScreenEditor getVisibleScreenEditor() {
 		return this.currentScreenEditor;
 	}
+
 
 }

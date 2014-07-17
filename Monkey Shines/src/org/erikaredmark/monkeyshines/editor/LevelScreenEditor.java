@@ -154,6 +154,13 @@ public class LevelScreenEditor {
 	public void startAnimatingSprites() {
 		screen.setSpriteAnimation(true);
 	}
+
+	/**
+	 * Forwards to {@code resetScreen} in {@code LevelScreen}
+	 */
+	public void resetCurrentScreen() {
+		screen.resetScreen();
+	}
 	
 
 }

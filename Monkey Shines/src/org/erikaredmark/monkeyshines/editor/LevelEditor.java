@@ -188,6 +188,13 @@ public class LevelEditor extends JFrame {
 		}
 	});
 	
+	private JMenuItem resetScreen = new JMenuItem(new AbstractAction("Reset Screen") {
+		private static final long serialVersionUID = 1L;
+		@Override public void actionPerformed(ActionEvent e) {
+			currentWorld.actionResetScreen();
+		}
+	});
+	
 	// Special
 	private JMenu specialMenu = new JMenu("Special");
 	/* -------------------------- MENU ITEM PLACE BONZO --------------------------- */
@@ -528,11 +535,11 @@ public class LevelEditor extends JFrame {
 		placeTiles.add(placeScenes);
 		placeTiles.add(placeConveyers);
 		placeTiles.add(placeCollapsibles);
+		placeTiles.add(placeGoodies);
 		placeTiles.add(eraser);
 		
 		mainMenuBar.add(placeTiles);
 		
-		spritesMenu.add(placeGoodies);
 		spritesMenu.add(placeSprites);
 		spritesMenu.add(editSprites);
 		spritesMenu.add(deleteSprites);
@@ -545,6 +552,7 @@ public class LevelEditor extends JFrame {
 		
 		screenMenu.add(gotoScreen);
 		screenMenu.add(changeBackground);
+		screenMenu.add(resetScreen);
 		
 		mainMenuBar.add(screenMenu);
 		
