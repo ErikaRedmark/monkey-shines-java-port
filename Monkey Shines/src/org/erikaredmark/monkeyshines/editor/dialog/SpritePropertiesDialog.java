@@ -331,8 +331,8 @@ public class SpritePropertiesDialog extends JDialog {
 		SpritePropertiesDialog dialog = new SpritePropertiesDialog(rsrc, model);
 		dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		dialog.setModal(true);
-		dialog.setLocation(parent.getLocation() );
 		dialog.setSize(450, 300);
+		dialog.setLocationRelativeTo(null);
 		dialog.setVisible(true);
 		
 		// Dialog is over at this point. Set model based on how it was exited to tell client.
