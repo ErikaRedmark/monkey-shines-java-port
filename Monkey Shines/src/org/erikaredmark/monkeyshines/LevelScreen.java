@@ -495,5 +495,15 @@ public final class LevelScreen {
 	public void setSpriteAnimation(boolean animation) {
 		this.animateSprites = animation;
 	}
+	
+	/**
+	 * 
+	 * @return
+	 * 		{@code true} if sprites are currently animating, {@code false} if otherwise
+	 * 
+	 */
+	public boolean getSpriteAnimation() {
+		return this.animateSprites;
+	}
 
 }

@@ -112,7 +112,7 @@ public final class WorldEditor {
 	
 	/**
 	 * Changes the world editor to display the screen for the current level screen editor. A valid editor instance must
-	 * be held (get from {@link #getLevelScreenEditor(int)}) to insure that the screen actually exists before displaying
+	 * be held (get from {@link #getLevelScreenEditor(int)}) to insure that the screen actually exists before displaying.
 	 * 
 	 * @param editor
 	 * 		the level screen editor to mark as current. This editor will be displayed on the main screen i.e the game

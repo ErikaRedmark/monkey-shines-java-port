@@ -501,8 +501,14 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	public void actionChangeScreen(Integer screenId) {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
+		boolean wasAnimating = currentScreenEditor.isAnimatingSprites();
 		currentScreenEditor = currentWorldEditor.getLevelScreenEditor(screenId);
 		currentWorldEditor.changeCurrentScreen(currentScreenEditor);
+		
+		// Make sure sprites are not animating if they weren't before, and animating if they
+		// were
+		if (wasAnimating) currentScreenEditor.startAnimatingSprites();
+		else			  currentScreenEditor.stopAnimatingSprites();
 	}
 	
 	/**

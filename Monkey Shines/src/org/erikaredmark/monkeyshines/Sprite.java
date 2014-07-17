@@ -283,11 +283,12 @@ public class Sprite {
 		
 		// Update Animation
 		// If cycle directon is true, ascend. Otherwise, descend back down the sprite sheet
+		// note that 'cycle direction' is from 'Increasing Frames', not cycling frames.
 		if (updateTick >= animationSpeed.getTicksToUpdate() ) {
 			int multiplier = cycleDirection ? 1 : -1;
 			currentClip.translateX(multiplier * GameConstants.SPRITE_SIZE_X);
 			if (currentClip.x() >= rsrc.getSpritesheetFor(this.id).getWidth() ) {
-				if (getAnimationType() == AnimationType.CYCLING_FRAMES) {
+				if (getAnimationType() == AnimationType.INCREASING_FRAMES) {
 					cycleDirection = !cycleDirection;
 					// Set last sprite
 					currentClip.setX( (GameConstants.SPRITES_IN_ROW - 2) * GameConstants.SPRITE_SIZE_X);
@@ -296,8 +297,8 @@ public class Sprite {
 				}
 				
 			} else if (currentClip.x() < 0) {
-				// Assume cycling frames; nothing else makes sense to be less than zero
-				assert getAnimationType() == AnimationType.CYCLING_FRAMES;
+				// Assume increasing/decreasing frames; nothing else makes sense to be less than zero
+				assert getAnimationType() == AnimationType.INCREASING_FRAMES;
 				cycleDirection = !cycleDirection;
 				currentClip.setX(GameConstants.SPRITE_SIZE_X);
 			}

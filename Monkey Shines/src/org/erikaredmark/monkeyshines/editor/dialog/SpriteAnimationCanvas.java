@@ -10,6 +10,7 @@ import javax.swing.Timer;
 
 import org.erikaredmark.monkeyshines.AnimationSpeed;
 import org.erikaredmark.monkeyshines.AnimationType;
+import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.Sprite;
 import org.erikaredmark.monkeyshines.Sprite.SpriteType;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
@@ -39,7 +40,7 @@ public class SpriteAnimationCanvas extends Canvas {
 		this.animatingSprite = Sprite.newUnmovingSprite(spriteId, animationType, speed, SpriteType.NORMAL, rsrc);
 		this.animatingSprite.setVisible(true);
 		// Make sprite animate
-		Timer animationTimer = new Timer(100, new ActionListener() {
+		Timer animationTimer = new Timer(GameConstants.GAME_SPEED, new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
 				animatingSprite.update();
 				SpriteAnimationCanvas.this.repaint();

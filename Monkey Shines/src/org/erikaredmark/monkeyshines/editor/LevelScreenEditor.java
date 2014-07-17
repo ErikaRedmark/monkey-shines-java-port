@@ -156,11 +156,20 @@ public class LevelScreenEditor {
 	}
 
 	/**
+	 * 
+	 * @return
+	 * 		{@code true} if sprites are currently animating, {@code false} if otherwise
+	 * 
+	 */
+	public boolean isAnimatingSprites() {
+		return screen.getSpriteAnimation();
+	}
+	
+	/**
 	 * Forwards to {@code resetScreen} in {@code LevelScreen}
 	 */
 	public void resetCurrentScreen() {
 		screen.resetScreen();
 	}
-	
 
 }
