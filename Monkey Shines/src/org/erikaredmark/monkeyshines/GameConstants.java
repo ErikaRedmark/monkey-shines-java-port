@@ -90,7 +90,7 @@ public final class GameConstants {
 	// Total units of health bonzo starts with
 	public static final int HEALTH_MAX = 100;
 	// Number of ticks bonzo can be not standing on ground (longer for coming from a jump)
-	public static final int SAFE_FALL_TIME = (int)((double)FRAMES_PER_SECOND / 3.2);
+	public static final int SAFE_FALL_TIME = (int)((double)FRAMES_PER_SECOND / 2.8);
 	// The number used here (until I decide a better way to auto calculate) is effectively the amount
 	// of time bonzo spends doing a complete arc from start of jump to bottom of jump before he falls more
 	// than he rose.
