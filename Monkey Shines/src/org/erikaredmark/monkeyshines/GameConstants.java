@@ -37,7 +37,7 @@ public final class GameConstants {
 	
 	/* Terminal velocity must be at least one minus the verticle tile size, or hit ground collision calculations will fail.
 	 */
-	public static final double TERMINAL_VELOCITY = 14.0;
+	public static final double TERMINAL_VELOCITY = 6.0;
 	
 	// Notes
 	// 1) Bonzos speed multiplier combined with any speed increases (such as conveyers) must not exceed 10. If it does,
