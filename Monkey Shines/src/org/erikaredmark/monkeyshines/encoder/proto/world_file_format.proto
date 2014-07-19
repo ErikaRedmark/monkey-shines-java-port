@@ -17,14 +17,16 @@ message World {
   // Map<Integer, Level>
   repeated IntegerToLevelTuple levels = 3;
   repeated Hazard hazards = 4;
-  // In the original game, this was always 10000
+  // In the original game, this was always 10000. In fact, new levels
+  // default to 10000
   optional uint32 bonus_screen = 5;
   
   // Following fields were not available in original:
   optional string author = 6;
   
-  // Addition field to bonus screen; return screen is required
-  // to be precomputed
+  // Added as an attempt to make bonus screens, but is now calculated
+  // dynamically. The value still exists in the world but is set during
+  // gameplay.
   optional uint32 return_screen = 7;
   
   message StringToGoodieTuple {

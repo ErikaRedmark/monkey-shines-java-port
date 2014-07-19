@@ -83,8 +83,6 @@ public final class GameConstants {
 	// When a world is first created and no bonus doors are added, it is given this default
 	// as bonus screen id.
 	public static final int DEFAULT_BONUS_SCREEN = 10000;
-	// The return location when exiting a bonus door on the bonus screen
-	public static final int DEFAULT_RETURN_SCREEN = 1000;
 	
 	/* -------------------------- Health --------------------------- */
 	// Total units of health bonzo starts with

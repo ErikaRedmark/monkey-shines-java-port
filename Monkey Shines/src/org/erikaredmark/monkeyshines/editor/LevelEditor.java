@@ -18,10 +18,8 @@ import javax.swing.JOptionPane;
 
 import org.erikaredmark.monkeyshines.*;
 import org.erikaredmark.monkeyshines.editor.LevelEditorMainCanvas.EditorState;
-import org.erikaredmark.monkeyshines.editor.WorldEditor.BonusRoomPair;
 import org.erikaredmark.monkeyshines.editor.dialog.GoToScreenDialog;
 import org.erikaredmark.monkeyshines.editor.dialog.NewWorldDialog;
-import org.erikaredmark.monkeyshines.editor.dialog.SelectScreenDialog;
 import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.encoder.WorldIO;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
@@ -211,6 +209,13 @@ public class LevelEditor extends JFrame {
 			currentWorld.actionSetAuthor();
 		}
 	});
+	
+	private JMenuItem setBonus = new JMenuItem(new AbstractAction("Set Bonus Screen...") {
+		private static final long serialVersionUID = 1L;
+		@Override public void actionPerformed(ActionEvent e) {
+			actionSelectBonusScreen();
+		}
+	});
 
 	// Returns false if a world is not loaded, after letting the user know
 	// a world is not loaded.
@@ -248,67 +253,16 @@ public class LevelEditor extends JFrame {
 		}
 	}
 	
-	/**
-	 * 
-	 * Checks the locations of the bonus rooms by looking for all bonus doors in the world. If
-	 * any issues prevent computation (such as more than two screens holding doors) this returns false and in
-	 * general that stops the save.
-	 * <p/>
-	 * Note that having NO bonus doors does not stop save. No bonus doors keeps bonus level information at defaults
-	 * which, in game terms, effectively means there is no bonus room for the level
-	 * <p/>
-	 * This will throw up a dialog if saving is prevented alerting the user to the issue. Even if two bonus doors are there,
-	 * if the actual bonus room hasn't been set to one of them (or has become outdated) it will ask the user to choose which
-	 * of the screens to be a bonus room.
-	 * 
-	 * @param levelEditor
-	 * 		the level editor to check for recomputation for
-	 * 
-	 */
-	private static boolean checkAndRecomputeBonusRooms(LevelEditorMainCanvas levelEditor) {
-		
-		// Must confirm two bonus doors (or two screens have x number of bonus doors on them) so we can set both
-		// the bonus room and the return room.
-		BonusRoomPair pair = levelEditor.getWorldEditor().bonusRooms();
-		if (pair.hasNone() ) {
-			System.out.println("No bonus doors for level: no computation");
-			return true; // no bonus doors are okay.
+	public void actionSelectBonusScreen() {
+		if (!(warnAndStopIfWorldNotLoaded() ) ) {
+			return;
 		}
 		
-		// Wrong numbers of SCREENS with bonus doors are not okay.
-		if (!(pair.hasTwo() ) ) {
-			final String exactError =   pair.hasOnlyOne()
-									  ? "World only has one screen id with bonus doors " + pair.first()
-											  // Else it has too many: we already checked NONE and two
-									  : "World has too many screens with bonus doors (only two allowed). Screen ids are: " + pair.getAllAsString();
-			
-			JOptionPane.showMessageDialog(levelEditor,
-			    "You must have exactly two screens with bonus doors. There can be any number of bonus doors on the same screen, but exactly two screens must"
-			  + " contain bonus doors to properly set the bonus room."
-			  + System.lineSeparator()
-			  + exactError,
-			    "Not Enough Bonus Doors",
-			    JOptionPane.ERROR_MESSAGE);
-			return false;
-		}
+		final World world = currentWorld.getWorldEditor().getWorld();
 		
-		// World has correct number of screens with bonus doors. Check bonus screen in world. If it matches the bonus screen id, all is well;
-		// we can auto-compute the return screen. Otherwise ask user to choose between the two
-		final World world = levelEditor.getWorldEditor().getWorld();
+		int selectedScreenId = GoToScreenDialog.displayAndGetId(world.getBonusScreen(), world, false);
 		
-		int bonusRoom = world.getBonusScreen();
-		if (!(pair.containsScreen(bonusRoom) ) ) {
-			bonusRoom = SelectScreenDialog.launch(pair.first(), pair.second(), world);
-			assert pair.containsScreen(bonusRoom) : "Incorrect bonus room id returned from UI: " + bonusRoom + ". Can only be one of " + pair.getAllAsString();
-
-		}
-		
-		int returnRoom = pair.getOther(bonusRoom);
-		
-		levelEditor.getWorldEditor().getWorld().setBonusScreen(bonusRoom);
-		levelEditor.getWorldEditor().getWorld().setReturnScreen(returnRoom);
-		
-		return true;
+		world.setBonusScreen(selectedScreenId);
 	}
 	
 	/**
@@ -450,14 +404,7 @@ public class LevelEditor extends JFrame {
 					throw new IllegalStateException("Save should not be enabled when a world is not loaded");
 					
 				// Perform world sanity checks. We stop here if anything wrong goes... wrong.
-				
-				// Check and recompute throws its own dialogs up, so we can just silently fail here.
-				if (!(checkAndRecomputeBonusRooms(editor.currentWorld) ) ) {
-					System.out.println("Save stopped");
-					return;
-				}
-				
-				
+								
 				Path saveTo;
 				if (editor.defaultSaveLocation != null) saveTo = editor.defaultSaveLocation;
 				else {
@@ -505,12 +452,6 @@ public class LevelEditor extends JFrame {
 		hazardMenu.setEnabled(enable);
 		specialMenu.setEnabled(enable);
 		spritesMenu.setEnabled(enable);
-//		placeThrus.setEnabled(enable);
-//		placeScenes.setEnabled(enable);
-//		placeSprites.setEnabled(enable);
-//		placeGoodies.setEnabled(enable);
-//		gotoScreen.setEnabled(enable);
-		
 	}
 
 	private LevelEditor() {
@@ -558,6 +499,7 @@ public class LevelEditor extends JFrame {
 		
 		specialMenu.add(placeBonzo);
 		specialMenu.add(setAuthor);
+		specialMenu.add(setBonus);
 		
 		mainMenuBar.add(specialMenu);
 		

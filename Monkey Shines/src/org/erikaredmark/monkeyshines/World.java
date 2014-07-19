@@ -59,9 +59,11 @@ public class World {
 	// that no matter how many objects, it will take the same amount of time to detect collisions; won't need to loop and see if anything
 	// is at that point
 	private final Map<String, Goodie> goodiesInWorld;
+	
 	// Holds a list of all goodies on a particlar screen. During screen reset, relevant goodies may
 	// need to be regenerated.
 	private final Multimap<LevelScreen, Goodie> goodiesPerScreen;
+	
 	// When a world is initialised, hold a set of all blue and red keys. When taken, they will
 	// be removed from the set. The moment a set becomes empty, it toggles the 'all blue keys' or
 	// 'all red keys' collected event.
@@ -90,16 +92,21 @@ public class World {
 	// to them is probably a bad idea.
 	private final List<Conveyer> conveyers;
 	
-	private       int currentScreen;
+	private int currentScreen;
 	
 	// This is defaults to either 10000 or from the save file. It is up to the level editor
 	// to set this. However, it should do so automatically on every save.
 	// Effectively final for game, mutable for level editor
 	private int bonusScreen;
-	// Screen bonzo returns to when leaving bonus world. Note that BOTH SCREENS must contain at 
-	// least one bonus door, and bonus doors may not appear on other screens. Level editor precomputes
-	// this and saves information to .world file.
-	private int returnScreen;
+	
+	// Screen bonzo returns to when leaving bonus world. This is automatically set to the screen bonzo first
+	// enters a bonus door. This is done so the level editor user doesn't need to set both screens.
+	// This MAY be null, in which case it is awaiting initial setting.
+	// In practise, the entry
+	// to the bonus world is always on the same screen Id (as the bonus world has its own bonus door
+	// somewhere that must take bonzo back), but this is left dynamically set in case two bonus doors
+	// are to link to a dead-end bonus room.
+	private Integer returnScreen;
 	
 	// When a world is first created, it has an associated bonus countdown of 10000. Once all red keys are collected,
 	// the main game session will start to decrement this every second or so.
@@ -164,8 +171,7 @@ public class World {
 						 screens, 
 						 new ArrayList<Hazard>(), 
 						 conveyers, 
-						 GameConstants.DEFAULT_BONUS_SCREEN, 
-						 GameConstants.DEFAULT_RETURN_SCREEN,
+						 GameConstants.DEFAULT_BONUS_SCREEN,
 						 rsrc);
 	}
 	
@@ -195,7 +201,6 @@ public class World {
 				 final List<Hazard> hazards,
 				 final List<Conveyer> conveyers,
 				 final int bonusScreen,
-				 final int returnScreen,
 				 final WorldResource rsrc) {
 		
 		/* Variable data		*/
@@ -205,7 +210,6 @@ public class World {
 		this.hazards = hazards;
 		this.conveyers = conveyers;
 		this.bonusScreen = bonusScreen;
-		this.returnScreen = returnScreen;
 		this.rsrc = rsrc;
 		
 		/* Constant data		*/
@@ -214,6 +218,7 @@ public class World {
 		
 		/* Default data 		*/
 		this.author = "Unknown";
+		this.returnScreen = null;
 		
 		/* Data that can be computed */
 		
@@ -302,21 +307,6 @@ public class World {
 	 * @param id
 	 */
 	public void setBonusScreen(int id) { this.bonusScreen = id; }
-	
-	/**
-	 * Gets the return screen id from the bonus screen. This is basically the location
-	 * of the source bonus door that brings bonzo to the bonus screen, so he may return
-	 * to the main world
-	 * @return id of return screen
-	 */
-	public int getReturnScreen() { return returnScreen; }
-	
-	/** 
-	 * Changes the location the bonus door on the bonus screen should take bonzo.
-	 * Only to be called from level editor 
-	 * @param id
-	 */
-	public void setReturnScreen(int id) { this.returnScreen = id; }
 	
 	public String getAuthor() { return this.author; }
 	
@@ -473,15 +463,22 @@ public class World {
 	 * 
 	 */
 	public void bonusTransfer(Bonzo bonzo) {
-		// Thanks to precomputed values, we simply check which of the two 'bonus' screens bonzo is
-		// on. One is the real bonus screen and one is the return. Regardless of direction of
-		// collision, bonzo will be transported to a new screen at the bonzo starting location
-		// of that screen.
-		int transferScreenId =   currentScreen == bonusScreen
-							   ? returnScreen
-							   : bonusScreen;
-		
-		assert currentScreen == bonusScreen || currentScreen == returnScreen : "Transfer Issue: Can't use bonus screen transfer method on this screen: " + currentScreen + " as it is not a bonus or return screen";
+		int transferScreenId;
+		if (returnScreen == null) {
+			// Branch 1: Return screen not yet; this is bonzos first trip and his destination is the bonus screen. This current
+			// screen is his return
+			transferScreenId = bonusScreen;
+			
+			// Only place in entire object this variable should be set from!
+			returnScreen = currentScreen;
+		} else {
+			// Branch 2: Return screen is already set. If bonzo is entering a bonus door ON the return screen, then he is sent
+			// to the bonus room. Otherwise, he is sent to the return screen.
+			// Note that the bonus room need not be the same room as the bonus door that leads off of it.
+			transferScreenId =   currentScreen == returnScreen
+							   ? bonusScreen
+							   : returnScreen;
+		}
 		
 		// Must change world screen as well as bonzos reference
 		// Unlike respawning, this DOES count as screen history!
@@ -492,6 +489,7 @@ public class World {
 		if (transferScreen == null) {
 			transferScreen = getCurrentScreen();
 		}
+		
 		changeCurrentScreen(transferScreenId, bonzo);
 		bonzo.setCurrentLocation(transferScreen.getBonzoStartingLocationPixels() );
 	}
