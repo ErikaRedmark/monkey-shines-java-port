@@ -88,6 +88,8 @@ public class ConveyerTile implements TileType {
 	
 	@Override public boolean isSolid() { return false; }
 	
+	@Override public boolean isLandable() { return isSolid() || isThru(); } 
+	
 	@Override public void reset() { /* No op */ }
 
 }

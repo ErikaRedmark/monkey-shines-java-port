@@ -124,6 +124,8 @@ public class HazardTile implements TileType {
 	
 	@Override public boolean isSolid() { return false; }
 	
+	@Override public boolean isLandable() { return isSolid() || isThru(); } 
+	
 	@Override public void paint(Graphics2D g2d, int drawToX, int drawToY, WorldResource rsrc) {
 		// Nothing to paint if dead.
 		if (isDead() )  return;

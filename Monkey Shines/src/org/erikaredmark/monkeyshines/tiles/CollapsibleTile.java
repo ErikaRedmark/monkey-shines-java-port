@@ -45,6 +45,8 @@ public final class CollapsibleTile implements TileType {
 	@Override public boolean isThru() { return damage < 20; }
 	
 	@Override public boolean isSolid() { return false; }
+	
+	@Override public boolean isLandable() { return isSolid() || isThru(); } 
 
 	@Override public void reset() { 
 		damage = 0;

@@ -431,7 +431,33 @@ public class World {
 		ImmutablePoint2D ground = currentScreen.getBonzoLastOnGround();
 		if (ground != null) {
 			// No need to change screen in world; It's the same one
-			theBonzo.restartBonzoOnScreen(currentScreen, currentScreen.getBonzoCameFrom() );
+			// First, check if where bonzo came from is safe (on the ground). If it is not, such as
+			// bonzo falling onto the screen with a wing, then dying later, we use the ground state, which
+			// we already confirmed is not null
+			
+			// Snap bonzo's come from position, and look TWO tiles below (bonzo takes up 2, so top left + 2 gets bottom)
+			// on both left and right. Lack of solid ground indicates that the ground state, that the come-from state,
+			// should be used.
+			ImmutablePoint2D bonzoCameFrom = currentScreen.getBonzoCameFrom();
+			int t1x = bonzoCameFrom.x() / GameConstants.TILE_SIZE_X;
+			int ty = bonzoCameFrom.y() / GameConstants.TILE_SIZE_Y + 2;
+			int t2x = t1x + 1;
+			
+			// We look four tiles down, max before fall becomes damaging.
+			for (int dist = 0; dist < 4; ++dist) {
+				if (   currentScreen.getTile(t1x, ty + dist).isLandable() 
+				    || currentScreen.getTile(t2x, ty + dist).isLandable() 
+				    // Special case: bonzo JUMPED into this room. Safe to respawn where he came from
+				    || ty + dist > GameConstants.TILES_IN_COL) {
+					
+					theBonzo.restartBonzoOnScreen(currentScreen, bonzoCameFrom);
+					return;
+				}
+			} // else no early return, not safe to respawn
+			
+			// Entry point into screen not safe. Go to ground. This may make certain
+			// levels easier, but easier is better than infinite death.
+			theBonzo.restartBonzoOnScreen(currentScreen, ground);
 		} else {
 			// Uh oh! We need to progress backwards through screen history and find a good ground
 			RingArray<LevelScreen> screenHistory = theBonzo.getScreenHistory();

@@ -101,6 +101,8 @@ public class CommonTile implements TileType {
 	@Override public boolean isThru() { return underlyingType == StatelessTileType.THRU; }
 	
 	@Override public boolean isSolid() { return underlyingType == StatelessTileType.SOLID; }
+	
+	@Override public boolean isLandable() { return isSolid() || isThru(); } 
 
 	@Override public void update() { /* No state; never updates */ }
 	

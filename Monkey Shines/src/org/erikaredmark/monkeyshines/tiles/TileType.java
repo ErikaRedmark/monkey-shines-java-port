@@ -60,6 +60,17 @@ public interface TileType {
 	
 	/**
 	 * 
+	 * Determines if a given tile can be landed on.
+	 * {@code return isSolid() || isThru(); }
+	 * TODO If codebase is upgraded to Java 8 this SHOULD be a default method. isLandable is ALWAYS
+	 * an either/or against isSolid or isThru.
+	 * 
+	 * @return
+	 */
+	boolean isLandable();
+	
+	/**
+	 * 
 	 * Updates the given tile type IF it has state. This method will do nothing on stateless tile
 	 * types
 	 * 

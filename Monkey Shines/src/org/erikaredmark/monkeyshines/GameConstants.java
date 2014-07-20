@@ -54,11 +54,11 @@ public final class GameConstants {
 	public static final int SPEED_MULTIPLIER = BONZO_SPEED_MULTIPLIER / 2;
 	
 	// The number of pixels, per tick, to move Bonzo when he is under the effect of a conveyer belt.
-	public static final double CONVEYER_SPEED = (double)FRAMES_PER_SECOND / 45.0; 
+	public static final double CONVEYER_SPEED = (double)FRAMES_PER_SECOND / 43.0; 
 	
 	// Bonzo accelerates downward until terminal velocity
 	// The acceleration bonzo falls during a jump. Significantly slower than normal.
-	public static final double BONZO_FALL_ACCELERATION_JUMP = -((double)FRAMES_PER_SECOND / 210.0); 
+	public static final double BONZO_FALL_ACCELERATION_JUMP = -((double)FRAMES_PER_SECOND / 214.0); 
 	// The acceleration bonzo falls normally
 	public static final double BONZO_FALL_ACCELERATION_NORMAL = -((double)FRAMES_PER_SECOND / 42.0);
 

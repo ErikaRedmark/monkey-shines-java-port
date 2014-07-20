@@ -914,10 +914,6 @@ public final class Bonzo {
 		// Conveyer state is modified to whatever the ground state says it should.
 		} else {
 			currentVelocity.setY(0);
-			// if pushing us up takes us OFF the ground, don't do it. Sloppy Kludge
-			if (groundState.snapUpBy == 19) {
-				System.out.println("debug");
-			}
 			currentLocation.translateY(-groundState.snapUpBy); //Push back to level field.
 			// If we are jumping when we land, start the 'unjump' animation. Also, set
 			// the 'threshold' for falling time for fall calculations
