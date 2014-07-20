@@ -1,6 +1,7 @@
 package org.erikaredmark.monkeyshines.resource;
 
 import javax.sound.sampled.Clip;
+import javax.sound.sampled.FloatControl;
 
 import org.erikaredmark.monkeyshines.GameSoundEffect;
 
@@ -59,6 +60,8 @@ public final class SoundManager {
 		if (rsrc.backgroundMusic.isActive() )  return;
 		
 		rsrc.backgroundMusic.setFramePosition(0);
+		FloatControl gainControl = (FloatControl) rsrc.backgroundMusic.getControl(FloatControl.Type.MASTER_GAIN);
+		gainControl.setValue(-15.0f);
 		rsrc.backgroundMusic.loop(Clip.LOOP_CONTINUOUSLY);
 	}
 	

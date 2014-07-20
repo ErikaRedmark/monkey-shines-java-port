@@ -82,9 +82,8 @@ public class NewWorldDialog extends JPanel {
 						}
 						
 						// Postcondition: World is saved. Dialog is no longer relevant: close it.
-						// Save the state of what the user chose (the new file) to this objects
-						// The path current doesn't point to the save file, just the folder name.
-						model.saveLocation = savePath.resolve(savePath.getFileName() + ".world");
+						// Save the state of what the user chose (the new file)
+						model.saveLocation = savePath.resolve(worldName + ".world");
 						parentDialog.setVisible(false);
 						// dispose();
 						// setVisible(false);
