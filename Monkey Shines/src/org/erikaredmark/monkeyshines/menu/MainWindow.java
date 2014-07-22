@@ -48,7 +48,6 @@ public final class MainWindow extends JFrame {
 		}
 	};
 	
-	// TODO level selection window, sound control window, keyboard mapping, credits, and some placeholder for registration?
 	public MainWindow() { 
 		setTitle("Monkey Shines");
 		setDefaultCloseOperation(EXIT_ON_CLOSE);

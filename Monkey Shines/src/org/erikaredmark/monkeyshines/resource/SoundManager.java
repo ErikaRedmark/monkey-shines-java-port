@@ -1,9 +1,13 @@
 package org.erikaredmark.monkeyshines.resource;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
 
 import org.erikaredmark.monkeyshines.GameSoundEffect;
+import org.erikaredmark.monkeyshines.global.SoundSettings;
 
 /**
  * 
@@ -18,7 +22,7 @@ import org.erikaredmark.monkeyshines.GameSoundEffect;
  * @author Erika Redmark
  *
  */
-public final class SoundManager {
+public final class SoundManager implements PropertyChangeListener {
 
 	// Use as source of sounds
 	private final WorldResource rsrc;
@@ -26,6 +30,8 @@ public final class SoundManager {
 	// Created by WorldResource
 	SoundManager(final WorldResource rsrc) {
 		this.rsrc = rsrc;
+		setMusicVolume(SoundSettings.getMusicVolumePercent() );
+		setSoundVolume(SoundSettings.getSoundVolumePercent() );
 	}
 	
 	/**
@@ -60,8 +66,6 @@ public final class SoundManager {
 		if (rsrc.backgroundMusic.isActive() )  return;
 		
 		rsrc.backgroundMusic.setFramePosition(0);
-		FloatControl gainControl = (FloatControl) rsrc.backgroundMusic.getControl(FloatControl.Type.MASTER_GAIN);
-		gainControl.setValue(-15.0f);
 		rsrc.backgroundMusic.loop(Clip.LOOP_CONTINUOUSLY);
 	}
 	
@@ -77,6 +81,75 @@ public final class SoundManager {
 			rsrc.backgroundMusic.stop();
 		}
 		
+	}
+	
+	/**
+	 * 
+	 * Automatically called on construction and game setting change to match clip volume to
+	 * user defined levels.
+	 * 
+	 * @param value
+	 * 		percentage to set music volume to
+	 * 
+	 */
+	private void setMusicVolume(int value) {
+		FloatControl gainControl = (FloatControl) rsrc.backgroundMusic.getControl(FloatControl.Type.MASTER_GAIN);
+		float decibelLevelOffset = resolveDecibelOffsetFromPercentage(value);
+		gainControl.setValue(decibelLevelOffset);
+	}
+	
+	/**
+	 * 
+	 * Automatically called on construction and game setting change to match clip volume to
+	 * user defined levels.
+	 * 
+	 * @param value
+	 * 		percentage to set music volume to
+	 * 
+	 */
+	private void setSoundVolume(int value) {
+		float decibelLevelOffset = resolveDecibelOffsetFromPercentage(value);
+		for (GameSoundEffect effect : GameSoundEffect.values() ) {
+			Clip clip = rsrc.getSoundFor(effect);
+			FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+			gainControl.setValue(decibelLevelOffset);
+		}
+	}
+	
+	/**
+	 * 
+	 * Resolves a percentage from 0-100 to a decibel level offset for setting clip volume. By default, all clips have
+	 * a master gain of 0.0 decibels, which is already pretty loud. Based on constants defined in {@code GameConstants},
+	 * the percentage is transformed into either a positive or more likely negative offset used to change the 'gain' on
+	 * associated clips and either make them louder or softer.
+	 * 
+	 * @param value
+	 * 		the percentage, from 0-100, of volume. 0 is always no volume and optionally can be handled separately by not
+	 * 		playing the clip at all
+	 * 
+	 * @return
+	 * 		decibel offset level. Returns {@code Float.MIN_VALUE} for volumes of 0%
+	 * 
+	 */
+	private static float resolveDecibelOffsetFromPercentage(int value) {
+		// TODO method stub
+		return 0;
+	}
+
+	/*
+	 * Handles property change events from the settings preferences, whenever the user modifies a sound setting.
+	 */
+	@Override public void propertyChange(PropertyChangeEvent event) {
+		switch (event.getPropertyName() ) {
+		case SoundSettings.PROPERTY_MUSIC:
+			setMusicVolume(SoundSettings.getMusicVolumePercent() );	
+			break;
+		case SoundSettings.PROPERTY_SOUND:
+			setSoundVolume(SoundSettings.getSoundVolumePercent() );
+			break;
+		default:
+			throw new RuntimeException("Unknown sound manager observer property " + event.getPropertyName() );
+		}
 	}
 	
 }

@@ -141,7 +141,7 @@ public class MainMenuWindow extends JPanel {
 		
 		JButton sound = menuButton(
 			new Runnable() {
-				@Override public void run() { System.err.println("Sound Not Implemented Yet"); }
+				@Override public void run() { /* TODO launch sound control dialog */ }
 			},
 			rsrc.BUTTON_SOUND,
 			SOUND_X,
