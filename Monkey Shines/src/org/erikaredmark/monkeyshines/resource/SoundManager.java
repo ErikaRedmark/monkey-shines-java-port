@@ -132,8 +132,10 @@ public final class SoundManager implements PropertyChangeListener {
 	 * 
 	 */
 	private static float resolveDecibelOffsetFromPercentage(int value) {
-		// TODO method stub
-		return 0;
+		// Default decibel gain is +0, which is already very loud. as a result, all calculations
+		// currently return negative values. Since decibel values are not linear by nature.
+		double gain = - (Math.log10(value * 4.0) );
+		return (float) gain;
 	}
 
 	/*

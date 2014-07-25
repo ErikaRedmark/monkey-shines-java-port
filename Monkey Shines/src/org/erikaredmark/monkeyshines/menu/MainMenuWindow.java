@@ -12,6 +12,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import org.erikaredmark.monkeyshines.menu.SoundControlDialog.SoundType;
+
 
 /**
  * 
@@ -133,7 +135,7 @@ public class MainMenuWindow extends JPanel {
 		
 		JButton music = menuButton(
 			new Runnable() {
-				@Override public void run() { System.err.println("Music Not Implemented Yet"); }
+				@Override public void run() { SoundControlDialog.launch(SoundType.MUSIC); }
 			},
 			rsrc.BUTTON_MUSIC,
 			MUSIC_X,
@@ -141,7 +143,7 @@ public class MainMenuWindow extends JPanel {
 		
 		JButton sound = menuButton(
 			new Runnable() {
-				@Override public void run() { /* TODO launch sound control dialog */ }
+				@Override public void run() { SoundControlDialog.launch(SoundType.SOUND); }
 			},
 			rsrc.BUTTON_SOUND,
 			SOUND_X,
@@ -208,21 +210,10 @@ public class MainMenuWindow extends JPanel {
 		button.setPressedIcon(new ImageIcon(images[1]) );
 		button.setRolloverEnabled(true);
 		button.setRolloverIcon(new ImageIcon(images[2]) );
-		renderImageOnly(button);
+		MenuUtils.renderImageOnly(button);
 		return button;
 	}
-	
-	/**
-	 * 
-	 * Changes style formatting of a button so that only the images will show; no additional drawing.
-	 * 
-	 */
-	private void renderImageOnly(JButton button) {
-		button.setBorderPainted(false); 
-		button.setContentAreaFilled(false); 
-		button.setFocusPainted(false); 
-		button.setOpaque(false);
-	}
+
 	
 	/**
 	 * 
