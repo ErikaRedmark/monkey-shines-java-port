@@ -47,25 +47,25 @@ public final class SoundControlDialog extends JDialog {
 	
 	// Icons that flank the main slider will show either the music of general sound
 	// icon to indicate low to high sound.
-	private static final int LEFT_SIDE_DRAW_X = 39;
-	private static final int LEFT_SIDE_DRAW_Y = 46;
-	private static final int LEFT_SIDE_DRAW_X2 = 77;
-	private static final int LEFT_SIDE_DRAW_Y2 = 83;
+	private static final int LEFT_SIDE_DRAW_X = 40;
+	private static final int LEFT_SIDE_DRAW_Y = 47;
+	private static final int LEFT_SIDE_DRAW_X2 = 78;
+	private static final int LEFT_SIDE_DRAW_Y2 = 84;
 	
-	private static final int RIGHT_SIDE_DRAW_X = 252;
-	private static final int RIGHT_SIDE_DRAW_Y = 46;
-	private static final int RIGHT_SIDE_DRAW_X2 = 290;
-	private static final int RIGHT_SIDE_DRAW_Y2 = 83;
+	private static final int RIGHT_SIDE_DRAW_X = 253;
+	private static final int RIGHT_SIDE_DRAW_Y = 47;
+	private static final int RIGHT_SIDE_DRAW_X2 = 291;
+	private static final int RIGHT_SIDE_DRAW_Y2 = 84;
 
 	// Sliders controls location
-	private static final int SLIDER_DRAW_X = 85;
-	private static final int SLIDER_DRAW_Y = 58;
-	private static final int SLIDER_WIDTH = 160;
-	private static final int SLIDER_HEIGHT = 17;
+	private static final int SLIDER_DRAW_X = 78;
+	private static final int SLIDER_DRAW_Y = 52;
+	private static final int SLIDER_WIDTH = 175;
+	private static final int SLIDER_HEIGHT = 29;
 	
 	// Button location
-	private static final int OKAY_DRAW_X = 134;
-	private static final int OKAY_DRAW_Y = 120;
+	private static final int OKAY_DRAW_X = 133;
+	private static final int OKAY_DRAW_Y = 118;
 	
 	private static final int DIALOG_SIZE_X = 328;
 	private static final int DIALOG_SIZE_Y = 180;
