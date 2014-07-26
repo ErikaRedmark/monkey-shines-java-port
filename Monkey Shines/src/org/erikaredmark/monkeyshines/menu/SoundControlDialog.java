@@ -7,13 +7,17 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 
-import org.erikaredmark.monkeyshines.global.SoundSettings;
+import org.erikaredmark.monkeyshines.global.SoundType;
+import org.erikaredmark.monkeyshines.global.SoundUtils;
 
 /**
  * 
@@ -37,6 +41,10 @@ public final class SoundControlDialog extends JDialog {
 	
 	private final BufferedImage BACKGROUND;
 	
+	// Whenever the sound levels are changed, the sound demo is played at the appropriate
+	// gain to demonstrate to the player an idea of how loud or soft they just made things
+	private final Clip SOUND_DEMO;
+	
 	// Icons that flank the main slider will show either the music of general sound
 	// icon to indicate low to high sound.
 	private static final int LEFT_SIDE_DRAW_X = 39;
@@ -52,6 +60,8 @@ public final class SoundControlDialog extends JDialog {
 	// Sliders controls location
 	private static final int SLIDER_DRAW_X = 85;
 	private static final int SLIDER_DRAW_Y = 58;
+	private static final int SLIDER_WIDTH = 160;
+	private static final int SLIDER_HEIGHT = 17;
 	
 	// Button location
 	private static final int OKAY_DRAW_X = 134;
@@ -64,6 +74,7 @@ public final class SoundControlDialog extends JDialog {
 	// These are NOT static, otherwise image data would persist in memory when not needed.
 	{
 		try {
+			// Graphics
 			SOUND_LEFT_SIDE = ImageIO.read(SoundControlDialog.class.getResourceAsStream("/resources/graphics/mainmenu/sound/soundLeftSide.png") );
 		    SOUND_RIGHT_SIDE = ImageIO.read(SoundControlDialog.class.getResourceAsStream("/resources/graphics/mainmenu/sound/soundRightSide.png") );
 			MUSIC_LEFT_SIDE = ImageIO.read(SoundControlDialog.class.getResourceAsStream("/resources/graphics/mainmenu/sound/musicLeftSide.png") );
@@ -71,16 +82,19 @@ public final class SoundControlDialog extends JDialog {
 			OKAY_ICON = new ImageIcon(ImageIO.read(SoundControlDialog.class.getResourceAsStream("/resources/graphics/mainmenu/sound/btnOK1.png") ) );
 			OKAY_PUSHED_ICON = new ImageIcon(ImageIO.read(SoundControlDialog.class.getResourceAsStream("/resources/graphics/mainmenu/sound/btnOK2.png") ) );
 			BACKGROUND = ImageIO.read(SoundControlDialog.class.getResourceAsStream("/resources/graphics/mainmenu/sound/soundMain.png") );
+			
+			// Sound
+			SOUND_DEMO = SoundUtils.clipFromOggStream(SoundControlDialog.class.getResourceAsStream("/resources/sounds/mainmenu/soundDemo.ogg"), "soundDemo.ogg");
 		} catch (IOException e) {
 			throw new RuntimeException("Bad .jar, could not find graphics resources for sound system: " + e.getMessage(), e);
+		} catch (UnsupportedAudioFileException e) {
+			throw new RuntimeException("Bad .jar, demo sound not in .ogg format: " + e.getMessage(), e);
+		} catch (LineUnavailableException e) {
+			throw new RuntimeException("No sound device available: " + e.getMessage(), e);
 		}
 	}
 	
-
-	private final SoundType soundType;
-	
 	private SoundControlDialog(final SoundType type) {
-		this.soundType = type;
 		// add a JPanel containing all the components. We can custom paint the JPanel with
 		// added components easier than we can with a dialog class.
 		JPanel mainPanel = new JPanel() {
@@ -139,9 +153,10 @@ public final class SoundControlDialog extends JDialog {
 		
 		// Only the slider and button are components. Everything else is painted in the paint method.
 		
-		//VolumeSlider volumeSlider = new VolumeSlider(type);
-		
-		//mainPanel.add(volumeSlider);
+		VolumeSlider volumeSlider = new VolumeSlider(type, SOUND_DEMO);
+		volumeSlider.setLocation(SLIDER_DRAW_X, SLIDER_DRAW_Y);
+		volumeSlider.setSize(SLIDER_WIDTH, SLIDER_HEIGHT);
+		mainPanel.add(volumeSlider);
 		
 		JButton okayButton = new JButton(new AbstractAction("", OKAY_ICON) {
 			private static final long serialVersionUID = 1L;
@@ -168,37 +183,10 @@ public final class SoundControlDialog extends JDialog {
 	 */
 	public static void launch(final SoundType sound) {
 		SoundControlDialog dialog = new SoundControlDialog(sound);
+		dialog.setUndecorated(true);
 		dialog.setModal(true);
 		dialog.pack();
 		dialog.setLocationRelativeTo(null);
 		dialog.setVisible(true);
 	}
-
-	
-	public enum SoundType {
-
-		
-		SOUND() {
-			@Override public void adjustPercentage(int value) {
-				SoundSettings.setSoundVolumePercent(value);
-			}
-		},
-		MUSIC() {
-			@Override public void adjustPercentage(int value) {
-				SoundSettings.setMusicVolumePercent(value);
-			}
-		};
-		
-		/**
-		 * 
-		 * Called when slider updates the 'sound'. Depending on the sound type, the appropriate 
-		 * thing (sound or music) will be adjusted.
-		 * 
-		 * @param value
-		 * 		percentage from 0 - 100 of how loud the sound should be,
-		 * 
-		 */
-		public abstract void adjustPercentage(int value);
-	}
-	
 }

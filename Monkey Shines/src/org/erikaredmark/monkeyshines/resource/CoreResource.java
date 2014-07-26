@@ -10,6 +10,10 @@ import javax.imageio.ImageIO;
  * Provides access to graphics and sounds that are hardcoded into the game. As such, this class
  * has static access.
  * 
+ * TODO move resource loading to non static classes where required, so memory of the objects
+ * are not taken up when not required (such as bonzo sprite sheet during editor) and are disposed
+ * when required.
+ * 
  * @author Erika Redmark
  *
  */
@@ -57,4 +61,5 @@ public enum CoreResource {
 	public BufferedImage getBonzoSheet() {
 		return bonzoSprite;
 	}
+	
 }

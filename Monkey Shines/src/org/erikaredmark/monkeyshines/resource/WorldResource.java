@@ -15,9 +15,6 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
 
 import javax.imageio.ImageIO;
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
@@ -26,6 +23,8 @@ import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.GameSoundEffect;
 import org.erikaredmark.monkeyshines.background.Background;
 import org.erikaredmark.monkeyshines.background.FullBackground;
+import org.erikaredmark.monkeyshines.global.SoundSettings;
+import org.erikaredmark.monkeyshines.global.SoundUtils;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException.Type;
 import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
@@ -152,6 +151,8 @@ public final class WorldResource {
 		// this pointer escapes, but no one gets a reference to the manager until construction is over
 		// and the manager constructor itself calls no methods on this class.
 		soundManager = new SoundManager(this);
+		// unregistered in dispose method
+		SoundSettings.registerSoundManager(soundManager);
 		
 		// Height of conveyer sheet can calculate total conveyers in world
 		// Remember, a single set is both clockwise and anti-clockwise (hence times 2)
@@ -479,33 +480,9 @@ public final class WorldResource {
 	private static Clip loadSoundClip(ZipFile file, ZipEntry entry) throws ResourcePackException {
 		// Load the audio stream from the entry
 		// Buffered stream to allow mark/reset
-		try (InputStream bin = new BufferedInputStream(file.getInputStream(entry) );
-			AudioInputStream in = AudioSystem.getAudioInputStream(bin) ) {
-
-			AudioFormat baseFormat = in.getFormat();
+		try (InputStream bin = new BufferedInputStream(file.getInputStream(entry) ) ) {
+			return SoundUtils.clipFromOggStream(bin, entry.getName() );
 			
-			// Convert to basic PCM
-			// Decoded input stream will be closed on disposing of the WorldResource itself.
-			// Required for clip.
-			AudioFormat decodedFormat =
-			    new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,
-			                    baseFormat.getSampleRate(),
-			                    16,
-			                    baseFormat.getChannels(),
-			                    baseFormat.getChannels() * 2,
-			                    baseFormat.getSampleRate(),
-			                    false);
-			
-			AudioInputStream decodedInputStream = AudioSystem.getAudioInputStream(decodedFormat, in);
-			// Store in Clip and return
-			Clip clip = AudioSystem.getClip();
-			clip.open(decodedInputStream);
-			if (clip.getFrameLength() == 0) {
-				System.err.println("Clip " + entry.getName() + " has no loaded frames. There is an unknown issue decoding .ogg files of sizes less than or equal to around 6K. Please add inaudible noise to sound file to increase size");
-			}
-
-			return clip;
-		
 		} catch (UnsupportedAudioFileException e) {
 			throw new ResourcePackException("Check that resources are of ogg format and that system is able to read ogg format:", e);
 		} catch (IOException e) {
@@ -942,6 +919,8 @@ public final class WorldResource {
 	 */
 	public void dispose() {
 		for (Clip c : sounds.values() )  c.close();
+		
+		SoundSettings.unregisterSoundManager(soundManager);
 	}
 
 	/**

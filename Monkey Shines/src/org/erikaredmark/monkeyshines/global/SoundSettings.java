@@ -64,8 +64,28 @@ public final class SoundSettings {
 		listeningSoundManagers.firePropertyChange(PROPERTY_SOUND, oldValue, soundVolumePercent);
 	}
 	
+	public static void setVolumePercentForType(int value, final SoundType type) {
+		switch(type) {
+		case SOUND:
+			setSoundVolumePercent(value);
+			break;
+		case MUSIC:
+			setMusicVolumePercent(value);
+			break;
+		default:
+			throw new RuntimeException("Unknown sound type " + type);
+		}
+	}
+	
 	public static int getMusicVolumePercent() { return musicVolumePercent; }
 	public static int getSoundVolumePercent() { return soundVolumePercent; }
+	public static int getVolumePercentForType(final SoundType type) {
+		switch(type) {
+		case SOUND: return getSoundVolumePercent();
+		case MUSIC: return getMusicVolumePercent();
+		default: throw new RuntimeException("Unknown sound type " + type);
+		}
+	}
 	
 	/**
 	 * 

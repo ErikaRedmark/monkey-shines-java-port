@@ -12,7 +12,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-import org.erikaredmark.monkeyshines.menu.SoundControlDialog.SoundType;
+import org.erikaredmark.monkeyshines.global.SoundType;
 
 
 /**

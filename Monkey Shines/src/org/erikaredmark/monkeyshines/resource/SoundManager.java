@@ -8,6 +8,7 @@ import javax.sound.sampled.FloatControl;
 
 import org.erikaredmark.monkeyshines.GameSoundEffect;
 import org.erikaredmark.monkeyshines.global.SoundSettings;
+import org.erikaredmark.monkeyshines.global.SoundUtils;
 
 /**
  * 
@@ -27,7 +28,8 @@ public final class SoundManager implements PropertyChangeListener {
 	// Use as source of sounds
 	private final WorldResource rsrc;
 
-	// Created by WorldResource
+	// Created by WorldResource ONLY. That also handles registering/unregistering it from listening to the
+	// SoundSettings global.
 	SoundManager(final WorldResource rsrc) {
 		this.rsrc = rsrc;
 		setMusicVolume(SoundSettings.getMusicVolumePercent() );
@@ -94,7 +96,8 @@ public final class SoundManager implements PropertyChangeListener {
 	 */
 	private void setMusicVolume(int value) {
 		FloatControl gainControl = (FloatControl) rsrc.backgroundMusic.getControl(FloatControl.Type.MASTER_GAIN);
-		float decibelLevelOffset = resolveDecibelOffsetFromPercentage(value);
+		float decibelLevelOffset = SoundUtils.resolveDecibelOffsetFromPercentage(value);
+		System.out.println("Decibel offset for music: " + decibelLevelOffset);
 		gainControl.setValue(decibelLevelOffset);
 	}
 	
@@ -108,34 +111,13 @@ public final class SoundManager implements PropertyChangeListener {
 	 * 
 	 */
 	private void setSoundVolume(int value) {
-		float decibelLevelOffset = resolveDecibelOffsetFromPercentage(value);
+		float decibelLevelOffset = SoundUtils.resolveDecibelOffsetFromPercentage(value);
+		System.out.println("Decibel offset for sound: " + decibelLevelOffset);
 		for (GameSoundEffect effect : GameSoundEffect.values() ) {
 			Clip clip = rsrc.getSoundFor(effect);
 			FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
 			gainControl.setValue(decibelLevelOffset);
 		}
-	}
-	
-	/**
-	 * 
-	 * Resolves a percentage from 0-100 to a decibel level offset for setting clip volume. By default, all clips have
-	 * a master gain of 0.0 decibels, which is already pretty loud. Based on constants defined in {@code GameConstants},
-	 * the percentage is transformed into either a positive or more likely negative offset used to change the 'gain' on
-	 * associated clips and either make them louder or softer.
-	 * 
-	 * @param value
-	 * 		the percentage, from 0-100, of volume. 0 is always no volume and optionally can be handled separately by not
-	 * 		playing the clip at all
-	 * 
-	 * @return
-	 * 		decibel offset level. Returns {@code Float.MIN_VALUE} for volumes of 0%
-	 * 
-	 */
-	private static float resolveDecibelOffsetFromPercentage(int value) {
-		// Default decibel gain is +0, which is already very loud. as a result, all calculations
-		// currently return negative values. Since decibel values are not linear by nature.
-		double gain = - (Math.log10(value * 4.0) );
-		return (float) gain;
 	}
 
 	/*

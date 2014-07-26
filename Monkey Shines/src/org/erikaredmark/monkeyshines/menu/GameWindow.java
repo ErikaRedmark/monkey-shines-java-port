@@ -373,5 +373,15 @@ public class GameWindow extends JPanel {
 			}
 		}
 	}
+	
+	/**
+	 * 
+	 * Disposes of graphics and sound resources for the running game. Intended to be called during a primary
+	 * game state transition when leaving the game.
+	 * 
+	 */
+	public void dispose() {
+		currentWorld.getResource().dispose();
+	}
 
 }

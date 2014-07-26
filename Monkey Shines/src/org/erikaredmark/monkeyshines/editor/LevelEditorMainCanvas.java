@@ -123,13 +123,17 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	
 	/**
 	 * 
-	 * Decodes a living instance of the encoded world into the editor.
+	 * Decodes a living instance of the encoded world into the editor. If a world instance already existed,
+	 * the {@code WorldResource} object associated is disposed first
 	 * 
 	 * @param world
 	 * 		the encoded world to load into the editor and start editing
 	 * 
 	 */
 	public void loadWorld(final EncodedWorld world, final WorldResource rsrc) {
+		if (currentWorldEditor != null) {
+			currentWorldEditor.getWorldResource().dispose();
+		}
 		currentWorldEditor = WorldEditor.fromEncoded(world, rsrc);
 		currentScreenEditor = currentWorldEditor.getLevelScreenEditor(1000);
 		changeState(EditorState.PLACING_TILES);

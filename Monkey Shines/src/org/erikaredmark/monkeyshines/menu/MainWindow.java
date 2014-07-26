@@ -154,6 +154,8 @@ public final class MainWindow extends JFrame {
 
 			@Override protected void transitionFrom(MainWindow mainWindow) {
 				if (mainWindow.runningGame != null) {
+					mainWindow.runningGame.dispose();
+					
 					mainWindow.remove(mainWindow.runningGame);
 					// Nulling reference is important; running game state should be GC'ed as it will no longer be
 					// transitioned back to.
