@@ -1,7 +1,6 @@
 package org.erikaredmark.monkeyshines.menu;
 
-import java.awt.Color;
-import java.awt.Font;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
@@ -9,10 +8,10 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JPanel;
 
 import org.erikaredmark.monkeyshines.global.SoundSettings;
 
@@ -58,6 +57,9 @@ public final class SoundControlDialog extends JDialog {
 	private static final int OKAY_DRAW_X = 134;
 	private static final int OKAY_DRAW_Y = 120;
 	
+	private static final int DIALOG_SIZE_X = 328;
+	private static final int DIALOG_SIZE_Y = 180;
+	
 	// Outside of contructor so as not to clutter visual code: Simply sets the values of some constants, such as images.
 	// These are NOT static, otherwise image data would persist in memory when not needed.
 	{
@@ -79,15 +81,67 @@ public final class SoundControlDialog extends JDialog {
 	
 	private SoundControlDialog(final SoundType type) {
 		this.soundType = type;
-		setLayout(null);
+		// add a JPanel containing all the components. We can custom paint the JPanel with
+		// added components easier than we can with a dialog class.
+		JPanel mainPanel = new JPanel() {
+			private static final long serialVersionUID = 1L;
+			// Direct painting is responsible for background and left/right sound images
+			@Override public void paintComponent(Graphics g) {
+				g.drawImage(BACKGROUND, 
+							0, 0, 
+							BACKGROUND.getWidth(), BACKGROUND.getHeight(), 
+							0, 0, 
+							BACKGROUND.getWidth(), BACKGROUND.getHeight(), 
+							null);
+				
+				// Switch statement over polymorphism, as this class is responsible for maintaining the
+				// graphics resources, not the static enum.
+				BufferedImage leftSide = null;
+				BufferedImage rightSide = null;
+				
+				switch(type) {
+				case MUSIC:
+					leftSide = MUSIC_LEFT_SIDE;
+					rightSide = MUSIC_RIGHT_SIDE;
+					break;
+				case SOUND:
+					leftSide = SOUND_LEFT_SIDE;
+					rightSide = SOUND_RIGHT_SIDE;
+					break;
+				default:
+					throw new RuntimeException("Unknown soundtype " + type);
+				}
+				
+				assert leftSide != null;
+				assert rightSide != null;
+				
+				g.drawImage(leftSide, 
+							LEFT_SIDE_DRAW_X, LEFT_SIDE_DRAW_Y, 
+							LEFT_SIDE_DRAW_X2, LEFT_SIDE_DRAW_Y2, 
+							0, 0, 
+							leftSide.getWidth(), leftSide.getHeight(), 
+							null);
+				
+				g.drawImage(rightSide, 
+							RIGHT_SIDE_DRAW_X, RIGHT_SIDE_DRAW_Y, 
+							RIGHT_SIDE_DRAW_X2, RIGHT_SIDE_DRAW_Y2, 
+							0, 0, 
+							rightSide.getWidth(), rightSide.getHeight(), 
+							null);
+			}
+		};
+		mainPanel.setLocation(0, 0);
+		mainPanel.setSize(DIALOG_SIZE_X, DIALOG_SIZE_Y);
+		mainPanel.setPreferredSize(new Dimension(DIALOG_SIZE_X, DIALOG_SIZE_Y) );
+		mainPanel.setMinimumSize(new Dimension(DIALOG_SIZE_X, DIALOG_SIZE_Y) );
+		mainPanel.setLayout(null);
+		add(mainPanel);
 		
-		// Display the name (either music or sound) and the slider that will delegate
-		// value adjustments to changing the volume for the appropriate thing
 		// Only the slider and button are components. Everything else is painted in the paint method.
 		
 		//VolumeSlider volumeSlider = new VolumeSlider(type);
 		
-		//add(volumeSlider);
+		//mainPanel.add(volumeSlider);
 		
 		JButton okayButton = new JButton(new AbstractAction("", OKAY_ICON) {
 			private static final long serialVersionUID = 1L;
@@ -103,56 +157,7 @@ public final class SoundControlDialog extends JDialog {
 		
 		
 		
-		add(okayButton);
-	}
-	
-	// Direct painting is responsible for background and left/right sound images
-	@Override public void paint(Graphics g) {
-		super.paint(g);
-		// We now paint over the components. Proper transparency and location painting will ensure
-		// that components added to the contain pane normally are not painted over.
-		
-		g.drawImage(BACKGROUND, 
-					0, 0, 
-					BACKGROUND.getWidth(), BACKGROUND.getHeight(), 
-					0, 0, 
-					BACKGROUND.getWidth(), BACKGROUND.getHeight(), 
-					null);
-		
-		// Switch statement over polymorphism, as this class is responsible for maintaining the
-		// graphics resources, not the static enum.
-		BufferedImage leftSide = null;
-		BufferedImage rightSide = null;
-		
-		switch(this.soundType) {
-		case MUSIC:
-			leftSide = MUSIC_LEFT_SIDE;
-			rightSide = MUSIC_RIGHT_SIDE;
-			break;
-		case SOUND:
-			leftSide = SOUND_LEFT_SIDE;
-			rightSide = SOUND_RIGHT_SIDE;
-			break;
-		default:
-			throw new RuntimeException("Unknown soundtype " + this.soundType);
-		}
-		
-		assert leftSide != null;
-		assert rightSide != null;
-		
-		g.drawImage(leftSide, 
-					LEFT_SIDE_DRAW_X, LEFT_SIDE_DRAW_Y, 
-					LEFT_SIDE_DRAW_X2, LEFT_SIDE_DRAW_Y2, 
-					0, 0, 
-					leftSide.getWidth(), leftSide.getHeight(), 
-					null);
-		
-		g.drawImage(rightSide, 
-					RIGHT_SIDE_DRAW_X, RIGHT_SIDE_DRAW_Y, 
-					RIGHT_SIDE_DRAW_X2, RIGHT_SIDE_DRAW_Y2, 
-					0, 0, 
-					rightSide.getWidth(), rightSide.getHeight(), 
-					null);
+		mainPanel.add(okayButton);
 	}
 	
 	/**
@@ -163,7 +168,8 @@ public final class SoundControlDialog extends JDialog {
 	 */
 	public static void launch(final SoundType sound) {
 		SoundControlDialog dialog = new SoundControlDialog(sound);
-		dialog.setSize(328, 180);
+		dialog.setModal(true);
+		dialog.pack();
 		dialog.setLocationRelativeTo(null);
 		dialog.setVisible(true);
 	}
