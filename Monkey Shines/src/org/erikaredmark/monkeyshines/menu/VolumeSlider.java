@@ -11,7 +11,6 @@ import javax.swing.event.ChangeListener;
 import org.erikaredmark.monkeyshines.global.SoundSettings;
 import org.erikaredmark.monkeyshines.global.SoundType;
 import org.erikaredmark.monkeyshines.global.SoundUtils;
-import org.erikaredmark.monkeyshines.resource.SoundManager;
 
 /**
  * 
@@ -48,7 +47,7 @@ public final class VolumeSlider extends JSlider {
 				type.adjustPercentage(model.getValue() );
 				
 				// Don't play demo sound unless slider has come to a rest, or that would get annoying real fast.
-				if (!(model.getValueIsAdjusting() ) ) {
+				if (!(model.getValueIsAdjusting() ) && model.getValue() != 0) {
 					float gain = SoundUtils.resolveDecibelOffsetFromPercentage(model.getValue() );
 					FloatControl gainControl = (FloatControl) demo.getControl(FloatControl.Type.MASTER_GAIN);
 					gainControl.setValue(gain);

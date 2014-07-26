@@ -85,7 +85,7 @@ public final class SoundUtils {
 	 * muting or not playing the clips accordingly.
 	 * 
 	 */
-	private static final double MIN_SOUND = -16.2;
+	private static final double MIN_SOUND = -26.2;
 	
 	/**
 	 * 
@@ -108,7 +108,7 @@ public final class SoundUtils {
 		
 		// Default decibel gain is +0, which is already very loud. as a result, all calculations
 		// currently return negative values. Since decibel values are not linear by nature.
-		double gain = (Math.log10(value) ) * 6.0;
+		double gain = (Math.log(value) ) * 3.5;
 		// Larger values mean MORE sound, not less, so converting to negative directly won't work. We pick a 'MIN'
 		// sound on offset from that.
 		gain = MIN_SOUND + gain;
