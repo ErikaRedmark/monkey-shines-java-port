@@ -4,7 +4,7 @@ package org.erikaredmark.monkeyshines;
  * PLEASE NOTE!
  * All this code was taken directly from http://www.gamedev.net/reference/programming/features/javainput/page2.asp
  * I looked through it and understand how it works, but there was no point in re-writing it all from scratch,
- * so I will be using this class as if I was using a Java library function, because it fufills a very basic
+ * so I will be using this class as if I was using a Java library function, because it fulfills a very basic
  * role.
  */
 
@@ -12,10 +12,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 /**
+ * 
  * The KeyboardInput class handles making sure the key presses respond quickly
  * and intuitively.
- * 
- * @author Erika Redmark
  *
  */
 public class KeyboardInput implements KeyListener {

@@ -13,6 +13,7 @@ import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.encoder.WorldIO;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
+import org.erikaredmark.monkeyshines.global.KeySettings;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.resource.WorldResource.UseIntent;
@@ -142,7 +143,10 @@ public final class MainWindow extends JFrame {
 				mainWindow.state.transitionFrom(mainWindow);
 				
 				mainWindow.currentKeyListener = new KeyboardInput();
-				mainWindow.runningGame = new GameWindow(mainWindow.currentKeyListener, mainWindow.resetCallback, userWorld);
+				mainWindow.runningGame = new GameWindow(mainWindow.currentKeyListener, 
+														KeySettings.getBindings(),
+														mainWindow.resetCallback, 
+														userWorld);
 				// Must add to both.
 				mainWindow.addKeyListener(mainWindow.currentKeyListener);
 				mainWindow.add(mainWindow.runningGame);

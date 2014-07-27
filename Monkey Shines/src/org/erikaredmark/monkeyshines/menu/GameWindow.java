@@ -6,12 +6,13 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
+
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
 import org.erikaredmark.monkeyshines.Bonzo;
 import org.erikaredmark.monkeyshines.GameConstants;
+import org.erikaredmark.monkeyshines.KeyBindings;
 import org.erikaredmark.monkeyshines.KeyboardInput;
 import org.erikaredmark.monkeyshines.Powerup;
 import org.erikaredmark.monkeyshines.World;
@@ -110,6 +111,10 @@ public class GameWindow extends JPanel {
 	 * @param keys
 	 * 		keyboard input device to register
 	 * 
+	 * @param keyBindings
+	 * 		a binding object that determines which keys on the keyboard map to which
+	 * 		actions bonzo can take.
+	 * 
 	 * @param endGame
 	 * 		callback for when the game is over
 	 * 
@@ -117,7 +122,10 @@ public class GameWindow extends JPanel {
 	 * 		world to start a game for
 	 * 
 	 */
-	public GameWindow(final KeyboardInput keys, final Runnable endGame, final World world) {
+	public GameWindow(final KeyboardInput keys, 
+					  final KeyBindings keyBindings,
+					  final Runnable endGame, 
+					  final World world) {
 		super();
 		this.endGameCallback = endGame;
 		this.addKeyListener(keys);
@@ -168,14 +176,13 @@ public class GameWindow extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				// Poll Keyboard
 				keys.poll();
-				if (keys.keyDown(KeyEvent.VK_LEFT) ) {
+				if (keys.keyDown(keyBindings.left) ) {
 					bonzo.move(-1);
-					//System.out.println("left");
 				}
-				if (keys.keyDown(KeyEvent.VK_RIGHT) ) {
+				if (keys.keyDown(keyBindings.right) ) {
 					bonzo.move(1);
 				}
-				if (keys.keyDown(KeyEvent.VK_UP) ) {
+				if (keys.keyDown(keyBindings.jump) ) {
 					bonzo.jump(4);
 				}
 				
@@ -241,17 +248,9 @@ public class GameWindow extends JPanel {
 	private void gameOver() {
 		bonusTimer.stop();
 		this.currentWorld.getResource().getSoundManager().stopPlayingMusic();
-		// TODO soft fade out and return to main menu. Right now we just return to
-		// choosing a world.
+		// TODO soft fade out and return to main menu.
 		
 		endGameCallback.run();
-		
-		// for now, we just give bonzo more lives
-		// +1 against the -1 goes to 0, resulting in 4
-		//bonzo.incrementLives(5);
-		//updateLives();
-		//currentWorld.restartBonzo(bonzo);
-		//System.out.println("This would normally be a game over.");
 	}
 	
 	// Called when bonzos life is lost. Sets life digit for drawing.
