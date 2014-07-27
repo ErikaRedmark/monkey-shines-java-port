@@ -3,6 +3,7 @@ package org.erikaredmark.monkeyshines.menu;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
@@ -10,9 +11,6 @@ import javax.imageio.ImageIO;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
-import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 
@@ -35,9 +33,6 @@ public final class SoundControlDialog extends JDialog {
 	private final BufferedImage SOUND_RIGHT_SIDE;
 	private final BufferedImage MUSIC_LEFT_SIDE;
 	private final BufferedImage MUSIC_RIGHT_SIDE;
-	
-	private final ImageIcon OKAY_ICON;
-	private final ImageIcon OKAY_PUSHED_ICON;
 	
 	private final BufferedImage BACKGROUND;
 	
@@ -79,8 +74,6 @@ public final class SoundControlDialog extends JDialog {
 		    SOUND_RIGHT_SIDE = ImageIO.read(SoundControlDialog.class.getResourceAsStream("/resources/graphics/mainmenu/sound/soundRightSide.png") );
 			MUSIC_LEFT_SIDE = ImageIO.read(SoundControlDialog.class.getResourceAsStream("/resources/graphics/mainmenu/sound/musicLeftSide.png") );
 			MUSIC_RIGHT_SIDE = ImageIO.read(SoundControlDialog.class.getResourceAsStream("/resources/graphics/mainmenu/sound/musicRightSide.png") );
-			OKAY_ICON = new ImageIcon(ImageIO.read(SoundControlDialog.class.getResourceAsStream("/resources/graphics/mainmenu/sound/btnOK1.png") ) );
-			OKAY_PUSHED_ICON = new ImageIcon(ImageIO.read(SoundControlDialog.class.getResourceAsStream("/resources/graphics/mainmenu/sound/btnOK2.png") ) );
 			BACKGROUND = ImageIO.read(SoundControlDialog.class.getResourceAsStream("/resources/graphics/mainmenu/sound/soundMain.png") );
 			
 			// Sound
@@ -158,19 +151,13 @@ public final class SoundControlDialog extends JDialog {
 		volumeSlider.setSize(SLIDER_WIDTH, SLIDER_HEIGHT);
 		mainPanel.add(volumeSlider);
 		
-		JButton okayButton = new JButton(new AbstractAction("", OKAY_ICON) {
-			private static final long serialVersionUID = 1L;
+		OkayButton okayButton = new OkayButton(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
 				// close window. All changes from slider have already propogated.
 				setVisible(false);
 			}
 		});
 		okayButton.setLocation(OKAY_DRAW_X, OKAY_DRAW_Y);
-		okayButton.setSize(OKAY_ICON.getIconWidth(), OKAY_ICON.getIconHeight() );
-		okayButton.setPressedIcon(OKAY_PUSHED_ICON);
-		MenuUtils.renderImageOnly(okayButton);
-		
-		
 		
 		mainPanel.add(okayButton);
 	}

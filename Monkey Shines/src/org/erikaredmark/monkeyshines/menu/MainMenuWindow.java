@@ -12,6 +12,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import org.erikaredmark.monkeyshines.KeyBindings;
+import org.erikaredmark.monkeyshines.global.KeySettings;
 import org.erikaredmark.monkeyshines.global.SoundType;
 
 
@@ -127,7 +129,11 @@ public class MainMenuWindow extends JPanel {
 		
 		JButton controls = menuButton(
 			new Runnable() {
-				@Override public void run() { System.err.println("Controls Not Implemented Yet"); }
+				@Override public void run() { 
+					KeyBindings newBindings = KeyboardControlDialog.launch(KeySettings.getBindings() );
+					// return values used to make it easier to remove the singleton if ever required.
+					KeySettings.setBindings(newBindings);
+				}
 			},
 			rsrc.BUTTON_CONTROLS,
 			CONTROLS_X,
