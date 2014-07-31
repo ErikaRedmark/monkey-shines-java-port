@@ -5,13 +5,13 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.erikaredmark.monkeyshines.KeyBindings;
 
@@ -81,11 +81,14 @@ public class KeyboardControlDialog extends JDialog {
 		
 		// Key controls
 		
-		KeyBinder rightBinder = 
+		final KeyBinder rightBinder = 
 			new KeyBinder(
 				CONTEXT_RIGHT,
-			    new ChangeListener() {
-					@Override public void stateChanged(ChangeEvent e) { }
+			    new PropertyChangeListener() {
+					@Override public void propertyChange(PropertyChangeEvent event) {
+						int right = (Integer)event.getNewValue();
+						bindings = new KeyBindings(bindings.left, right, bindings.jump);
+					}
 				},
 				current.right);
 		rightBinder.setLocation(RIGHT_KEY_DRAW_X, RIGHT_KEY_DRAW_Y);
@@ -93,8 +96,11 @@ public class KeyboardControlDialog extends JDialog {
 		KeyBinder leftBinder = 
 			new KeyBinder(
 				CONTEXT_LEFT,
-			    new ChangeListener() {
-					@Override public void stateChanged(ChangeEvent e) { }
+			    new PropertyChangeListener() {
+					@Override public void propertyChange(PropertyChangeEvent event) {
+						int left = (Integer)event.getNewValue();
+						bindings = new KeyBindings(left, bindings.right, bindings.jump);
+					}
 				},
 				current.left);
 		leftBinder.setLocation(LEFT_KEY_DRAW_X, LEFT_KEY_DRAW_Y);
@@ -102,8 +108,11 @@ public class KeyboardControlDialog extends JDialog {
 		KeyBinder jumpBinder = 
 			new KeyBinder(
 				CONTEXT_JUMP,
-			    new ChangeListener() {
-					@Override public void stateChanged(ChangeEvent e) { }
+			    new PropertyChangeListener() {
+					@Override public void propertyChange(PropertyChangeEvent event) {
+						int jump = (Integer)event.getNewValue();
+						bindings = new KeyBindings(bindings.left, bindings.right, jump);
+					}
 				},
 				current.jump);
 		jumpBinder.setLocation(JUMP_KEY_DRAW_X, JUMP_KEY_DRAW_Y);
