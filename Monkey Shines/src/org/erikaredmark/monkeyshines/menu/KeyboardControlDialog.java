@@ -10,12 +10,14 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.erikaredmark.monkeyshines.KeyBindings;
-import org.erikaredmark.monkeyshines.global.SoundUtils;
 
 public class KeyboardControlDialog extends JDialog {
-
+	private static final long serialVersionUID = 1L;
+	
 	private static final int RIGHT_KEY_DRAW_X = 67; 
 	private static final int RIGHT_KEY_DRAW_Y = 16;
 	
@@ -34,6 +36,10 @@ public class KeyboardControlDialog extends JDialog {
 	
 	private final BufferedImage BACKGROUND;
 	
+	private final BufferedImage CONTEXT_RIGHT;
+	private final BufferedImage CONTEXT_LEFT;
+	private final BufferedImage CONTEXT_JUMP;
+	
 	// model state information
 	// There is no 'original' as there is no 'cancel' button
 	private KeyBindings bindings;
@@ -41,6 +47,9 @@ public class KeyboardControlDialog extends JDialog {
 	{
 		try {
 			BACKGROUND = ImageIO.read(SoundControlDialog.class.getResourceAsStream("/resources/graphics/mainmenu/keyboard/keyboardMain.png") );
+			CONTEXT_RIGHT = ImageIO.read(SoundControlDialog.class.getResourceAsStream("/resources/graphics/mainmenu/keyboard/keyboardRight.png") );
+			CONTEXT_LEFT = ImageIO.read(SoundControlDialog.class.getResourceAsStream("/resources/graphics/mainmenu/keyboard/keyboardLeft.png") );
+			CONTEXT_JUMP = ImageIO.read(SoundControlDialog.class.getResourceAsStream("/resources/graphics/mainmenu/keyboard/keyboardJump.png") );
 		} catch (IOException e) {
 			throw new RuntimeException("Bad .jar, could not find graphics resources for keyboard binding system: " + e.getMessage(), e);
 		}
@@ -69,6 +78,41 @@ public class KeyboardControlDialog extends JDialog {
 		mainPanel.setMinimumSize(new Dimension(DIALOG_SIZE_X, DIALOG_SIZE_Y) );
 		mainPanel.setLayout(null);
 		add(mainPanel);
+		
+		// Key controls
+		
+		KeyBinder rightBinder = 
+			new KeyBinder(
+				CONTEXT_RIGHT,
+			    new ChangeListener() {
+					@Override public void stateChanged(ChangeEvent e) { }
+				},
+				current.right);
+		rightBinder.setLocation(RIGHT_KEY_DRAW_X, RIGHT_KEY_DRAW_Y);
+		
+		KeyBinder leftBinder = 
+			new KeyBinder(
+				CONTEXT_LEFT,
+			    new ChangeListener() {
+					@Override public void stateChanged(ChangeEvent e) { }
+				},
+				current.left);
+		leftBinder.setLocation(LEFT_KEY_DRAW_X, LEFT_KEY_DRAW_Y);
+			
+		KeyBinder jumpBinder = 
+			new KeyBinder(
+				CONTEXT_JUMP,
+			    new ChangeListener() {
+					@Override public void stateChanged(ChangeEvent e) { }
+				},
+				current.jump);
+		jumpBinder.setLocation(JUMP_KEY_DRAW_X, JUMP_KEY_DRAW_Y);
+		
+		mainPanel.add(rightBinder);
+		mainPanel.add(leftBinder);
+		mainPanel.add(jumpBinder);
+		
+		// Okay button
 		
 		OkayButton okayButton = new OkayButton(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
