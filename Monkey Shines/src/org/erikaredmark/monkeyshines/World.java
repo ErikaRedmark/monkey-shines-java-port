@@ -789,14 +789,40 @@ public class World {
 			goodiesInWorld.remove(checker);
 	}
 
-	public void paintAndUpdate(Graphics2D g2d) {
-		getCurrentScreen().paintAndUpdate(g2d);
+	/**
+	 * 
+	 * Paints the world as it currently is to the given graphics context. This should be called on each update or
+	 * faster for a smooth experience.
+	 * 
+	 * @param g2d
+	 * 
+	 */
+	public void paint(Graphics2D g2d) {
+		getCurrentScreen().paint(g2d);
 		
+		// TODO group goodies into a better collection based on screen
+		Collection<Goodie> goodiesVector = (Collection<Goodie>)goodiesInWorld.values();
+		for (Goodie nextGoodie : goodiesVector) {
+			if (nextGoodie.getScreenID() == currentScreen) {
+				nextGoodie.paint(g2d);
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 * Should be called every tick at {@code GameConstants.GAME_SPEED}. Updates the game. Each update
+	 * call is one tick of game time.
+	 * 
+	 */
+	public void update() {
+		getCurrentScreen().update();
+		
+		// TODO group goodies into a better collection based on screen
 		Collection<Goodie> goodiesVector = (Collection<Goodie>)goodiesInWorld.values();
 		for (Goodie nextGoodie : goodiesVector) {
 			if (nextGoodie.getScreenID() == currentScreen) {
 				nextGoodie.update();
-				nextGoodie.paint(g2d);
 			}
 		}
 	}
