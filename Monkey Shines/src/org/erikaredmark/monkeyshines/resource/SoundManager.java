@@ -105,6 +105,8 @@ public final class SoundManager implements PropertyChangeListener {
 	 * 
 	 */
 	private void setMusicVolume(int value) {
+		if (rsrc.backgroundMusic == null)  return;
+		
 		if (value == 0) {
 			musicOff = true;
 			// unlike sounds, music must manually be shut off, and then back on again if required.
