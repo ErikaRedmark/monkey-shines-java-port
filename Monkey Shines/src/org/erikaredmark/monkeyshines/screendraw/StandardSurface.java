@@ -3,7 +3,6 @@ package org.erikaredmark.monkeyshines.screendraw;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
-import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
 
 import org.erikaredmark.monkeyshines.GameConstants;
@@ -89,20 +88,15 @@ public final class StandardSurface {
 	}
 	/**
 	 * 
-	 * Draws the entire world onto a 640x480 image that will be stored in main memory, and
-	 * returns the reference to that image. This is intended for windowed mode.
+	 * Draws the entire world at the current origin of the graphics context, by an area of 640x480, including
+	 * UI.
+	 * 
+	 * @param g2d
+	 * 		graphics configuration to create a compatible buffered image.
 	 * 
 	 */
-	public BufferedImage renderBuffered() {
-		BufferedImage page = new BufferedImage(640, 480, BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g2d = page.createGraphics();
-		try {
-			renderToGraphics(g2d);
-		} finally {
-			g2d.dispose();
-		}
-		
-		return page;
+	public void renderDirect(Graphics2D g2d) {
+		renderToGraphics(g2d);
 	}
 	
 	/**
@@ -218,23 +212,27 @@ public final class StandardSurface {
 		
 		/* ----------------------- Actual Game -------------------------- */
 		// game is drawn at 80 pixels down
-		BufferedImage gameWindow = new BufferedImage(GameConstants.SCREEN_WIDTH, 
-													 GameConstants.SCREEN_HEIGHT, 
-													 BufferedImage.TYPE_INT_ARGB);
-		
-		Graphics2D windowG = gameWindow.createGraphics();
-		try {
-			universe.paintTo(windowG);
-		} finally {
-			windowG.dispose();
-		}
-		
-		g2d.drawImage(gameWindow, 
-					  0, GameConstants.UI_HEIGHT,
-					  GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT + GameConstants.UI_HEIGHT,
-					  0, 0, 
-					  GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT, 
-					  null);
+		g2d.translate(0, 80);
+		universe.paintTo(g2d);
+		g2d.translate(0, -80);
+//		BufferedImage gameWindow = new BufferedImage(GameConstants.SCREEN_WIDTH, 
+//													 GameConstants.SCREEN_HEIGHT, 
+//													 rsrc.getConveyerSheet().getType() );
+//		
+//		Graphics2D windowG = gameWindow.createGraphics();
+//		try {
+//			windowG.clearRect(0, 0, GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT);
+//			universe.paintTo(windowG);
+//		} finally {
+//			windowG.dispose();
+//		}
+//		
+//		g2d.drawImage(gameWindow, 
+//					  0, GameConstants.UI_HEIGHT,
+//					  GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT + GameConstants.UI_HEIGHT,
+//					  0, 0, 
+//					  GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT, 
+//					  null);
 		
 	}
 

@@ -10,7 +10,7 @@ package org.erikaredmark.monkeyshines.global;
 public class VideoSettings {
 	
 	// Debug: testing fullscreen
-	private static boolean fullScreen = false;
+	private static boolean fullScreen = true;
 	
 	/**
 	 * 

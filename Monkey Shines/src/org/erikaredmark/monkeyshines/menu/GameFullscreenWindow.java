@@ -1,19 +1,12 @@
 package org.erikaredmark.monkeyshines.menu;
 
-import java.awt.Canvas;
-import java.awt.Color;
 import java.awt.DisplayMode;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferStrategy;
-import java.awt.image.BufferedImage;
-import java.awt.image.VolatileImage;
-
-import javax.swing.JFrame;
 
 import org.erikaredmark.monkeyshines.GameWorldLogic;
 import org.erikaredmark.monkeyshines.KeyBindings;
@@ -37,14 +30,11 @@ public final class GameFullscreenWindow extends Frame {
 	private final StandardSurface surface;
 	
 	// Configuration information
-	private final GraphicsConfiguration graphicsConfig;
 	private final GraphicsDevice mainScreen;
 	private final GameWorldLogic universe;
 	
 	// State variables for drawing.
 	private BufferStrategy buffer;
-	private boolean displayChanged;
-	private DisplayMode oldDisplayMode;
 
 	/**
 	 * 
@@ -74,9 +64,6 @@ public final class GameFullscreenWindow extends Frame {
 			GraphicsEnvironment.getLocalGraphicsEnvironment();
 		
 		this.mainScreen = env.getDefaultScreenDevice();
-
-		this.graphicsConfig = mainScreen.getDefaultConfiguration();
-		
 		
 		this.universe = 
 			new GameWorldLogic(keys,
@@ -128,8 +115,8 @@ public final class GameFullscreenWindow extends Frame {
 		buffer = getBufferStrategy();
 
 
-		oldDisplayMode = mainScreen.getDisplayMode();
-		displayChanged = false;
+//		oldDisplayMode = mainScreen.getDisplayMode();
+//		displayChanged = false;
 		
 		mainScreen.setFullScreenWindow(this);
 		//can we change the display mode? If not, we'll just take the performance hit
@@ -142,7 +129,7 @@ public final class GameFullscreenWindow extends Frame {
 					&& mode.getHeight() == 480) {
 					
 					mainScreen.setDisplayMode(mode);
-					displayChanged = true;
+//					displayChanged = true;
 					break;
 				}
 			}
@@ -165,7 +152,6 @@ public final class GameFullscreenWindow extends Frame {
 	// until a fix is found.
 	private void renderScene() {
 		assert surface != null;
-		//VolatileImage world = surface.renderVolatile(graphicsConfig);
 		do {
 			do {
 				Graphics2D g = (Graphics2D) buffer.getDrawGraphics();
@@ -173,19 +159,7 @@ public final class GameFullscreenWindow extends Frame {
 					// Is the world still available for drawing? If not, rerender
 					
 					// Initial validation
-//					int valCode = world.validate(graphicsConfig);
-//					if (valCode == VolatileImage.IMAGE_INCOMPATIBLE) {
-//						world = surface.renderVolatile(graphicsConfig);
-//					}
-//					
-//					// Constant checking if contents keep getting lost
-//					while (world.contentsLost() ) {
-//						world = surface.renderVolatile(graphicsConfig);
-//					}
-					
-					// BufferedImage used until VolatileImage fixed.
-					BufferedImage img = surface.renderBuffered();
-					g.drawImage(img, 0, 0, this);
+					surface.renderDirect(g);
 				} finally {
 					g.dispose();
 				}
@@ -194,10 +168,6 @@ public final class GameFullscreenWindow extends Frame {
 			buffer.show();
 			
 		} while (buffer.contentsLost() );
-
-		
-		/*// synchronize with the display refresh rate.
-  			 Toolkit.getDefaultToolkit().sync();*/
 	}
 	
 	/**
@@ -207,11 +177,14 @@ public final class GameFullscreenWindow extends Frame {
 	 * 
 	 */
 	private void gameOver() {
-		if (displayChanged) {
-			mainScreen.setDisplayMode(oldDisplayMode);
-		}
 		mainScreen.setFullScreenWindow(null);
 		
+		// Display seems to automatically fix itself when fullscreen is ended
+//		if (displayChanged) {
+//			mainScreen.setDisplayMode(oldDisplayMode);
+//		}
+		
+		universe.dispose();
 		setVisible(false);
 	}
 	
