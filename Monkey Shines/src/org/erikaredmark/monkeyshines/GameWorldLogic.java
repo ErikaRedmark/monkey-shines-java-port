@@ -3,6 +3,7 @@ package org.erikaredmark.monkeyshines;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 
 import javax.swing.Timer;
 
@@ -78,8 +79,9 @@ public final class GameWorldLogic {
 	 * 		a callback for when the game ends
 	 * 
 	 * @param gameTickCallback
-	 * 		a callback for each tick of the game. This is intended typically for knowing
-	 * 		when to repaint for passive rendering objects
+	 * 		a callback for each tick of the game. This indicates that whatever buffer is holding
+	 * 		the 'image' of the game will have to be updated because it no longer reflects the
+	 * 		game state
 	 * 
 	 */
 	public GameWorldLogic(final KeyboardInput keys, 
@@ -87,6 +89,7 @@ public final class GameWorldLogic {
 						  final World world,
 			  			  final Runnable endGameCallback,
 						  final Runnable gameTickCallback) {
+		assert keys != null;
 		
 		this.endGameCallback = endGameCallback;
 		this.currentWorld = world;
@@ -123,6 +126,11 @@ public final class GameWorldLogic {
 				}
 				if (keys.keyDown(keyBindings.jump) ) {
 					bonzo.jump(4);
+				}
+				
+				// The only hardcoded key: Esc is a game over
+				if (keys.keyDown(KeyEvent.VK_ESCAPE) ) {
+					gameOver();
 				}
 				
 				// Update the game first before calling what is possibly a paint
@@ -168,6 +176,7 @@ public final class GameWorldLogic {
 	/**
 	 * 
 	 * Starts time. Does nothing if time has already started.
+	 * Both the running music and the timer will operate on a different thread than what called this method.
 	 * 
 	 */
 	public void start() {

@@ -344,7 +344,7 @@ public class World {
 	 */
 	public void collectedBlueKey(Goodie goodie) {
 		assert goodie.getGoodieType() == Type.BLUE_KEY : "Cannot collect a blue key of " + goodie + " as that isn't a blue key";
-		assert this.redKeys.contains(goodie) : "Blue Key " + goodie + " already collected: Logic Error";
+		assert this.blueKeys.contains(goodie) : "Blue Key " + goodie + " already collected: Logic Error";
 		
 		this.blueKeys.remove(goodie);
 		if (this.blueKeys.isEmpty() )  allBlueKeysTaken();

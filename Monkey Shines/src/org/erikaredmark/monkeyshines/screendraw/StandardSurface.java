@@ -139,6 +139,8 @@ public final class StandardSurface {
 	 * @param g2d
 	 */
 	private void renderToGraphics(Graphics2D g2d) {
+		// Clear
+		g2d.clearRect(0, 0, GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT + GameConstants.UI_HEIGHT);
 		/* --------------------- Initial Banner ---------------------- */
 		WorldResource rsrc = universe.getResource();
 		g2d.drawImage(rsrc.getBanner(), 
@@ -213,6 +215,27 @@ public final class StandardSurface {
 						      null);
 			}
 		}
+		
+		/* ----------------------- Actual Game -------------------------- */
+		// game is drawn at 80 pixels down
+		BufferedImage gameWindow = new BufferedImage(GameConstants.SCREEN_WIDTH, 
+													 GameConstants.SCREEN_HEIGHT, 
+													 BufferedImage.TYPE_INT_ARGB);
+		
+		Graphics2D windowG = gameWindow.createGraphics();
+		try {
+			universe.paintTo(windowG);
+		} finally {
+			windowG.dispose();
+		}
+		
+		g2d.drawImage(gameWindow, 
+					  0, GameConstants.UI_HEIGHT,
+					  GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT + GameConstants.UI_HEIGHT,
+					  0, 0, 
+					  GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT, 
+					  null);
+		
 	}
 
 }

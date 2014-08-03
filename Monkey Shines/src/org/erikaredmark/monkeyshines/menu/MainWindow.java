@@ -14,6 +14,7 @@ import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.encoder.WorldIO;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
 import org.erikaredmark.monkeyshines.global.KeySettings;
+import org.erikaredmark.monkeyshines.global.VideoSettings;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.resource.WorldResource.UseIntent;
@@ -31,8 +32,8 @@ import org.erikaredmark.monkeyshines.resource.WorldResource.UseIntent;
 public final class MainWindow extends JFrame {
 	private static final long serialVersionUID = 1L;
 
-	// The currently running game. May be null if no game is running
-	private GameWindow runningGame;
+	// The currently running game. May be null if no game is running or if game is running in fullscreen.
+	private GamePanel runningGameWindowed;
 	
 	// Main menu displayed. May be null if the main menu is no longer displayed
 	private MainMenuWindow menu;
@@ -45,7 +46,14 @@ public final class MainWindow extends JFrame {
 	
 	private final Runnable playGameCallback = new Runnable() {
 		@Override public void run() {
-			setGameState(GameState.PLAYING);
+			if (VideoSettings.isFullscreen() ) {
+				// Try to run fullscreen, but fallback to windowed if unable to
+				if (!(setGameState(GameState.PLAYING_FULLSCREEN) ) ) {
+					setGameState(GameState.PLAYING_WINDOWED);
+				}
+			} else {
+				setGameState(GameState.PLAYING_WINDOWED);
+			}
 		}
 	};
 	
@@ -135,21 +143,22 @@ public final class MainWindow extends JFrame {
 	private enum GameState {
 		// Note: always change state at END of method. Perform any possible actions that could prevent
 		// state change before actually modifying any state variables.
-		PLAYING {
+		PLAYING_WINDOWED {
 			@Override public boolean transitionTo(final MainWindow mainWindow) {
 				World userWorld = loadCustomWorld(mainWindow);
 				if (userWorld == null)  return false;
+
 				
 				mainWindow.state.transitionFrom(mainWindow);
 				
 				mainWindow.currentKeyListener = new KeyboardInput();
-				mainWindow.runningGame = new GameWindow(mainWindow.currentKeyListener, 
+				mainWindow.runningGameWindowed = new GamePanel(mainWindow.currentKeyListener, 
 														KeySettings.getBindings(),
 														mainWindow.resetCallback, 
 														userWorld);
 				// Must add to both.
 				mainWindow.addKeyListener(mainWindow.currentKeyListener);
-				mainWindow.add(mainWindow.runningGame);
+				mainWindow.add(mainWindow.runningGameWindowed);
 				mainWindow.pack();
 				
 				mainWindow.state = this;
@@ -157,18 +166,35 @@ public final class MainWindow extends JFrame {
 			}
 
 			@Override protected void transitionFrom(MainWindow mainWindow) {
-				if (mainWindow.runningGame != null) {
-					mainWindow.runningGame.dispose();
+				if (mainWindow.runningGameWindowed != null) {
+					mainWindow.runningGameWindowed.dispose();
 					
-					mainWindow.remove(mainWindow.runningGame);
+					mainWindow.remove(mainWindow.runningGameWindowed);
 					// Nulling reference is important; running game state should be GC'ed as it will no longer be
 					// transitioned back to.
-					mainWindow.runningGame = null;
+					mainWindow.runningGameWindowed = null;
 					assert mainWindow.currentKeyListener != null : "Keyboard based game played without a keyboard listener?";
 					
 					mainWindow.removeKeyListener(mainWindow.currentKeyListener);
 				}
 			}
+		},
+		PLAYING_FULLSCREEN {
+			@Override public boolean transitionTo(MainWindow mainWindow) {
+				World userWorld = loadCustomWorld(mainWindow);
+				if (userWorld == null)  return false;
+				
+				GameFullscreenWindow fullscreen = new GameFullscreenWindow(new KeyboardInput(), 
+																		   KeySettings.getBindings(), 
+																		   userWorld);
+				
+				return fullscreen.start();
+			}
+
+			@Override protected void transitionFrom(MainWindow mainWindow) {
+				// No transition from code.
+			}
+			
 		},
 		MENU {
 			@Override public boolean transitionTo(MainWindow mainWindow) {
