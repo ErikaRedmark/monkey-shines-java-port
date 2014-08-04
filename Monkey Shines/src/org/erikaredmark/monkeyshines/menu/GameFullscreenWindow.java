@@ -28,6 +28,7 @@ public final class GameFullscreenWindow extends Frame {
 	private static final long serialVersionUID = 1L;
 
 	private final StandardSurface surface;
+	private final Runnable gameOverCallback;
 	
 	// Configuration information
 	private final GraphicsDevice mainScreen;
@@ -48,13 +49,20 @@ public final class GameFullscreenWindow extends Frame {
 	 * 		a binding object that determines which keys on the keyboard map to which
 	 * 		actions bonzo can take.
 	 * 
+	 * @param gameOver
+	 * 		callback that is called when the game is over, and this object is done. Technically, this is called
+	 * 		after this object has been disposed
+	 * 
 	 * @param world
 	 * 		world to start a game for
 	 * 
 	 */
 	public GameFullscreenWindow(final KeyboardInput keys, 
 								final KeyBindings keyBindings, 
+								final Runnable gameOver,
 								final World w) {
+		
+		gameOverCallback = gameOver;
 		
 		assert keys != null;
 		
@@ -90,6 +98,7 @@ public final class GameFullscreenWindow extends Frame {
 		// set size is fine on just the frame since no extra will be taken for the title bar
 		// and window decoration.
 		setSize(640, 480);
+		setAlwaysOnTop(true);
 
 	}
 
@@ -186,6 +195,7 @@ public final class GameFullscreenWindow extends Frame {
 		
 		universe.dispose();
 		setVisible(false);
+		gameOverCallback.run();
 	}
 	
 }

@@ -1,11 +1,17 @@
 package org.erikaredmark.monkeyshines.menu;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
 import org.erikaredmark.monkeyshines.KeyboardInput;
@@ -44,6 +50,14 @@ public final class MainWindow extends JFrame {
 	// transitions
 	private KeyboardInput currentKeyListener;
 	
+	// Main menu Bar
+	private JMenuBar mainMenuBar = new JMenuBar();
+	
+	// Menu: Options
+	private JMenu options = new JMenu("Options");
+	/* --------------------------- MENU ITEM NEW WORLD ---------------------------- */
+	private final JMenuItem changeFullscreen = new JCheckBoxMenuItem("Fullscreen", null, VideoSettings.isFullscreen() );
+	
 	private final Runnable playGameCallback = new Runnable() {
 		@Override public void run() {
 			if (VideoSettings.isFullscreen() ) {
@@ -64,11 +78,29 @@ public final class MainWindow extends JFrame {
 		// Do not set size here: It would include title bar. JPanel is added and packed
 		// during state transition to size window correctly.
 		
+		
+		// Set the menu bar. Some functions are accessible from here in lue of buttons (this may change)
+		changeFullscreen.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent arg0) {
+				VideoSettings.setFullscreen(changeFullscreen.isSelected() );
+			}
+		});
+		
+		options.add(changeFullscreen);
+		
+		mainMenuBar.add(options);
+		
+		setJMenuBar(mainMenuBar);
+		
 		// Initial state is menu.
+		// This must be done after all contents are added to window to size correctly
 		setGameState(GameState.MENU);
+
 		// Now we can set relative to, since window is already sized properly.
 		setLocationRelativeTo(null);
 		setVisible(true);
+		
+		setAlwaysOnTop(false);
 	}
 	
 	// Sets the new game state and calls transition methods to modify the proper
@@ -153,9 +185,9 @@ public final class MainWindow extends JFrame {
 				
 				mainWindow.currentKeyListener = new KeyboardInput();
 				mainWindow.runningGameWindowed = new GamePanel(mainWindow.currentKeyListener, 
-														KeySettings.getBindings(),
-														mainWindow.resetCallback, 
-														userWorld);
+															   KeySettings.getBindings(),
+															   mainWindow.resetCallback, 
+															   userWorld);
 				// Must add to both.
 				mainWindow.addKeyListener(mainWindow.currentKeyListener);
 				mainWindow.add(mainWindow.runningGameWindowed);
@@ -185,14 +217,27 @@ public final class MainWindow extends JFrame {
 				if (userWorld == null)  return false;
 				
 				GameFullscreenWindow fullscreen = new GameFullscreenWindow(new KeyboardInput(), 
-																		   KeySettings.getBindings(), 
+																		   KeySettings.getBindings(),
+																		   mainWindow.resetCallback,
 																		   userWorld);
 				
-				return fullscreen.start();
+				
+				if (fullscreen.start() ) {
+					// Fullscreen should only have one active window
+					mainWindow.state.transitionFrom(mainWindow);
+					mainWindow.setVisible(false);
+					mainWindow.setIgnoreRepaint(true);
+					mainWindow.state = this;
+					return true;
+				} else {
+					return false;
+				}
 			}
 
 			@Override protected void transitionFrom(MainWindow mainWindow) {
-				// No transition from code.
+				// bring back window
+				mainWindow.setVisible(true);
+				mainWindow.setIgnoreRepaint(false);
 			}
 			
 		},

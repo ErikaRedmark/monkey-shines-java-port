@@ -10,7 +10,7 @@ package org.erikaredmark.monkeyshines.global;
 public class VideoSettings {
 	
 	// Debug: testing fullscreen
-	private static boolean fullScreen = true;
+	private static boolean fullScreen = false;
 	
 	/**
 	 * 
@@ -25,4 +25,14 @@ public class VideoSettings {
 	 * 
 	 */
 	public static boolean isFullscreen() { return fullScreen; }
+	
+	/**
+	 * 
+	 * Sets whether the game should run in fullscreen mode. This is only a request; if the request
+	 * cannot be satisfied clients should fallback to windowed mode.
+	 * 
+	 * @param full
+	 * 
+	 */
+	public static void setFullscreen(boolean full) { fullScreen = full; } 
 }
