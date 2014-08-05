@@ -348,5 +348,7 @@ public final class GameWorldLogic {
 	 */
 	public void dispose() {
 		currentWorld.getResource().dispose();
+		gameTimer.stop();
+		bonusTimer.stop();
 	}
 }
