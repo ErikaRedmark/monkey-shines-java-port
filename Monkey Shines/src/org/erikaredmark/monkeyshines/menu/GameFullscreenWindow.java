@@ -33,6 +33,7 @@ public final class GameFullscreenWindow extends Frame {
 	// Configuration information
 	private final GraphicsDevice mainScreen;
 	private final GameWorldLogic universe;
+	private boolean gameOver;
 	
 	// State variables for drawing.
 	private BufferStrategy buffer;
@@ -160,6 +161,9 @@ public final class GameFullscreenWindow extends Frame {
 	// TODO volatile images just don't like rendering to BufferStrategy properly. Using bufferedImage
 	// until a fix is found.
 	private void renderScene() {
+		// stop renderScene from being called during the game over tick
+		if (gameOver)  return;
+		
 		assert surface != null;
 		do {
 			do {
@@ -186,6 +190,7 @@ public final class GameFullscreenWindow extends Frame {
 	 * 
 	 */
 	private void gameOver() {
+		gameOver = true;
 		mainScreen.setFullScreenWindow(null);
 		
 		// Display seems to automatically fix itself when fullscreen is ended
@@ -195,6 +200,7 @@ public final class GameFullscreenWindow extends Frame {
 		
 		universe.dispose();
 		setVisible(false);
+		dispose();
 		gameOverCallback.run();
 	}
 	

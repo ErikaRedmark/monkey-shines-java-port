@@ -518,6 +518,7 @@ public class World {
 		
 		changeCurrentScreen(transferScreenId, bonzo);
 		bonzo.setCurrentLocation(transferScreen.getBonzoStartingLocationPixels() );
+		transferScreen.setBonzoCameFrom(transferScreen.getBonzoStartingLocationPixels() );
 	}
 	
 	/**
