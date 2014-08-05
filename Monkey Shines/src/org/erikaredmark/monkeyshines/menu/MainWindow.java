@@ -1,11 +1,17 @@
 package org.erikaredmark.monkeyshines.menu;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
 import org.erikaredmark.monkeyshines.KeyboardInput;
@@ -14,6 +20,7 @@ import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.encoder.WorldIO;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
 import org.erikaredmark.monkeyshines.global.KeySettings;
+import org.erikaredmark.monkeyshines.global.VideoSettings;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.resource.WorldResource.UseIntent;
@@ -31,8 +38,8 @@ import org.erikaredmark.monkeyshines.resource.WorldResource.UseIntent;
 public final class MainWindow extends JFrame {
 	private static final long serialVersionUID = 1L;
 
-	// The currently running game. May be null if no game is running
-	private GameWindow runningGame;
+	// The currently running game. May be null if no game is running or if game is running in fullscreen.
+	private GamePanel runningGameWindowed;
 	
 	// Main menu displayed. May be null if the main menu is no longer displayed
 	private MainMenuWindow menu;
@@ -43,9 +50,24 @@ public final class MainWindow extends JFrame {
 	// transitions
 	private KeyboardInput currentKeyListener;
 	
+	// Main menu Bar
+	private JMenuBar mainMenuBar = new JMenuBar();
+	
+	// Menu: Options
+	private JMenu options = new JMenu("Options");
+	/* --------------------------- MENU ITEM NEW WORLD ---------------------------- */
+	private final JMenuItem changeFullscreen = new JCheckBoxMenuItem("Fullscreen", null, VideoSettings.isFullscreen() );
+	
 	private final Runnable playGameCallback = new Runnable() {
 		@Override public void run() {
-			setGameState(GameState.PLAYING);
+			if (VideoSettings.isFullscreen() ) {
+				// Try to run fullscreen, but fallback to windowed if unable to
+				if (!(setGameState(GameState.PLAYING_FULLSCREEN) ) ) {
+					setGameState(GameState.PLAYING_WINDOWED);
+				}
+			} else {
+				setGameState(GameState.PLAYING_WINDOWED);
+			}
 		}
 	};
 	
@@ -56,11 +78,29 @@ public final class MainWindow extends JFrame {
 		// Do not set size here: It would include title bar. JPanel is added and packed
 		// during state transition to size window correctly.
 		
+		
+		// Set the menu bar. Some functions are accessible from here in lue of buttons (this may change)
+		changeFullscreen.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent arg0) {
+				VideoSettings.setFullscreen(changeFullscreen.isSelected() );
+			}
+		});
+		
+		options.add(changeFullscreen);
+		
+		mainMenuBar.add(options);
+		
+		setJMenuBar(mainMenuBar);
+		
 		// Initial state is menu.
+		// This must be done after all contents are added to window to size correctly
 		setGameState(GameState.MENU);
+
 		// Now we can set relative to, since window is already sized properly.
 		setLocationRelativeTo(null);
 		setVisible(true);
+		
+		setAlwaysOnTop(false);
 	}
 	
 	// Sets the new game state and calls transition methods to modify the proper
@@ -135,21 +175,22 @@ public final class MainWindow extends JFrame {
 	private enum GameState {
 		// Note: always change state at END of method. Perform any possible actions that could prevent
 		// state change before actually modifying any state variables.
-		PLAYING {
+		PLAYING_WINDOWED {
 			@Override public boolean transitionTo(final MainWindow mainWindow) {
 				World userWorld = loadCustomWorld(mainWindow);
 				if (userWorld == null)  return false;
+
 				
 				mainWindow.state.transitionFrom(mainWindow);
 				
 				mainWindow.currentKeyListener = new KeyboardInput();
-				mainWindow.runningGame = new GameWindow(mainWindow.currentKeyListener, 
-														KeySettings.getBindings(),
-														mainWindow.resetCallback, 
-														userWorld);
+				mainWindow.runningGameWindowed = new GamePanel(mainWindow.currentKeyListener, 
+															   KeySettings.getBindings(),
+															   mainWindow.resetCallback, 
+															   userWorld);
 				// Must add to both.
 				mainWindow.addKeyListener(mainWindow.currentKeyListener);
-				mainWindow.add(mainWindow.runningGame);
+				mainWindow.add(mainWindow.runningGameWindowed);
 				mainWindow.pack();
 				
 				mainWindow.state = this;
@@ -157,18 +198,48 @@ public final class MainWindow extends JFrame {
 			}
 
 			@Override protected void transitionFrom(MainWindow mainWindow) {
-				if (mainWindow.runningGame != null) {
-					mainWindow.runningGame.dispose();
+				if (mainWindow.runningGameWindowed != null) {
 					
-					mainWindow.remove(mainWindow.runningGame);
+					mainWindow.remove(mainWindow.runningGameWindowed);
+					mainWindow.runningGameWindowed.dispose();
 					// Nulling reference is important; running game state should be GC'ed as it will no longer be
 					// transitioned back to.
-					mainWindow.runningGame = null;
+					mainWindow.runningGameWindowed = null;
 					assert mainWindow.currentKeyListener != null : "Keyboard based game played without a keyboard listener?";
 					
 					mainWindow.removeKeyListener(mainWindow.currentKeyListener);
 				}
 			}
+		},
+		PLAYING_FULLSCREEN {
+			@Override public boolean transitionTo(MainWindow mainWindow) {
+				World userWorld = loadCustomWorld(mainWindow);
+				if (userWorld == null)  return false;
+				
+				GameFullscreenWindow fullscreen = new GameFullscreenWindow(new KeyboardInput(), 
+																		   KeySettings.getBindings(),
+																		   mainWindow.resetCallback,
+																		   userWorld);
+				
+				
+				if (fullscreen.start() ) {
+					// Fullscreen should only have one active window
+					mainWindow.state.transitionFrom(mainWindow);
+					mainWindow.setVisible(false);
+					mainWindow.setIgnoreRepaint(true);
+					mainWindow.state = this;
+					return true;
+				} else {
+					return false;
+				}
+			}
+
+			@Override protected void transitionFrom(MainWindow mainWindow) {
+				// bring back window
+				mainWindow.setVisible(true);
+				mainWindow.setIgnoreRepaint(false);
+			}
+			
 		},
 		MENU {
 			@Override public boolean transitionTo(MainWindow mainWindow) {

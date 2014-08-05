@@ -125,7 +125,8 @@ public final class WorldEditor {
 	}
 	
 	public void paint(Graphics2D g) {
-		world.paintAndUpdate(g);
+		world.update();
+		world.paint(g);
 	}
 
 	/**

@@ -63,7 +63,6 @@ public final class Bonzo {
 	// If this is set to -2, bonzo has infinite lives. -1 means he's dead Jim
 	private int lives;
 	private final Runnable gameOverCallback;
-	private final Runnable lifeUpdatedCallback;
 	private final Runnable levelCompleteCallback;
 	public static final int INFINITE_LIVES = -2;
 	
@@ -139,16 +138,11 @@ public final class Bonzo {
 	 * @param gameOverCallback
 	 * 		UI callback for when the game is 'over', when bonzo loses all his lives
 	 * 
-	 * @param lifeUpdatedCallback
-	 * 		UI callback for when bonzo loses or gains a life, but NOT for when it is game over.
-	 * 		Dying with no lives calls the other callback
-	 * 
 	 */ 
 	public Bonzo(final World worldPointer,
 			     final int startingLives, 
 			     final Runnable scoreCallback, 
 			     final Runnable gameOverCallback,
-			     final Runnable lifeUpdatedCallback,
 			     final Runnable levelCompleteCallback) {
 		
 		this.worldPointer = worldPointer;
@@ -157,7 +151,6 @@ public final class Bonzo {
 		this.powerupState = new PowerupState();
 		this.powerupState.clear();
 		this.gameOverCallback = gameOverCallback;
-		this.lifeUpdatedCallback = lifeUpdatedCallback;
 		this.levelCompleteCallback = levelCompleteCallback;
 		this.health = GameConstants.HEALTH_MAX;
 		this.soundManager = worldPointer.getResource().getSoundManager();
@@ -305,8 +298,6 @@ public final class Bonzo {
 		this.lives =   newLives < 9
 					 ? newLives
 					 : 9;
-		
-		lifeUpdatedCallback.run();
 	}
 	
 	public int getScore() { return this.score; }
@@ -883,7 +874,6 @@ public final class Bonzo {
 					if (lives == -1) {
 						gameOverCallback.run();
 					} else {
-						lifeUpdatedCallback.run();
 						worldPointer.restartBonzo(this);
 					}
 				}

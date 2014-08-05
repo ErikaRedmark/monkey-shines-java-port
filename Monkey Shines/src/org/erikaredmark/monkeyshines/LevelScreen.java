@@ -430,27 +430,44 @@ public final class LevelScreen {
 	/**
 	 * 
 	 * Draw background, tiles, and sprites in one swoop.
-	 * <p/>
-	 * As the name suggests, this doesn't merely paint; going through every entity, it run updates on
-	 * them as well. Updating is done after painting
 	 * 
 	 * @param g2d
 	 * 
 	 */
-	public void paintAndUpdate(Graphics2D g2d) {
+	public void paint(Graphics2D g2d) {
 		background.draw(g2d);
+		
 		for (int i = 0; i < GameConstants.TILES_IN_COL; i++) { // for every tile in the row
 			for (int j = 0; j < GameConstants.TILES_IN_ROW; j++) {
 				if (screenTiles[i][j] != null) {
 					screenTiles[i][j].paint(g2d);
-					screenTiles[i][j].update();
 				}
 			}
 		}
 		
 		for (Sprite s : spritesOnScreen) {
 			s.paint(g2d);
-			if (animateSprites)  s.update();
+		}
+	}
+	
+	/**
+	 * 
+	 * Runs one tick of time for the given game screen.
+	 * 
+	 */
+	public void update() {
+		for (int i = 0; i < GameConstants.TILES_IN_COL; i++) { // for every tile in the row
+			for (int j = 0; j < GameConstants.TILES_IN_ROW; j++) {
+				if (screenTiles[i][j] != null) {
+					screenTiles[i][j].update();
+				}
+			}
+		}
+		
+		if (animateSprites) {
+			for (Sprite s : spritesOnScreen) {
+				s.update();
+			}
 		}
 	}
 	

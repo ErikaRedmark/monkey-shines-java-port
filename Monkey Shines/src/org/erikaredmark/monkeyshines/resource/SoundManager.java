@@ -98,7 +98,7 @@ public final class SoundManager implements PropertyChangeListener {
 	/**
 	 * 
 	 * Automatically called on construction and game setting change to match clip volume to
-	 * user defined levels.
+	 * user defined levels. Does nothing if there is no background music
 	 * 
 	 * @param value
 	 * 		percentage to set music volume to
