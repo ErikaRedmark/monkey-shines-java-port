@@ -6,7 +6,10 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.image.BufferStrategy;
+import java.awt.image.BufferedImage;
 
 import org.erikaredmark.monkeyshines.GameWorldLogic;
 import org.erikaredmark.monkeyshines.KeyBindings;
@@ -145,6 +148,12 @@ public final class GameFullscreenWindow extends Frame {
 			}
 		}
 		
+		// Rid of that annoying cursor. 
+		Toolkit toolkit = Toolkit.getDefaultToolkit();
+	    BufferedImage inviso = new BufferedImage(1, 1, BufferedImage.TRANSLUCENT); 
+	    this.setCursor(toolkit.createCustomCursor(inviso, new Point(0, 0), "Inviso") );
+	    // Cursor WILL be reset back to normal when fullscreen ends.
+	    
 		// Finally, start the game. The render loop is called
 		// once per game tick via the callback during this object's setup.
 		universe.start();
