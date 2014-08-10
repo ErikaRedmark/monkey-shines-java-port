@@ -27,6 +27,7 @@ import org.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.resource.WorldResource.UseIntent;
+import org.erikaredmark.util.BinaryLocation;
 
 
 /*
@@ -389,6 +390,7 @@ public class LevelEditor extends JFrame {
 			@Override public void actionPerformed(ActionEvent e) {
 				
 				JFileChooser fileChooser = new JFileChooser();
+				fileChooser.setCurrentDirectory(BinaryLocation.BINARY_FOLDER.toFile() );
 				if (fileChooser.showOpenDialog(editor) == JFileChooser.APPROVE_OPTION) {
 					File worldFile = fileChooser.getSelectedFile();
 					

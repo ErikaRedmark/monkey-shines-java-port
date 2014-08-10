@@ -24,6 +24,7 @@ import org.erikaredmark.monkeyshines.global.VideoSettings;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.resource.WorldResource.UseIntent;
+import org.erikaredmark.util.BinaryLocation;
 
 /**
  * 
@@ -136,6 +137,9 @@ public final class MainWindow extends JFrame {
 	 */
 	public static World loadCustomWorld(final Component parent) {
 		JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setCurrentDirectory(BinaryLocation.BINARY_FOLDER.toFile() );
+		System.out.println(fileChooser.getCurrentDirectory() );
+		
 		if (fileChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
 			Path worldFile = fileChooser.getSelectedFile().toPath();
 			try {
