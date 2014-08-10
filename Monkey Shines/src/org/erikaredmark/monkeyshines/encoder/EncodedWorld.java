@@ -620,9 +620,11 @@ public final class EncodedWorld {
 		
 		WorldFormatProtos.World.LevelScreen.Builder emptyLevel = WorldFormatProtos.World.LevelScreen.newBuilder();
 		emptyLevel.setId(1000);
+		// Use a solid colour, because barring additional resource pack information, solid colors will always
+		// be present
 		emptyLevel.setBackground(WorldFormatProtos.World.Background.newBuilder()
-								 .setType(WorldFormatProtos.World.BackgroundType.FULL)
-								 .setId(0)
+								 .setType(WorldFormatProtos.World.BackgroundType.SOLID_COLOR)
+								 .setId(Color.BLACK.getRGB() )
 								 .build() );
 		emptyLevel.setBonzoLocation(WorldFormatProtos.World.Point.newBuilder()
 									.setX(0)

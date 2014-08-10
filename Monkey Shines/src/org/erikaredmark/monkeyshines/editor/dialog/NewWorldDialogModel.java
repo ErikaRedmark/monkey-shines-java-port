@@ -38,7 +38,7 @@ public final class NewWorldDialogModel extends ObservableModel {
 	private NewWorldDialogModel() {
 		this.worldName = "";
 		this.selectedResourcePack = null;
-		this.useDefaultPack = true;
+		this.useDefaultPack = false;
 		this.saveLocation = null;
 	}
 

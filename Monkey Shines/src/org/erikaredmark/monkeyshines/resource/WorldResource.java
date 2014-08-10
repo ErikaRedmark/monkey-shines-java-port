@@ -934,6 +934,15 @@ public final class WorldResource {
 	 */
 	public int getConveyerCount() { return conveyerCount; }
 
+	/**
+	 * 
+	 * Indicates how the client wishes to use the resources. This is mainly a division between editor and game.
+	 * The purpose is to not load any resources that won't be used in a certain context. For example, no sounds or
+	 * music are loaded when the intent is for the level editor, since the level editor has no need of them.
+	 * 
+	 * @author Erika Redmark
+	 *
+	 */
 	public enum UseIntent {
 		GAME,
 		EDITOR;

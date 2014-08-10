@@ -9,7 +9,6 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 
 import org.erikaredmark.monkeyshines.editor.WorldEditor;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
@@ -136,8 +135,6 @@ public final class WorldIO {
 
 	    Path resourceDestination = newWorldFolder.resolve(worldName + ".zip");
 	    Files.copy(resourceSource, resourceDestination);
-	    
-	    // No exceptions = done!
 	}
 	
 	/**
@@ -171,9 +168,7 @@ public final class WorldIO {
 		// Copy resources from target into <worldName>.zip file
 		InputStream resourceSource = new FileInputStream(rsrcPack.toFile() );
 	    Path resourceDestination = newWorldFolder.resolve(worldName + ".zip");
-	    Files.copy(resourceSource, resourceDestination, StandardCopyOption.COPY_ATTRIBUTES);
-	    
-	    // No exceptions = done!
+	    Files.copy(resourceSource, resourceDestination);
 	}
 	
 	/** Common code to both newWorldYYY functions. Makes the .world file, does not handle resources.					*/

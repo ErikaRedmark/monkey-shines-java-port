@@ -20,12 +20,14 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import javax.swing.JCheckBox;
 
 import org.erikaredmark.monkeyshines.encoder.WorldIO;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
+import org.erikaredmark.util.BinaryLocation;
 
 
 /**
@@ -44,6 +46,7 @@ public class NewWorldDialog extends JPanel {
 	private final JTextField txtWorldName;
 	private final JTextField txtResourcePack;
 	private final JCheckBox chckbxUseDefaultPack;
+	private final JButton btnBrowseResourcePack;
 	
 	
 	private final NewWorldDialogModel model;
@@ -53,7 +56,14 @@ public class NewWorldDialog extends JPanel {
 		new AbstractAction("Browse...") {
 			private static final long serialVersionUID = 6168460348517517770L;
 			@Override public void actionPerformed(ActionEvent e) {
-				// TODO open file browser, update path in model
+				JFileChooser fileChooser = new JFileChooser();
+				fileChooser.setCurrentDirectory(BinaryLocation.BINARY_FOLDER.toFile() );
+				if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+					File file = fileChooser.getSelectedFile();
+					Path rsrcPath = file.toPath();
+					model.setSelectedResourcePack(rsrcPath);
+					txtResourcePack.setText(rsrcPath.toString() );
+				}
 			}
 		};
 	
@@ -61,7 +71,11 @@ public class NewWorldDialog extends JPanel {
 		new AbstractAction("Use Default Pack") {
 			private static final long serialVersionUID = 5848943844967927018L;
 			@Override public void actionPerformed(ActionEvent e) {
-				model.setUseDefaultPack(chckbxUseDefaultPack.isSelected() );
+				boolean selected = chckbxUseDefaultPack.isSelected();
+				model.setUseDefaultPack(selected);
+				// Enable or disable path and browse text and buttons
+				txtResourcePack.setEnabled(!(selected) );
+				btnBrowseResourcePack.setEnabled(!(selected) );
 			}
 		};
 		
@@ -70,6 +84,7 @@ public class NewWorldDialog extends JPanel {
 			private static final long serialVersionUID = 3229707262753672755L;
 			@Override public void actionPerformed(ActionEvent e) {
 				JFileChooser fileChooser = new JFileChooser();
+				fileChooser.setCurrentDirectory(BinaryLocation.BINARY_FOLDER.toFile() );
 				if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
 					File file = fileChooser.getSelectedFile();
 					Path savePath = file.toPath();
@@ -78,7 +93,29 @@ public class NewWorldDialog extends JPanel {
 						if (model.isUseDefaultPack() ) {
 							WorldIO.newWorldWithDefault(savePath, worldName);
 						} else {
-							JOptionPane.showMessageDialog(null, "Feature not implemented: Choose the default resource pack option");
+							Path rsrcPath = model.getSelectedResourcePack();
+							if (rsrcPath == null) {
+								showResourcePackError("No resource pack selected.");
+								return;
+							}
+							if (!(Files.exists(rsrcPath) ) ) {
+								showResourcePackError("Location does not exist: ");
+								return;
+							}
+							
+							if (Files.isDirectory(rsrcPath) ) {
+								showResourcePackError("Location is a directory: ");
+								return;
+							}
+							
+							try {
+								WorldIO.newWorldWithResources(savePath, worldName, rsrcPath);
+							} catch (WorldSaveException ex) {
+								showResourcePackError("Issue with resource pack: " + ex.getMessage() + " for pack: ");
+								// TODO logging API
+								ex.printStackTrace();
+								return;
+							}
 						}
 						
 						// Postcondition: World is saved. Dialog is no longer relevant: close it.
@@ -90,6 +127,7 @@ public class NewWorldDialog extends JPanel {
 						// Dispatch event so system knows to actually close the dialog
 						// dispatchEvent(new ComponentEvent(NewWorldDialog.this, ComponentEvent.COMPONENT_HIDDEN));
 						
+					// These catch clauses do not deal with resource pack issues, only other, more general ones.
 					} catch (IOException | WorldSaveException ex) {
 						JOptionPane.showMessageDialog(null,
 						    "Unable to save due to " + ex.getMessage(),
@@ -101,6 +139,24 @@ public class NewWorldDialog extends JPanel {
 			}
 		};
 
+	/**
+	 * 
+	 * Shows an error dialog intended to alert the user that the resource pack selected is invalid for some reason.
+	 * 
+	 * @param msg
+	 * 		the reason
+	 * 
+	 */
+	private void showResourcePackError(String msg) {
+		JOptionPane.showMessageDialog(
+			null,
+			msg + (   model.getSelectedResourcePack() != null
+					? model.getSelectedResourcePack().toString()
+					: ""),
+		    "Resource Pack Issue",
+		    JOptionPane.ERROR_MESSAGE);
+	}
+		
 	/**
 	 * 
 	 * Creates a new instance of this dialog and allows the user to create a new world. This method is
@@ -149,18 +205,21 @@ public class NewWorldDialog extends JPanel {
 		});
 		
 		txtResourcePack = new JTextField();
+		// Only can be changed via browse: Minor TODO to allow typed paths
+		txtResourcePack.setEditable(false);
 		springLayout.putConstraint(SpringLayout.NORTH, txtResourcePack, 0, SpringLayout.NORTH, lblResourcePack);
 		springLayout.putConstraint(SpringLayout.WEST, txtResourcePack, 6, SpringLayout.EAST, lblResourcePack);
 		springLayout.putConstraint(SpringLayout.EAST, txtResourcePack, 236, SpringLayout.EAST, lblResourcePack);
 		add(txtResourcePack);
 		txtResourcePack.setColumns(10);
 		
-		JButton btnBrowseResourcePack = new JButton(btnResourcePackAction);
+		btnBrowseResourcePack = new JButton(btnResourcePackAction);
 		springLayout.putConstraint(SpringLayout.NORTH, btnBrowseResourcePack, 0, SpringLayout.NORTH, txtResourcePack);
 		springLayout.putConstraint(SpringLayout.WEST, btnBrowseResourcePack, 6, SpringLayout.EAST, txtResourcePack);
 		springLayout.putConstraint(SpringLayout.EAST, btnBrowseResourcePack, -10, SpringLayout.EAST, this);
 		btnBrowseResourcePack.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				
 			}
 		});
 		add(btnBrowseResourcePack);
