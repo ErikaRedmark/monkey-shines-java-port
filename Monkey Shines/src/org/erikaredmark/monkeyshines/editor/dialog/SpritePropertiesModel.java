@@ -5,6 +5,7 @@ import org.erikaredmark.monkeyshines.AnimationType;
 import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.ImmutableRectangle;
 import org.erikaredmark.monkeyshines.Sprite;
+import org.erikaredmark.monkeyshines.Sprite.ForcedDirection;
 import org.erikaredmark.monkeyshines.Sprite.SpriteType;
 import org.erikaredmark.util.ObservableModel;
 
@@ -32,6 +33,9 @@ public final class SpritePropertiesModel extends ObservableModel {
 	private AnimationSpeed animationSpeed;
 	private SpriteType spriteType;
 	
+	// Only relevant for two-way facing sprites.
+	private ForcedDirection forceDirection;
+	
 	/** Both old and new values will be {@code Integer}, never null
 	 */
 	public static final String PROPERTY_SPRITE_ID = "propSprite";
@@ -42,6 +46,7 @@ public final class SpritePropertiesModel extends ObservableModel {
 								  final AnimationType 	 animationType,
 								  final AnimationSpeed   animationSpeed,
 								  final SpriteType		 spriteType,
+								  final ForcedDirection  forcedDirection,
 								  final int 			 spriteId) {
 		
 		this.spriteBoundingBox = spriteBoundingBox;
@@ -50,6 +55,7 @@ public final class SpritePropertiesModel extends ObservableModel {
 		this.animationType = animationType;
 		this.animationSpeed = animationSpeed;
 		this.spriteId = spriteId;
+		this.forceDirection = forcedDirection;
 		this.spriteType = spriteType;
 	}
 	
@@ -57,7 +63,14 @@ public final class SpritePropertiesModel extends ObservableModel {
 	 *  for animation
 	 */
 	public static SpritePropertiesModel newModelWithDefaults() {
-		return new SpritePropertiesModel(ImmutableRectangle.of(0, 0, 0, 0), ImmutablePoint2D.of(0, 0), ImmutablePoint2D.of(0, 0), AnimationType.INCREASING_FRAMES, AnimationSpeed.NORMAL, SpriteType.NORMAL, 0);
+		return new SpritePropertiesModel(ImmutableRectangle.of(0, 0, 0, 0), 
+										 ImmutablePoint2D.of(0, 0), 
+										 ImmutablePoint2D.of(0, 0), 
+										 AnimationType.INCREASING_FRAMES, 
+										 AnimationSpeed.NORMAL, 
+										 SpriteType.NORMAL,
+										 Sprite.ForcedDirection.NONE,
+										 0);
 	}
 	
 	/** 
@@ -72,7 +85,15 @@ public final class SpritePropertiesModel extends ObservableModel {
 	 * 
 	 */
 	public static SpritePropertiesModel fromSprite(final Sprite s) {
-		return new SpritePropertiesModel(s.getBoundingBox(), ImmutablePoint2D.of(s.getInitialSpeedX(), s.getInitialSpeedY() ), s.getStaringLocation(), s.getAnimationType(), s.getAnimationSpeed(), s.getType(), s.getId() );
+		return new SpritePropertiesModel(s.getBoundingBox(), 
+										 ImmutablePoint2D.of(s.getInitialSpeedX(), 
+										 s.getInitialSpeedY() ), 
+										 s.getStaringLocation(), 
+										 s.getAnimationType(), 
+										 s.getAnimationSpeed(),
+										 s.getType(), 
+										 s.getForcedDirection(),
+										 s.getId() );
 	}
 	
 
@@ -83,6 +104,7 @@ public final class SpritePropertiesModel extends ObservableModel {
 	public AnimationType getAnimationType() { return animationType; }
 	public AnimationSpeed getAnimationSpeed() { return animationSpeed; }
 	public SpriteType getSpriteType() { return spriteType; }
+	public ForcedDirection getForceDirection() { return forceDirection; }
 	/**
 	 * @return {@code true} if the user hit okay, {@code false} if the window was just closed or cancel was hit.
 	 */
@@ -131,6 +153,8 @@ public final class SpritePropertiesModel extends ObservableModel {
 	public void setAnimationSpeed(final AnimationSpeed speed) {
 		this.animationSpeed = speed;
 	}
+	
+	public void setForcedDirection(ForcedDirection force) { this.forceDirection = force; }
 	
 	public void setSpriteBoundingBox(ImmutableRectangle spriteBoundingBox) { this.spriteBoundingBox = spriteBoundingBox; }
 	public void setSpriteVelocity(ImmutablePoint2D spriteVelocity) { this.spriteVelocity = spriteVelocity; }

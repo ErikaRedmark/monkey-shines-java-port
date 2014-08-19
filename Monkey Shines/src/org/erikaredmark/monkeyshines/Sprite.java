@@ -51,7 +51,10 @@ public class Sprite {
 
 	// this boolean will be set dynamically depending on the size of the graphics context. Graphics that have
 	// two rows of sprites are automatically considered two way facing.
-	private       boolean twoWayFacing;
+	// A two-way facing sprite may be set not to be, but canBeTwoWayFacing simply states whether it has the 
+	// capability, not whether it currently is.
+	private final boolean canBeTwoWayFacing;
+	private ForcedDirection forcedDirection;
 	
 	private WorldResource rsrc;
 	/** 
@@ -77,7 +80,16 @@ public class Sprite {
 	 * 		a new instance of this class
 	 */
 	public static Sprite newUnmovingSprite(int id, AnimationType type, AnimationSpeed speed, SpriteType spriteType, WorldResource rsrc) {
-		return new Sprite(id, ImmutablePoint2D.of(0, 0), ImmutableRectangle.of(0, 0, 0, 0), 0, 0, type, speed, spriteType, rsrc);
+		return new Sprite(id, 
+						  ImmutablePoint2D.of(0, 0), 
+						  ImmutableRectangle.of(0, 0, 0, 0), 
+						  0, 
+						  0, 
+						  type, 
+						  speed,
+						  spriteType,
+						  ForcedDirection.NONE,
+						  rsrc);
 	}
 	
 	/**
@@ -106,8 +118,26 @@ public class Sprite {
 	 * 		graphics resource for giving the sprite a proper graphics context
 	 * 
 	 */
-	public static Sprite newSprite(int spriteId, ImmutablePoint2D spriteStartingLocation, ImmutableRectangle spriteBoundingBox, ImmutablePoint2D spriteVelocity, AnimationType animationType, AnimationSpeed speed, SpriteType spriteType, WorldResource rsrc) {
-		return new Sprite(spriteId, spriteStartingLocation, spriteBoundingBox, spriteVelocity.x(), spriteVelocity.y(), animationType, speed, spriteType, rsrc);
+	public static Sprite newSprite(int spriteId, 
+								  ImmutablePoint2D spriteStartingLocation, 
+								  ImmutableRectangle spriteBoundingBox, 
+								  ImmutablePoint2D spriteVelocity,
+								  AnimationType animationType, 
+								  AnimationSpeed speed, 
+								  SpriteType spriteType,
+								  ForcedDirection forcedDirection,
+								  WorldResource rsrc) {
+		
+		return new Sprite(spriteId, 
+						  spriteStartingLocation, 
+						  spriteBoundingBox, 
+						  spriteVelocity.x(), 
+						  spriteVelocity.y(), 
+						  animationType, 
+						  speed, 
+						  spriteType,
+						  forcedDirection,
+						  rsrc);
 	}
 	
 	
@@ -119,6 +149,7 @@ public class Sprite {
 			  	   final AnimationType animationType, 
 			  	   final AnimationSpeed speed,
 			  	   final SpriteType spriteType,
+			  	   final ForcedDirection forcedDirection,
 			  	   final WorldResource rsrc) {
 		
 		this.id = id;
@@ -129,7 +160,9 @@ public class Sprite {
 		this.animationType = animationType;
 		this.animationSpeed = speed;
 		this.type = spriteType;
-		setUpGraphics(rsrc);
+		this.rsrc = rsrc;
+		this.canBeTwoWayFacing = (rsrc.getSpritesheetFor(this.id).getHeight() > GameConstants.SPRITE_SIZE_Y);
+		this.forcedDirection = forcedDirection;
 		
 		// State information
 		setStateToDefaults();
@@ -150,13 +183,9 @@ public class Sprite {
 		this.currentLocation = Point2D.from(startLocation);
 		this.cycleDirection = true;
 		this.updateTick = 1;
+		
 		resetClip();
 		
-	}
-	
-	private void setUpGraphics(final WorldResource rsrc) {
-		this.rsrc = rsrc;
-		twoWayFacing = (rsrc.getSpritesheetFor(this.id).getHeight() > GameConstants.SPRITE_SIZE_Y);
 	}
 	
 	/**
@@ -168,8 +197,12 @@ public class Sprite {
 		currentClip = ClippingRectangle.of(GameConstants.SPRITE_SIZE_X, GameConstants.SPRITE_SIZE_Y);
 		currentClip.setX(0);
 		currentClip.setY(0);
-		if (twoWayFacing && speedX >= 0) {
-			this.currentClip.setY(GameConstants.SPRITE_SIZE_Y);
+		ForcedDirection dir = getForcedDirection();
+		if (canBeTwoWayFacing) {
+			if (  (dir == ForcedDirection.NONE && speedX >= 0) 
+			    || dir == ForcedDirection.LEFT) {
+				this.currentClip.setY(GameConstants.SPRITE_SIZE_Y);
+			}
 		}
 	}
 	
@@ -325,15 +358,41 @@ public class Sprite {
 	 */
 	public ImmutableRectangle getBoundingBox() { return this.boundingBox; }
 	
+	/**
+	 * 
+	 * Determines if the given sprite is a two-way facing sprite that has been forced a direction. This does not
+	 * apply to one-way facing sprites.
+	 * <p/>
+	 * Note that even if a sprite is CREATED with a forced direction other than {@code NONE}, this method will
+	 * still return {@code NONE} if the sprite only has one row of a sprite sheet for the current graphics
+	 * resource. Because of this, even in internal code this accessor should be used.
+	 * 
+	 * @return
+	 * 		an enumeration resulting in the possible forced directions, {@code NONE} for normal operation and
+	 * 		either {@code LEFT} or {@code RIGHT} for their respective directions.
+	 * 
+	 */
+	public ForcedDirection getForcedDirection() {
+		return   canBeTwoWayFacing
+			   ? this.forcedDirection
+			   : ForcedDirection.NONE;
+	}
 	
-	/** Reverse X speed, and if the sprite is a two-way facing sprite, swaps sprite sheet rows.							*/
+	/** 
+	 * Reverse X speed, and if the sprite is a two-way facing sprite, swaps sprite sheet rows.
+	 * Two way facing sprites may be set to only use one direction by the editor. If so, twoWayFacing will
+	 * have been set to false and the Y part of the clip set accordingly.
+	 */
 	private void reverseX() { 
 		speedX = -speedX;
-		if (twoWayFacing == true) {
-			if (speedX < 0)
+		// Don't swap directinos unless it is not forced and two-way
+		if (   getForcedDirection() == ForcedDirection.NONE
+		    && canBeTwoWayFacing) {
+			if (speedX < 0) {
 				currentClip.setY(0);
-			else
+		    } else {
 				currentClip.setY(GameConstants.SPRITE_SIZE_Y);
+			}
 		}
 	}
 	
@@ -436,6 +495,21 @@ public class Sprite {
 	 */
 	public SpriteType getType() { return type; }
 
+	/**
+	 * 
+	 * Represents a forced direction for the sprite. This isn't the MOVEMENT direction, this is the sprite animation
+	 * direction. Basically, a two-way facing sprite may move left-right or up-down and be forced to always look in one
+	 * particular direction regardless of what the sprite sheet normally allows it to do.
+	 * 
+	 * @author Erika Redmark
+	 *
+	 */
+	public enum ForcedDirection {
+		NONE,
+		RIGHT,
+		LEFT;
+	}
+	
 	public enum SpriteType {
 		NORMAL("Instant Kill") {
 			@Override public void onBonzoCollision(Bonzo bonzo, World world) {

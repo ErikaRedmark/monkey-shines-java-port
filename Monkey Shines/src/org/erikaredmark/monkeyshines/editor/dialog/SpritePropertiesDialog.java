@@ -1,5 +1,6 @@
 package org.erikaredmark.monkeyshines.editor.dialog;
 
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -28,6 +29,7 @@ import org.erikaredmark.monkeyshines.AnimationType;
 import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.ImmutableRectangle;
 import org.erikaredmark.monkeyshines.Sprite;
+import org.erikaredmark.monkeyshines.Sprite.ForcedDirection;
 import org.erikaredmark.monkeyshines.Sprite.SpriteType;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 
@@ -49,6 +51,8 @@ public class SpritePropertiesDialog extends JDialog {
 	private JTextField txtStartX;
 	private JTextField txtStartY;
 	private JSpinner spriteIdSpinner;
+	private JCheckBox forceDirection;
+	private JComboBox<String> direction;
 	
 	private final SpritePropertiesModel model;
 	// True if user hits okay, false if otherwise
@@ -56,6 +60,10 @@ public class SpritePropertiesDialog extends JDialog {
 	
 	private SpritePropertiesDialog(WorldResource rsrc, SpritePropertiesModel initialModel) {
 		model = initialModel;
+		
+		// Some action listeners refer to visual components that haven't been initialised when reading top-to-bottom.
+		// These listeners won't ever fire until the object is fully constructed, so all listeners can assume instance
+		// data of the object will be non-null when fired.
 		
 		SpringLayout springLayout = new SpringLayout();
 		getContentPane().setLayout(springLayout);
@@ -270,6 +278,46 @@ public class SpritePropertiesDialog extends JDialog {
 		springLayout.putConstraint(SpringLayout.EAST, animationSpeed, 4, SpringLayout.WEST, txtWidth);
 		getContentPane().add(animationSpeed);
 		
+		forceDirection = new JCheckBox("Force Direction");
+		forceDirection.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent arg0) {
+				boolean sel = forceDirection.isSelected();
+				direction.setEnabled(sel);
+				if (sel) {
+					direction.setSelectedItem("Right");
+					model.setForcedDirection(ForcedDirection.RIGHT);
+				} else {
+					model.setForcedDirection(ForcedDirection.NONE);
+				}
+			}
+		});
+		
+		direction = new JComboBox<>(new String[] { "Right", "Left" } );
+		direction.setSelectedItem("Right");
+		direction.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent arg0) {
+				if ("Right".equals(direction.getSelectedItem() ) ) {
+					model.setForcedDirection(ForcedDirection.RIGHT);
+				} else {
+					model.setForcedDirection(ForcedDirection.LEFT);
+				}
+			}
+		});
+		
+		boolean forceDirectionEnabled = model.getForceDirection() != ForcedDirection.NONE;
+		forceDirection.setSelected(forceDirectionEnabled);
+		direction.setEnabled(forceDirectionEnabled);
+		
+		springLayout.putConstraint(SpringLayout.WEST, direction, 6, SpringLayout.EAST, spriteDrawCanvas);
+		springLayout.putConstraint(SpringLayout.SOUTH, direction, 45, SpringLayout.SOUTH, spriteDrawCanvas);
+		springLayout.putConstraint(SpringLayout.EAST, direction, 4, SpringLayout.WEST, txtWidth);
+		getContentPane().add(direction);
+		
+		springLayout.putConstraint(SpringLayout.WEST, forceDirection, 6, SpringLayout.EAST, direction);
+		springLayout.putConstraint(SpringLayout.SOUTH, forceDirection, 0, SpringLayout.SOUTH, direction);
+		getContentPane().add(forceDirection);
+		
+		
 		JButton btnNewButton = new JButton("Okay");
 		springLayout.putConstraint(SpringLayout.SOUTH, btnNewButton, 0, SpringLayout.SOUTH, spriteDrawCanvas);
 		springLayout.putConstraint(SpringLayout.EAST, btnNewButton, 0, SpringLayout.EAST, txtWidth);
@@ -331,7 +379,7 @@ public class SpritePropertiesDialog extends JDialog {
 		SpritePropertiesDialog dialog = new SpritePropertiesDialog(rsrc, model);
 		dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		dialog.setModal(true);
-		dialog.setSize(450, 300);
+		dialog.setSize(450, 340);
 		dialog.setLocationRelativeTo(null);
 		dialog.setVisible(true);
 		
@@ -361,7 +409,7 @@ public class SpritePropertiesDialog extends JDialog {
 		SpritePropertiesDialog dialog = new SpritePropertiesDialog(rsrc, model);
 		dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		dialog.setModal(true);
-		dialog.setSize(450, 300);
+		dialog.setSize(450, 340);
 		dialog.setLocationRelativeTo(null);
 		
 		// Show

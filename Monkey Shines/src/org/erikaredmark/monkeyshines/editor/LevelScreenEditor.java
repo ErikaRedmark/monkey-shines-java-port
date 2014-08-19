@@ -8,6 +8,7 @@ import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.ImmutableRectangle;
 import org.erikaredmark.monkeyshines.LevelScreen;
 import org.erikaredmark.monkeyshines.Sprite;
+import org.erikaredmark.monkeyshines.Sprite.ForcedDirection;
 import org.erikaredmark.monkeyshines.Sprite.SpriteType;
 import org.erikaredmark.monkeyshines.background.Background;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
@@ -95,21 +96,6 @@ public class LevelScreenEditor {
 	 * 
 	 * Creates a sprite and adds it to the given world.
 	 * 
-	 * @param spriteId
-	 * 		the id of the sprite, for graphics only
-	 * 	
-	 * @param spriteStartingLocation
-	 * 		starting location of sprite
-	 * 
-	 * @param spriteBoundingBox
-	 * 		bounding box of sprite
-	 * 
-	 * @param spriteVelocity
-	 * 		speed and direction of sprite
-	 * 
-	 * @param rsrc
-	 * 		graphics resource for skinning
-	 * 
 	 */
 	public void addSprite(final int spriteId,
 						  final ImmutablePoint2D spriteStartingLocation,
@@ -118,10 +104,19 @@ public class LevelScreenEditor {
 						  final AnimationType animationType,
 						  final AnimationSpeed animationSpeed,
 						  final SpriteType spriteType,
+						  final ForcedDirection forcedDirection,
 						  final WorldResource rsrc) {
 		
 		Sprite s =
-			Sprite.newSprite(spriteId, spriteStartingLocation, spriteBoundingBox, spriteVelocity, animationType, animationSpeed, spriteType, rsrc);
+			Sprite.newSprite(spriteId, 
+							 spriteStartingLocation, 
+							 spriteBoundingBox, 
+							 spriteVelocity, 
+							 animationType, 
+							 animationSpeed, 
+							 spriteType,
+							 forcedDirection,
+							 rsrc);
 		
 		// Game rules for visibility do not apply in the editor.
 		s.setVisible(true);

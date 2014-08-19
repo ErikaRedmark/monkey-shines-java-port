@@ -147,7 +147,8 @@ public final class WorldFormatProtos {
      * <code>optional uint32 bonus_screen = 5;</code>
      *
      * <pre>
-     * In the original game, this was always 10000
+     * In the original game, this was always 10000. In fact, new levels
+     * default to 10000
      * </pre>
      */
     boolean hasBonusScreen();
@@ -155,7 +156,8 @@ public final class WorldFormatProtos {
      * <code>optional uint32 bonus_screen = 5;</code>
      *
      * <pre>
-     * In the original game, this was always 10000
+     * In the original game, this was always 10000. In fact, new levels
+     * default to 10000
      * </pre>
      */
     int getBonusScreen();
@@ -192,8 +194,9 @@ public final class WorldFormatProtos {
      * <code>optional uint32 return_screen = 7;</code>
      *
      * <pre>
-     * Addition field to bonus screen; return screen is required
-     * to be precomputed
+     * Added as an attempt to make bonus screens, but is now calculated
+     * dynamically. The value still exists in the world but is set during
+     * gameplay.
      * </pre>
      */
     boolean hasReturnScreen();
@@ -201,8 +204,9 @@ public final class WorldFormatProtos {
      * <code>optional uint32 return_screen = 7;</code>
      *
      * <pre>
-     * Addition field to bonus screen; return screen is required
-     * to be precomputed
+     * Added as an attempt to make bonus screens, but is now calculated
+     * dynamically. The value still exists in the world but is set during
+     * gameplay.
      * </pre>
      */
     int getReturnScreen();
@@ -717,6 +721,97 @@ public final class WorldFormatProtos {
     }
 
     /**
+     * Protobuf enum {@code monkeyshines.World.ForcedDirection}
+     */
+    public enum ForcedDirection
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <code>FORCED_NONE = 1;</code>
+       */
+      FORCED_NONE(0, 1),
+      /**
+       * <code>FORCED_RIGHT = 2;</code>
+       */
+      FORCED_RIGHT(1, 2),
+      /**
+       * <code>FORCED_LEFT = 3;</code>
+       */
+      FORCED_LEFT(2, 3),
+      ;
+
+      /**
+       * <code>FORCED_NONE = 1;</code>
+       */
+      public static final int FORCED_NONE_VALUE = 1;
+      /**
+       * <code>FORCED_RIGHT = 2;</code>
+       */
+      public static final int FORCED_RIGHT_VALUE = 2;
+      /**
+       * <code>FORCED_LEFT = 3;</code>
+       */
+      public static final int FORCED_LEFT_VALUE = 3;
+
+
+      public final int getNumber() { return value; }
+
+      public static ForcedDirection valueOf(int value) {
+        switch (value) {
+          case 1: return FORCED_NONE;
+          case 2: return FORCED_RIGHT;
+          case 3: return FORCED_LEFT;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<ForcedDirection>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static com.google.protobuf.Internal.EnumLiteMap<ForcedDirection>
+          internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<ForcedDirection>() {
+              public ForcedDirection findValueByNumber(int number) {
+                return ForcedDirection.valueOf(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(index);
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.getDescriptor().getEnumTypes().get(4);
+      }
+
+      private static final ForcedDirection[] VALUES = values();
+
+      public static ForcedDirection valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int index;
+      private final int value;
+
+      private ForcedDirection(int index, int value) {
+        this.index = index;
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:monkeyshines.World.ForcedDirection)
+    }
+
+    /**
      * Protobuf enum {@code monkeyshines.World.SpriteType}
      */
     public enum SpriteType
@@ -812,7 +907,7 @@ public final class WorldFormatProtos {
       }
       public static final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptor() {
-        return org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.getDescriptor().getEnumTypes().get(4);
+        return org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.getDescriptor().getEnumTypes().get(5);
       }
 
       private static final SpriteType[] VALUES = values();
@@ -939,7 +1034,7 @@ public final class WorldFormatProtos {
       }
       public static final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptor() {
-        return org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.getDescriptor().getEnumTypes().get(5);
+        return org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.getDescriptor().getEnumTypes().get(6);
       }
 
       private static final TileType[] VALUES = values();
@@ -1021,7 +1116,7 @@ public final class WorldFormatProtos {
       }
       public static final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptor() {
-        return org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.getDescriptor().getEnumTypes().get(6);
+        return org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.getDescriptor().getEnumTypes().get(7);
       }
 
       private static final Rotation[] VALUES = values();
@@ -6610,6 +6705,11 @@ public final class WorldFormatProtos {
     }
     /**
      * Protobuf type {@code monkeyshines.World.Background}
+     *
+     * <pre>
+     * Note: the id of the background is used for Patterns and Full backgrounds as that; an id. But
+     * for Solid Color, it is a 32 bit ARGB color code.
+     * </pre>
      */
     public static final class Background extends
         com.google.protobuf.GeneratedMessage
@@ -6866,6 +6966,11 @@ public final class WorldFormatProtos {
       }
       /**
        * Protobuf type {@code monkeyshines.World.Background}
+       *
+       * <pre>
+       * Note: the id of the background is used for Patterns and Full backgrounds as that; an id. But
+       * for Solid Color, it is a 32 bit ARGB color code.
+       * </pre>
        */
       public static final class Builder extends
           com.google.protobuf.GeneratedMessage.Builder<Builder>
@@ -7155,6 +7260,16 @@ public final class WorldFormatProtos {
        * <code>optional .monkeyshines.World.SpriteType type = 7;</code>
        */
       org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.SpriteType getType();
+
+      // optional .monkeyshines.World.ForcedDirection forced_direction = 8;
+      /**
+       * <code>optional .monkeyshines.World.ForcedDirection forced_direction = 8;</code>
+       */
+      boolean hasForcedDirection();
+      /**
+       * <code>optional .monkeyshines.World.ForcedDirection forced_direction = 8;</code>
+       */
+      org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.ForcedDirection getForcedDirection();
     }
     /**
      * Protobuf type {@code monkeyshines.World.Sprite}
@@ -7281,6 +7396,17 @@ public final class WorldFormatProtos {
                 } else {
                   bitField0_ |= 0x00000040;
                   type_ = value;
+                }
+                break;
+              }
+              case 64: {
+                int rawValue = input.readEnum();
+                org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.ForcedDirection value = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.ForcedDirection.valueOf(rawValue);
+                if (value == null) {
+                  unknownFields.mergeVarintField(8, rawValue);
+                } else {
+                  bitField0_ |= 0x00000080;
+                  forcedDirection_ = value;
                 }
                 break;
               }
@@ -7454,6 +7580,22 @@ public final class WorldFormatProtos {
         return type_;
       }
 
+      // optional .monkeyshines.World.ForcedDirection forced_direction = 8;
+      public static final int FORCED_DIRECTION_FIELD_NUMBER = 8;
+      private org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.ForcedDirection forcedDirection_;
+      /**
+       * <code>optional .monkeyshines.World.ForcedDirection forced_direction = 8;</code>
+       */
+      public boolean hasForcedDirection() {
+        return ((bitField0_ & 0x00000080) == 0x00000080);
+      }
+      /**
+       * <code>optional .monkeyshines.World.ForcedDirection forced_direction = 8;</code>
+       */
+      public org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.ForcedDirection getForcedDirection() {
+        return forcedDirection_;
+      }
+
       private void initFields() {
         id_ = 0;
         startLocation_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.getDefaultInstance();
@@ -7462,6 +7604,7 @@ public final class WorldFormatProtos {
         animation_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.AnimationType.INCREASING_FRAMES;
         animationSpeed_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.AnimationSpeed.NORMAL_SPEED;
         type_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.SpriteType.NORMAL;
+        forcedDirection_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.ForcedDirection.FORCED_NONE;
       }
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
@@ -7514,6 +7657,9 @@ public final class WorldFormatProtos {
         if (((bitField0_ & 0x00000040) == 0x00000040)) {
           output.writeEnum(7, type_.getNumber());
         }
+        if (((bitField0_ & 0x00000080) == 0x00000080)) {
+          output.writeEnum(8, forcedDirection_.getNumber());
+        }
         getUnknownFields().writeTo(output);
       }
 
@@ -7550,6 +7696,10 @@ public final class WorldFormatProtos {
         if (((bitField0_ & 0x00000040) == 0x00000040)) {
           size += com.google.protobuf.CodedOutputStream
             .computeEnumSize(7, type_.getNumber());
+        }
+        if (((bitField0_ & 0x00000080) == 0x00000080)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeEnumSize(8, forcedDirection_.getNumber());
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSerializedSize = size;
@@ -7696,6 +7846,8 @@ public final class WorldFormatProtos {
           bitField0_ = (bitField0_ & ~0x00000020);
           type_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.SpriteType.NORMAL;
           bitField0_ = (bitField0_ & ~0x00000040);
+          forcedDirection_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.ForcedDirection.FORCED_NONE;
+          bitField0_ = (bitField0_ & ~0x00000080);
           return this;
         }
 
@@ -7764,6 +7916,10 @@ public final class WorldFormatProtos {
             to_bitField0_ |= 0x00000040;
           }
           result.type_ = type_;
+          if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+            to_bitField0_ |= 0x00000080;
+          }
+          result.forcedDirection_ = forcedDirection_;
           result.bitField0_ = to_bitField0_;
           onBuilt();
           return result;
@@ -7800,6 +7956,9 @@ public final class WorldFormatProtos {
           }
           if (other.hasType()) {
             setType(other.getType());
+          }
+          if (other.hasForcedDirection()) {
+            setForcedDirection(other.getForcedDirection());
           }
           this.mergeUnknownFields(other.getUnknownFields());
           return this;
@@ -8334,6 +8493,42 @@ public final class WorldFormatProtos {
         public Builder clearType() {
           bitField0_ = (bitField0_ & ~0x00000040);
           type_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.SpriteType.NORMAL;
+          onChanged();
+          return this;
+        }
+
+        // optional .monkeyshines.World.ForcedDirection forced_direction = 8;
+        private org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.ForcedDirection forcedDirection_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.ForcedDirection.FORCED_NONE;
+        /**
+         * <code>optional .monkeyshines.World.ForcedDirection forced_direction = 8;</code>
+         */
+        public boolean hasForcedDirection() {
+          return ((bitField0_ & 0x00000080) == 0x00000080);
+        }
+        /**
+         * <code>optional .monkeyshines.World.ForcedDirection forced_direction = 8;</code>
+         */
+        public org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.ForcedDirection getForcedDirection() {
+          return forcedDirection_;
+        }
+        /**
+         * <code>optional .monkeyshines.World.ForcedDirection forced_direction = 8;</code>
+         */
+        public Builder setForcedDirection(org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.ForcedDirection value) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          bitField0_ |= 0x00000080;
+          forcedDirection_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional .monkeyshines.World.ForcedDirection forced_direction = 8;</code>
+         */
+        public Builder clearForcedDirection() {
+          bitField0_ = (bitField0_ & ~0x00000080);
+          forcedDirection_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.ForcedDirection.FORCED_NONE;
           onChanged();
           return this;
         }
@@ -9432,7 +9627,8 @@ public final class WorldFormatProtos {
      * <code>optional uint32 bonus_screen = 5;</code>
      *
      * <pre>
-     * In the original game, this was always 10000
+     * In the original game, this was always 10000. In fact, new levels
+     * default to 10000
      * </pre>
      */
     public boolean hasBonusScreen() {
@@ -9442,7 +9638,8 @@ public final class WorldFormatProtos {
      * <code>optional uint32 bonus_screen = 5;</code>
      *
      * <pre>
-     * In the original game, this was always 10000
+     * In the original game, this was always 10000. In fact, new levels
+     * default to 10000
      * </pre>
      */
     public int getBonusScreen() {
@@ -9511,8 +9708,9 @@ public final class WorldFormatProtos {
      * <code>optional uint32 return_screen = 7;</code>
      *
      * <pre>
-     * Addition field to bonus screen; return screen is required
-     * to be precomputed
+     * Added as an attempt to make bonus screens, but is now calculated
+     * dynamically. The value still exists in the world but is set during
+     * gameplay.
      * </pre>
      */
     public boolean hasReturnScreen() {
@@ -9522,8 +9720,9 @@ public final class WorldFormatProtos {
      * <code>optional uint32 return_screen = 7;</code>
      *
      * <pre>
-     * Addition field to bonus screen; return screen is required
-     * to be precomputed
+     * Added as an attempt to make bonus screens, but is now calculated
+     * dynamically. The value still exists in the world but is set during
+     * gameplay.
      * </pre>
      */
     public int getReturnScreen() {
@@ -10935,7 +11134,8 @@ public final class WorldFormatProtos {
        * <code>optional uint32 bonus_screen = 5;</code>
        *
        * <pre>
-       * In the original game, this was always 10000
+       * In the original game, this was always 10000. In fact, new levels
+       * default to 10000
        * </pre>
        */
       public boolean hasBonusScreen() {
@@ -10945,7 +11145,8 @@ public final class WorldFormatProtos {
        * <code>optional uint32 bonus_screen = 5;</code>
        *
        * <pre>
-       * In the original game, this was always 10000
+       * In the original game, this was always 10000. In fact, new levels
+       * default to 10000
        * </pre>
        */
       public int getBonusScreen() {
@@ -10955,7 +11156,8 @@ public final class WorldFormatProtos {
        * <code>optional uint32 bonus_screen = 5;</code>
        *
        * <pre>
-       * In the original game, this was always 10000
+       * In the original game, this was always 10000. In fact, new levels
+       * default to 10000
        * </pre>
        */
       public Builder setBonusScreen(int value) {
@@ -10968,7 +11170,8 @@ public final class WorldFormatProtos {
        * <code>optional uint32 bonus_screen = 5;</code>
        *
        * <pre>
-       * In the original game, this was always 10000
+       * In the original game, this was always 10000. In fact, new levels
+       * default to 10000
        * </pre>
        */
       public Builder clearBonusScreen() {
@@ -11082,8 +11285,9 @@ public final class WorldFormatProtos {
        * <code>optional uint32 return_screen = 7;</code>
        *
        * <pre>
-       * Addition field to bonus screen; return screen is required
-       * to be precomputed
+       * Added as an attempt to make bonus screens, but is now calculated
+       * dynamically. The value still exists in the world but is set during
+       * gameplay.
        * </pre>
        */
       public boolean hasReturnScreen() {
@@ -11093,8 +11297,9 @@ public final class WorldFormatProtos {
        * <code>optional uint32 return_screen = 7;</code>
        *
        * <pre>
-       * Addition field to bonus screen; return screen is required
-       * to be precomputed
+       * Added as an attempt to make bonus screens, but is now calculated
+       * dynamically. The value still exists in the world but is set during
+       * gameplay.
        * </pre>
        */
       public int getReturnScreen() {
@@ -11104,8 +11309,9 @@ public final class WorldFormatProtos {
        * <code>optional uint32 return_screen = 7;</code>
        *
        * <pre>
-       * Addition field to bonus screen; return screen is required
-       * to be precomputed
+       * Added as an attempt to make bonus screens, but is now calculated
+       * dynamically. The value still exists in the world but is set during
+       * gameplay.
        * </pre>
        */
       public Builder setReturnScreen(int value) {
@@ -11118,8 +11324,9 @@ public final class WorldFormatProtos {
        * <code>optional uint32 return_screen = 7;</code>
        *
        * <pre>
-       * Addition field to bonus screen; return screen is required
-       * to be precomputed
+       * Added as an attempt to make bonus screens, but is now calculated
+       * dynamically. The value still exists in the world but is set during
+       * gameplay.
        * </pre>
        */
       public Builder clearReturnScreen() {
@@ -11206,7 +11413,7 @@ public final class WorldFormatProtos {
     java.lang.String[] descriptorData = {
       "\nCorg/erikaredmark/monkeyshines/encoder/" +
       "proto/world_file_format.proto\022\014monkeyshi" +
-      "nes\"\255\017\n\005World\022\014\n\004name\030\001 \001(\t\0228\n\007goodies\030\002" +
+      "nes\"\263\020\n\005World\022\014\n\004name\030\001 \001(\t\0228\n\007goodies\030\002" +
       " \003(\0132\'.monkeyshines.World.StringToGoodie" +
       "Tuple\0227\n\006levels\030\003 \003(\0132\'.monkeyshines.Wor" +
       "ld.IntegerToLevelTuple\022+\n\007hazards\030\004 \003(\0132" +
@@ -11231,7 +11438,7 @@ public final class WorldFormatProtos {
       ".World.Sprite\022\'\n\005tiles\030\005 \003(\0132\030.monkeyshi" +
       "nes.World.Tile\032J\n\nBackground\022\n\n\002id\030\001 \001(\r" +
       "\0220\n\004type\030\002 \001(\0162\".monkeyshines.World.Back" +
-      "groundType\032\311\002\n\006Sprite\022\n\n\002id\030\001 \001(\r\0221\n\016sta" +
+      "groundType\032\210\003\n\006Sprite\022\n\n\002id\030\001 \001(\r\0221\n\016sta" +
       "rt_location\030\002 \001(\0132\031.monkeyshines.World.P" +
       "oint\022-\n\014bounding_box\030\003 \001(\0132\027.monkeyshine",
       "s.World.Box\0220\n\rinitial_speed\030\004 \001(\0132\031.mon" +
@@ -11239,24 +11446,28 @@ public final class WorldFormatProtos {
       "2!.monkeyshines.World.AnimationType\022;\n\017a" +
       "nimation_speed\030\006 \001(\0162\".monkeyshines.Worl" +
       "d.AnimationSpeed\022,\n\004type\030\007 \001(\0162\036.monkeys" +
-      "hines.World.SpriteType\032\233\001\n\004Tile\022\n\n\002id\030\001 " +
-      "\001(\r\022+\n\010location\030\002 \001(\0132\031.monkeyshines.Wor" +
-      "ld.Point\022*\n\004type\030\003 \001(\0162\034.monkeyshines.Wo" +
-      "rld.TileType\022.\n\010rotation\030\004 \001(\0162\034.monkeys" +
-      "hines.World.Rotation\"C\n\016DeathAnimation\022\020",
-      "\n\014NORMAL_DEATH\020\000\022\007\n\003BEE\020\001\022\010\n\004BURN\020\002\022\014\n\010E" +
-      "LECTRIC\020\003\"8\n\016BackgroundType\022\013\n\007PATTERN\020\001" +
-      "\022\010\n\004FULL\020\002\022\017\n\013SOLID_COLOR\020\003\":\n\rAnimation" +
-      "Type\022\025\n\021INCREASING_FRAMES\020\001\022\022\n\016CYLCING_F" +
-      "RAMES\020\002\",\n\016AnimationSpeed\022\020\n\014NORMAL_SPEE" +
-      "D\020\001\022\010\n\004SLOW\020\002\"]\n\nSpriteType\022\n\n\006NORMAL\020\001\022" +
-      "\020\n\014HEALTH_DRAIN\020\002\022\r\n\tEXIT_DOOR\020\003\022\016\n\nBONU" +
-      "S_DOOR\020\004\022\022\n\016SCENERY_SPRITE\020\005\"^\n\010TileType" +
-      "\022\t\n\005SOLID\020\001\022\010\n\004THRU\020\002\022\013\n\007SCENERY\020\003\022\n\n\006HA" +
-      "ZARD\020\004\022\014\n\010CONVEYER\020\005\022\014\n\010BREAKING\020\006\022\010\n\004NO",
-      "NE\020\007\"-\n\010Rotation\022\r\n\tCLOCKWISE\020\001\022\022\n\016ANTI_" +
-      "CLOCKWISE\020\002B@\n+org.erikaredmark.monkeysh" +
-      "ines.encoder.protoB\021WorldFormatProtos"
+      "hines.World.SpriteType\022=\n\020forced_directi" +
+      "on\030\010 \001(\0162#.monkeyshines.World.ForcedDire" +
+      "ction\032\233\001\n\004Tile\022\n\n\002id\030\001 \001(\r\022+\n\010location\030\002" +
+      " \001(\0132\031.monkeyshines.World.Point\022*\n\004type\030" +
+      "\003 \001(\0162\034.monkeyshines.World.TileType\022.\n\010r",
+      "otation\030\004 \001(\0162\034.monkeyshines.World.Rotat" +
+      "ion\"C\n\016DeathAnimation\022\020\n\014NORMAL_DEATH\020\000\022" +
+      "\007\n\003BEE\020\001\022\010\n\004BURN\020\002\022\014\n\010ELECTRIC\020\003\"8\n\016Back" +
+      "groundType\022\013\n\007PATTERN\020\001\022\010\n\004FULL\020\002\022\017\n\013SOL" +
+      "ID_COLOR\020\003\":\n\rAnimationType\022\025\n\021INCREASIN" +
+      "G_FRAMES\020\001\022\022\n\016CYLCING_FRAMES\020\002\",\n\016Animat" +
+      "ionSpeed\022\020\n\014NORMAL_SPEED\020\001\022\010\n\004SLOW\020\002\"E\n\017" +
+      "ForcedDirection\022\017\n\013FORCED_NONE\020\001\022\020\n\014FORC" +
+      "ED_RIGHT\020\002\022\017\n\013FORCED_LEFT\020\003\"]\n\nSpriteTyp" +
+      "e\022\n\n\006NORMAL\020\001\022\020\n\014HEALTH_DRAIN\020\002\022\r\n\tEXIT_",
+      "DOOR\020\003\022\016\n\nBONUS_DOOR\020\004\022\022\n\016SCENERY_SPRITE" +
+      "\020\005\"^\n\010TileType\022\t\n\005SOLID\020\001\022\010\n\004THRU\020\002\022\013\n\007S" +
+      "CENERY\020\003\022\n\n\006HAZARD\020\004\022\014\n\010CONVEYER\020\005\022\014\n\010BR" +
+      "EAKING\020\006\022\010\n\004NONE\020\007\"-\n\010Rotation\022\r\n\tCLOCKW" +
+      "ISE\020\001\022\022\n\016ANTI_CLOCKWISE\020\002B@\n+org.erikare" +
+      "dmark.monkeyshines.encoder.protoB\021WorldF" +
+      "ormatProtos"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -11322,7 +11533,7 @@ public final class WorldFormatProtos {
           internal_static_monkeyshines_World_Sprite_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_monkeyshines_World_Sprite_descriptor,
-              new java.lang.String[] { "Id", "StartLocation", "BoundingBox", "InitialSpeed", "Animation", "AnimationSpeed", "Type", });
+              new java.lang.String[] { "Id", "StartLocation", "BoundingBox", "InitialSpeed", "Animation", "AnimationSpeed", "Type", "ForcedDirection", });
           internal_static_monkeyshines_World_Tile_descriptor =
             internal_static_monkeyshines_World_descriptor.getNestedTypes().get(9);
           internal_static_monkeyshines_World_Tile_fieldAccessorTable = new

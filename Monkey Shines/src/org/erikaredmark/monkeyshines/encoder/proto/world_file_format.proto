@@ -106,7 +106,8 @@ message World {
   	optional Point initial_speed = 4;
   	optional AnimationType animation = 5;
   	optional AnimationSpeed animation_speed = 6;
-  	optional SpriteType type = 7;	
+  	optional SpriteType type = 7;
+  	optional ForcedDirection forced_direction = 8;
   }
   
   enum AnimationType {
@@ -120,6 +121,12 @@ message World {
   enum AnimationSpeed {
   	NORMAL_SPEED = 1;
   	SLOW = 2;
+  }
+  
+  enum ForcedDirection {
+  	FORCED_NONE = 1;
+  	FORCED_RIGHT = 2;
+  	FORCED_LEFT = 3;
   }
   
   enum SpriteType {

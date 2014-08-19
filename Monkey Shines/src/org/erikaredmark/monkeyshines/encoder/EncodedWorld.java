@@ -25,6 +25,7 @@ import org.erikaredmark.monkeyshines.Sprite;
 import org.erikaredmark.monkeyshines.Tile;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.Conveyer.Rotation;
+import org.erikaredmark.monkeyshines.Sprite.ForcedDirection;
 import org.erikaredmark.monkeyshines.Sprite.SpriteType;
 import org.erikaredmark.monkeyshines.background.Background;
 import org.erikaredmark.monkeyshines.background.FullBackground;
@@ -373,6 +374,7 @@ public final class EncodedWorld {
 		protoSprite.setAnimation(animationTypeToProto(sprite.getAnimationType() ) );
 		protoSprite.setAnimationSpeed(animationSpeedToProto(sprite.getAnimationSpeed() ) );
 		protoSprite.setType(spriteTypeToProto(sprite.getType() ) );
+		protoSprite.setForcedDirection(forcedDirectionToProto(sprite.getForcedDirection() ) );
 		
 		// Build a point for storage
 		WorldFormatProtos.World.Point.Builder initialSpeed = WorldFormatProtos.World.Point.newBuilder();
@@ -398,7 +400,28 @@ public final class EncodedWorld {
 								protoToAnimationType(protoSprite.getAnimation() ), 
 								protoToAnimationSpeed(protoSprite.getAnimationSpeed() ),
 								protoToSpriteType(protoSprite.getType() ),
+								protoToForcedDirection(protoSprite.getForcedDirection() ),
 								rsrc);
+	}
+	
+	/* ------------------------ Forced Direction ------------------------- */
+	
+	static WorldFormatProtos.World.ForcedDirection forcedDirectionToProto(ForcedDirection forced) {
+		switch (forced) {
+		case NONE:  return WorldFormatProtos.World.ForcedDirection.FORCED_NONE;
+		case RIGHT: return WorldFormatProtos.World.ForcedDirection.FORCED_RIGHT;
+		case LEFT:  return WorldFormatProtos.World.ForcedDirection.FORCED_LEFT;
+		default:   throw new RuntimeException("Forced Direction type " + forced + " has no defined proto version");
+		}
+	}
+	
+	static ForcedDirection protoToForcedDirection(WorldFormatProtos.World.ForcedDirection protoForced) {
+		switch (protoForced) {
+		case FORCED_NONE:  return ForcedDirection.NONE;
+		case FORCED_RIGHT: return ForcedDirection.RIGHT;
+		case FORCED_LEFT:  return ForcedDirection.LEFT;
+		default:   throw new RuntimeException("Forced Direction type " + protoForced + " has no defined java object");
+		}
 	}
 	
 	/* --------------------------- Sprite Type --------------------------- */
