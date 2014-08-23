@@ -4,3 +4,5 @@
 *.DS_Store
 /bin
 /target/
+/monkeyshines.log
+/monkeyshines.log.lck

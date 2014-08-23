@@ -205,25 +205,25 @@ public class Goodie {
 		// WARNING: xOffset is used as ID for encoding this in save file format!
 		// Adding the concept of another row to this sprite sheet will require
 		// modifying that logic!
-		// TODO all scores are placeholders. Need to play original and determine score
-		// for each piece!
-		RED_KEY(0, 20, GameSoundEffect.YUM_COLLECT, false) {
+		// Original game had all non essential goodies (ones that didn't do anything) and keys give 100 score, and everything
+		// else gave nothing. For this port, extra lives will give 200 score.
+		RED_KEY(0, 100, GameSoundEffect.YUM_COLLECT, false) {
 			@Override public void affectBonzo(Goodie goodie, Bonzo bonzo, World world) {
 				world.collectedRedKey(goodie);
 			}
 		},
-		BLUE_KEY(1, 20, GameSoundEffect.YUM_COLLECT, false) {
+		BLUE_KEY(1, 100, GameSoundEffect.YUM_COLLECT, false) {
 			@Override public void affectBonzo(Goodie goodie, Bonzo bonzo, World world) {
 				world.collectedBlueKey(goodie);
 			}
 		},
-		APPLE(2, 20, GameSoundEffect.YUM_COLLECT, false),
-		ORANGE(3, 20, GameSoundEffect.YUM_COLLECT, false),
-		PEAR(4, 20,GameSoundEffect.YUM_COLLECT, false),
-		PURPLE_GRAPES(5, 30,GameSoundEffect.YUM_COLLECT, false),
-		BLUE_GRAPES(6, 40, GameSoundEffect.YUM_COLLECT, false),
-		BANANA(7, 500, GameSoundEffect.YUM_COLLECT, false),
-		ENERGY(8, 20, GameSoundEffect.POWERUP_SHIELD, false) {
+		APPLE(2, 100, GameSoundEffect.YUM_COLLECT, false),
+		ORANGE(3, 100, GameSoundEffect.YUM_COLLECT, false),
+		PEAR(4, 100,GameSoundEffect.YUM_COLLECT, false),
+		PURPLE_GRAPES(5, 100, GameSoundEffect.YUM_COLLECT, false),
+		BLUE_GRAPES(6, 100, GameSoundEffect.YUM_COLLECT, false),
+		BANANA(7, 100, GameSoundEffect.YUM_COLLECT, false),
+		ENERGY(8, 0, GameSoundEffect.POWERUP_SHIELD, false) {
 			@Override public void affectBonzo(Goodie goodie, Bonzo bonzo, World world) {
 				bonzo.incrementHealth(GameConstants.LIFE_INCREASE);
 			}
@@ -237,7 +237,7 @@ public class Goodie {
 		SHIELD(11, 0, GameSoundEffect.POWERUP_SHIELD, true) {
 			@Override public Powerup powerupForGoodie() { return Powerup.SHIELD; }
 		},
-		EXTRA_LIFE(12, 100, GameSoundEffect.POWERUP_EXTRA_LIFE, false) {
+		EXTRA_LIFE(12, 200, GameSoundEffect.POWERUP_EXTRA_LIFE, false) {
 			@Override public void affectBonzo(Goodie goodie, Bonzo bonzo, World world) {
 				bonzo.incrementLives(1);
 			}

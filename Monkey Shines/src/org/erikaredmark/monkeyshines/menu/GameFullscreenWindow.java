@@ -10,6 +10,7 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
+import java.util.logging.Logger;
 
 import org.erikaredmark.monkeyshines.GameWorldLogic;
 import org.erikaredmark.monkeyshines.KeyBindings;
@@ -28,6 +29,9 @@ import org.erikaredmark.monkeyshines.screendraw.StandardSurface;
  *
  */
 public final class GameFullscreenWindow extends Frame {
+	private static final String CLASS_NAME = "org.erikaredmark.monkeyshines.menu";
+	private static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
+	
 	private static final long serialVersionUID = 1L;
 
 	private final StandardSurface surface;
@@ -127,13 +131,14 @@ public final class GameFullscreenWindow extends Frame {
 		createBufferStrategy(2);
 		buffer = getBufferStrategy();
 
-
-//		oldDisplayMode = mainScreen.getDisplayMode();
-//		displayChanged = false;
+		if (!(mainScreen.isFullScreenSupported() ) ) {
+			LOGGER.info(CLASS_NAME + ": Full screen not supported on this machine.");
+		}
 		
 		mainScreen.setFullScreenWindow(this);
 		//can we change the display mode? If not, we'll just take the performance hit
 		if (mainScreen.isDisplayChangeSupported() ) {
+			LOGGER.info(CLASS_NAME + ": Display change is supported: going to 640x480 resolution");
 			DisplayMode[] modes = mainScreen.getDisplayModes();
 			for (DisplayMode mode : modes) {
 				// Find a 640x480 display mode for the standardSurface
@@ -145,6 +150,10 @@ public final class GameFullscreenWindow extends Frame {
 //					displayChanged = true;
 					break;
 				}
+				
+				// Reaching here means we did not find a suitable resolution. This effectively means no
+				// resolution change.
+				LOGGER.info(CLASS_NAME + ": No suitable resolution found (was looking for 640x480 at a bit-depth of greater than or equal to 24 bits");
 			}
 		}
 		

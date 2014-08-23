@@ -25,6 +25,7 @@ import org.erikaredmark.monkeyshines.encoder.WorldIO;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
+import org.erikaredmark.monkeyshines.logging.MonkeyShinesLog;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.resource.WorldResource.UseIntent;
 import org.erikaredmark.util.BinaryLocation;
@@ -276,8 +277,8 @@ public class LevelEditor extends JFrame {
 	}
 	
 	public static void main(String[] args) {
+		MonkeyShinesLog.initialise();
 		newInstance();
-
 	}
 	
 	/**
