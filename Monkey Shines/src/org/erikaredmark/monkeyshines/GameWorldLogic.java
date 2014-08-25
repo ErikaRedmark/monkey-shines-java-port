@@ -202,6 +202,8 @@ public final class GameWorldLogic {
 		createDigits(digits, SCORE_NUM_DIGITS, rawScore);
 	}
 	
+	public World getWorld() { return currentWorld; }
+	
 	// Given a raw value that is the right size to fit each digit into an index of the
 	// array, transforms it into an array of 0-9 integers for drawing algorithms.
 	private static void createDigits(int[] digitArray, int numOfDigits, int rawValue) {
@@ -228,7 +230,9 @@ public final class GameWorldLogic {
 	private void gameOver() {
 		bonusTimer.stop();
 		this.currentWorld.getResource().getSoundManager().stopPlayingMusic();
-		// TODO soft fade out and return to main menu.
+		
+		// End world to update statistics:
+		this.currentWorld.worldFinished(this.bonzo);
 		
 		endGameCallback.run();
 	}
@@ -243,6 +247,7 @@ public final class GameWorldLogic {
 	private void levelComplete() {
 		bonusTimer.stop();
 		currentWorld.getResource().getSoundManager().stopPlayingMusic();
+		currentWorld.worldFinished(bonzo);
 		// TODO differentiate between ending game BAD vs ending game GOOD
 		endGameCallback.run();
 	}

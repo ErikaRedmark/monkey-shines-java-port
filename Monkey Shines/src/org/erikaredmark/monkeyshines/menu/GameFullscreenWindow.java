@@ -29,7 +29,7 @@ import org.erikaredmark.monkeyshines.screendraw.StandardSurface;
  *
  */
 public final class GameFullscreenWindow extends Frame {
-	private static final String CLASS_NAME = "org.erikaredmark.monkeyshines.menu";
+	private static final String CLASS_NAME = "org.erikaredmark.monkeyshines.menu.GameFullscreenWindow";
 	private static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
 	
 	private static final long serialVersionUID = 1L;
@@ -87,7 +87,9 @@ public final class GameFullscreenWindow extends Frame {
 							   w,
 							   // Game over: set variable to stop loop
 							   new Runnable() { @Override public void run() { 
-								   gameOver();
+								   // TODO refactor to allow the game over type to carry over.
+								   // DEBUG false for now to test tally screen
+								   gameOver(false);
 							   } },
 							   // Each game tick, rerender volatile
 							   new Runnable() { 
@@ -205,10 +207,18 @@ public final class GameFullscreenWindow extends Frame {
 	 * 
 	 * This method basically disposes the fullscreen window, setting the device back to windowed mode and
 	 * restoring all settings. At this point the object is effectively 'dead' and cannot be reused.
+	 * <p/>
+	 * If {@code endInstant} is {@code false}, this will display the score tally first.
 	 * 
 	 */
-	private void gameOver() {
+	private void gameOver(boolean endInstant) {
 		gameOver = true;
+		
+		if (!(endInstant) ) {
+			EndGameBonusAnimation.runOnVolatile(buffer, 
+												universe.getWorld() );
+		}
+		
 		mainScreen.setFullScreenWindow(null);
 		
 		// Display seems to automatically fix itself when fullscreen is ended

@@ -2,6 +2,7 @@ package org.erikaredmark.monkeyshines.menu;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -59,12 +60,27 @@ public class GamePanel extends JPanel {
 					 final World world) {
 		super();
 		this.addKeyListener(keys);
+		
+		// Wrap the endGame callback in another callback. We intercept for drawing the end screens
+		// if needed.
+		final Runnable endGameWrapped = new Runnable() {
+			@Override public void run() {
+				// TODO refactor to allow the proper end game type (success or failure)
+				Graphics2D g2d = (Graphics2D) getGraphics();
+				EndGameBonusAnimation.runOn(
+					g2d, 
+					universe.getWorld(),
+					new Runnable() { @Override public void run() { repaint(); } });
+				endGame.run();
+			}
+		};
+		
 		this.universe = 
 			new GameWorldLogic(
 				keys,
 				keyBindings,
 				world,
-				endGame,
+				endGameWrapped,
 				new Runnable() { @Override public void run() { repaint(); } } );
 		
 		this.surface = new StandardSurface(universe);

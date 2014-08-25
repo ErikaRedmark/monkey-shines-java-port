@@ -112,9 +112,12 @@ public class Goodie {
 	 * @param world
 	 * 		a reference to the world, so that goodies effects (keys) can apply there
 	 * 
+	 * @return
+	 * 		{@code true} if the goodie was just taken, {@code false} if it was already taken
+	 * 
 	 */
-	public void take(final Bonzo bonzo, final World world) {
-		if (taken)  return;
+	public boolean take(final Bonzo bonzo, final World world) {
+		if (taken)  return false;
 		
 		taken = true;
 		rsrc.getSoundManager().playOnce(goodieType.soundEffect);
@@ -131,6 +134,8 @@ public class Goodie {
 		if (powerup != null) {
 			bonzo.powerupCollected(powerup);
 		}
+		
+		return true;
 	}
 	
 	public int getScreenID() {

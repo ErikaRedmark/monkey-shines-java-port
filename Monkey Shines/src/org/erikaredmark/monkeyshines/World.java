@@ -48,83 +48,6 @@ import com.google.common.collect.Multimap;
  * 
  */
 public class World {
-	private final String worldName;
-	
-	
-	// TODO one of the first things implemented in this game. Not sure if hashes were REALLY the best way to
-	// go... may have been a case of premature optimisation.
-	// The screen string, concatenated with "X", and then the the tile co-ordinates. . .
-	// "1000X4,3"
-	// That way, Bonzo just checks four places by making a string and checking the hash. Although strings are slower, this means
-	// that no matter how many objects, it will take the same amount of time to detect collisions; won't need to loop and see if anything
-	// is at that point
-	private final Map<String, Goodie> goodiesInWorld;
-	
-	// Holds a list of all goodies on a particlar screen. During screen reset, relevant goodies may
-	// need to be regenerated.
-	private final Multimap<LevelScreen, Goodie> goodiesPerScreen;
-	
-	// When a world is initialised, hold a set of all blue and red keys. When taken, they will
-	// be removed from the set. The moment a set becomes empty, it toggles the 'all blue keys' or
-	// 'all red keys' collected event.
-	// NOTE: If the editor adds keys, this goes out of sync. IT DOESN'T MATTER. When the level is saved
-	// and reloaded, this object is re-initialised for gameplay with the right values and keys can't be
-	// added during gameplay.
-	private final Set<Goodie> redKeys;
-	private final Set<Goodie> blueKeys;
-	
-	// Screens: Hashmap. That way, when moving across screens, take the levelid and add/subtract a value, check it in hash,
-	// and quickly get the screen we need. It is fast and I believe the designers of the original did the same thing.
-	private final Map<Integer, LevelScreen> worldScreens;
-	
-	// Each hazard tile references the hazard it needs, but the hazards themselves are part of the world.
-	// Typically, a world includes hazard ids for dynamite, bombs, lightbulbs, and sometimes lava, although
-	// others may be added by the level editor, along with custom graphics in the graphics pack.
-	private final List<Hazard> hazards;
-	
-	// Similiar to, but less complicated than, hazards, each conveyer tile is represented by
-	// a single conveyer immutable state. In this case, this is which kind of conveyer belt it
-	// is and which direction it is moving.
-	// Populated automatically conveyers up to the greater of the two:
-	//   number of conveyer belt types in the original world file
-	//   number of conveyer belt types in the resource when being skinned.
-	// Changing the resource to have less conveyers whilst conveyer belt tiles are on the world referring
-	// to them is probably a bad idea.
-	private final List<Conveyer> conveyers;
-	
-	private int currentScreen;
-	
-	// This is defaults to either 10000 or from the save file. It is up to the level editor
-	// to set this. However, it should do so automatically on every save.
-	// Effectively final for game, mutable for level editor
-	private int bonusScreen;
-	
-	// Screen bonzo returns to when leaving bonus world. This is automatically set to the screen bonzo first
-	// enters a bonus door. This is done so the level editor user doesn't need to set both screens.
-	// This MAY be null, in which case it is awaiting initial setting.
-	// In practise, the entry
-	// to the bonus world is always on the same screen Id (as the bonus world has its own bonus door
-	// somewhere that must take bonzo back), but this is left dynamically set in case two bonus doors
-	// are to link to a dead-end bonus room.
-	private Integer returnScreen;
-	
-	// When a world is first created, it has an associated bonus countdown of 10000. Once all red keys are collected,
-	// the main game session will start to decrement this every second or so.
-	private int bonusCountdown;
-	
-	// Lists of all bonus and exit doors so that setting them visible when all keys are collected doesn't
-	// require iterating over every sprite in the world.
-	private final List<Sprite> bonusDoors = new ArrayList<>(4); // initial size 4. 2 bonus doors, possibly double doored sprites for some worlds.
-	private final List<Sprite> exitDoors = new ArrayList<>(4); // Just in case multiple exits, or exit made up of multiple sprites.
-	
-	// Intended for callback to UI when certain victory or defeat conditions are met
-	// not set in constructor; will not be run if never set.
-	private Runnable allRedKeysCollectedCallback;
-	
-	// The author of the world. Defaults to "Unknown"
-	private String author;
-	
-	private final WorldResource rsrc;
 	
 	/**
 	 * 
@@ -623,24 +546,27 @@ public class World {
 		int topLeftX = (currentLocation.x() + (GameConstants.GOODIE_SIZE_X / 2) ) / GameConstants.GOODIE_SIZE_X;
 		int topLeftY = (currentLocation.y() + (GameConstants.GOODIE_SIZE_Y / 2) )/ GameConstants.GOODIE_SIZE_Y;
 		
-		String topLeftQuad = "" + (currentScreen) + "X" + topLeftX + "," + topLeftY;
-		String topRightQuad = "" + (currentScreen) + "X" + (topLeftX + 1) + "," + topLeftY;
-		String bottomLeftQuad = "" + (currentScreen) + "X" + topLeftX + "," + (topLeftY + 1);
-		String bottomRightQuad = "" + (currentScreen) + "X" + (topLeftX + 1) + "," + (topLeftY + 1);
-		
-		Goodie gotGoodie;
-		if ( (gotGoodie = goodiesInWorld.get(topLeftQuad) ) != null ) {
-			gotGoodie.take(theBonzo, this);
+		// Top-left, Top-Right, Bottom-Left, Bottom-Right
+		String[] goodieQuads = new String[] {
+			"" + (currentScreen) + "X" + topLeftX + "," + topLeftY,
+			"" + (currentScreen) + "X" + (topLeftX + 1) + "," + topLeftY,
+			"" + (currentScreen) + "X" + topLeftX + "," + (topLeftY + 1),
+			"" + (currentScreen) + "X" + (topLeftX + 1) + "," + (topLeftY + 1)
+		};
+		// Add to the total number of goodies the player has collected, provided the goodie actually grants non-zero
+		// score.
+		for (String quad : goodieQuads) {
+			Goodie gotGoodie;
+			if ( (gotGoodie = goodiesInWorld.get(quad) ) != null ) {
+				if (gotGoodie.take(theBonzo, this) ) {
+					if (gotGoodie.getGoodieType().score > 0)  ++goodiesCollected;
+				}
+			}
 		}
-		if ( (gotGoodie = goodiesInWorld.get(topRightQuad) ) != null ) {
-			gotGoodie.take(theBonzo, this);
-		}
-		if ( (gotGoodie = goodiesInWorld.get(bottomLeftQuad) ) != null ) {
-			gotGoodie.take(theBonzo, this);
-		}
-		if ( (gotGoodie = goodiesInWorld.get(bottomRightQuad) ) != null ) {
-			gotGoodie.take(theBonzo, this);
-		}
+	}
+	
+	public int getGoodiesCollected() {
+		return goodiesCollected;
 	}
 	
 	/**
@@ -789,6 +715,57 @@ public class World {
 		if (goodiesInWorld.get(checker) != null)
 			goodiesInWorld.remove(checker);
 	}
+	
+	/**
+	 * 
+	 * Called when this world is over, as in bonzo died, left, whatever. It is up to clients to decide when a world is done.
+	 * When it is, final statistics computations are done and become available.
+	 * <p/>
+	 * Does nothing if the world is already finished.
+	 * 
+	 * @param bonzo
+	 * 		reference to bonzo. Some of his data is used in stats calculations after finishing
+	 * 
+	 */
+	public void worldFinished(Bonzo bonzo) {
+		worldFinished = true;
+		stats = new WorldStatistics(goodiesInWorld.values(), goodiesCollected, bonzo.getScore(), bonusCountdown);
+	}
+	
+	/**
+	 * 
+	 * Determines if the world is finished and final statistical computations are available.
+	 * 
+	 * @return
+	 * 		{@code true} if the world is finished form a previous call to {@code worldFinished}, 
+	 * 		{@code false} if otherwise.
+	 * 
+	 */
+	public boolean isWorldFinished() {
+		return worldFinished;
+	}
+	
+	/**
+	 * 
+	 * Returns a statistics object after the world was over that indicates points and totals, with all multipliers applied
+	 * as required. Intended for the final tally screen as well as to set the high score.
+	 * <p/>
+	 * This object is only available if {@code isWorldFinished} is {@code true}. Otherwise, calling this method is
+	 * an error.
+	 * 
+	 * @return
+	 * 		statistics of the finished world. Never {@code null}, but check preconditions to ensure the method
+	 * 		does not throw an exception
+	 * 
+	 * @throws IllegalStateException
+	 * 		if the world is not finished yet, and hence no statistics are available.
+	 * 
+	 */
+	public WorldStatistics getStatistics() {
+		if (stats == null)  throw new IllegalStateException("World should be finished before calling this method");
+		
+		return stats;
+	}
 
 	/**
 	 * 
@@ -878,5 +855,91 @@ public class World {
 		this.hazards.clear();
 		this.hazards.addAll(newHazards);
 	}
+	
+	/***************
+	 * Private Data
+	 **************/
+	
+	private final String worldName;
+	// TODO one of the first things implemented in this game. Not sure if hashes were REALLY the best way to
+	// go... may have been a case of premature optimisation.
+	// The screen string, concatenated with "X", and then the the tile co-ordinates. . .
+	// "1000X4,3"
+	// That way, Bonzo just checks four places by making a string and checking the hash. Although strings are slower, this means
+	// that no matter how many objects, it will take the same amount of time to detect collisions; won't need to loop and see if anything
+	// is at that point
+	private final Map<String, Goodie> goodiesInWorld;
+	private int goodiesCollected;
+	
+	// Holds a list of all goodies on a particlar screen. During screen reset, relevant goodies may
+	// need to be regenerated.
+	private final Multimap<LevelScreen, Goodie> goodiesPerScreen;
+	
+	// When a world is initialised, hold a set of all blue and red keys. When taken, they will
+	// be removed from the set. The moment a set becomes empty, it toggles the 'all blue keys' or
+	// 'all red keys' collected event.
+	// NOTE: If the editor adds keys, this goes out of sync. IT DOESN'T MATTER. When the level is saved
+	// and reloaded, this object is re-initialised for gameplay with the right values and keys can't be
+	// added during gameplay.
+	private final Set<Goodie> redKeys;
+	private final Set<Goodie> blueKeys;
+	
+	// Screens: Hashmap. That way, when moving across screens, take the levelid and add/subtract a value, check it in hash,
+	// and quickly get the screen we need. It is fast and I believe the designers of the original did the same thing.
+	private final Map<Integer, LevelScreen> worldScreens;
+	
+	// Each hazard tile references the hazard it needs, but the hazards themselves are part of the world.
+	// Typically, a world includes hazard ids for dynamite, bombs, lightbulbs, and sometimes lava, although
+	// others may be added by the level editor, along with custom graphics in the graphics pack.
+	private final List<Hazard> hazards;
+	
+	// Similiar to, but less complicated than, hazards, each conveyer tile is represented by
+	// a single conveyer immutable state. In this case, this is which kind of conveyer belt it
+	// is and which direction it is moving.
+	// Populated automatically conveyers up to the greater of the two:
+	//   number of conveyer belt types in the original world file
+	//   number of conveyer belt types in the resource when being skinned.
+	// Changing the resource to have less conveyers whilst conveyer belt tiles are on the world referring
+	// to them is probably a bad idea.
+	private final List<Conveyer> conveyers;
+	
+	private int currentScreen;
+	
+	// This is defaults to either 10000 or from the save file. It is up to the level editor
+	// to set this. However, it should do so automatically on every save.
+	// Effectively final for game, mutable for level editor
+	private int bonusScreen;
+	
+	// Screen bonzo returns to when leaving bonus world. This is automatically set to the screen bonzo first
+	// enters a bonus door. This is done so the level editor user doesn't need to set both screens.
+	// This MAY be null, in which case it is awaiting initial setting.
+	// In practise, the entry
+	// to the bonus world is always on the same screen Id (as the bonus world has its own bonus door
+	// somewhere that must take bonzo back), but this is left dynamically set in case two bonus doors
+	// are to link to a dead-end bonus room.
+	private Integer returnScreen;
+	
+	// When a world is first created, it has an associated bonus countdown of 10000. Once all red keys are collected,
+	// the main game session will start to decrement this every second or so.
+	private int bonusCountdown;
+	
+	// Lists of all bonus and exit doors so that setting them visible when all keys are collected doesn't
+	// require iterating over every sprite in the world.
+	private final List<Sprite> bonusDoors = new ArrayList<>(4); // initial size 4. 2 bonus doors, possibly double doored sprites for some worlds.
+	private final List<Sprite> exitDoors = new ArrayList<>(4); // Just in case multiple exits, or exit made up of multiple sprites.
+	
+	// Intended for callback to UI when certain victory or defeat conditions are met
+	// not set in constructor; will not be run if never set.
+	private Runnable allRedKeysCollectedCallback;
+	
+	// The author of the world. Defaults to "Unknown"
+	private String author;
+	
+	private final WorldResource rsrc;
+	
+	// This field is ONLY created after the game is over. See javadocs on accessor methods.
+	private WorldStatistics stats;
+	private boolean worldFinished;
+	
 
 }
