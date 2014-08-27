@@ -175,6 +175,16 @@ public final class GameWorldLogic {
 	
 	/**
 	 * 
+	 * Starts the music for this level on a separate thread. This is normally intended to start the music before showing the splash
+	 * screen. This does NOT start the game timer.
+	 * 
+	 */
+	public void startMusic() {
+		this.currentWorld.getResource().getSoundManager().playMusic();
+	}
+	
+	/**
+	 * 
 	 * Starts time. Does nothing if time has already started.
 	 * Both the running music and the timer will operate on a different thread than what called this method.
 	 * 

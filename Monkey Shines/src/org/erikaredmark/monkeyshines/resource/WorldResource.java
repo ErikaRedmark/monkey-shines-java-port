@@ -92,6 +92,8 @@ public final class WorldResource {
 	// Bitmap numbers for drawing the bonus score remaining on the banner
 	private final BufferedImage bonusNumbers;
 	
+	private final BufferedImage splashScreen;
+	
 	/* --------------------------- SOUNDS ----------------------------- */
 	// Whilst sounds are stored here, they should only be played via the
 	// SoundManager. null sounds are possible; in that case, that means
@@ -125,6 +127,7 @@ public final class WorldResource {
 					      final BufferedImage scoreNumbers,
 					      final BufferedImage bonusNumbers,
 					      final BufferedImage explosionSheet,
+					      final BufferedImage splashScreen,
 					      final Map<GameSoundEffect, Clip> sounds,
 					      final Clip backgroundMusic) {
 		
@@ -146,6 +149,7 @@ public final class WorldResource {
 		this.scoreNumbers = scoreNumbers;
 		this.bonusNumbers = bonusNumbers;
 		this.explosionSheet = explosionSheet;
+		this.splashScreen = splashScreen;
 		
 		// Generated data
 		// this pointer escapes, but no one gets a reference to the manager until construction is over
@@ -240,7 +244,7 @@ public final class WorldResource {
 		BufferedImage scoreNumbersSheet = null;
 		BufferedImage bonusNumbersSheet = null;
 		BufferedImage explosionSheet = null;
-		
+		BufferedImage splashScreen = null;
 		
 		// Sound clips
 		// Unlike graphics, some sounds may not exist, and that is okay. The game just won't play
@@ -313,6 +317,11 @@ public final class WorldResource {
 					if (backgroundMusic != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "music.ogg");
 					backgroundMusic = loadSoundClip(zipFile, entry);
 					break;
+				case "splash.png":
+					if (intent != UseIntent.GAME)  continue; 
+					if (splashScreen != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "splash.png");
+					splashScreen = ImageIO.read(zipFile.getInputStream(entry) );
+					break;
 				// All other types are handled in default, as many different names may belong to one 'class' of things.
 				default:
 					// TODO repeated code here: consider refactoring?
@@ -368,8 +377,13 @@ public final class WorldResource {
 		}
 		
 		// FINAL CHECKS
+		// 0) Splash Screen was present
 		// 1) Nothing is null
 		// 2) Array lists go from 0 to some value with no skips
+		if (intent == UseIntent.GAME) {
+			checkResourceNotNull(splashScreen, "splash.png");
+		}
+		
 		checkResourceNotNull(solidTiles, "solids.png");
 		checkResourceNotNull(thruTiles, "thrus.png");
 		checkResourceNotNull(sceneTiles, "scenes.png");
@@ -426,6 +440,7 @@ public final class WorldResource {
 							  scoreNumbersSheet,
 							  bonusNumbersSheet,
 							  explosionSheet,
+							  splashScreen,
 							  gameSounds,
 							  backgroundMusic);
 		
@@ -934,6 +949,16 @@ public final class WorldResource {
 	 */
 	public int getConveyerCount() { return conveyerCount; }
 
+	/**
+	 * 
+	 * Returns a 640x480 image of the splash screen. If this world resource was constructed with a {@code UseIntent}
+	 * for the editor, this method will return {@code null}
+	 * 
+	 * @return
+	 * 		splash screen or {@code null} if this object was created for editor
+	 * 
+	 */
+	public BufferedImage getSplashScreen() { return splashScreen; }
 	/**
 	 * 
 	 * Indicates how the client wishes to use the resources. This is mainly a division between editor and game.

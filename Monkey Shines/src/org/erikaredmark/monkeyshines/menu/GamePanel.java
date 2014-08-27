@@ -6,9 +6,12 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.VolatileImage;
 
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.GameWorldLogic;
@@ -34,30 +37,13 @@ public class GamePanel extends JPanel {
 	private final GameWorldLogic universe;
 	private final StandardSurface surface;
 	
-	/**
-	 * 
-	 * Constructs a GamePanel listening to the keyboard.
-	 * 
-	 * When the game is over, the callback is called. 
-	 * 
-	 * @param keys
-	 * 		keyboard input device to register
-	 * 
-	 * @param keyBindings
-	 * 		a binding object that determines which keys on the keyboard map to which
-	 * 		actions bonzo can take.
-	 * 
-	 * @param endGame
-	 * 		callback for when the game is over
-	 * 
-	 * @param world
-	 * 		world to start a game for
-	 * 
-	 */
-	public GamePanel(final KeyboardInput keys, 
-					 final KeyBindings keyBindings,
-					 final Runnable endGame, 
-					 final World world) {
+	// If this is true, the normal paint routine will instead paint the splash screen
+	private volatile boolean showingSplash;
+
+	private GamePanel(final KeyboardInput keys, 
+					  final KeyBindings keyBindings,
+					  final Runnable endGame, 
+					  final World world) {
 		super();
 		this.addKeyListener(keys);
 		
@@ -98,9 +84,53 @@ public class GamePanel extends JPanel {
 
 		add(gameplayPanel);
 	
-		universe.start();
+	}
+	
+	
+	/**
+	 * 
+	 * Constructs a GamePanel listening to the keyboard. When the game is over, the callback is called. 
+	 * <p/>
+	 * Note that it takes a few seconds after this method returns for the game to start proper, as it will
+	 * start by going through the splash screen.
+	 * 
+	 * @param keys
+	 * 		keyboard input device to register
+	 * 
+	 * @param keyBindings
+	 * 		a binding object that determines which keys on the keyboard map to which
+	 * 		actions bonzo can take.
+	 * 
+	 * @param endGame
+	 * 		callback for when the game is over
+	 * 
+	 * @param world
+	 * 		world to start a game for
+	 * 
+	 */
+	public static GamePanel newGamePanel(final KeyboardInput keys, 
+										 final KeyBindings keyBindings,
+										 final Runnable endGame, 
+										 final World world) {
 		
-		setVisible(true);
+		final GamePanel panel = new GamePanel(keys, keyBindings, endGame, world);
+		
+		panel.setVisible(true);
+		panel.showingSplash = true;
+		panel.universe.startMusic();
+		
+		// Set up a timer to actually start the game later.
+		Timer startGame = new Timer(3000, new ActionListener() {
+			@Override public void actionPerformed(ActionEvent e) {
+				panel.showingSplash = false;
+				panel.universe.start();
+			}
+		});
+		
+		startGame.setRepeats(false);
+		startGame.start();
+
+		return panel;
 	}
 	
 	/**
@@ -121,7 +151,7 @@ public class GamePanel extends JPanel {
 
 		// TODO actually determine which one is better?
 		GraphicsConfiguration primary = mainScreen.getDefaultConfiguration();
-		return new VolatileUIPanel(primary);
+		return new VolatileUIPanel(primary, universe);
 	}
 	
 	// UI Panel for displaying buffered images. May not be as fast as volatile
@@ -143,17 +173,25 @@ public class GamePanel extends JPanel {
 		
 		private final GraphicsConfiguration gc;
 		
-		public VolatileUIPanel(final GraphicsConfiguration gc) {
+		private final GameWorldLogic universe;
+		
+		// The panel will start the game after it is done rendering the splash screen.
+		public VolatileUIPanel(final GraphicsConfiguration gc, final GameWorldLogic universe) {
 			this.gc = gc;
+			this.universe = universe;
 		}
 		
 		@Override public void paint(Graphics g) {
-			VolatileImage page = null;
-			do {
-				page = surface.renderVolatile(gc);
-			} while (page.contentsLost() );
-			// TODO should drawImage be IN the loop or OUTSIDE of the loop?
-			g.drawImage(page, 0, 0, null);
+			if (! (showingSplash) ) {
+				VolatileImage page = null;
+				do {
+					page = surface.renderVolatile(gc);
+				} while (page.contentsLost() );
+				// TODO should drawImage be IN the loop or OUTSIDE of the loop?
+				g.drawImage(page, 0, 0, null);
+			} else {
+				g.drawImage(universe.getResource().getSplashScreen(), 0, 0, null);
+			}
 		}
 	}
 	

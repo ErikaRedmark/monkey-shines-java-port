@@ -5,6 +5,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
@@ -38,7 +40,9 @@ import org.erikaredmark.util.BinaryLocation;
  */
 public final class MainWindow extends JFrame {
 	private static final long serialVersionUID = 1L;
-
+	private static final String CLASS_NAME = "org.erikaredmark.monkeyshines.menu.MainWindow";
+	private static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
+	
 	// The currently running game. May be null if no game is running or if game is running in fullscreen.
 	private GamePanel runningGameWindowed;
 	
@@ -156,19 +160,19 @@ public final class MainWindow extends JFrame {
 				    "Cannot load world: Possibly corrupt or not a world file: " + ex.getMessage(),
 				    "Loading Error",
 				    JOptionPane.ERROR_MESSAGE);
-				ex.printStackTrace();
+				LOGGER.log(Level.WARNING, "Cannot load world: Possibly corrupt or not a world file: " + ex.getMessage(), ex);
 			} catch (ResourcePackException ex) {
 				JOptionPane.showMessageDialog(parent,
 				    "Resource pack issues: " + ex.getMessage(),
 				    "Loading Error",
 				    JOptionPane.ERROR_MESSAGE);
-				ex.printStackTrace();
+				LOGGER.log(Level.WARNING, ex.getMessage(), ex);
 			} catch (IOException ex) {
 				JOptionPane.showMessageDialog(parent,
 				    "Low level I/O error: " + ex.getMessage(),
 				    "Loading Error",
 				    JOptionPane.ERROR_MESSAGE);
-				ex.printStackTrace();
+				LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
 			}
 		}
 		
@@ -188,10 +192,12 @@ public final class MainWindow extends JFrame {
 				mainWindow.state.transitionFrom(mainWindow);
 				
 				mainWindow.currentKeyListener = new KeyboardInput();
-				mainWindow.runningGameWindowed = new GamePanel(mainWindow.currentKeyListener, 
-															   KeySettings.getBindings(),
-															   mainWindow.resetCallback, 
-															   userWorld);
+				mainWindow.runningGameWindowed = 
+					GamePanel.newGamePanel(mainWindow.currentKeyListener, 
+										   KeySettings.getBindings(),
+										   mainWindow.resetCallback, 
+										   userWorld);
+				
 				// Must add to both.
 				mainWindow.addKeyListener(mainWindow.currentKeyListener);
 				mainWindow.add(mainWindow.runningGameWindowed);
