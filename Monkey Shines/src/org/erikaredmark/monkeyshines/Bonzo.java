@@ -11,6 +11,7 @@ import org.erikaredmark.monkeyshines.resource.SoundManager;
 import org.erikaredmark.monkeyshines.tiles.CollapsibleTile;
 import org.erikaredmark.monkeyshines.tiles.ConveyerTile;
 import org.erikaredmark.monkeyshines.tiles.TileType;
+import org.erikaredmark.monkeyshines.util.GameEndCallback;
 import org.erikaredmark.util.collection.RingArray;
 
 /**
@@ -62,8 +63,7 @@ public final class Bonzo {
 	// cheap. 
 	// If this is set to -2, bonzo has infinite lives. -1 means he's dead Jim
 	private int lives;
-	private final Runnable gameOverCallback;
-	private final Runnable levelCompleteCallback;
+	private final GameEndCallback gameEndCallback;
 	public static final int INFINITE_LIVES = -2;
 	
 	// Score starts at zero and goes up until the game is over.
@@ -142,16 +142,14 @@ public final class Bonzo {
 	public Bonzo(final World worldPointer,
 			     final int startingLives, 
 			     final Runnable scoreCallback, 
-			     final Runnable gameOverCallback,
-			     final Runnable levelCompleteCallback) {
+			     final GameEndCallback gameEndCallback) {
 		
 		this.worldPointer = worldPointer;
 		this.scoreCallback = scoreCallback;
 		this.lives = startingLives;
 		this.powerupState = new PowerupState();
 		this.powerupState.clear();
-		this.gameOverCallback = gameOverCallback;
-		this.levelCompleteCallback = levelCompleteCallback;
+		this.gameEndCallback = gameEndCallback;
 		this.health = GameConstants.HEALTH_MAX;
 		this.soundManager = worldPointer.getResource().getSoundManager();
 		currentScreenID = 1000; // Always 1000. Everything starts on 1000
@@ -319,7 +317,7 @@ public final class Bonzo {
 	 * 
 	 */
 	void hitExitDoor() {
-		levelCompleteCallback.run();
+		gameEndCallback.gameOverWin();
 	}
 	
 
@@ -872,7 +870,7 @@ public final class Bonzo {
 					// Equality because -2 is infinite
 					assert lives >= -2 : "Lives can be -2 (infinite) -1 (dead) and 0-9, but never less than -2";
 					if (lives == -1) {
-						gameOverCallback.run();
+						gameEndCallback.gameOverFail();
 					} else {
 						worldPointer.restartBonzo(this);
 					}

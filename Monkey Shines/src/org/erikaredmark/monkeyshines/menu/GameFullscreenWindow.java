@@ -8,15 +8,21 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.Timer;
 
 import org.erikaredmark.monkeyshines.GameWorldLogic;
 import org.erikaredmark.monkeyshines.KeyBindings;
 import org.erikaredmark.monkeyshines.KeyboardInput;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.screendraw.StandardSurface;
+import org.erikaredmark.monkeyshines.util.GameEndCallback;
 
 /**
  * 
@@ -44,6 +50,8 @@ public final class GameFullscreenWindow extends Frame {
 	
 	// State variables for drawing.
 	private BufferStrategy buffer;
+	
+	private volatile boolean showingSplash = false;
 
 	/**
 	 * 
@@ -69,6 +77,7 @@ public final class GameFullscreenWindow extends Frame {
 								final KeyBindings keyBindings, 
 								final Runnable gameOver,
 								final World w) {
+		showingSplash = false;
 		
 		gameOverCallback = gameOver;
 		
@@ -86,11 +95,21 @@ public final class GameFullscreenWindow extends Frame {
 							   keyBindings,
 							   w,
 							   // Game over: set variable to stop loop
-							   new Runnable() { @Override public void run() { 
-								   // TODO refactor to allow the game over type to carry over.
-								   // DEBUG false for now to test tally screen
-								   gameOver(false);
-							   } },
+							   new GameEndCallback() { 
+									@Override public void gameOverWin() { 
+										// Allow tally screen
+										gameOver(false);
+									}
+									
+									@Override public void gameOverFail() {
+										// Do not show tally screen
+										gameOver(true);
+									}
+									
+									@Override public void gameOverEscape() {
+										gameOver(true);
+									}
+							   },
 							   // Each game tick, rerender volatile
 							   new Runnable() { 
 								   @Override public void run() {
@@ -165,9 +184,30 @@ public final class GameFullscreenWindow extends Frame {
 	    this.setCursor(toolkit.createCustomCursor(inviso, new Point(0, 0), "Inviso") );
 	    // Cursor WILL be reset back to normal when fullscreen ends.
 	    
-		// Finally, start the game. The render loop is called
-		// once per game tick via the callback during this object's setup.
-		universe.start();
+	    // Artifical delay: It takes time for the monitor to go into fullscreen mode. 
+	    // TODO some way of polling it until it does so instead of guessing?
+	    try {
+			Thread.sleep(4500);
+		} catch (InterruptedException ex) {
+			LOGGER.log(Level.WARNING,
+					   "Delay thread interrupted: Game may start before full-screen mode is entered. Issue caused by: " + ex.getMessage(),
+					   ex);
+		}
+	    
+	    
+		// Finally, start the music, and set a timer for starting the game
+		universe.startMusic();
+
+		// Set up a timer to actually start the game later.
+		Timer startGame = new Timer(3000, new ActionListener() {
+			@Override public void actionPerformed(ActionEvent e) {
+				showingSplash = false;
+				universe.start();
+			}
+		});
+		
+		startGame.setRepeats(false);
+		startGame.start();
 
 		return true;
 	}
@@ -189,10 +229,14 @@ public final class GameFullscreenWindow extends Frame {
 			do {
 				Graphics2D g = (Graphics2D) buffer.getDrawGraphics();
 				try {
-					// Is the world still available for drawing? If not, rerender
-					
-					// Initial validation
-					surface.renderDirect(g);
+					// Really, really hoping branch prediction plays out well here. One if statement is done
+					// several times, and then the other is taken for the rest of the game.
+					if (!(showingSplash) ) {
+						surface.renderDirect(g);
+					} else {
+						System.out.println("drawing splash screen");
+						g.drawImage(universe.getResource().getSplashScreen(), 0, 0, null);
+					}
 				} finally {
 					g.dispose();
 				}

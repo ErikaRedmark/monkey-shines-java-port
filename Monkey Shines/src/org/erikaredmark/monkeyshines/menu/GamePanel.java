@@ -19,6 +19,7 @@ import org.erikaredmark.monkeyshines.KeyBindings;
 import org.erikaredmark.monkeyshines.KeyboardInput;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.screendraw.StandardSurface;
+import org.erikaredmark.monkeyshines.util.GameEndCallback;
 
 /**
  * 
@@ -42,22 +43,29 @@ public class GamePanel extends JPanel {
 
 	private GamePanel(final KeyboardInput keys, 
 					  final KeyBindings keyBindings,
-					  final Runnable endGame, 
+					  final GameEndCallback endGame, 
 					  final World world) {
 		super();
 		this.addKeyListener(keys);
 		
 		// Wrap the endGame callback in another callback. We intercept for drawing the end screens
 		// if needed.
-		final Runnable endGameWrapped = new Runnable() {
-			@Override public void run() {
-				// TODO refactor to allow the proper end game type (success or failure)
+		final GameEndCallback endGameWrapped = new GameEndCallback() {
+			@Override public void gameOverWin() {
 				Graphics2D g2d = (Graphics2D) getGraphics();
 				EndGameBonusAnimation.runOn(
 					g2d, 
 					universe.getWorld(),
 					new Runnable() { @Override public void run() { repaint(); } });
-				endGame.run();
+				endGame.gameOverWin();
+			}
+			
+			@Override public void gameOverFail() {
+				endGame.gameOverFail();
+			}
+			
+			@Override public void gameOverEscape() {
+				endGame.gameOverEscape();
 			}
 		};
 		
@@ -110,7 +118,7 @@ public class GamePanel extends JPanel {
 	 */
 	public static GamePanel newGamePanel(final KeyboardInput keys, 
 										 final KeyBindings keyBindings,
-										 final Runnable endGame, 
+										 final GameEndCallback endGame, 
 										 final World world) {
 		
 		final GamePanel panel = new GamePanel(keys, keyBindings, endGame, world);

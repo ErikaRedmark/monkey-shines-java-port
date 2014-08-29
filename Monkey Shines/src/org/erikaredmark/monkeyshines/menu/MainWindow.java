@@ -26,6 +26,7 @@ import org.erikaredmark.monkeyshines.global.VideoSettings;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.resource.WorldResource.UseIntent;
+import org.erikaredmark.monkeyshines.util.GameEndCallbacks;
 import org.erikaredmark.util.BinaryLocation;
 
 /**
@@ -195,7 +196,7 @@ public final class MainWindow extends JFrame {
 				mainWindow.runningGameWindowed = 
 					GamePanel.newGamePanel(mainWindow.currentKeyListener, 
 										   KeySettings.getBindings(),
-										   mainWindow.resetCallback, 
+										   GameEndCallbacks.singleCallback(mainWindow.resetCallback), 
 										   userWorld);
 				
 				// Must add to both.

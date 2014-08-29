@@ -8,6 +8,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.Timer;
 
 import org.erikaredmark.monkeyshines.resource.WorldResource;
+import org.erikaredmark.monkeyshines.util.GameEndCallback;
 
 /**
  * 
@@ -55,7 +56,7 @@ public final class GameWorldLogic {
 	// Each new game starts with 10000 countdown, represented by 9999
 	private int countdownDigits[] = new int[] {9, 9, 9, 9};
 	
-	private final Runnable endGameCallback;
+	private final GameEndCallback gameEndCallback;
 	
 	/**
 	 * 
@@ -87,19 +88,22 @@ public final class GameWorldLogic {
 	public GameWorldLogic(final KeyboardInput keys, 
 			  			  final KeyBindings keyBindings,
 						  final World world,
-			  			  final Runnable endGameCallback,
+			  			  final GameEndCallback gameEndCallback,
 						  final Runnable gameTickCallback) {
 		assert keys != null;
 		
-		this.endGameCallback = endGameCallback;
+		this.gameEndCallback = gameEndCallback;
 		this.currentWorld = world;
 
 		bonzo = new Bonzo(currentWorld,
 			// DEBUG: Will eventually be based on difficulty
 			4,
 			new Runnable() { @Override public void run() { scoreUpdate(); } },
-			new Runnable() { @Override public void run() { gameOver(); } },
-			new Runnable() { @Override public void run() { levelComplete(); } });
+			new GameEndCallback() {
+				@Override public void gameOverWin() { levelComplete(); }
+				@Override public void gameOverFail() { gameOver(); }
+				@Override public void gameOverEscape() { escape(); }
+			});
 		
 		currentWorld.setAllRedKeysCollectedCallback(
 			new Runnable() { 
@@ -235,17 +239,7 @@ public final class GameWorldLogic {
 			modular = divisor;
 		}
 	}
-	
-	// Called during a game over.
-	private void gameOver() {
-		bonusTimer.stop();
-		this.currentWorld.getResource().getSoundManager().stopPlayingMusic();
-		
-		// End world to update statistics:
-		this.currentWorld.worldFinished(this.bonzo);
-		
-		endGameCallback.run();
-	}
+
 	
 	// Called when bonzo has collected all the red keys.
 	private void redKeysCollected() {
@@ -255,11 +249,27 @@ public final class GameWorldLogic {
 	
 	// Called when bonzo collides with the exit door.
 	private void levelComplete() {
+		endGame_internal();
+		gameEndCallback.gameOverWin();
+	}
+	
+	// Called during a game over of lost lives
+	private void gameOver() {
+		endGame_internal();
+		gameEndCallback.gameOverFail();
+	}
+	
+	// Called when using escape to leave the game
+	private void escape() {
+		endGame_internal();
+		gameEndCallback.gameOverEscape();
+	}
+	
+	// Common code for all types of game endings
+	private void endGame_internal() {
 		bonusTimer.stop();
 		currentWorld.getResource().getSoundManager().stopPlayingMusic();
 		currentWorld.worldFinished(bonzo);
-		// TODO differentiate between ending game BAD vs ending game GOOD
-		endGameCallback.run();
 	}
 	
 	/**
