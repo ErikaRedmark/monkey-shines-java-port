@@ -14,9 +14,6 @@ There are two main points of entry in the code:
 # Status
 Project tracking now moved to issue tracking instead of a task list since the majour core components have been finished.
 
-##Extra Points
-Original game allowed one to start in Spooked, go through all five core worlds maintaining lives from the past world. This could be generalised to the concept of a 'World Pack' which could somehow allow a set of worlds to be combined together such that the game plays through all worlds until complete loss of lives or beating every world. This could be extended to the level editor to allow custom 'packs' of levels. Far future goal.
-
 # Final Words
 If anyone wishes to help, especially if you have played the game before, feel open to contact me (Erika Redmark) at maniacmonkeyinspace@gmail.com. 
 
@@ -32,13 +29,19 @@ Artwork: Alan Lau
 Music and Sound Effects: Petteri Lajunen, Ville-Eemeli Kakela
 
 Level Design: 
+
 Spooked - Vern Jensen
+
 Spaced Out - Ville-Eemeli Kakela & Petteri Lajunen
+
 In The Drink - Alexander Minidis
+
 About the House - Alexander Minidis
+
 In The Swing - Vern Jensen
 
 Special Thanks: 
+
 David Lau
 
 # Extra Original Credits
