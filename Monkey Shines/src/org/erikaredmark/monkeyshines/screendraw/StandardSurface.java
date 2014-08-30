@@ -94,9 +94,13 @@ public final class StandardSurface {
 	 * @param g2d
 	 * 		graphics configuration to create a compatible buffered image.
 	 * 
+	 * @param showUI
+	 * 		{@code true} to draw the UI at 0,0 and game at 0,80, {@code false} to draw game at 0,0.
+	 * 		this is typically {@code false} for when the splash screen is visible and {@code true} otherwise.
+	 * 
 	 */
-	public void renderDirect(Graphics2D g2d) {
-		renderToGraphics(g2d);
+	public void renderDirect(Graphics2D g2d, boolean showUI) {
+		renderToGraphics(g2d, showUI);
 	}
 	
 	/**
@@ -109,14 +113,18 @@ public final class StandardSurface {
 	 * @param configuration
 	 * 		graphics configuration for the current hardware
 	 * 
+	 * @param showUI
+	 * 		{@code true} to draw the UI at 0,0 and game at 0,80, {@code false} to draw game at 0,0.
+	 * 		this is typically {@code false} for when the splash screen is visible and {@code true} otherwise
+	 * 
 	 */
-	public VolatileImage renderVolatile(GraphicsConfiguration configuration) {
+	public VolatileImage renderVolatile(GraphicsConfiguration configuration, boolean showUI) {
 		VolatileImage page = configuration.createCompatibleVolatileImage(SURFACE_SIZE_X, SURFACE_SIZE_Y);
 		
 		do {
 			Graphics2D g2d = page.createGraphics();
 			try {
-				renderToGraphics(g2d);
+				renderToGraphics(g2d, showUI);
 			} finally {
 				g2d.dispose();
 			}
@@ -130,109 +138,102 @@ public final class StandardSurface {
 	 * 
 	 * Renders the world to the graphics context. 
 	 * 
+	 * @param showUI
+	 * 		{@code true} to draw the UI at 0,0 and game at 0,80, {@code false} to draw game at 0,0.
+	 * 		this is typically {@code false} for when the splash screen is visible and {@code true} otherwise.
+	 * 
 	 * @param g2d
 	 */
-	private void renderToGraphics(Graphics2D g2d) {
+	private void renderToGraphics(Graphics2D g2d, boolean showUI) {
 		// Clear
 		g2d.clearRect(0, 0, GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT + GameConstants.UI_HEIGHT);
-		/* --------------------- Initial Banner ---------------------- */
-		WorldResource rsrc = universe.getResource();
-		g2d.drawImage(rsrc.getBanner(), 
-					  0, 0,
-					  GameConstants.SCREEN_WIDTH, GameConstants.UI_HEIGHT,
-					  0, 0,
-					  GameConstants.SCREEN_WIDTH, GameConstants.UI_HEIGHT,
-					  null);
 		
-		/* ------------------------- Health -------------------------- */
-		g2d.setColor(HEALTH_COLOR);
-		// Normalise bonzo's current health with drawing.
-		double healthWidth = ((double)universe.getBonzoHealth()) * HEALTH_MULTIPLIER;
-		//System.out.println("Drawing rect: " + HEALTH_DRAW_X + " " + HEALTH_DRAW_Y + " " + (int)healthWidth + " " + HEALTH_DRAW_HEIGHT);
-		g2d.fillRect(HEALTH_DRAW_X, HEALTH_DRAW_Y, (int)healthWidth, HEALTH_DRAW_HEIGHT);
-		
-		/* -------------------------- Score -------------------------- */
-		for (int i = 0; i < GameWorldLogic.SCORE_NUM_DIGITS; i++) {
-			int drawToX = SCORE_DRAW_X + (SCORE_WIDTH * i);
-			// draw to Y is always the same
-			int drawFromX = SCORE_WIDTH * universe.getScoreDigits()[i];
-			// draw from Y is always the same, 0
-			g2d.drawImage(rsrc.getScoreNumbersSheet(), 
-						  drawToX, SCORE_DRAW_Y,
-						  drawToX + SCORE_WIDTH, SCORE_DRAW_Y2, 
-						  drawFromX, 0, 
-						  drawFromX + SCORE_WIDTH, SCORE_HEIGHT, 
+		if (showUI) {
+			/* --------------------- Initial Banner ---------------------- */
+			WorldResource rsrc = universe.getResource();
+			g2d.drawImage(rsrc.getBanner(), 
+						  0, 0,
+						  GameConstants.SCREEN_WIDTH, GameConstants.UI_HEIGHT,
+						  0, 0,
+						  GameConstants.SCREEN_WIDTH, GameConstants.UI_HEIGHT,
 						  null);
-		}
-		
-		/* -------------------- Bonus Countdown ---------------------- */
-		for (int i = 0; i < GameWorldLogic.BONUS_NUM_DIGITS; i++) {
-			int drawToX = BONUS_DRAW_X + (SCORE_WIDTH * i);
-			// draw to Y is always the same
-			int drawFromX = SCORE_WIDTH * universe.getBonusDigits()[i];
-			// draw from Y is always the same, 0
-			g2d.drawImage(rsrc.getBonusNumbersSheet(),
-						  drawToX, SCORE_DRAW_Y,
-						  drawToX + SCORE_WIDTH, SCORE_DRAW_Y2,
-						  drawFromX, 0,
-						  drawFromX + SCORE_WIDTH, SCORE_HEIGHT,
-						  null);
-		}
-		
-		/* ------------------------- Lives --------------------------- */
-		{
-			int lifeDigit = universe.getLifeDigit();
-			if (lifeDigit >= 0) {
-				assert lifeDigit < 10;
-				int drawFromX = SCORE_WIDTH * lifeDigit;
-				
-				g2d.drawImage(rsrc.getScoreNumbersSheet(),
-							  LIFE_DRAW_X, LIFE_DRAW_Y,
-							  LIFE_DRAW_X2, LIFE_DRAW_Y2,
+			
+			/* ------------------------- Health -------------------------- */
+			g2d.setColor(HEALTH_COLOR);
+			// Normalise bonzo's current health with drawing.
+			double healthWidth = ((double)universe.getBonzoHealth()) * HEALTH_MULTIPLIER;
+			//System.out.println("Drawing rect: " + HEALTH_DRAW_X + " " + HEALTH_DRAW_Y + " " + (int)healthWidth + " " + HEALTH_DRAW_HEIGHT);
+			g2d.fillRect(HEALTH_DRAW_X, HEALTH_DRAW_Y, (int)healthWidth, HEALTH_DRAW_HEIGHT);
+			
+			/* -------------------------- Score -------------------------- */
+			for (int i = 0; i < GameWorldLogic.SCORE_NUM_DIGITS; i++) {
+				int drawToX = SCORE_DRAW_X + (SCORE_WIDTH * i);
+				// draw to Y is always the same
+				int drawFromX = SCORE_WIDTH * universe.getScoreDigits()[i];
+				// draw from Y is always the same, 0
+				g2d.drawImage(rsrc.getScoreNumbersSheet(), 
+							  drawToX, SCORE_DRAW_Y,
+							  drawToX + SCORE_WIDTH, SCORE_DRAW_Y2, 
+							  drawFromX, 0, 
+							  drawFromX + SCORE_WIDTH, SCORE_HEIGHT, 
+							  null);
+			}
+			
+			/* -------------------- Bonus Countdown ---------------------- */
+			for (int i = 0; i < GameWorldLogic.BONUS_NUM_DIGITS; i++) {
+				int drawToX = BONUS_DRAW_X + (SCORE_WIDTH * i);
+				// draw to Y is always the same
+				int drawFromX = SCORE_WIDTH * universe.getBonusDigits()[i];
+				// draw from Y is always the same, 0
+				g2d.drawImage(rsrc.getBonusNumbersSheet(),
+							  drawToX, SCORE_DRAW_Y,
+							  drawToX + SCORE_WIDTH, SCORE_DRAW_Y2,
 							  drawFromX, 0,
 							  drawFromX + SCORE_WIDTH, SCORE_HEIGHT,
 							  null);
-			} // else draw nothing TODO perhaps draw infinity symbol?
-		}
-		
-		/* ------------------------ Powerup --------------------------- */
-		{
-			if (universe.isPowerupVisible() ) {
-				Powerup powerup = universe.getCurrentPowerup();
-				assert powerup != null : "Powerup should be invisible if null";
-				
-				g2d.drawImage(rsrc.getGoodieSheet(),
-						      POWERUP_DRAW_X, POWERUP_DRAW_Y,
-						      POWERUP_DRAW_X2, POWERUP_DRAW_Y2,
-						      powerup.drawFromX(), Powerup.POWERUP_DRAW_FROM_Y,
-						      powerup.drawFromX2(), Powerup.POWERUP_DRAW_FROM_Y2,
-						      null);
+			}
+			
+			/* ------------------------- Lives --------------------------- */
+			{
+				int lifeDigit = universe.getLifeDigit();
+				if (lifeDigit >= 0) {
+					assert lifeDigit < 10;
+					int drawFromX = SCORE_WIDTH * lifeDigit;
+					
+					g2d.drawImage(rsrc.getScoreNumbersSheet(),
+								  LIFE_DRAW_X, LIFE_DRAW_Y,
+								  LIFE_DRAW_X2, LIFE_DRAW_Y2,
+								  drawFromX, 0,
+								  drawFromX + SCORE_WIDTH, SCORE_HEIGHT,
+								  null);
+				} // else draw nothing TODO perhaps draw infinity symbol?
+			}
+			
+			/* ------------------------ Powerup --------------------------- */
+			{
+				if (universe.isPowerupVisible() ) {
+					Powerup powerup = universe.getCurrentPowerup();
+					assert powerup != null : "Powerup should be invisible if null";
+					
+					g2d.drawImage(rsrc.getGoodieSheet(),
+							      POWERUP_DRAW_X, POWERUP_DRAW_Y,
+							      POWERUP_DRAW_X2, POWERUP_DRAW_Y2,
+							      powerup.drawFromX(), Powerup.POWERUP_DRAW_FROM_Y,
+							      powerup.drawFromX2(), Powerup.POWERUP_DRAW_FROM_Y2,
+							      null);
+				}
 			}
 		}
 		
 		/* ----------------------- Actual Game -------------------------- */
-		// game is drawn at 80 pixels down
-		g2d.translate(0, 80);
-		universe.paintTo(g2d);
-		g2d.translate(0, -80);
-//		BufferedImage gameWindow = new BufferedImage(GameConstants.SCREEN_WIDTH, 
-//													 GameConstants.SCREEN_HEIGHT, 
-//													 rsrc.getConveyerSheet().getType() );
-//		
-//		Graphics2D windowG = gameWindow.createGraphics();
-//		try {
-//			windowG.clearRect(0, 0, GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT);
-//			universe.paintTo(windowG);
-//		} finally {
-//			windowG.dispose();
-//		}
-//		
-//		g2d.drawImage(gameWindow, 
-//					  0, GameConstants.UI_HEIGHT,
-//					  GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT + GameConstants.UI_HEIGHT,
-//					  0, 0, 
-//					  GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT, 
-//					  null);
+		// game is drawn at 80 pixels down if UI was drawn
+		if (showUI) {
+			g2d.translate(0, 80);
+			universe.paintTo(g2d);
+			g2d.translate(0, -80);
+		} else {
+			universe.paintTo(g2d);
+		}
 		
 	}
 

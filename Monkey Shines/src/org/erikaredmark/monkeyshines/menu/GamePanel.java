@@ -6,12 +6,9 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.VolatileImage;
 
 import javax.swing.JPanel;
-import javax.swing.Timer;
 
 import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.GameWorldLogic;
@@ -37,9 +34,6 @@ public class GamePanel extends JPanel {
 	
 	private final GameWorldLogic universe;
 	private final StandardSurface surface;
-	
-	// If this is true, the normal paint routine will instead paint the splash screen
-	private volatile boolean showingSplash;
 
 	private GamePanel(final KeyboardInput keys, 
 					  final KeyBindings keyBindings,
@@ -124,19 +118,7 @@ public class GamePanel extends JPanel {
 		final GamePanel panel = new GamePanel(keys, keyBindings, endGame, world);
 		
 		panel.setVisible(true);
-		panel.showingSplash = true;
-		panel.universe.startMusic();
-		
-		// Set up a timer to actually start the game later.
-		Timer startGame = new Timer(3000, new ActionListener() {
-			@Override public void actionPerformed(ActionEvent e) {
-				panel.showingSplash = false;
-				panel.universe.start();
-			}
-		});
-		
-		startGame.setRepeats(false);
-		startGame.start();
+		panel.universe.start(true);
 
 		return panel;
 	}
@@ -180,7 +162,6 @@ public class GamePanel extends JPanel {
 		private static final long serialVersionUID = 1L;
 		
 		private final GraphicsConfiguration gc;
-		
 		private final GameWorldLogic universe;
 		
 		// The panel will start the game after it is done rendering the splash screen.
@@ -190,16 +171,12 @@ public class GamePanel extends JPanel {
 		}
 		
 		@Override public void paint(Graphics g) {
-			if (! (showingSplash) ) {
-				VolatileImage page = null;
-				do {
-					page = surface.renderVolatile(gc);
-				} while (page.contentsLost() );
-				// TODO should drawImage be IN the loop or OUTSIDE of the loop?
-				g.drawImage(page, 0, 0, null);
-			} else {
-				g.drawImage(universe.getResource().getSplashScreen(), 0, 0, null);
-			}
+			VolatileImage page = null;
+			do {
+				page = surface.renderVolatile(gc, !(universe.showingSplash() ) );
+			} while (page.contentsLost() );
+			// TODO should drawImage be IN the loop or OUTSIDE of the loop?
+			g.drawImage(page, 0, 0, null);
 		}
 	}
 	

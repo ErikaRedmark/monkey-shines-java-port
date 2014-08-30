@@ -130,6 +130,10 @@ public final class GameConstants {
 	// and bigger numbers mean slower. This is automatically calculated from frames per second
 	public static final int GAME_SPEED = 1000 / FRAMES_PER_SECOND;
 	
+	// Goal is 4000 milliseconds. Divide that by game_speed to get number of ticks for
+	// the splash screen should stay.
+	public static final int SPLASH_TICKS = 4000 / GAME_SPEED;
+	
 	// Originally editor was to use different speed. It is, however, easier to place sprites and get a feel for their
 	// movement with the same speed as game speed. The new features that pause the sprites when editing them makes
 	// the need for a 'slower' editor speed moot.

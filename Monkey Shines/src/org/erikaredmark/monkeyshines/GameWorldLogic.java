@@ -40,6 +40,11 @@ public final class GameWorldLogic {
 	private Bonzo bonzo;
 	private World currentWorld;
 	
+	// The splash screen. When true, the splash screen is displayed. Automatically
+	// set to false after a certain amount of running time.
+	private boolean splash;
+	private int splashCounter;
+	
 	/* -------------------- Digits ---------------------- */
 	/* Numerical values displayed in the UI are broken up
 	 * into digits so that the class can easily map a digit
@@ -120,27 +125,34 @@ public final class GameWorldLogic {
 			 * 'entry point' to the main game loop.
 			 */
 			public void actionPerformed(ActionEvent e) {
-				// Poll Keyboard
-				keys.poll();
-				if (keys.keyDown(keyBindings.left) ) {
-					bonzo.move(-1);
-				}
-				if (keys.keyDown(keyBindings.right) ) {
-					bonzo.move(1);
-				}
-				if (keys.keyDown(keyBindings.jump) ) {
-					bonzo.jump(4);
+				// If splash screen is showing, the only thing we run is the game tick callback, for painting.
+				// When the client calls paintTo, it will decrement the splash tick and eventually remove the
+				// screen. We don't want stuff happening during splash.
+				
+				if (!(splash) ) {
+					// Poll Keyboard
+					keys.poll();
+					if (keys.keyDown(keyBindings.left) ) {
+						bonzo.move(-1);
+					}
+					if (keys.keyDown(keyBindings.right) ) {
+						bonzo.move(1);
+					}
+					if (keys.keyDown(keyBindings.jump) ) {
+						bonzo.jump(4);
+					}
+					
+					// The only hardcoded key: Esc is a game over
+					if (keys.keyDown(KeyEvent.VK_ESCAPE) ) {
+						gameOver();
+					}
+					
+					// Update the game first before calling what is possibly a paint
+					// routine.
+					currentWorld.update();
+					bonzo.update();
 				}
 				
-				// The only hardcoded key: Esc is a game over
-				if (keys.keyDown(KeyEvent.VK_ESCAPE) ) {
-					gameOver();
-				}
-				
-				// Update the game first before calling what is possibly a paint
-				// routine.
-				currentWorld.update();
-				bonzo.update();
 				gameTickCallback.run();
 			}
 		});
@@ -164,7 +176,25 @@ public final class GameWorldLogic {
 	
 	/**
 	 * 
-	 * Paints the world to the given graphics context.
+	 * Sets the splash display to 'splash'. If true, resets the splash counter.
+	 * <p/>
+	 * Do not set the variable directly or the counter will not be reset.
+	 * 
+	 * @param splash
+	 * 		{@code true} to show splash screen, {@code false} to shut it off
+	 * 
+	 */
+	private void setSplash(boolean showSplash) {
+		splash = showSplash;
+		splashCounter =   showSplash 
+						? GameConstants.SPLASH_TICKS
+						: 0;
+	}
+	
+	/**
+	 * 
+	 * Paints the world to the given graphics context. If the splash screen is being drawn, each call
+	 * decrements a tick the splash screen should be visible.
 	 * TODO this is temporary. Eventually I want to segregate this even further so elements
 	 * aren't responsible for painting themselves, making it possible to support hi-def graphics
 	 * or any other interesting transformations.
@@ -173,18 +203,14 @@ public final class GameWorldLogic {
 	 * 
 	 */
 	public void paintTo(Graphics2D g) {
-		currentWorld.paint(g);
-		bonzo.paint(g);
-	}
-	
-	/**
-	 * 
-	 * Starts the music for this level on a separate thread. This is normally intended to start the music before showing the splash
-	 * screen. This does NOT start the game timer.
-	 * 
-	 */
-	public void startMusic() {
-		this.currentWorld.getResource().getSoundManager().playMusic();
+		if (!(splash) ) {
+			currentWorld.paint(g);
+			bonzo.paint(g);
+		} else {
+			g.drawImage(getResource().getSplashScreen(), 0, 0, null);
+			--splashCounter;
+			if (splashCounter < 0)  setSplash(false);
+		}
 	}
 	
 	/**
@@ -192,10 +218,25 @@ public final class GameWorldLogic {
 	 * Starts time. Does nothing if time has already started.
 	 * Both the running music and the timer will operate on a different thread than what called this method.
 	 * 
+	 * @param showSplash
+	 * 		if {@code true}, the splash screen will be drawn for however many game ticks
+	 * 		equate to 4 seconds.
+	 * 
 	 */
-	public void start() {
+	public void start(boolean showSplash) {
+		setSplash(showSplash);
 		gameTimer.start();
 		this.currentWorld.getResource().getSoundManager().playMusic();
+	}
+	
+	/**
+	 * 
+	 * Returns {@code true} if the splash screen is being shown.
+	 * If so, normally renders should render from 0,0 origin point, and not account for UI.
+	 * 
+	 */
+	public boolean showingSplash() {
+		return splash;
 	}
 	
 	/**

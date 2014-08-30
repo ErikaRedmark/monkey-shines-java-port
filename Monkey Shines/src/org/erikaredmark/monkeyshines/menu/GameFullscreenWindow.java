@@ -8,14 +8,10 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.swing.Timer;
 
 import org.erikaredmark.monkeyshines.GameWorldLogic;
 import org.erikaredmark.monkeyshines.KeyBindings;
@@ -50,8 +46,6 @@ public final class GameFullscreenWindow extends Frame {
 	
 	// State variables for drawing.
 	private BufferStrategy buffer;
-	
-	private volatile boolean showingSplash = false;
 
 	/**
 	 * 
@@ -77,7 +71,6 @@ public final class GameFullscreenWindow extends Frame {
 								final KeyBindings keyBindings, 
 								final Runnable gameOver,
 								final World w) {
-		showingSplash = false;
 		
 		gameOverCallback = gameOver;
 		
@@ -196,19 +189,8 @@ public final class GameFullscreenWindow extends Frame {
 	    
 	    
 		// Finally, start the music, and set a timer for starting the game
-		universe.startMusic();
-
-		// Set up a timer to actually start the game later.
-		Timer startGame = new Timer(3000, new ActionListener() {
-			@Override public void actionPerformed(ActionEvent e) {
-				showingSplash = false;
-				universe.start();
-			}
-		});
+		universe.start(true);
 		
-		startGame.setRepeats(false);
-		startGame.start();
-
 		return true;
 	}
 	
@@ -229,14 +211,7 @@ public final class GameFullscreenWindow extends Frame {
 			do {
 				Graphics2D g = (Graphics2D) buffer.getDrawGraphics();
 				try {
-					// Really, really hoping branch prediction plays out well here. One if statement is done
-					// several times, and then the other is taken for the rest of the game.
-					if (!(showingSplash) ) {
-						surface.renderDirect(g);
-					} else {
-						System.out.println("drawing splash screen");
-						g.drawImage(universe.getResource().getSplashScreen(), 0, 0, null);
-					}
+					surface.renderDirect(g, !(universe.showingSplash() ) );
 				} finally {
 					g.dispose();
 				}
