@@ -1,33 +1,21 @@
 package org.erikaredmark.monkeyshines.menu;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 
 import org.erikaredmark.monkeyshines.KeyboardInput;
 import org.erikaredmark.monkeyshines.World;
-import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
-import org.erikaredmark.monkeyshines.encoder.WorldIO;
-import org.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
 import org.erikaredmark.monkeyshines.global.KeySettings;
 import org.erikaredmark.monkeyshines.global.VideoSettings;
-import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
-import org.erikaredmark.monkeyshines.resource.WorldResource;
-import org.erikaredmark.monkeyshines.resource.WorldResource.UseIntent;
 import org.erikaredmark.monkeyshines.util.GameEndCallbacks;
-import org.erikaredmark.util.BinaryLocation;
+import org.erikaredmark.monkeyshines.menu.SelectAWorld.WorldSelectionCallback;
 
 /**
  * 
@@ -47,6 +35,15 @@ public final class MainWindow extends JFrame {
 	// The currently running game. May be null if no game is running or if game is running in fullscreen.
 	private GamePanel runningGameWindowed;
 	
+	// The play game panel. This is always initialised as part of the playgame and leaves when that
+	// state is transitioned away. this is shown when the play game button is pressed
+	private SelectAWorld selectWorldPanel;
+	
+	// Carries the selected world state from the select world panel to the start game state transitions.
+	// Is nulled out after use. This isn't exactly happy code, but the alternative is add an optional
+	// parameter to all the state transition methods.
+	private World tempWorld;
+	
 	// Main menu displayed. May be null if the main menu is no longer displayed
 	private MainMenuWindow menu;
 	
@@ -64,16 +61,17 @@ public final class MainWindow extends JFrame {
 	/* --------------------------- MENU ITEM NEW WORLD ---------------------------- */
 	private final JMenuItem changeFullscreen = new JCheckBoxMenuItem("Fullscreen", null, VideoSettings.isFullscreen() );
 	
+	// Called when 'play game' is pressed in main menu. Transition to the 'choose a world' screen.
 	private final Runnable playGameCallback = new Runnable() {
 		@Override public void run() {
-			if (VideoSettings.isFullscreen() ) {
-				// Try to run fullscreen, but fallback to windowed if unable to
-				if (!(setGameState(GameState.PLAYING_FULLSCREEN) ) ) {
-					setGameState(GameState.PLAYING_WINDOWED);
-				}
-			} else {
-				setGameState(GameState.PLAYING_WINDOWED);
+			setGameState(GameState.CHOOSE_WORLD);
+			// DEBUG
+			/*World world = SelectAWorld.loadCustomWorld(MainWindow.this);
+			if (world != null) {
+				tempWorld = world;
 			}
+			
+			playGame();*/
 		}
 	};
 	
@@ -109,6 +107,36 @@ public final class MainWindow extends JFrame {
 		setAlwaysOnTop(false);
 	}
 	
+	/**
+	 * 
+	 * Sets the game state to either playing in windowed or playing in fullscreen, based on settings.
+	 * 
+	 * @return
+	 * 		{@code true} if state change is successful, {@code false} if otherwise
+	 * 
+	 */
+	private boolean playGame() {
+		boolean gameStarted = false;
+		if (VideoSettings.isFullscreen() ) {
+			// Try to run fullscreen, but fallback to windowed if unable to
+			if (!(setGameState(GameState.PLAYING_FULLSCREEN) ) ) {
+				gameStarted = setGameState(GameState.PLAYING_WINDOWED);
+			} else {
+				// Else if setting the game state to playing fullscreen succeeded.
+				gameStarted = true;
+			}
+		} else {
+			gameStarted = setGameState(GameState.PLAYING_WINDOWED);
+		}
+		
+		if (gameStarted) {
+			// Gave the world object to the game, no need to keep ref here anymore
+			tempWorld = null;
+		}
+		
+		return gameStarted;
+	}
+	
 	// Sets the new game state and calls transition methods to modify the proper
 	// state information for this object
 	// returns whether the state change was successful.
@@ -122,72 +150,53 @@ public final class MainWindow extends JFrame {
 			setGameState(GameState.MENU);
 		}
 	};
-	
 
-	/**
-	 * 
-	 * Attempts to load a world by giving the user a file chooser. If a world is loaded, bonzo is set and
-	 * gameplay begins proper. Otherwise, state does not transition to playing and user remains back on main
-	 * menu.
-	 * <p/>
-	 * The world will be fully constructed and set up when returned and can be passed directly to a 
-	 * {@code GameWindow} to be played.
-	 * 
-	 * @param parent
-	 * 		the parent component for displaying the dialog on
-	 * 
-	 * @return
-	 * 		the selected world, or {@code null} if no world was selected.
-	 * 
-	 */
-	public static World loadCustomWorld(final Component parent) {
-		JFileChooser fileChooser = new JFileChooser();
-		fileChooser.setCurrentDirectory(BinaryLocation.BINARY_FOLDER.toFile() );
-		System.out.println(fileChooser.getCurrentDirectory() );
-		
-		if (fileChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
-			Path worldFile = fileChooser.getSelectedFile().toPath();
-			try {
-				EncodedWorld world = WorldIO.restoreWorld(worldFile);
-				// Try to load the resource pack
-				String fileName = worldFile.getFileName().toString();
-				// Remove .world extension so we can substitute with .zip.
-				String worldName = fileName.substring(0, fileName.lastIndexOf('.') );
-				Path packFile = worldFile.getParent().resolve(worldName + ".zip");
-				WorldResource rsrc = WorldResource.fromPack(packFile, UseIntent.GAME);
-				return world.newWorldInstance(rsrc);
-			} catch (WorldRestoreException ex) {
-				JOptionPane.showMessageDialog(parent,
-				    "Cannot load world: Possibly corrupt or not a world file: " + ex.getMessage(),
-				    "Loading Error",
-				    JOptionPane.ERROR_MESSAGE);
-				LOGGER.log(Level.WARNING, "Cannot load world: Possibly corrupt or not a world file: " + ex.getMessage(), ex);
-			} catch (ResourcePackException ex) {
-				JOptionPane.showMessageDialog(parent,
-				    "Resource pack issues: " + ex.getMessage(),
-				    "Loading Error",
-				    JOptionPane.ERROR_MESSAGE);
-				LOGGER.log(Level.WARNING, ex.getMessage(), ex);
-			} catch (IOException ex) {
-				JOptionPane.showMessageDialog(parent,
-				    "Low level I/O error: " + ex.getMessage(),
-				    "Loading Error",
-				    JOptionPane.ERROR_MESSAGE);
-				LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-			}
-		}
-		
-		// no world chosen if method hasn't returned yet
-		return null;
-	}
 	
 	private enum GameState {
 		// Note: always change state at END of method. Perform any possible actions that could prevent
 		// state change before actually modifying any state variables.
+		// In Transition To, ALWAYS:
+		// 1) Transition FROM the current state after verifying state change is allowed
+		// 2) Transition TO this state after setting up.
+		// No extra-linguistic restrictions for transitionFrom
+		CHOOSE_WORLD {
+			@Override public boolean transitionTo(final MainWindow mainWindow) {
+				mainWindow.state.transitionFrom(mainWindow);
+				mainWindow.selectWorldPanel = new SelectAWorld(new WorldSelectionCallback() {
+					@Override public void worldSelected(final World world) {
+						// Consider this a state transition. Whilst appearing in transitionTo, remember
+						// this isn't actually called until after the transition since that must occur
+						// before the user can do anything.
+						mainWindow.tempWorld = world;
+						if (!(mainWindow.playGame() ) ) {
+							// This really shouldn't happen.
+							LOGGER.warning("Expected to start game but could not: preconditions for state transition not satisfied");
+						}
+						
+					}
+				});
+				
+				mainWindow.add(mainWindow.selectWorldPanel);
+				mainWindow.selectWorldPanel.setVisible(true);
+				mainWindow.pack();
+				// Required because otherwise the main menu will bleed through.
+				mainWindow.repaint();
+				mainWindow.state = this;
+				
+				return true;
+			}
+			
+			@Override protected void transitionFrom(MainWindow mainWindow) {
+				mainWindow.remove(mainWindow.selectWorldPanel);
+				mainWindow.selectWorldPanel.setFocusable(false);
+				// nothing to dispose, just null the reference for garbage collection.
+				mainWindow.selectWorldPanel = null;
+			}
+		},
+		// Before changing to this state, tempWorld must be set.
 		PLAYING_WINDOWED {
 			@Override public boolean transitionTo(final MainWindow mainWindow) {
-				World userWorld = loadCustomWorld(mainWindow);
-				if (userWorld == null)  return false;
+				if (mainWindow.tempWorld == null)  return false;
 
 				
 				mainWindow.state.transitionFrom(mainWindow);
@@ -197,7 +206,10 @@ public final class MainWindow extends JFrame {
 					GamePanel.newGamePanel(mainWindow.currentKeyListener, 
 										   KeySettings.getBindings(),
 										   GameEndCallbacks.singleCallback(mainWindow.resetCallback), 
-										   userWorld);
+										   mainWindow.tempWorld);
+				
+				// Ensure that keyboard events get focus for the listener
+				mainWindow.requestFocusInWindow();
 				
 				// Must add to both.
 				mainWindow.addKeyListener(mainWindow.currentKeyListener);
@@ -224,20 +236,21 @@ public final class MainWindow extends JFrame {
 		},
 		PLAYING_FULLSCREEN {
 			@Override public boolean transitionTo(MainWindow mainWindow) {
-				World userWorld = loadCustomWorld(mainWindow);
-				if (userWorld == null)  return false;
+				if (mainWindow.tempWorld == null)  return false;
 				
 				GameFullscreenWindow fullscreen = new GameFullscreenWindow(new KeyboardInput(), 
 																		   KeySettings.getBindings(),
 																		   mainWindow.resetCallback,
-																		   userWorld);
-				
+																		   mainWindow.tempWorld);
 				
 				if (fullscreen.start() ) {
 					// Fullscreen should only have one active window
 					mainWindow.state.transitionFrom(mainWindow);
 					mainWindow.setVisible(false);
 					mainWindow.setIgnoreRepaint(true);
+					// Ensure that keyboard events get focus for the listener
+					mainWindow.requestFocusInWindow();
+					
 					mainWindow.state = this;
 					return true;
 				} else {
