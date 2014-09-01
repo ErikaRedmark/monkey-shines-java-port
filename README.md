@@ -9,7 +9,7 @@ To just start playing the game and using the level editor, jump to the wiki: htt
 
 There are two main points of entry in the code:
 - LevelEditor: This class starts the Level Editor. Both the main game and level editor share the same basic engine. The best way to start is to create a new world and use the default resource pack. This default pack is basically a subset rip of the original game's 'Spooked'. 
-- MonkeyShines: This class allows you to start the actual game. It should open a file chooser from which you can select a .world file (this file chooser is temporary and easy way to just playtest worlds). You can find a debug world in the 'extras' folder at the root of this project.
+- MonkeyShines: This class allows you to start the actual game. At this time the menu systems are mostly functional and should be easy to get started.
 
 # Status
 Project tracking now moved to issue tracking instead of a task list since the majour core components have been finished.
