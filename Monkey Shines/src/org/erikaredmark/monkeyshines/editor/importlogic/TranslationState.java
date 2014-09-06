@@ -1,10 +1,11 @@
 package org.erikaredmark.monkeyshines.editor.importlogic;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TreeSet;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
+import org.erikaredmark.monkeyshines.Goodie;
 
 /**
  * 
@@ -18,7 +19,7 @@ import com.google.common.collect.Multimaps;
  */
 class TranslationState {
 
-	Multimap<Integer, Integer> ppatToLevelId = HashMultimap.create();
+	Map<Integer, Integer> levelIdToPpat = new HashMap<>();
 	TreeSet<Integer> ppats = new TreeSet<>();
 	
 	/** Constructs the object with default state. */
@@ -26,16 +27,16 @@ class TranslationState {
 	
 	/**
 	 * 
-	 * Indicates that the given ppat id is used for the given level. ppat resources are not always sequentially
+	 * Indicates that the given level id uses the given ppat id. ppat resources are not always sequentially
 	 * numbered so cannot easily be converted into a 0 origin ID for the pattern resources in this new version.
-	 * 
-	 * @param ppat
 	 * 
 	 * @param levelId
 	 * 
+	 * @param ppat
+	 * 
 	 */
-	void addPpatMapping(int ppat, int levelId) {
-		ppatToLevelId.put(ppat, levelId);
+	void addPpatMapping(int levelId, int ppat) {
+		levelIdToPpat.put(levelId, ppat);
 		ppats.add(ppat);
 	}
 	
@@ -44,36 +45,52 @@ class TranslationState {
 	 * Returns an unmodifiable view of the mapping ppat and the level ids they appear in
 	 * 
 	 */
-	Multimap<Integer, Integer> getPpatToLevelId() {
-		return Multimaps.unmodifiableMultimap(ppatToLevelId);
+	Map<Integer, Integer> getLevelIdToPpat() {
+		return Collections.unmodifiableMap(levelIdToPpat);
 	}
 	
 	/**
 	 * 
-	 * Generates an array between the resource id for a pattern in the resource pack, and a ppat
-	 * number. The size of this array is however many unique ppat
-	 * resources were found. Between this mapping and the ppatToLevelId map, it should be possible
-	 * to assign the proper pattern background to each level. This method should be called after
-	 * parsing every possible level in the world with this state object.
-	 * <p/>
-	 * Each index in the array corresponds to the pattern resource id. The value of the array is the
-	 * ppat resource id. Because of this, it is critical that the resource pack for the port have the
-	 * patterns ordered with the 0th pattern being the lowest numbered ResEdit pattern, up to the nth
-	 * pattern being the highest numbered ResEdit pattern.
-	 * 
-	 * @return
-	 * 		array with index being resource id and value being ppat id.
+	 * generates a mapping of all the ppats in all the levels to the resource id they belong to
+	 * in the resource pack
 	 * 
 	 */
-	int[] patternToPpat() {
+	Map<Integer, Integer> ppatToPatternId() {
 		Integer[] raw = ppats.toArray(new Integer[ppats.size()]);
-		// Convert to primitive form
-		int[] pTp = new int[raw.length];
-		for (int i = 0; i < raw.length; ++i) {
-			pTp[i] = raw[i];
+		// The array is basically the opposite of what we want (index is id in resource pack, value is ppat)
+		Map<Integer, Integer> ppatToPatternId = new HashMap<>();
+		for (int rsrcId = 0; rsrcId < raw.length; ++rsrcId) {
+			ppatToPatternId.put(raw[rsrcId], rsrcId);
 		}
 		
-		return pTp;
+		return ppatToPatternId;
+	}
+
+	/**
+	 * 
+	 * Adds the given type of goodie to the world at the given levelId, 
+	 * 
+	 * @param row
+	 * 
+	 * @param col
+	 * 
+	 * @param type
+	 * 
+	 */
+	public void addGoodie(int levelId, int row, int col, int type) {
+		// TODO method stub
+	}
+
+	/**
+	 * 
+	 * Generates the requested mapping required for the world object based on all goodies added to
+	 * the levels.
+	 * 
+	 * @return
+	 */
+	public Map<String, Goodie> generateGoodieMap() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }

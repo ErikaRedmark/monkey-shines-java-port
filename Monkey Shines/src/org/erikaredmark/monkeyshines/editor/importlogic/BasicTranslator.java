@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,8 +18,6 @@ import org.erikaredmark.monkeyshines.editor.importlogic.WorldTranslationExceptio
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.resource.WorldResource.UseIntent;
-
-import com.google.common.collect.Multimap;
 
 /**
  * 
@@ -145,6 +144,9 @@ public final class BasicTranslator {
 		if (worldFile == null)  throw new WorldTranslationException(TranslationFailure.TRANSLATOR_SPECIFIC, "Missing .wrld file");
 		if (resourcePackFile == null)  throw new WorldTranslationException(TranslationFailure.TRANSLATOR_SPECIFIC, "Missing resource pack");
 		
+		final String worldFileName = worldFile.getFileName().toString();
+		final String worldName = worldFileName.substring(0, worldFileName.lastIndexOf('.') );
+		
 		LOGGER.info("Data files ready: Beginning translation");
 		// We first need the resource pack, since certain level data can only be determined to be valid 
 		// by looking at how many graphics resources are defined.
@@ -176,7 +178,7 @@ public final class BasicTranslator {
 		// Now handle total world data.
 		World world = null;
 		try (InputStream is = Files.newInputStream(worldFile) ) {
-			world = RsrcWrLdTranslator.translateWorld(is, levels, translationState);
+			world = RsrcWrLdTranslator.translateWorld(is, levels, rsrc, worldName, translationState);
 			LOGGER.info(CLASS_NAME + ": Parsed world information");
 		}
 		
@@ -184,11 +186,17 @@ public final class BasicTranslator {
 		
 		// Finally, that whole translation state thing. We need it to assign ppat backgrounds
 		// properly
-		Multimap<Integer, Integer> ppatToLevelId = translationState.getPpatToLevelId();
-		int[] ppats = translationState.patternToPpat();
-		// TODO figure this out. Probably need to redo int array to be map ppatToPatternId for ease of use.
+		Map<Integer, Integer> levelIdToPpat = translationState.getLevelIdToPpat();
+		Map<Integer, Integer> ppatToResourceId = translationState.ppatToPatternId();
 		
-		// TODO stub
-		return null;
+		for (LevelScreen level : levels) {
+			// All original MS levels used patterned backgrounds. Spooked is so far the only
+			// exception where it can be represented as a solid colour.
+			Integer ppat = levelIdToPpat.get(level.getId() );
+			level.setBackground(rsrc.getPattern(ppatToResourceId.get(ppat) ) );
+		}
+		
+		// World data has been set, all levels have been set, it's ready.
+		return world;
 	}
 }

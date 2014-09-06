@@ -18,7 +18,7 @@ public class RsrcPlvlTranslator {
 	/**
 	 * 
 	 * Translates the given stream for a {@code LevelScreen}. the stream pointer is advanced
-	 * 122 bytes (which it must have at least that much of or an exception will be thrown)
+	 * 1980 bytes (which it must have at least that much of or an exception will be thrown)
 	 * 
 	 * @param is
 	 * 		.plvl stream only
