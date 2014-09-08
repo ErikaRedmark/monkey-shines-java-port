@@ -337,9 +337,7 @@ public final class LevelScreen {
 	 * 
 	 * @param tileY y location, terms of grid, not pixels.
 	 * 
-	 * @param tileType Whether this is a Solid, Thru, or scenery tile.
-	 * 
-	 * @param tileId  the ID of the tile, which is basically the graphic to use when rendering.
+	 * @param tileType type of tile, determins type and rendering info
 	 * 
 	 * @throws 
 	 * 		IllegalArgumentException
@@ -348,11 +346,11 @@ public final class LevelScreen {
 	 * 			if the screen has not been skinned yet. Tiles can not be added until there is a graphics
 	 * 			resource ready
 	 */
-	public void setTile(int tileX, int tileY, TileType tileType, int tileId) {
+	public void setTile(int tileX, int tileY, TileType tileType) {
 		if (tileX > 31 || tileX < 0) throw new IllegalArgumentException(tileX + " outside of X range [0, 31]");
 		if (tileY > 20 || tileY < 0) throw new IllegalArgumentException(tileY + " outside of Y range [0, 19]");
 		
-		screenTiles[tileY][tileX] = Tile.newTile(ImmutablePoint2D.of(tileX, tileY), tileId, tileType, rsrc);
+		screenTiles[tileY][tileX] = Tile.newTile(ImmutablePoint2D.of(tileX, tileY), tileType, rsrc);
 	}
 	
 	/**

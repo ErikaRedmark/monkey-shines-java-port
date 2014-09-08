@@ -549,8 +549,7 @@ public final class EncodedWorld {
 		TileType resultType = protoToTileType(protoTile.getType(), protoTile, rsrc, hazards, conveyers);
 		return   resultType == null
 			   ? Tile.emptyTile()
-			   : Tile.newTile(protoToPoint(protoTile.getLocation() ), 
-							  protoTile.getId(), 
+			   : Tile.newTile(protoToPoint(protoTile.getLocation() ),
 							  resultType, 
 							  rsrc);
 	}

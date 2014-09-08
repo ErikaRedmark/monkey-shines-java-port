@@ -61,7 +61,7 @@ public class RsrcWrLdTranslator {
 	 * 
 	 */
 	public static World translateWorld(InputStream is, List<LevelScreen> levels, WorldResource rsrc, String name, TranslationState translationState) 
-									       throws WorldTranslationException, IOException{
+									       throws WorldTranslationException, IOException {
 
 		// Skip first 8 bytes (4 shorts). We only care about the bonus door level.
 		long skipped = is.skip(8L);
@@ -71,20 +71,20 @@ public class RsrcWrLdTranslator {
 		int bonusRead = is.read(bonusLevel);
 		if (bonusRead != 2)  throw new WorldTranslationException(TranslationFailure.WRONG_WORLD_SIZE, "Failure to read bonus level data");
 		
-		int bonusScreen = TranslationUtil.readMacShort(bonusLevel);
+		int bonusScreen = TranslationUtil.translateMacShort(bonusLevel);
 
 		// Generate hazards (combines WrLd data with graphics resource)
 		byte[] hazardTypesRaw = new byte[32]; // 16 shorts
 		int hazardTypesRead = is.read(hazardTypesRaw);
 		if (hazardTypesRead != 32)  throw new WorldTranslationException(TranslationFailure.WRONG_WORLD_SIZE, "Failure to read hazard types");
 		
-		int[] hazardTypes = TranslationUtil.readMacShortArray(hazardTypesRaw);
+		int[] hazardTypes = TranslationUtil.translateMacShortArray(hazardTypesRaw);
 		
 		byte[] hazardExplodesRaw = new byte[16];
 		int hazardExplodesRead = is.read(hazardExplodesRaw);
 		if (hazardExplodesRead != 16)  throw new WorldTranslationException(TranslationFailure.WRONG_WORLD_SIZE, "Failure to read hazard explode info");
 		
-		boolean[] hazardExplodes = TranslationUtil.readMacBooleanArray(hazardExplodesRaw);
+		boolean[] hazardExplodes = TranslationUtil.translateMacBooleanArray(hazardExplodesRaw);
 		
 		List<Hazard> hazards = new ArrayList<>();
 		// For loop has early termination if hazardTypes is zero at any point.

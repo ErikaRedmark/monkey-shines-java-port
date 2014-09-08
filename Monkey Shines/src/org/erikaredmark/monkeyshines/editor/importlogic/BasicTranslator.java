@@ -169,7 +169,7 @@ public final class BasicTranslator {
 				// Should succeed given the check for only numbers.
 				int id = Integer.valueOf(m.group(1));
 				
-				LevelScreen next = RsrcPlvlTranslator.translateLevel(is, id, translationState);
+				LevelScreen next = RsrcPlvlTranslator.translateLevel(is, id, rsrc, translationState);
 				levels.add(next);
 				LOGGER.info(CLASS_NAME + ": Parsed level " + id);
 			}

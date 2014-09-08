@@ -1,10 +1,13 @@
 package org.erikaredmark.monkeyshines.editor.importlogic;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
 import org.erikaredmark.monkeyshines.DeathAnimation;
+import org.erikaredmark.monkeyshines.editor.importlogic.WorldTranslationException.TranslationFailure;
 
 /**
  * 
@@ -34,7 +37,7 @@ public final class TranslationUtil {
 	 * 		if the byte array is not exactly 2 bytes
 	 * 
 	 */
-	public static int readMacShort(byte[] macShort) {
+	public static int translateMacShort(byte[] macShort) {
 		if (macShort.length != 2)  throw new IllegalArgumentException("Can not interpret " + Arrays.toString(macShort) + " as a short: must be exactly 2 bytes, not " + macShort.length);
 		
 		ByteBuffer buffer = ByteBuffer.allocate(2);
@@ -55,7 +58,7 @@ public final class TranslationUtil {
 	 * 		Java int array of the values interpretted
 	 * 
 	 */
-	public static int[] readMacShortArray(byte[] shorts) {
+	public static int[] translateMacShortArray(byte[] shorts) {
 		ByteBuffer buffer = ByteBuffer.allocate(shorts.length);
 		buffer.order(ByteOrder.LITTLE_ENDIAN);
 		buffer.put(shorts);
@@ -83,7 +86,7 @@ public final class TranslationUtil {
 	 * 		if bool is neither 0 nor 1
 	 * 
 	 */
-	public static boolean readMacBoolean(byte bool) {
+	public static boolean translateMacBoolean(byte bool) {
 		switch (bool) {
 		case (byte)0:
 			return false;
@@ -106,10 +109,10 @@ public final class TranslationUtil {
 	 * 		java intepreted booleans
 	 * 
 	 */
-	public static boolean[] readMacBooleanArray(byte[] bools) {
+	public static boolean[] translateMacBooleanArray(byte[] bools) {
 		boolean[] returnBools = new boolean[bools.length];
 		for (int i = 0; i < bools.length; ++i) {
-			returnBools[i] = readMacBoolean(bools[i]);
+			returnBools[i] = translateMacBoolean(bools[i]);
 		}
 		return returnBools;
 	}
@@ -139,6 +142,97 @@ public final class TranslationUtil {
 		case 2: return DeathAnimation.ELECTRIC;
 		default: throw new IllegalArgumentException("Death type " + type + " not supported");
 		}
+	}
+	
+	/**
+	 * 
+	 * Skips the given number of bytes in the input stream, automatically translating the inability to skip
+	 * into an {@code WorldTranslationException} that is intended for the client that passed the stream in the
+	 * first place.
+	 * 
+	 * @param is
+	 * 
+	 * @param skipBytes
+	 * 
+	 * @param ifFail
+	 * 
+	 * @param msg
+	 * 		if the skip fails, the message to display
+	 * 
+	 * @throws IOException
+	 * 		if an unknown error prevents skipping
+	 * 
+	 */
+	public static void skip(InputStream is, long skipBytes, TranslationFailure ifFail, String msg) throws IOException, WorldTranslationException {
+		long skipped = is.skip(skipBytes);
+		if (skipped != 8L)  throw new WorldTranslationException(ifFail, msg);
+	}
+	
+	/**
+	 * 
+	 * Reads the given number of bytes in the input stream, automatically translating the inability to read
+	 * into an {@code WorldTranslationException} that is intended for the client that passed the stream in the
+	 * first place.
+	 * 
+	 * @param is
+	 * 
+	 * @param read
+	 * 
+	 * @param ifFail
+	 * 
+	 * @param msg
+	 * 		if the skip fails, the message to display
+	 * 
+	 * @throws IOException
+	 * 		if an unknown error prevents skipping
+	 * 
+	 */
+	public static void read(InputStream is, byte[] read, TranslationFailure ifFail, String msg) throws IOException, WorldTranslationException {
+		int bytesRead = is.read(read);
+		if (bytesRead != read.length)  throw new WorldTranslationException(ifFail, msg);
+	}
+	
+	/**
+	 * Reads a mac short from the stream. This is effectively reading 2 bytes from the stream and then converting
+	 * the result using {@code translateMacShort}. The translation failure info is provided in case reading the
+	 * stream fails for any reason. The info should include the type of data that was being read.
+	 */
+	public static int readMacShort(InputStream is, TranslationFailure ifFail, String msg) throws IOException, WorldTranslationException {
+		byte[] raw = new byte[2];
+		read(is, raw, ifFail, msg);
+		return translateMacShort(raw);
+	}
+	
+	/**
+	 * Reads an array of shorts, similiar to {@code readMacShort} but for a consecutive amount of them. See javadocs
+	 * for that method for explanation of other parameters
+	 */
+	public static int[] readMacShortArray(InputStream is, int size, TranslationFailure ifFail, String msg) throws IOException, WorldTranslationException {
+		byte[] raw = new byte[size * 2];
+		read(is, raw, ifFail, msg);
+		return translateMacShortArray(raw);
+	}
+	
+	/**
+	 * Reads a mac boolean from the stream. This effectively reads 1 byte from the stream, and converts the result
+	 * using {@code translateMacBoolean}. The translation failure info is provided in case reading the
+	 * stream fails for any reason. The info should include the type of data that was being read.
+	 */
+	public static boolean readMacBoolean(InputStream is, TranslationFailure ifFail, String msg) throws IOException, WorldTranslationException {
+		// Using array version to re-use existing code.
+		byte[] raw = new byte[1];
+		read(is, raw, ifFail, msg);
+		return translateMacBoolean(raw[0]);
+	}
+	
+	/**
+	 * Reads an array of booleans, similiar to {@code readMacBoolean} but for a consecutive amount of them. See javadocs
+	 * for that method for explanation of other parameters
+	 */
+	public static boolean[] readMacBooleanArray(InputStream is, int size, TranslationFailure ifFail, String msg) throws IOException, WorldTranslationException {
+		byte[] raw = new byte[size];
+		read(is, raw, ifFail, msg);
+		return translateMacBooleanArray(raw);
 	}
 	
 }

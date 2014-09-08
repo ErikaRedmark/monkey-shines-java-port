@@ -33,8 +33,8 @@ public class LevelScreenEditor {
 	/**
 	 *  Forwards call to the wrapped {@link LevelScreen}
 	 */
-	public void setTile(int tileX, int tileY, TileType tileType, int tileId) {
-		this.screen.setTile(tileX, tileY, tileType, tileId);
+	public void setTile(int tileX, int tileY, TileType tileType) {
+		this.screen.setTile(tileX, tileY, tileType);
 	}
 	
 	/**

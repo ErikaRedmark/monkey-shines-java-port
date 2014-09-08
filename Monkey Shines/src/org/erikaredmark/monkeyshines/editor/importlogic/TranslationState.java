@@ -4,8 +4,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 
 import org.erikaredmark.monkeyshines.Goodie;
+import org.erikaredmark.monkeyshines.World;
 
 /**
  * 
@@ -18,9 +20,12 @@ import org.erikaredmark.monkeyshines.Goodie;
  *
  */
 class TranslationState {
+	private static final String CLASS_NAME = "org.erikaredmark.monkeyshines.editor.importlogic.TranslationState";
+	private static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
 
 	Map<Integer, Integer> levelIdToPpat = new HashMap<>();
 	TreeSet<Integer> ppats = new TreeSet<>();
+	Map<String, Goodie> goodieMap = new HashMap<String, Goodie>();
 	
 	/** Constructs the object with default state. */
 	TranslationState() { }
@@ -68,17 +73,15 @@ class TranslationState {
 
 	/**
 	 * 
-	 * Adds the given type of goodie to the world at the given levelId, 
-	 * 
-	 * @param row
-	 * 
-	 * @param col
-	 * 
-	 * @param type
+	 * Adds the given type of goodie to the world.
 	 * 
 	 */
-	public void addGoodie(int levelId, int row, int col, int type) {
-		// TODO method stub
+	public void addGoodie(Goodie goodie) {
+		String checker = World.collisionCheckerForGoodie(goodie.getLocation().x(), goodie.getLocation().y(), goodie.getScreenID() );
+		if (goodieMap.containsKey(checker) ) {
+			LOGGER.warning(CLASS_NAME + ": Overlapping goodie check: " + checker + ". The goodie that is being skipped is " + goodie);
+		}
+		goodieMap.put(checker, goodie);
 	}
 
 	/**
@@ -86,11 +89,9 @@ class TranslationState {
 	 * Generates the requested mapping required for the world object based on all goodies added to
 	 * the levels.
 	 * 
-	 * @return
 	 */
 	public Map<String, Goodie> generateGoodieMap() {
-		// TODO Auto-generated method stub
-		return null;
+		return goodieMap;
 	}
 	
 }

@@ -216,8 +216,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		currentScreenEditor.setTile(
 				mouseX / GameConstants.TILE_SIZE_X,
 				mouseY / GameConstants.TILE_SIZE_Y,
-				paintbrush2TileType(currentTileType),
-				currentTileId);
+				paintbrush2TileType(currentTileType) );
 	}
 	
 	/**
@@ -233,8 +232,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		
 		currentScreenEditor.setTile(mouseX / GameConstants.TILE_SIZE_X,
 									mouseY / GameConstants.TILE_SIZE_Y,
-									HazardTile.forHazard(currentHazard),
-									currentTileId);
+									HazardTile.forHazard(currentHazard) );
 	}
 	
 	/**

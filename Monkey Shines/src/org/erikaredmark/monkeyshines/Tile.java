@@ -25,7 +25,7 @@ public class Tile {
 	private final WorldResource rsrc;
 	
 	// Only tile without a world resource, since nothing is ever drawn.
-	private static final Tile NO_TILE = new Tile(ImmutablePoint2D.of(0, 0), 0, CommonTile.NONE, null);
+	private static final Tile NO_TILE = new Tile(ImmutablePoint2D.of(0, 0), CommonTile.NONE, null);
 	
 	/**
 	 * 
@@ -34,7 +34,7 @@ public class Tile {
 	 * anyway. Hence it is possible to use a singleton for empty tiles.
 	 * 
 	 */
-	private Tile(final ImmutablePoint2D point, final int tileId, final TileType type, final WorldResource rsrc) {
+	private Tile(final ImmutablePoint2D point, final TileType type, final WorldResource rsrc) {
 		this.tileX = point.x() * GameConstants.TILE_SIZE_X;
 		this.tileY = point.y() * GameConstants.TILE_SIZE_X;
 
@@ -79,8 +79,8 @@ public class Tile {
 	 * 		a newly created tile with the given properties. The tile is already skinned and ready to be drawn
 	 * 
 	 */
-	public static Tile newTile(ImmutablePoint2D location, int id, TileType tileType, WorldResource rsrc) {
-		return new Tile(location, id, tileType, rsrc);
+	public static Tile newTile(ImmutablePoint2D location, TileType tileType, WorldResource rsrc) {
+		return new Tile(location, tileType, rsrc);
 	}
 
 	/** 
@@ -94,8 +94,8 @@ public class Tile {
 	 */
 	public static Tile[][] createBlankTileMap() {
 		Tile[][] tiles = new Tile[20][32];
-		for (int i = 0; i < 20; i++) {
-			for (int j = 0; j < 32; j++) {
+		for (int i = 0; i < 20; ++i) {
+			for (int j = 0; j < 32; ++j) {
 				tiles[i][j] = NO_TILE;
 			}
 		}
