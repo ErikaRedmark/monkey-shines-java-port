@@ -110,13 +110,18 @@ public class RsrcWrLdTranslator {
 			levelsMap.put(lvl.getId(), lvl);
 		}
 		
-		return new World(name,
-						 translationState.generateGoodieMap(),
-						 levelsMap,
-						 hazards,
-						 conveyers,
-						 bonusScreen,
-						 rsrc);
+		World theWorld = new World(name,
+								   translationState.generateGoodieMap(),
+								   levelsMap,
+								   hazards,
+								   conveyers,
+								   bonusScreen,
+								   rsrc);
+		
+		// REQUIRED: Some level data has placeholders (see docs on PlaceholderTile)
+		theWorld.fixPlaceholders();
+		
+		return theWorld;
 	}
 
 }

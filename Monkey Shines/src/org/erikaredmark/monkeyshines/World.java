@@ -17,7 +17,9 @@ import org.erikaredmark.monkeyshines.Sprite.SpriteType;
 import org.erikaredmark.monkeyshines.bounds.Boundable;
 import org.erikaredmark.monkeyshines.bounds.IPoint2D;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
+import org.erikaredmark.monkeyshines.tiles.ConveyerTile;
 import org.erikaredmark.monkeyshines.tiles.HazardTile;
+import org.erikaredmark.monkeyshines.tiles.PlaceholderTile;
 import org.erikaredmark.monkeyshines.tiles.TileType;
 import org.erikaredmark.util.collection.RingArray;
 
@@ -854,6 +856,51 @@ public class World {
 	public void setHazards(List<Hazard> newHazards) {
 		this.hazards.clear();
 		this.hazards.addAll(newHazards);
+	}
+	
+	/**
+	 * 
+	 * <strong> only intended for use by translation utilities for original Monkey Shines file format </strong>
+	 * <p/>
+	 * Goes through every level in the world, and for each placeholder tile replaces it with a real version. Please
+	 * read the docs on {@code PlaceholderTile} for an explanation of why this is used. This is an expensive operation
+	 * and should be done only when the hazards and conveyer lists are finalised, and all the level data has been
+	 * added.
+	 * <p/>
+	 * At the conclusion of this method, the world will have no more placeholder tiles in any of its levels.
+	 * 
+	 */
+	public void fixPlaceholders() {
+		for (LevelScreen lvl : worldScreens.values() ) {
+			Tile[][] map = lvl.screenTiles;
+			for (int i = 0; i < GameConstants.TILES_IN_COL; ++i) {
+				for (int j = 0; j < GameConstants.TILES_IN_ROW; ++j) {
+					if (map[i][j].getType() instanceof PlaceholderTile) {
+						int metadata = ((PlaceholderTile)map[i][j].getType() ).getMetaId();
+						PlaceholderTile.Type type = ((PlaceholderTile)map[i][j].getType() ).getType();
+						switch (type) {
+						case HAZARD:
+							map[i][j] = map[i][j].copyChangeType(HazardTile.forHazard(this.hazards.get(metadata) ) );
+							break;
+						case CONVEYER_ANTI_CLOCKWISE:
+						{
+							int index = (metadata * 2) + 1;
+							map[i][j] = map[i][j].copyChangeType(new ConveyerTile(this.conveyers.get(index) ) );
+							break;
+						}
+						case CONVEYER_CLOCKWISE: 
+						{
+							int index = (metadata * 2);
+							map[i][j] = map[i][j].copyChangeType(new ConveyerTile(this.conveyers.get(index) ) );
+							break;
+						}
+						default:
+							throw new RuntimeException("Unknown enumeration " + type + " for fixing placeholders");
+						}
+					}
+				}
+			}
+		}
 	}
 	
 	/***************

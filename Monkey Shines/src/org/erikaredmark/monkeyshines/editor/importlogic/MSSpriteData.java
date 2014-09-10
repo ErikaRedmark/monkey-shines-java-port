@@ -253,8 +253,14 @@ final class MSSpriteData {
 	SpriteType getSpriteType() {
 		if ( (flags & FLAG_KILLS) == 1) {
 			return SpriteType.NORMAL;
+		// original game ALWAYs had 0 be the bonus door, and 1 be the exit door. The editor manual
+		// even advised not to change this. So, we can easily determine the bonus and exit doors
+		// We check the kill flag first in case some crazy person made a door that kills.
+		} else if (id == 0) {
+			return SpriteType.BONUS_DOOR;
+		} else if (id == 1) {
+			return SpriteType.EXIT_DOOR;
 		} else {
-			// TODO add more types are analysis completes
 			return SpriteType.HEALTH_DRAIN;
 		}
 	}

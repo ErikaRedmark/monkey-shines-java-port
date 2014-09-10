@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.erikaredmark.monkeyshines.Conveyer;
 import org.erikaredmark.monkeyshines.Goodie;
 import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.LevelScreen;
@@ -14,8 +15,10 @@ import org.erikaredmark.monkeyshines.Tile;
 import org.erikaredmark.monkeyshines.background.SingleColorBackground;
 import org.erikaredmark.monkeyshines.editor.importlogic.WorldTranslationException.TranslationFailure;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
+import org.erikaredmark.monkeyshines.tiles.CollapsibleTile;
 import org.erikaredmark.monkeyshines.tiles.CommonTile;
 import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
+import org.erikaredmark.monkeyshines.tiles.PlaceholderTile;
 import org.erikaredmark.monkeyshines.tiles.TileType;
 
 /**
@@ -143,26 +146,35 @@ public class RsrcPlvlTranslator {
 	/**
 	 * 
 	 * Translate raw level data taken from .plvl into a valid tile type.
+	 * Hazards and conveyers cannot be set now because the entire world must be parsed first before
+	 * they are generated. {@code PlaceholderTile} instances may be returned, with enough metadata to eventually be changed.
 	 * 
 	 */
-	private static Tile translateToTile(int data, int row, int col, WorldResource rsrc) {
+	private static Tile translateToTile(int data, int row, int col, WorldResource rsrc)  throws WorldTranslationException {
 		if (data == 0)  return Tile.emptyTile();
 		TileType type = null;
-		// 1 - 32
-		if (data <= 32) {
+		if (data <= 0x0020) {
 			type = CommonTile.of(data, StatelessTileType.SOLID, rsrc);
-			
-		// 33 - 64
-		} else if (data <= 64) {
+		} else if (data <= 0x0050) {
 			type = CommonTile.of(data - 33 , StatelessTileType.THRU, rsrc);
-			
-		// 65 - 96?
-		} else if (data <= 96) {
+		} else if (data <= 0x0090) {
 			type = CommonTile.of(data - 65, StatelessTileType.SCENE, rsrc);
-			
-		// TODO handle other types
+		} else if (data <= 0x00A0) {
+			type = PlaceholderTile.hazard(data - 0x00A0);
+		} else if (data == 0x00A1) {
+			type = PlaceholderTile.conveyer(0, Conveyer.Rotation.ANTI_CLOCKWISE);
+		} else if (data == 0x00A2) {
+			type = PlaceholderTile.conveyer(1, Conveyer.Rotation.ANTI_CLOCKWISE);
+		} else if (data == 0x00A9) {
+			type = PlaceholderTile.conveyer(0, Conveyer.Rotation.CLOCKWISE);
+		} else if (data == 0x00AA) {
+			type = PlaceholderTile.conveyer(1, Conveyer.Rotation.CLOCKWISE);
+		} else if (data == 0x00B1) {
+			type = new CollapsibleTile(0);
+		} else if (data == 0x00B2) {
+			type = new CollapsibleTile(1);
 		} else {
-			throw new UnsupportedOperationException("Translator cannot yet handle all tile types");
+			throw new WorldTranslationException(TranslationFailure.TRANSLATOR_SPECIFIC, "Level data contains " + Integer.toHexString(data) + " which is not a known original game level value and maps to no known tiles");
 		}
 		
 		return Tile.newTile(ImmutablePoint2D.of(col, row), 

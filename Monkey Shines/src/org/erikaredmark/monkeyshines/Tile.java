@@ -44,6 +44,31 @@ public class Tile {
 		this.rsrc = rsrc;
 	}
 	
+	/**
+	 * Intended for copy construction; initialises private variables directly.
+	 */
+	private Tile(final int tileX, final int tileY, final TileType type, final WorldResource rsrc) {
+		this.tileX = tileX;
+		this.tileY = tileY;
+		assert type != null :  "Null tile type passed to tile at " + tileX + ", " + tileY;
+		this.type = type;
+		this.rsrc = rsrc;
+	}
+	
+	/**
+	 * 
+	 * Creates a copy of the the current tile but with a different tile type
+	 *
+	 * @param newType
+	 * 
+	 * @return
+	 * 		instance of this object with same properties save the tile type.
+	 * 
+	 */
+	public Tile copyChangeType(TileType newType) {
+		return new Tile(tileX, tileY, newType, rsrc);
+	}
+	
 	public TileType getType() { return this.type; };
 
 	public void paint(Graphics2D g2d) {

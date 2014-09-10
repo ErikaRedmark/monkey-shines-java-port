@@ -32,7 +32,9 @@ public final class LevelScreen {
 	// Initialisation datas for a level screen
 	private final int screenId;
 	private       Background background;
-	private final Tile screenTiles[][]; // 20 rows, 32 cols
+	
+	// Not private: World needs access directly to screenTiles for some algorithms
+	        final Tile screenTiles[][]; // 20 rows, 32 cols
 	// Whilst this is generally final in gameplay, it is left non-final here so it may be modified by the level editor.
 	private       ImmutablePoint2D bonzoStart;
 	private final List<Sprite> spritesOnScreen;
