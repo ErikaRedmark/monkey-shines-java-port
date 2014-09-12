@@ -44,8 +44,20 @@ final class MSSpriteData {
 	private final boolean alwaysFacingLeft;
 	
 	// Bit twiddling for flags
-	private static final int FLAG_TWO_WAY_FACING = 1 << 3;
-	private static final int FLAG_KILLS = 1 << 1;
+	private static final int FLAG_INCREASING_FRAMES = 1;
+	// Second bit is skipped. It has a 1 for cycling frames. No point since a 0 for increasing frames means the same thing
+	private static final int FLAG_SLOW_ANIMATION = 1 << 2;
+	
+	// TODO port does not handle vertical two-set sprites currently. Uncomment when it does.
+	// private static final int FLAG_TWO_WAY_FACING_VERTICAL = 1 << 3;
+	
+	
+	private static final int FLAG_TWO_WAY_FACING_HORIZONTAL = 1 << 4;
+	
+	// Sixth bit is probably unused.
+	// Seventh bit if for door, but ID 0 is always bonus, ID 1 is always exit. This flag is not relevant
+	// 	   and probably wasn't relevant in the original game either.
+	private static final int FLAG_ENERGY_DRAINER = 1 << 7;
 	
 	private MSSpriteData(final ImmutablePoint2D location,
 						 final ImmutablePoint2D minimum,
@@ -88,7 +100,7 @@ final class MSSpriteData {
 		// If the sprite is not always facing right, there is a CHANCE it may
 		// always be facing left based on the flags.
 		if (!(facingRight) ) {
-			if ( (flags & FLAG_TWO_WAY_FACING) == 0 ) {
+			if ( (flags & FLAG_TWO_WAY_FACING_HORIZONTAL) == 0 ) {
 				this.alwaysFacingLeft = true;
 			} else {
 				this.alwaysFacingLeft = false;
@@ -198,6 +210,7 @@ final class MSSpriteData {
 	
 	/**
 	 * Returns the forced direction, if any, of the sprite
+	 * TODO this will have to be augmented to handle vertical flags.
 	 */
 	ForcedDirection getPortDirection() {
 		if (alwaysFacingLeft)  		 return ForcedDirection.LEFT;
@@ -235,15 +248,18 @@ final class MSSpriteData {
 	 * Returns the animation type of the sprite.
 	 */
 	AnimationType getSpriteAnimationType() {
-		// TODO method stub; unknown how to figure out now
-		throw new UnsupportedOperationException("Translator cannot yet handle animation types");
+		return   (flags & FLAG_INCREASING_FRAMES) == 1
+			   ? AnimationType.INCREASING_FRAMES
+			   : AnimationType.CYCLING_FRAMES;
 	}
 	
 	/**
 	 * Returns the animation speed of the sprite
 	 */
 	AnimationSpeed getSpriteAnimationSpeed() {
-		throw new UnsupportedOperationException("Translator cannot yet handle animation speeds");
+		return   (flags & FLAG_SLOW_ANIMATION) == 1
+			   ? AnimationSpeed.SLOW
+			   : AnimationSpeed.NORMAL;
 	}
 	
 	/**
@@ -251,17 +267,17 @@ final class MSSpriteData {
 	 * did not exist in the original game.
 	 */
 	SpriteType getSpriteType() {
-		if ( (flags & FLAG_KILLS) == 1) {
-			return SpriteType.NORMAL;
 		// original game ALWAYs had 0 be the bonus door, and 1 be the exit door. The editor manual
 		// even advised not to change this. So, we can easily determine the bonus and exit doors
-		// We check the kill flag first in case some crazy person made a door that kills.
-		} else if (id == 0) {
+		// We check doors first so that a level always has doors.
+		if (id == 0) {
 			return SpriteType.BONUS_DOOR;
 		} else if (id == 1) {
 			return SpriteType.EXIT_DOOR;
 		} else {
-			return SpriteType.HEALTH_DRAIN;
+			return   (flags & FLAG_ENERGY_DRAINER) == 1
+				   ? SpriteType.HEALTH_DRAIN
+				   : SpriteType.NORMAL;
 		}
 	}
 }
