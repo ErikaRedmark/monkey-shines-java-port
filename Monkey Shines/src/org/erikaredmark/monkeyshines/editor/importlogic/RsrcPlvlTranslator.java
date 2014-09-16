@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.erikaredmark.monkeyshines.Conveyer;
 import org.erikaredmark.monkeyshines.Goodie;
@@ -31,7 +32,8 @@ import org.erikaredmark.monkeyshines.tiles.TileType;
  *
  */
 public class RsrcPlvlTranslator {
-
+	private static final String CLASS_NAME = "org.erikaredmark.monkeyshines.editor.importlogic.RsrcPlvlTranslator";
+	private static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
 	/**
 	 * 
 	 * Translates the given stream for a {@code LevelScreen}. the stream pointer is advanced
@@ -64,6 +66,7 @@ public class RsrcPlvlTranslator {
 	 * 
 	 */
 	public static LevelScreen translateLevel(InputStream is, int id, WorldResource rsrc, TranslationState translationState) throws WorldTranslationException, IOException {
+		LOGGER.info(CLASS_NAME + ": Beginning Translation of level " + id);
 		// Just to ease on the typing for this method.
 		final TranslationFailure FAIL = TranslationFailure.WRONG_LEVEL_SIZE;
 		
@@ -90,6 +93,8 @@ public class RsrcPlvlTranslator {
 		int ppat = TranslationUtil.readMacShort(is, FAIL, "Could not read ppat id");
 		
 		// ----------- Done reading stream. Time to interpret data ------------
+		LOGGER.info(CLASS_NAME + ": Stream reading done. Beginning data interpretation starting with sprites");
+		
 		// Sprites
 		List<Sprite> spritesOnScreen = new ArrayList<>(spriteCount);
 		for (MSSpriteData spriteData : sprites) {
@@ -106,6 +111,7 @@ public class RsrcPlvlTranslator {
 		}
 		
 		// Level
+		LOGGER.info(CLASS_NAME + ": Reading tile data");
 		Tile[][] tiles = new Tile[20][32];
 		// This is kinda thrashing the cache, but the raw level data from the .plvl resource
 		// IS stored on a column by column basis.
@@ -118,6 +124,8 @@ public class RsrcPlvlTranslator {
 		}
 		
 		// ------------------- Add to translation state, goodies and ppat
+		// Goodies are also stored in tile data... but I discovered that after I wrote this. Should give the same
+		// results anyway.
 		for (MSSpriteData goodie : goodies) {
 			ImmutablePoint2D location = 
 				ImmutablePoint2D.of(goodie.location.x() / 20, (goodie.location.y() - 80) / 20);
@@ -152,15 +160,16 @@ public class RsrcPlvlTranslator {
 	 */
 	private static Tile translateToTile(int data, int row, int col, WorldResource rsrc)  throws WorldTranslationException {
 		if (data == 0)  return Tile.emptyTile();
+		
 		TileType type = null;
 		if (data <= 0x0020) {
 			type = CommonTile.of(data, StatelessTileType.SOLID, rsrc);
 		} else if (data <= 0x0050) {
-			type = CommonTile.of(data - 33 , StatelessTileType.THRU, rsrc);
+			type = CommonTile.of(data - 0x0021 , StatelessTileType.THRU, rsrc);
 		} else if (data <= 0x0090) {
-			type = CommonTile.of(data - 65, StatelessTileType.SCENE, rsrc);
+			type = CommonTile.of(data - 0x0051, StatelessTileType.SCENE, rsrc);
 		} else if (data <= 0x00A0) {
-			type = PlaceholderTile.hazard(data - 0x00A0);
+			type = PlaceholderTile.hazard(data - 0x0091);
 		} else if (data == 0x00A1) {
 			type = PlaceholderTile.conveyer(0, Conveyer.Rotation.ANTI_CLOCKWISE);
 		} else if (data == 0x00A2) {
@@ -173,6 +182,11 @@ public class RsrcPlvlTranslator {
 			type = new CollapsibleTile(0);
 		} else if (data == 0x00B2) {
 			type = new CollapsibleTile(1);
+		} else if (data >= 0x00C1 && data <= 0x00CF) {
+			// We know what these values mean, we just don't care. Goodie data is stored in two different places and it
+			// matters not which one we read from.
+			LOGGER.fine(CLASS_NAME + ": skipping goodie from tile-data (should be picked up from earlier MSSpriteData array)");
+			return Tile.emptyTile();
 		} else {
 			throw new WorldTranslationException(TranslationFailure.TRANSLATOR_SPECIFIC, "Level data contains " + Integer.toHexString(data) + " which is not a known original game level value and maps to no known tiles");
 		}

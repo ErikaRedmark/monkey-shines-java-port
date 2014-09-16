@@ -59,7 +59,9 @@ import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
  * 
  */
 public final class EncodedWorld {
-
+//	private static final String CLASS_NAME = "org.erikaredmark.monkeyshines.encoder.EncodedWorld";
+//	private static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
+	
 	private final WorldFormatProtos.World world;
 	
 	private EncodedWorld(final WorldFormatProtos.World world) {

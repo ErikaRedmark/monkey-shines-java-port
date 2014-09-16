@@ -41,8 +41,9 @@ public final class TranslationUtil {
 		if (macShort.length != 2)  throw new IllegalArgumentException("Can not interpret " + Arrays.toString(macShort) + " as a short: must be exactly 2 bytes, not " + macShort.length);
 		
 		ByteBuffer buffer = ByteBuffer.allocate(2);
-		buffer.order(ByteOrder.LITTLE_ENDIAN);
+		buffer.order(ByteOrder.BIG_ENDIAN);
 		buffer.put(macShort);
+		buffer.rewind();
 		return buffer.getShort();
 	}
 	
@@ -60,8 +61,9 @@ public final class TranslationUtil {
 	 */
 	public static int[] translateMacShortArray(byte[] shorts) {
 		ByteBuffer buffer = ByteBuffer.allocate(shorts.length);
-		buffer.order(ByteOrder.LITTLE_ENDIAN);
+		buffer.order(ByteOrder.BIG_ENDIAN);
 		buffer.put(shorts);
+		buffer.rewind();
 		
 		int[] returnShorts = new int[shorts.length / 2];
 		for (int i = 0; i < shorts.length / 2; ++i) {
@@ -165,7 +167,7 @@ public final class TranslationUtil {
 	 */
 	public static void skip(InputStream is, long skipBytes, TranslationFailure ifFail, String msg) throws IOException, WorldTranslationException {
 		long skipped = is.skip(skipBytes);
-		if (skipped != 8L)  throw new WorldTranslationException(ifFail, msg);
+		if (skipped != skipBytes)  throw new WorldTranslationException(ifFail, msg);
 	}
 	
 	/**

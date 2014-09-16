@@ -41,6 +41,8 @@ public class PlaceholderTile implements TileType {
     private final Type type;
     
     private PlaceholderTile(final int id, final Type type) {
+    	if (id < 0)  throw new IllegalArgumentException("Id of " + id + " is not valid meta-data");
+    	
     	this.id = id;
     	this.type = type;
     }

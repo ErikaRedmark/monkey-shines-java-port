@@ -30,7 +30,7 @@ public class WorldTranslationException extends Exception {
 	
 	
 	public enum TranslationFailure {
-		WRONG_WORLD_SIZE(".wrld binaries should always be exactly 122 bytes in length"),
+		WRONG_WORLD_SIZE(".wrld binaries shoudd always be exactly 122 bytes in length"),
 		WRONG_LEVEL_SIZE(".plvl binaries shoudl always be exactly 1980 bytes in length"),
 		/** Indicates that the issue is specific the the type of translator, and not to the underlying binary form of the resources. */
 		TRANSLATOR_SPECIFIC("");

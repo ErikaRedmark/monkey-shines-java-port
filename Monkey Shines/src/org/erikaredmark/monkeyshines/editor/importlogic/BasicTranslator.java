@@ -2,9 +2,11 @@ package org.erikaredmark.monkeyshines.editor.importlogic;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,8 @@ import java.util.regex.Pattern;
 import org.erikaredmark.monkeyshines.LevelScreen;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.editor.importlogic.WorldTranslationException.TranslationFailure;
+import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
+import org.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.resource.WorldResource.UseIntent;
@@ -76,13 +80,57 @@ public final class BasicTranslator {
 	private static final Pattern LEVEL_FILE_NAME =
 		Pattern.compile("^lvl_(\\d+)\\.plvl$"); // Example: lvl_1000.plvl
 	
-	private static final Pattern WORLD_FILE_NAME =
-		Pattern.compile("\\.wrld$"); // Example: BonzoWorld2.wrld
-	
-	private static final Pattern RESOURCE_PACK_NAME =
-		Pattern.compile("\\.zip$"); // Example: BonzoWorld2.zip. Should be same as world file and folder name.
-	
 	private BasicTranslator() { }
+	
+	/**
+	 * 
+	 * Provides a way to run the translator headless. Takes a path to the level folder as source. The source folder
+	 * must conform to the specification of this object. The original level is then translated and saved into the same
+	 * folder as 'WorldName.world'. If the .world file already exists, this program will exit immediately and NOT overwrite
+	 * the file.
+	 * 
+	 * @param args
+	 * 		must contain only one argument: the path to the translation folder.
+	 * 
+	 * @throws WorldTranslationException
+	 * 		if the world cannot be translated. The exception will detail the issues; this could be either an issue
+	 * 		with the level or the translator
+	 * 
+	 * @throws ResourcePackException
+	 * 		if the resource pack for the world does not contain all required components
+	 * 
+	 * @throws WorldSaveException
+	 * 		if the translation was successful, but something prevented the world from being saved.
+	 * 
+	 * @throws IOException
+	 * 		if an unexpected low-level IO error occurs
+	 * 
+	 */
+	public static void main(String args[]) throws IOException, WorldTranslationException, ResourcePackException, WorldSaveException {
+		if (args.length != 1) {
+			System.err.println("Translator must be called with exactly one argument: a path to the world folder according to the javadoc specifications for this class.");
+			return;
+		}
+		
+		final Path sourceFolder = Paths.get(args[0]);
+		if (!(Files.isDirectory(sourceFolder) ) ) {
+			System.err.println("Path supplied must be a valid folder");
+		}
+		
+		final World world = importWorld(sourceFolder);
+		final Path saveTo = sourceFolder.resolve(world.getWorldName() + ".world");
+		
+		if (Files.exists(saveTo) ) {
+			System.err.println("Translation was successful, but cannot save: .world file already exists.");
+			return;
+		}
+		
+		final EncodedWorld writeWorld = EncodedWorld.fromMemory(world);
+		try (OutputStream os = Files.newOutputStream(saveTo) ) {
+			writeWorld.save(os);
+		}
+		
+	}
 	
 	/**
 	 * 
@@ -124,10 +172,12 @@ public final class BasicTranslator {
 					if (LEVEL_FILE_NAME.matcher(fileName).matches() ) {
 						levelFiles.add(p);
 						LOGGER.info(CLASS_NAME + ": Added " + p + " as level file");
-					} else if (WORLD_FILE_NAME.matcher(fileName).matches() ) {
+					} else if (fileName.endsWith(".wrld") ) {
+						if (worldFile != null)  throw new WorldTranslationException(TranslationFailure.TRANSLATOR_SPECIFIC, ".wrld file defined twice");
 						worldFile = p;
 						LOGGER.info(CLASS_NAME + ": Set world file to " + p);
-					} else if (RESOURCE_PACK_NAME.matcher(fileName).matches() ) {
+					} else if (fileName.endsWith(".zip") ) {
+						if (resourcePackFile != null)  throw new WorldTranslationException(TranslationFailure.TRANSLATOR_SPECIFIC, "multiple .zip files found; ensure only one exists (the resource pack)");
 						resourcePackFile = p;
 						LOGGER.info(CLASS_NAME + ": Set resource pack file to " + p);
 					} else {
