@@ -62,7 +62,7 @@ public final class LevelScreen {
 	 * 
 	 * @param screenId
 	 * 		the id of the screen, which must match with the id of the key that maps to this screen value in the world
-	 * 		hash map
+	 * 		hash map. Id may be negative is so choosing
 	 * 
 	 * @param rsrc
 	 * 		a graphics resource to skin this level
@@ -76,6 +76,7 @@ public final class LevelScreen {
 	 * 
 	 */
 	public static final LevelScreen newScreen(int screenId, WorldResource rsrc) {
+		
 		Background defaultBackground =   rsrc.getBackgroundCount() > 0
 									   ? rsrc.getBackground(0)
 									   :    rsrc.getPatternCount() > 0

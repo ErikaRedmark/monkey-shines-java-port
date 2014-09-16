@@ -27,6 +27,18 @@ import org.erikaredmark.monkeyshines.tiles.TileType;
  * Handles translating the .plvl data from the original Monkey Shines. It is up to higher level
  * translators to provide the stream of just that data; this does not extract from .msh or other
  * file formats.
+ * <p/>
+ * This has a majour limitation; due to a mistake early on in the project, levels in the port increment by 100 when
+ * going up... the original DECREMENTED by 100 going up, and vice-versa. There is a fudge factour; level ids
+ * are rounded to the nearest hundreth. The difference between that value and 1000, the base, is then applied oppositely
+ * and the original subtracted tens and ones place restored. For instance:
+ * {@code
+ * 		Original: Level 987
+ * 		Port: 987 == rounds up to 1000, difference of 0. Same level as 1000
+ * 
+ *  	Original: Level 797
+ *  	Port: 797 == rounds up to 800, difference of 200. 1000 + 200 = 1200. Put back tens and ones place for 1297.
+ * }
  * 
  * @author Erika Redmark
  *
@@ -47,7 +59,8 @@ public class RsrcPlvlTranslator {
 	 * 
 	 * @param id
 	 * 		id of the level screen. This id is not part of the binary data and is normally the id
-	 * 		of the resource from the resource fork that the given data resided in
+	 * 		of the resource from the resource fork that the given data resided in. This is the ORIGINAL
+	 * 		id, NOT the id the level should take on in the port.
 	 * 
 	 * @param rsrc
 	 * 		graphics resource for the level, required for interpretation of some data, as well as
@@ -58,7 +71,8 @@ public class RsrcPlvlTranslator {
 	 * 		parsed.
 	 * 
 	 * @return
-	 * 		instance of {@code LevelScreen}
+	 * 		instance of {@code LevelScreen}. be sure to use the returned level-screens id over the passed
+	 * 		one as the returned value is calibrated for the port.
 	 * 
 	 * @throws WorldTranslationException
 	 * 		if the given stream does not have at least 122 bytes to work with, or the data is determined
@@ -137,11 +151,15 @@ public class RsrcPlvlTranslator {
 			translationState.addGoodie(g);
 		}
 		
-		translationState.addPpatMapping(id, ppat);
+		// Create Id translation
+		int portId = invertLevelId(id);
 		
+		LOGGER.info("Translated original Id " + id + " into " + portId);
+		
+		translationState.addPpatMapping(portId, ppat);
 		// --------------------- Ready to return
 		
-		return new LevelScreen(id,
+		return new LevelScreen(portId,
 							   // Temporary. Client should use translation state to later set to proper pattern
 							   new SingleColorBackground(Color.BLACK), 
 							   tiles, 
@@ -149,6 +167,49 @@ public class RsrcPlvlTranslator {
 							   spritesOnScreen, 
 							   rsrc);
 		
+	}
+	
+	/**
+	 * 
+	 * Takes a level id referring to an original level, and inverts it to correspond to the port. Port goes +100 up, -100 down,
+	 * the original was backwards. This must be done to all levels and any data referring to levels, such as bonus door screen.
+	 * 
+	 * @param id
+	 * 		original level id
+	 * 
+	 * @return
+	 * 		inverted id for port
+	 * 
+	 * @throws WorldTranslationException
+	 * 		if the id cannot be inverted. This is unlikely to happen, but this method should only ever be
+	 * 		used in the context of throwing that exception anyway
+	 * 
+	 */
+	static int invertLevelId(int id)  throws WorldTranslationException {
+		int tensAndOnes = id % 100;
+		if (tensAndOnes > 47 && tensAndOnes < 53) {
+			LOGGER.severe("Original Level id " + id + " may be improperly translated: it lies on the edge of the translation threshold for fixing the level id inversion in the port. Double check this level will appear where expected.");
+		}
+		
+		// add 50 to turn truncation into rough rounding
+		int rounded = ((id + 50) / 100) * 100;
+		int portId = Integer.MAX_VALUE;
+		// Yes, this totally brings the bonus levels into negative values. The bonus room id is given the same inversion treatment.
+		if (rounded == 1000) {
+			portId = id;
+		} else {
+			if (id < rounded) {
+				portId = 1000 + (1000 - rounded) + tensAndOnes;
+			} else {
+				portId = 1000 - (rounded - 1000) + tensAndOnes;
+			}
+		}
+		
+		if (portId == Integer.MAX_VALUE) {
+			throw new WorldTranslationException(TranslationFailure.TRANSLATOR_SPECIFIC, "Could not determine port id for level id " + id);
+		}
+		
+		return portId;
 	}
 
 	/**
@@ -163,7 +224,8 @@ public class RsrcPlvlTranslator {
 		
 		TileType type = null;
 		if (data <= 0x0020) {
-			type = CommonTile.of(data, StatelessTileType.SOLID, rsrc);
+			// -1 for the 0 being the Null tile
+			type = CommonTile.of(data - 1, StatelessTileType.SOLID, rsrc);
 		} else if (data <= 0x0050) {
 			type = CommonTile.of(data - 0x0021 , StatelessTileType.THRU, rsrc);
 		} else if (data <= 0x0090) {

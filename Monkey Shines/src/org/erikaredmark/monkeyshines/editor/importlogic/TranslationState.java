@@ -34,6 +34,8 @@ class TranslationState {
 	 * 
 	 * Indicates that the given level id uses the given ppat id. ppat resources are not always sequentially
 	 * numbered so cannot easily be converted into a 0 origin ID for the pattern resources in this new version.
+	 * <p/>
+	 * The levelId must be the PORT id, i.e. after the inversion translation is applied.
 	 * 
 	 * @param levelId
 	 * 
@@ -47,7 +49,8 @@ class TranslationState {
 	
 	/**
 	 * 
-	 * Returns an unmodifiable view of the mapping ppat and the level ids they appear in
+	 * Returns an unmodifiable view of the mapping ppat and the level ids they appear in. Level ids are port
+	 * ids, not original ids, and are inverted from the original
 	 * 
 	 */
 	Map<Integer, Integer> getLevelIdToPpat() {

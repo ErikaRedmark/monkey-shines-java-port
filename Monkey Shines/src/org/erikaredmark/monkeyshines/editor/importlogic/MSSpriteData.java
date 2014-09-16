@@ -248,7 +248,7 @@ final class MSSpriteData {
 	 * Returns the animation type of the sprite.
 	 */
 	AnimationType getSpriteAnimationType() {
-		return   (flags & FLAG_INCREASING_FRAMES) == 1
+		return   (flags & FLAG_INCREASING_FRAMES) != 0
 			   ? AnimationType.INCREASING_FRAMES
 			   : AnimationType.CYCLING_FRAMES;
 	}
@@ -257,7 +257,7 @@ final class MSSpriteData {
 	 * Returns the animation speed of the sprite
 	 */
 	AnimationSpeed getSpriteAnimationSpeed() {
-		return   (flags & FLAG_SLOW_ANIMATION) == 1
+		return   (flags & FLAG_SLOW_ANIMATION) != 0
 			   ? AnimationSpeed.SLOW
 			   : AnimationSpeed.NORMAL;
 	}
@@ -275,7 +275,7 @@ final class MSSpriteData {
 		} else if (id == 1) {
 			return SpriteType.EXIT_DOOR;
 		} else {
-			return   (flags & FLAG_ENERGY_DRAINER) == 1
+			return   (flags & FLAG_ENERGY_DRAINER) != 0
 				   ? SpriteType.HEALTH_DRAIN
 				   : SpriteType.NORMAL;
 		}

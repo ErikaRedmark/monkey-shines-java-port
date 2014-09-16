@@ -114,8 +114,8 @@ public class RsrcWrLdTranslator {
 								   translationState.generateGoodieMap(),
 								   levelsMap,
 								   hazards,
-								   conveyers,
-								   bonusScreen,
+								   conveyers, 
+								   RsrcPlvlTranslator.invertLevelId(bonusScreen),
 								   rsrc);
 		
 		// REQUIRED: Some level data has placeholders (see docs on PlaceholderTile)
