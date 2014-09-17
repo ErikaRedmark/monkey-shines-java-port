@@ -45,11 +45,13 @@ public final class SelectAWorld extends JPanel {
 	private static final int BIG_BUTTON_WIDTH = 104; 
 	private static final int BIG_BUTTON_HEIGHT = 79;
 	
-	private static final int SPOOKED_X = 34;
-	private static final int SPOOKED_Y = 34;
+	private static final int NON_OTHER_Y = 34;
 	
+	private static final int SPOOKED_X = 34;
+	private static final int SPACED_OUT_X = 151;
+//	private static final int ABOUT_THE_HOUSE_X = 268;
+//	private static final int IN_THE_DRINK_X = 385;
 	private static final int IN_THE_SWING_X = 502;
-	private static final int IN_THE_SWING_Y = 34;
 	
 	private static final int OTHER_X = 385;
 	private static final int OTHER_Y = 128;
@@ -59,6 +61,8 @@ public final class SelectAWorld extends JPanel {
 	// loading of all built in world button images
 	private BufferedImage spookedDown;
 	private BufferedImage spookedUp;
+	private BufferedImage spacedDown;
+	private BufferedImage spacedUp;
 	private BufferedImage inTheSwingDown;
 	private BufferedImage inTheSwingUp;
 	private BufferedImage otherUp;
@@ -77,6 +81,8 @@ public final class SelectAWorld extends JPanel {
 			background = ImageIO.read(SelectAWorld.class.getResourceAsStream("/resources/graphics/mainmenu/selectworld/selectWorldBackground.png") );
 			spookedDown = ImageIO.read(SelectAWorld.class.getResourceAsStream("/resources/graphics/mainmenu/selectworld/SpookedDown.png") );
 			spookedUp = ImageIO.read(SelectAWorld.class.getResourceAsStream("/resources/graphics/mainmenu/selectworld/SpookedUp.png") );
+			spacedDown = ImageIO.read(SelectAWorld.class.getResourceAsStream("/resources/graphics/mainmenu/selectworld/SpacedOutDown.png") );
+			spacedUp = ImageIO.read(SelectAWorld.class.getResourceAsStream("/resources/graphics/mainmenu/selectworld/SpacedOutUp.png") );		
 			inTheSwingDown = ImageIO.read(SelectAWorld.class.getResourceAsStream("/resources/graphics/mainmenu/selectworld/InTheSwingDown.png") );
 			inTheSwingUp = ImageIO.read(SelectAWorld.class.getResourceAsStream("/resources/graphics/mainmenu/selectworld/InTheSwingUp.png") );
 			otherDown = ImageIO.read(SelectAWorld.class.getResourceAsStream("/resources/graphics/mainmenu/selectworld/OtherDown.png") );
@@ -88,7 +94,7 @@ public final class SelectAWorld extends JPanel {
 		setLayout(null);
 		
 		JButton spookedButton = new BigWorldButton(spookedUp, spookedDown);
-		spookedButton.setLocation(SPOOKED_X, SPOOKED_Y);
+		spookedButton.setLocation(SPOOKED_X, NON_OTHER_Y);
 		spookedButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
 				World world = loadInternalWorld(SelectAWorld.this, InternalWorld.SPOOKED);
@@ -100,8 +106,21 @@ public final class SelectAWorld extends JPanel {
 		
 		add(spookedButton);
 		
+		JButton spacedButton = new BigWorldButton(spacedUp, spacedDown);
+		spacedButton.setLocation(SPACED_OUT_X, NON_OTHER_Y);
+		spacedButton.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent arg0) {
+				World world = loadInternalWorld(SelectAWorld.this, InternalWorld.SPACED_OUT);
+				if (world != null) {
+					callback.worldSelected(world);
+				}
+			}
+		});
+		
+		add(spacedButton);
+		
 		JButton inTheSwingButton = new BigWorldButton(inTheSwingUp, inTheSwingDown);
-		inTheSwingButton.setLocation(IN_THE_SWING_X, IN_THE_SWING_Y);
+		inTheSwingButton.setLocation(IN_THE_SWING_X, NON_OTHER_Y);
 		inTheSwingButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
 				World world = loadInternalWorld(SelectAWorld.this, InternalWorld.IN_THE_SWING);
@@ -302,6 +321,7 @@ public final class SelectAWorld extends JPanel {
 	
 	private enum InternalWorld {
 		SPOOKED("/resources/worlds/Spooked/Spooked.world", "/resources/worlds/Spooked/Spooked.zip"),
+		SPACED_OUT("/resources/worlds/SpacedOut/Spaced Out.world", "/resources/worlds/SpacedOut/Spaced Out.zip"),
 		IN_THE_SWING("/resources/worlds/In The Swing/In The Swing.world", "/resources/worlds/In The Swing/In The Swing.zip");
 		
 		public final String internalPath;
