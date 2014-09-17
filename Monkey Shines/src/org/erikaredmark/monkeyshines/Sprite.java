@@ -4,6 +4,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
 import org.erikaredmark.monkeyshines.bounds.Boundable;
+import org.erikaredmark.monkeyshines.bounds.IPoint2D;
 import org.erikaredmark.monkeyshines.resource.CoreResource;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 
@@ -341,9 +342,35 @@ public class Sprite {
 		}
 		
 		
-		// Update both speed and Animation row. If it leaves its bounds reverse direction
-		if (boundingBox.inBoundsX(currentLocation) == false) reverseX();
-		if (boundingBox.inBoundsY(currentLocation) == false) reverseY();
+		// Update both speed and Animation row. We reverse if it has both left it's bounding box AND
+		// it is heading away from the box. If it isn't, it started outside of its box and should not
+		// reverse direction
+		if (boundingBox.inBoundsX(currentLocation) == false) {
+			// Easy way to tell. Apply velocity again to temporary location and see which location
+			// is closer to the bounding box.
+			int tempLocationX = currentLocation.x() + speedX;
+			IPoint2D bounds = boundingBox.getLocation();
+			// Is the tempLocation inbetween bounding box and current location? Speed okay. Else reverse.
+			// TODO way to simplify this logical expression?
+			if (   (bounds.x() > tempLocationX && tempLocationX > currentLocation.x() )
+			    || (bounds.x() < tempLocationX && tempLocationX < currentLocation.x() ) ) {
+				
+				reverseX();
+			}
+		}
+		
+		if (boundingBox.inBoundsY(currentLocation) == false) {
+			// Copy Pasta of above code
+			int tempLocationY = currentLocation.y() + speedY;
+			IPoint2D bounds = boundingBox.getLocation();
+			// Is the tempLocation inbetween bounding box and current location? Speed okay. Else reverse.
+			// TODO way to simplify this logical expression?
+			if (   (bounds.y() > tempLocationY && tempLocationY > currentLocation.y() )
+			    || (bounds.y() < tempLocationY && tempLocationY < currentLocation.y() ) ) {
+				
+				reverseY();
+			}
+		}
 		
 	}
 	
@@ -395,6 +422,8 @@ public class Sprite {
 			}
 		}
 	}
+	
+	private void reverseY() { speedY = -speedY; }
 	
 	/**
 	 * 
@@ -476,9 +505,6 @@ public class Sprite {
 		return false;
 		
 	}
-	
-	
-	private void reverseY() { speedY = -speedY; }
 
 	public int getId() { return id; }
 	public int getInitialSpeedX() { return initialSpeedX; }
