@@ -554,6 +554,11 @@ public class World {
 				}
 			}
 		}
+		
+		// It is entirely possible that bonzo just transferred screens from the above collision. His position
+		// must be recomputed.
+		currentLocation = theBonzo.getCurrentLocation();
+		
 		// A hazard?
 		hazardCollisionCheck(theBonzo);
 		
