@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 import java.util.Set;
 
 import org.erikaredmark.monkeyshines.Conveyer.Rotation;
@@ -50,6 +51,8 @@ import com.google.common.collect.Multimap;
  * 
  */
 public class World {
+	private static final String CLASS_NAME = "org.erikaredmark.monkeyshines.World";
+	private static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
 	
 	/**
 	 * 
@@ -409,11 +412,16 @@ public class World {
 	/**
 	 * 
 	 * Transfers bonzo to either the bonus room if he is not already in it, or the return room if in the bonus room.
+	 * <p/>
+	 * In the event that this transfer fails because of an incorrect world design, this may do nothing.
 	 * 
 	 * @param bonzo
 	 * 
+	 * @return
+	 * 		{@code true} if bonzo was transferred, {@code false} if the bonus screen id was set to a non-existant screen
+	 * 
 	 */
-	public void bonusTransfer(Bonzo bonzo) {
+	public boolean bonusTransfer(Bonzo bonzo) {
 		int transferScreenId;
 		if (returnScreen == null) {
 			// Branch 1: Return screen not yet; this is bonzos first trip and his destination is the bonus screen. This current
@@ -433,6 +441,11 @@ public class World {
 		
 		// Must change world screen as well as bonzos reference
 		// Unlike respawning, this DOES count as screen history!
+		if (!(screenIdExists(transferScreenId) ) ) {
+			// Indicate that the level designer must fix this by logging the issue.
+			LOGGER.severe("Bonus screen " + transferScreenId + " does not exist. Cannot teleport Bonzo: The bonus screen was NOT properly set in the level editor!");
+			return false;
+		}
 		LevelScreen transferScreen = getScreenByID(transferScreenId);
 		
 		// No transfer screen indicates uncommon level design. Pacman it and just send Bonzo to the
@@ -444,6 +457,8 @@ public class World {
 		changeCurrentScreen(transferScreenId, bonzo);
 		bonzo.setCurrentLocation(transferScreen.getBonzoStartingLocationPixels() );
 		transferScreen.setBonzoCameFrom(transferScreen.getBonzoStartingLocationPixels() );
+		
+		return true;
 	}
 	
 	/**
