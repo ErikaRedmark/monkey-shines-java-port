@@ -137,6 +137,9 @@ public class RsrcPlvlTranslator {
 				++rawLvlIndex;
 			}
 		}
+		// Create Id translation
+		int portId = invertLevelId(id);
+		LOGGER.info("Translated original Id " + id + " into " + portId);
 		
 		// ------------------- Add to translation state, goodies and ppat
 		// Goodies are also stored in tile data... but I discovered that after I wrote this. Should give the same
@@ -146,16 +149,11 @@ public class RsrcPlvlTranslator {
 				ImmutablePoint2D.of(goodie.location.x() / 20, (goodie.location.y() - 80) / 20);
 			Goodie g = Goodie.newGoodie(Goodie.Type.byValue(goodie.id), 
 										location, 
-										id, 
+										portId, 
 										rsrc);
 			
 			translationState.addGoodie(g);
 		}
-		
-		// Create Id translation
-		int portId = invertLevelId(id);
-		
-		LOGGER.info("Translated original Id " + id + " into " + portId);
 		
 		translationState.addPpatMapping(portId, ppat);
 		// --------------------- Ready to return

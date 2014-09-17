@@ -76,7 +76,8 @@ class TranslationState {
 
 	/**
 	 * 
-	 * Adds the given type of goodie to the world.
+	 * Adds the given type of goodie to the world. MAKE SURE THAT THE LEVEL INVERSION
+	 * ALGORITHM IS RUN Before assigning a level id to the goodie!!!
 	 * 
 	 */
 	public void addGoodie(Goodie goodie) {
