@@ -95,6 +95,7 @@ public final class LevelScreen {
 	/**
 	 * 
 	 * Intended for internal static factories and decoding system only
+	 * BonzoStart is a resolved-to-tile-cordinate location, not pixel location
 	 * 
 	 */
 	public LevelScreen(final int screenId, 

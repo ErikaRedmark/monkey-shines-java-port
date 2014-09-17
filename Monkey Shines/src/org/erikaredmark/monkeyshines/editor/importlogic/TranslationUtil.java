@@ -208,6 +208,10 @@ public final class TranslationUtil {
 	/**
 	 * Reads an array of shorts, similiar to {@code readMacShort} but for a consecutive amount of them. See javadocs
 	 * for that method for explanation of other parameters
+	 * 
+	 * @param size
+	 * 		size is in number of shorts, not in number of bytes (shorts take up two bytes)
+	 * 
 	 */
 	public static int[] readMacShortArray(InputStream is, int size, TranslationFailure ifFail, String msg) throws IOException, WorldTranslationException {
 		byte[] raw = new byte[size * 2];

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import org.erikaredmark.monkeyshines.Conveyer;
+import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.Goodie;
 import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.LevelScreen;
@@ -163,7 +164,7 @@ public class RsrcPlvlTranslator {
 							   // Temporary. Client should use translation state to later set to proper pattern
 							   new SingleColorBackground(Color.BLACK), 
 							   tiles, 
-							   ImmutablePoint2D.of(bonzoStartX, bonzoStartY - 80), 
+							   ImmutablePoint2D.of(bonzoStartX / GameConstants.TILE_SIZE_X, (bonzoStartY - 80) / GameConstants.TILE_SIZE_Y), 
 							   spritesOnScreen, 
 							   rsrc);
 		
@@ -194,14 +195,16 @@ public class RsrcPlvlTranslator {
 		// add 50 to turn truncation into rough rounding
 		int rounded = ((id + 50) / 100) * 100;
 		int portId = Integer.MAX_VALUE;
-		// Yes, this totally brings the bonus levels into negative values. The bonus room id is given the same inversion treatment.
+		// Yes, this totally brings the bonus levels into negative values. The bonus room id is given the same inversion treatment. However, the port can
+		// handle negative values just fine.
 		if (rounded == 1000) {
 			portId = id;
 		} else {
 			if (id < rounded) {
-				portId = 1000 + (1000 - rounded) + tensAndOnes;
+				// Less than rounded means the 100's place is going to be offset by 100, hence 900 instead of 1000
+				portId = 900 + (1000 - rounded) + tensAndOnes;
 			} else {
-				portId = 1000 - (rounded - 1000) + tensAndOnes;
+				portId = 1000 + (1000 - rounded) + tensAndOnes;
 			}
 		}
 		

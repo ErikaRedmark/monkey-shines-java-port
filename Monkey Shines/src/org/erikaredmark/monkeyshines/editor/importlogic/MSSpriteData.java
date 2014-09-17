@@ -49,10 +49,10 @@ final class MSSpriteData {
 	private static final int FLAG_SLOW_ANIMATION = 1 << 2;
 	
 	// TODO port does not handle vertical two-set sprites currently. Uncomment when it does.
-	// private static final int FLAG_TWO_WAY_FACING_VERTICAL = 1 << 3;
+	// private static final int FLAG_TWO_WAY_FACING_VERTICAL = 1 << 4;
 	
 	
-	private static final int FLAG_TWO_WAY_FACING_HORIZONTAL = 1 << 4;
+	private static final int FLAG_TWO_WAY_FACING_HORIZONTAL = 1 << 3;
 	
 	// Sixth bit is probably unused.
 	// Seventh bit if for door, but ID 0 is always bonus, ID 1 is always exit. This flag is not relevant

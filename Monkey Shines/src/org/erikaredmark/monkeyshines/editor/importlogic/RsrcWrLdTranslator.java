@@ -24,7 +24,7 @@ import org.erikaredmark.monkeyshines.resource.WorldResource;
  *
  */
 public class RsrcWrLdTranslator {
-
+	
 	/**
 	 * 
 	 * Translates the given stream for a {@code LevelScreen}. the stream pointer is advanced
@@ -62,29 +62,16 @@ public class RsrcWrLdTranslator {
 	 */
 	public static World translateWorld(InputStream is, List<LevelScreen> levels, WorldResource rsrc, String name, TranslationState translationState) 
 									       throws WorldTranslationException, IOException {
-
-		// Skip first 8 bytes (4 shorts). We only care about the bonus door level.
-		long skipped = is.skip(8L);
-		if (skipped != 8L)  throw new WorldTranslationException(TranslationFailure.WRONG_WORLD_SIZE, "Failure to skip 8 bytes, possible incorrect size.");
 		
-		byte[] bonusLevel = new byte[2];
-		int bonusRead = is.read(bonusLevel);
-		if (bonusRead != 2)  throw new WorldTranslationException(TranslationFailure.WRONG_WORLD_SIZE, "Failure to read bonus level data");
+		final TranslationFailure FAIL = TranslationFailure.WRONG_LEVEL_SIZE;
 		
-		int bonusScreen = TranslationUtil.translateMacShort(bonusLevel);
+		// Skip first 10 bytes (5 shorts). This is statistics information that we do not care about in any way.
+		TranslationUtil.skip(is, 10, FAIL, "could not skip bonus screen location");
 
 		// Generate hazards (combines WrLd data with graphics resource)
-		byte[] hazardTypesRaw = new byte[32]; // 16 shorts
-		int hazardTypesRead = is.read(hazardTypesRaw);
-		if (hazardTypesRead != 32)  throw new WorldTranslationException(TranslationFailure.WRONG_WORLD_SIZE, "Failure to read hazard types");
+		int[] hazardTypes = TranslationUtil.readMacShortArray(is, 16, FAIL, "Could not read hazard types");
 		
-		int[] hazardTypes = TranslationUtil.translateMacShortArray(hazardTypesRaw);
-		
-		byte[] hazardExplodesRaw = new byte[16];
-		int hazardExplodesRead = is.read(hazardExplodesRaw);
-		if (hazardExplodesRead != 16)  throw new WorldTranslationException(TranslationFailure.WRONG_WORLD_SIZE, "Failure to read hazard explode info");
-		
-		boolean[] hazardExplodes = TranslationUtil.translateMacBooleanArray(hazardExplodesRaw);
+		boolean[] hazardExplodes = TranslationUtil.readMacBooleanArray(is, 16, FAIL, "Could not read hazard explosion properties");
 		
 		List<Hazard> hazards = new ArrayList<>();
 		// For loop has early termination if hazardTypes is zero at any point.
@@ -96,10 +83,8 @@ public class RsrcWrLdTranslator {
 		// Nothing more can be learnt from the stream, relying on graphics resource and state info
 		// from here. HOWEVER, we MUST skip the remaining bytes in the level data as promised.
 		// Two more 16 size short arrays, making 64 bytes total to skip.
-		skipped = is.skip(64L);
-		if (skipped != 64L)  throw new WorldTranslationException(TranslationFailure.WRONG_WORLD_SIZE, "Failure to skip remaining 64 bytes at end of resource");
-		
-		
+		TranslationUtil.skip(is, 64, FAIL, "Could not skip final bytes for world data");
+
 		// Generate conveyers (only requires world resource)
 		List<Conveyer> conveyers = new ArrayList<>();
 		World.generateConveyers(conveyers, rsrc.getConveyerCount() );
@@ -114,8 +99,9 @@ public class RsrcWrLdTranslator {
 								   translationState.generateGoodieMap(),
 								   levelsMap,
 								   hazards,
-								   conveyers, 
-								   RsrcPlvlTranslator.invertLevelId(bonusScreen),
+								   conveyers,
+								   // Always 10000 in original, always -8000 after inversion rules applied.
+								   -8000,
 								   rsrc);
 		
 		// REQUIRED: Some level data has placeholders (see docs on PlaceholderTile)
