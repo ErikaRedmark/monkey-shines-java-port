@@ -18,7 +18,7 @@ public class WorldTranslationException extends Exception {
 		this.failureType = cause;
 	}
 	
-	WorldTranslationException(TranslationFailure cause, String msg) {
+	public WorldTranslationException(TranslationFailure cause, String msg) {
 		super(cause.getMessage() + " : " + msg);
 		
 		this.failureType = cause;

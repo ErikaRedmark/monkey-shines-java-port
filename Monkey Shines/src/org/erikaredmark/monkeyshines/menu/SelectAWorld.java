@@ -50,7 +50,7 @@ public final class SelectAWorld extends JPanel {
 	private static final int SPOOKED_X = 34;
 	private static final int SPACED_OUT_X = 151;
 //	private static final int ABOUT_THE_HOUSE_X = 268;
-//	private static final int IN_THE_DRINK_X = 385;
+	private static final int IN_THE_DRINK_X = 385;
 	private static final int IN_THE_SWING_X = 502;
 	
 	private static final int OTHER_X = 385;
@@ -63,6 +63,8 @@ public final class SelectAWorld extends JPanel {
 	private BufferedImage spookedUp;
 	private BufferedImage spacedDown;
 	private BufferedImage spacedUp;
+	private BufferedImage inTheDrinkDown;
+	private BufferedImage inTheDrinkUp;
 	private BufferedImage inTheSwingDown;
 	private BufferedImage inTheSwingUp;
 	private BufferedImage otherUp;
@@ -82,7 +84,9 @@ public final class SelectAWorld extends JPanel {
 			spookedDown = ImageIO.read(SelectAWorld.class.getResourceAsStream("/resources/graphics/mainmenu/selectworld/SpookedDown.png") );
 			spookedUp = ImageIO.read(SelectAWorld.class.getResourceAsStream("/resources/graphics/mainmenu/selectworld/SpookedUp.png") );
 			spacedDown = ImageIO.read(SelectAWorld.class.getResourceAsStream("/resources/graphics/mainmenu/selectworld/SpacedOutDown.png") );
-			spacedUp = ImageIO.read(SelectAWorld.class.getResourceAsStream("/resources/graphics/mainmenu/selectworld/SpacedOutUp.png") );		
+			spacedUp = ImageIO.read(SelectAWorld.class.getResourceAsStream("/resources/graphics/mainmenu/selectworld/SpacedOutUp.png") );
+			inTheDrinkDown = ImageIO.read(SelectAWorld.class.getResourceAsStream("/resources/graphics/mainmenu/selectworld/InTheDrinkDown.png") );
+			inTheDrinkUp = ImageIO.read(SelectAWorld.class.getResourceAsStream("/resources/graphics/mainmenu/selectworld/InTheDrinkUp.png") );
 			inTheSwingDown = ImageIO.read(SelectAWorld.class.getResourceAsStream("/resources/graphics/mainmenu/selectworld/InTheSwingDown.png") );
 			inTheSwingUp = ImageIO.read(SelectAWorld.class.getResourceAsStream("/resources/graphics/mainmenu/selectworld/InTheSwingUp.png") );
 			otherDown = ImageIO.read(SelectAWorld.class.getResourceAsStream("/resources/graphics/mainmenu/selectworld/OtherDown.png") );
@@ -118,6 +122,19 @@ public final class SelectAWorld extends JPanel {
 		});
 		
 		add(spacedButton);
+		
+		JButton inTheDrinkButton = new BigWorldButton(inTheDrinkUp, inTheDrinkDown);
+		inTheDrinkButton.setLocation(IN_THE_DRINK_X, NON_OTHER_Y);
+		inTheDrinkButton.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent arg0) {
+				World world = loadInternalWorld(SelectAWorld.this, InternalWorld.IN_THE_DRINK);
+				if (world != null) {
+					callback.worldSelected(world);
+				}
+			}
+		});
+		
+		add(inTheDrinkButton);
 		
 		JButton inTheSwingButton = new BigWorldButton(inTheSwingUp, inTheSwingDown);
 		inTheSwingButton.setLocation(IN_THE_SWING_X, NON_OTHER_Y);
@@ -322,6 +339,7 @@ public final class SelectAWorld extends JPanel {
 	private enum InternalWorld {
 		SPOOKED("/resources/worlds/Spooked/Spooked.world", "/resources/worlds/Spooked/Spooked.zip"),
 		SPACED_OUT("/resources/worlds/SpacedOut/Spaced Out.world", "/resources/worlds/SpacedOut/Spaced Out.zip"),
+		IN_THE_DRINK("/resources/worlds/InTheDrink/In The Drink.world", "/resources/worlds/InTheDrink/In The Drink.zip"),
 		IN_THE_SWING("/resources/worlds/In The Swing/In The Swing.world", "/resources/worlds/In The Swing/In The Swing.zip");
 		
 		public final String internalPath;

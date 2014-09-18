@@ -17,6 +17,8 @@ import org.erikaredmark.monkeyshines.Goodie.Type;
 import org.erikaredmark.monkeyshines.Sprite.SpriteType;
 import org.erikaredmark.monkeyshines.bounds.Boundable;
 import org.erikaredmark.monkeyshines.bounds.IPoint2D;
+import org.erikaredmark.monkeyshines.editor.importlogic.WorldTranslationException;
+import org.erikaredmark.monkeyshines.editor.importlogic.WorldTranslationException.TranslationFailure;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.tiles.ConveyerTile;
 import org.erikaredmark.monkeyshines.tiles.HazardTile;
@@ -889,8 +891,12 @@ public class World {
 	 * <p/>
 	 * At the conclusion of this method, the world will have no more placeholder tiles in any of its levels.
 	 * 
+	 * @throws WorldTranslationException
+	 * 		if placeholders cannot be fixed because the resource pack did not define enough of either hazards or
+	 * 		conveyer belts
+	 * 
 	 */
-	public void fixPlaceholders() {
+	public void fixPlaceholders() throws WorldTranslationException {
 		for (LevelScreen lvl : worldScreens.values() ) {
 			Tile[][] map = lvl.screenTiles;
 			for (int i = 0; i < GameConstants.TILES_IN_COL; ++i) {
@@ -900,17 +906,26 @@ public class World {
 						PlaceholderTile.Type type = ((PlaceholderTile)map[i][j].getType() ).getType();
 						switch (type) {
 						case HAZARD:
+							if (metadata >= this.hazards.size() ) {
+								throw new WorldTranslationException(TranslationFailure.TRANSLATOR_SPECIFIC, "Not enough hazards defined in resource pack. Must have at least " + (metadata + 1) );
+							}
 							map[i][j] = map[i][j].copyChangeType(HazardTile.forHazard(this.hazards.get(metadata) ) );
 							break;
 						case CONVEYER_ANTI_CLOCKWISE:
 						{
 							int index = (metadata * 2) + 1;
+							if (index >= this.conveyers.size() ) {
+								throw new WorldTranslationException(TranslationFailure.TRANSLATOR_SPECIFIC, "Not enough unique conveyers defined in resource pack. Must have at least " + (metadata + 1) );
+							}
 							map[i][j] = map[i][j].copyChangeType(new ConveyerTile(this.conveyers.get(index) ) );
 							break;
 						}
 						case CONVEYER_CLOCKWISE: 
 						{
 							int index = (metadata * 2);
+							if (index >= this.conveyers.size() ) {
+								throw new WorldTranslationException(TranslationFailure.TRANSLATOR_SPECIFIC, "Not enough unique conveyers defined in resource pack. Must have at least " + (metadata + 1) );
+							}
 							map[i][j] = map[i][j].copyChangeType(new ConveyerTile(this.conveyers.get(index) ) );
 							break;
 						}
