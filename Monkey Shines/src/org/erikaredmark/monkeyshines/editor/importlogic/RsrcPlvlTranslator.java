@@ -250,8 +250,20 @@ public class RsrcPlvlTranslator {
 			// matters not which one we read from.
 			LOGGER.fine(CLASS_NAME + ": skipping goodie from tile-data (should be picked up from earlier MSSpriteData array)");
 			return Tile.emptyTile();
+		} else if (data >= 0x00D0 && data <= 0x00EF) {
+			// Scenes are stored also at the D range. Some levels have a lot of scenery and expand into this range for it.
+			// 0 base the data, but also start it on the next round of 64 values.
+			type = CommonTile.of( (data - 0x00D0) + 0x003F, StatelessTileType.SCENE, rsrc);
 		} else {
-			throw new WorldTranslationException(TranslationFailure.TRANSLATOR_SPECIFIC, "Level data contains " + Integer.toHexString(data) + " which is not a known original game level value and maps to no known tiles");
+			LOGGER.severe("Level data at row " 
+						+ row 
+						+ " col " 
+						+ col 
+						+ " contains " 
+						+ Integer.toHexString(data) 
+						+ " which is not a known original game level value and maps to no known tiles. Leaving as Blank");
+						
+			return Tile.emptyTile();
 		}
 		
 		return Tile.newTile(ImmutablePoint2D.of(col, row), 
