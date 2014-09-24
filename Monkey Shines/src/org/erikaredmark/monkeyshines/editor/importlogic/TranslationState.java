@@ -7,7 +7,7 @@ import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import org.erikaredmark.monkeyshines.Goodie;
-import org.erikaredmark.monkeyshines.World;
+import org.erikaredmark.monkeyshines.WorldCoordinate;
 
 /**
  * 
@@ -25,7 +25,7 @@ class TranslationState {
 
 	Map<Integer, Integer> levelIdToPpat = new HashMap<>();
 	TreeSet<Integer> ppats = new TreeSet<>();
-	Map<String, Goodie> goodieMap = new HashMap<String, Goodie>();
+	Map<WorldCoordinate, Goodie> goodieMap = new HashMap<WorldCoordinate, Goodie>();
 	
 	/** Constructs the object with default state. */
 	TranslationState() { }
@@ -81,11 +81,11 @@ class TranslationState {
 	 * 
 	 */
 	public void addGoodie(Goodie goodie) {
-		String checker = World.collisionCheckerForGoodie(goodie.getLocation().x(), goodie.getLocation().y(), goodie.getScreenID() );
-		if (goodieMap.containsKey(checker) ) {
-			LOGGER.warning(CLASS_NAME + ": Overlapping goodie check: " + checker + ". The goodie that is being skipped is " + goodie);
+		WorldCoordinate coordinate = new WorldCoordinate(goodie.getScreenID(), goodie.getLocation().x(), goodie.getLocation().y() );
+		if (goodieMap.containsKey(coordinate) ) {
+			LOGGER.warning(CLASS_NAME + ": Overlapping goodie check: " + coordinate + ". The goodie that is being skipped is " + goodie);
 		}
-		goodieMap.put(checker, goodie);
+		goodieMap.put(coordinate, goodie);
 	}
 
 	/**
@@ -94,7 +94,7 @@ class TranslationState {
 	 * the levels.
 	 * 
 	 */
-	public Map<String, Goodie> generateGoodieMap() {
+	public Map<WorldCoordinate, Goodie> generateGoodieMap() {
 		return goodieMap;
 	}
 	

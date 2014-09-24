@@ -97,7 +97,7 @@ public class World {
 		generateConveyers(conveyers, rsrc.getConveyerCount() );
 		
 		return new World(name, 
-						 new HashMap<String, Goodie>(), 
+						 new HashMap<WorldCoordinate, Goodie>(), 
 						 screens, 
 						 new ArrayList<Hazard>(), 
 						 conveyers, 
@@ -126,7 +126,7 @@ public class World {
 	 * 
 	 */
 	public World(final String worldName, 
-				 final Map<String, Goodie> goodiesInWorld,
+				 final Map<WorldCoordinate, Goodie> goodiesInWorld,
 				 final Map<Integer, LevelScreen> worldScreens,
 				 final List<Hazard> hazards,
 				 final List<Conveyer> conveyers,
@@ -159,12 +159,11 @@ public class World {
 		this.redKeys = new HashSet<Goodie>();
 		this.blueKeys = new HashSet<Goodie>();
 		
-		for (Entry<String, Goodie> entry : goodiesInWorld.entrySet() ) {
+		for (Entry<WorldCoordinate, Goodie> entry : goodiesInWorld.entrySet() ) {
 			// Extract just the level id. Assume it can convert to integer, because otherwise would
 			// indicate level corruption anyway.
-			String rawKey = entry.getKey();
-			Integer id = Integer.valueOf(rawKey.substring(0, rawKey.indexOf('X') ) );
-			LevelScreen screenForGoodie = worldScreens.get(id);
+			WorldCoordinate coordinate = entry.getKey();
+			LevelScreen screenForGoodie = worldScreens.get(coordinate.getLevelId() );
 			
 			Goodie value = entry.getValue();
 			goodiesPerScreen.put(screenForGoodie, value);
@@ -571,15 +570,15 @@ public class World {
 		int topLeftY = (currentLocation.y() + (GameConstants.GOODIE_SIZE_Y / 2) )/ GameConstants.GOODIE_SIZE_Y;
 		
 		// Top-left, Top-Right, Bottom-Left, Bottom-Right
-		String[] goodieQuads = new String[] {
-			"" + (currentScreen) + "X" + topLeftX + "," + topLeftY,
-			"" + (currentScreen) + "X" + (topLeftX + 1) + "," + topLeftY,
-			"" + (currentScreen) + "X" + topLeftX + "," + (topLeftY + 1),
-			"" + (currentScreen) + "X" + (topLeftX + 1) + "," + (topLeftY + 1)
+		WorldCoordinate[] goodieQuads = new WorldCoordinate[] {
+			new WorldCoordinate(currentScreen, topLeftX, topLeftY),
+			new WorldCoordinate(currentScreen, topLeftX + 1, topLeftY),
+			new WorldCoordinate(currentScreen, topLeftX, topLeftY + 1),
+			new WorldCoordinate(currentScreen, topLeftX + 1, topLeftY + 1)
 		};
 		// Add to the total number of goodies the player has collected, provided the goodie actually grants non-zero
 		// score.
-		for (String quad : goodieQuads) {
+		for (WorldCoordinate quad : goodieQuads) {
 			Goodie gotGoodie;
 			if ( (gotGoodie = goodiesInWorld.get(quad) ) != null ) {
 				if (gotGoodie.take(theBonzo, this) ) {
@@ -691,53 +690,28 @@ public class World {
 		return fourPoints;
 	}
 	
-	
-	// Reminder: Form is like "1000X4,3"
 	/**
 	 * 
 	 * Adds a goodie to the given world, typically only used by level editor.
-	 * <p/>
-	 * This world must already be skinned
 	 * 
+	 * @param screenId
 	 * @param x
 	 * @param y
-	 * @param screenId
 	 * @param type
 	 * 
-	 * @throws IllegalStateException
-	 * 		if the world has not yet been skinned
-	 * 
 	 */
-	public void addGoodie(final int x, final int y, final int screenId, final Goodie.Type type) {
-		String checker = collisionCheckerForGoodie(x, y, screenId);
+	public void addGoodie(final int screenId, final int x, final int y, final Goodie.Type type) {
+		WorldCoordinate coordinate = new WorldCoordinate(screenId, x, y);
 		// If goodie already exists, take out and replace
-		if (goodiesInWorld.get(checker) != null)
-			goodiesInWorld.remove(checker);
-		goodiesInWorld.put(checker, Goodie.newGoodie(type, ImmutablePoint2D.of(x, y), screenId, rsrc) );
+		if (goodiesInWorld.get(coordinate) != null)
+			goodiesInWorld.remove(coordinate);
+		goodiesInWorld.put(coordinate, Goodie.newGoodie(type, ImmutablePoint2D.of(x, y), screenId, rsrc) );
 	}
 	
-	/**
-	 * Generates a collision checker String for the Map of String -> Goodie. Used internally to create map and externally
-	 * to create collision strings to check against.
-	 * 
-	 * @param x
-	 * 		row of goodie
-	 * 
-	 * @param y
-	 * 		column of goodie
-	 * 
-	 * @param screenId
-	 * 		id of the screen goodie will appear on
-	 * 
-	 * @return
-	 * 		string that can be used as a key to find the relevant goodie in the map
-	 */
-	public static String collisionCheckerForGoodie(final int x, final int y, final int screenId) { return "" + screenId + "X" + x + "," + y; }
-	
-	public void removeGoodie(final int x, final int y, final int screenId) {
-		String checker = "" + screenId + "X" + x + "," + y;
-		if (goodiesInWorld.get(checker) != null)
-			goodiesInWorld.remove(checker);
+	public void removeGoodie(final int screenId, final int x, final int y) {
+		WorldCoordinate coordinate = new WorldCoordinate(screenId, x, y);
+		if (goodiesInWorld.get(coordinate) != null)
+			goodiesInWorld.remove(coordinate);
 	}
 	
 	/**
@@ -836,7 +810,7 @@ public class World {
 	 * @return
 	 * 		immutable copy of the map representing the goodies in this world
 	 */
-	public Map<String, Goodie> getGoodies() { return Collections.unmodifiableMap(this.goodiesInWorld); }
+	public Map<WorldCoordinate, Goodie> getGoodies() { return Collections.unmodifiableMap(this.goodiesInWorld); }
 
 	/**
 	 * Returns an immutable copy of all the levels in the world
@@ -943,14 +917,8 @@ public class World {
 	 **************/
 	
 	private final String worldName;
-	// TODO one of the first things implemented in this game. Not sure if hashes were REALLY the best way to
-	// go... may have been a case of premature optimisation.
-	// The screen string, concatenated with "X", and then the the tile co-ordinates. . .
-	// "1000X4,3"
-	// That way, Bonzo just checks four places by making a string and checking the hash. Although strings are slower, this means
-	// that no matter how many objects, it will take the same amount of time to detect collisions; won't need to loop and see if anything
-	// is at that point
-	private final Map<String, Goodie> goodiesInWorld;
+
+	private final Map<WorldCoordinate, Goodie> goodiesInWorld;
 	private int goodiesCollected;
 	
 	// Holds a list of all goodies on a particlar screen. During screen reset, relevant goodies may

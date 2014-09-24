@@ -244,9 +244,9 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	private void addGoodie(final int x, final int y) {
 		if (this.currentState == EditorState.NO_WORLD_LOADED)  return;
 		
-		currentWorldEditor.addGoodie(x / GameConstants.GOODIE_SIZE_X, 
+		currentWorldEditor.addGoodie(currentScreenEditor.getId(),
+									 x / GameConstants.GOODIE_SIZE_X, 
 								 	 y / GameConstants.GOODIE_SIZE_Y, 
-									 currentScreenEditor.getId(), 
 									 currentGoodieType );
 	}
 	
@@ -267,7 +267,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		
 		currentScreenEditor.eraseTile(row, col);
 		
-		currentWorldEditor.removeGoodie(row, col, currentScreenEditor.getId() );
+		currentWorldEditor.removeGoodie(currentScreenEditor.getId(), row, col);
 	}
 	
 

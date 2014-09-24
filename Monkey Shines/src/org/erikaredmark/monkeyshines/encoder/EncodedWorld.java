@@ -27,6 +27,7 @@ import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.Conveyer.Rotation;
 import org.erikaredmark.monkeyshines.Sprite.ForcedDirection;
 import org.erikaredmark.monkeyshines.Sprite.SpriteType;
+import org.erikaredmark.monkeyshines.WorldCoordinate;
 import org.erikaredmark.monkeyshines.background.Background;
 import org.erikaredmark.monkeyshines.background.FullBackground;
 import org.erikaredmark.monkeyshines.background.SingleColorBackground;
@@ -152,7 +153,7 @@ public final class EncodedWorld {
 	 */
 	public World newWorldInstance(final WorldResource rsrc) {
 		final String worldName = world.getName();
-		final Map<String, Goodie> goodiesInWorld = protoToGoodies(world.getGoodiesList(), rsrc);
+		final Map<WorldCoordinate, Goodie> goodiesInWorld = protoToGoodies(world.getGoodiesList(), rsrc);
 		final List<Hazard> hazards = protoToHazards(world.getHazardsList() );
 		final int bonusScreen = this.world.getBonusScreen();
 		
@@ -226,12 +227,12 @@ public final class EncodedWorld {
 	}
 	
 	/* ------------------------------ Goodies -------------------------------- */
-	static List<WorldFormatProtos.World.StringToGoodieTuple> goodiesToProto(Map<String, Goodie> goodies) {
+	static List<WorldFormatProtos.World.StringToGoodieTuple> goodiesToProto(Map<WorldCoordinate, Goodie> goodies) {
 		List<WorldFormatProtos.World.StringToGoodieTuple> protoGoodies = new ArrayList<>(goodies.values().size() );
-		for (Entry<String, Goodie> entry : goodies.entrySet() ) {
+		for (Entry<WorldCoordinate, Goodie> entry : goodies.entrySet() ) {
 			WorldFormatProtos.World.Goodie goodie = goodieToProto(entry.getValue() );
 			protoGoodies.add(WorldFormatProtos.World.StringToGoodieTuple.newBuilder()
-							 .setOne(entry.getKey() )
+							 .setOne(entry.getKey().createSavedStringForm() )
 							 .setTwo(goodie)
 							 .build() );
 		}
@@ -246,10 +247,10 @@ public final class EncodedWorld {
 		return protoGoodie.build();
 	}
 	
-	static Map<String, Goodie> protoToGoodies(List<WorldFormatProtos.World.StringToGoodieTuple> protoGoodies, WorldResource rsrc) {
-		Map<String, Goodie> goodies = new HashMap<>(protoGoodies.size() );
+	static Map<WorldCoordinate, Goodie> protoToGoodies(List<WorldFormatProtos.World.StringToGoodieTuple> protoGoodies, WorldResource rsrc) {
+		Map<WorldCoordinate, Goodie> goodies = new HashMap<>(protoGoodies.size() );
 		for (WorldFormatProtos.World.StringToGoodieTuple tuple : protoGoodies) {
-			goodies.put(tuple.getOne(), protoToGoodie(tuple.getTwo(), rsrc) );
+			goodies.put(WorldCoordinate.fromSavedStringForm(tuple.getOne() ), protoToGoodie(tuple.getTwo(), rsrc) );
 		}
 		return goodies;
 	}

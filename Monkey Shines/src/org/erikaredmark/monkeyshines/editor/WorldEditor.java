@@ -12,6 +12,7 @@ import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.LevelScreen;
 import org.erikaredmark.monkeyshines.Sprite;
 import org.erikaredmark.monkeyshines.World;
+import org.erikaredmark.monkeyshines.WorldCoordinate;
 import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 
@@ -132,27 +133,27 @@ public final class WorldEditor {
 	/**
 	 * Forwarding call to {@link World#addGoodie(int, int, int, int) }													
 	 * 
+	 * @param screenId
+	 * 		id of screen goodie will appear on
+	 * 
 	 * @param i
 	 * 		row of goodie
 	 * 
 	 * @param j
 	 * 		column of goodie
 	 * 
-	 * @param id
-	 * 		id of the screen this goodie will appear on
-	 * 
 	 * @param goodieId
 	 * 		id of the actual goodie (apple, orange, gray key, etc...)
 	 */
-	public void addGoodie(int i, int j, int id, Goodie.Type goodieType) {
-		world.addGoodie(i, j, id, goodieType);
+	public void addGoodie(int screenId, int i, int j, Goodie.Type goodieType) {
+		world.addGoodie(screenId, i, j, goodieType);
 	}
 	
 	/**
 	 * Forwarding call to {@link World#removeGoodie(int, int, int) }
 	 */
-	public void removeGoodie(int row, int col, int screenId) {
-		world.removeGoodie(row, col, screenId);
+	public void removeGoodie(int screenId, int row, int col) {
+		world.removeGoodie(screenId, row, col);
 	}
 	
 	/**
@@ -214,7 +215,7 @@ public final class WorldEditor {
 	 * @return
 	 * 		immutable map of all goodies
 	 */
-	public Map<String, Goodie> getGoodies() { return world.getGoodies(); }
+	public Map<WorldCoordinate, Goodie> getGoodies() { return world.getGoodies(); }
 
 	
 	/** Forwarding call to {@link World#getLevelScreens() } 															

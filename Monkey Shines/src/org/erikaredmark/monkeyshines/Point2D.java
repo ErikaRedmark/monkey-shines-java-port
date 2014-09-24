@@ -10,6 +10,8 @@ import org.erikaredmark.monkeyshines.bounds.IPoint2D;
  * must have its own reference to a unique Point2D copy.
  * <p/>
  * Point data is internally stored as a double-precision floating point to allow fluid physics calculations.
+ * <p/>
+ * Instances of this class inherit equals and hashcode from object due to floating point precision and lack of need.
  * 
  * @author Erika Redmark
  *
