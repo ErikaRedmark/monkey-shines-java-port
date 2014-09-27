@@ -10,6 +10,7 @@ import org.erikaredmark.monkeyshines.LevelScreen;
 import org.erikaredmark.monkeyshines.Sprite;
 import org.erikaredmark.monkeyshines.Sprite.ForcedDirection;
 import org.erikaredmark.monkeyshines.Sprite.SpriteType;
+import org.erikaredmark.monkeyshines.Sprite.TwoWayFacing;
 import org.erikaredmark.monkeyshines.background.Background;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.tiles.TileType;
@@ -105,6 +106,7 @@ public class LevelScreenEditor {
 						  final AnimationSpeed animationSpeed,
 						  final SpriteType spriteType,
 						  final ForcedDirection forcedDirection,
+						  final TwoWayFacing twoWayDirection,
 						  final WorldResource rsrc) {
 		
 		Sprite s =
@@ -116,6 +118,7 @@ public class LevelScreenEditor {
 							 animationSpeed, 
 							 spriteType,
 							 forcedDirection,
+							 twoWayDirection,
 							 rsrc);
 		
 		// Game rules for visibility do not apply in the editor.

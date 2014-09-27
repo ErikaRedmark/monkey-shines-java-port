@@ -108,11 +108,22 @@ message World {
   	optional AnimationSpeed animation_speed = 6;
   	optional SpriteType type = 7;
   	optional ForcedDirection forced_direction = 8;
+  	// Older world files don't have this 
+  	optional TwoWayFacing two_sets_direction = 9;
   }
   
   enum AnimationType {
   	INCREASING_FRAMES = 1;
   	CYLCING_FRAMES = 2;
+  }
+  
+  enum TwoWayFacing {
+  	// If the sprite didn't have a two-way facing property, this lets the encoder know it is an older
+  	// encoding and it should default as needed.
+  	TWO_WAY_UNUSED = 1;
+  	SINGLE = 2;
+  	TWO_WAY_HORIZONTAL = 3;
+  	TWO_WAY_VERTICAL = 4;
   }
   
   // Original game had only two animation speeds. In the future it

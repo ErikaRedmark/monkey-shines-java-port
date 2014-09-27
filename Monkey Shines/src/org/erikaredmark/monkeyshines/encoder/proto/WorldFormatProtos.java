@@ -633,6 +633,116 @@ public final class WorldFormatProtos {
     }
 
     /**
+     * Protobuf enum {@code monkeyshines.World.TwoWayFacing}
+     */
+    public enum TwoWayFacing
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <code>TWO_WAY_UNUSED = 1;</code>
+       *
+       * <pre>
+       * If the sprite didn't have a two-way facing property, this lets the encoder know it is an older
+       * encoding and it should default as needed.
+       * </pre>
+       */
+      TWO_WAY_UNUSED(0, 1),
+      /**
+       * <code>SINGLE = 2;</code>
+       */
+      SINGLE(1, 2),
+      /**
+       * <code>TWO_WAY_HORIZONTAL = 3;</code>
+       */
+      TWO_WAY_HORIZONTAL(2, 3),
+      /**
+       * <code>TWO_WAY_VERTICAL = 4;</code>
+       */
+      TWO_WAY_VERTICAL(3, 4),
+      ;
+
+      /**
+       * <code>TWO_WAY_UNUSED = 1;</code>
+       *
+       * <pre>
+       * If the sprite didn't have a two-way facing property, this lets the encoder know it is an older
+       * encoding and it should default as needed.
+       * </pre>
+       */
+      public static final int TWO_WAY_UNUSED_VALUE = 1;
+      /**
+       * <code>SINGLE = 2;</code>
+       */
+      public static final int SINGLE_VALUE = 2;
+      /**
+       * <code>TWO_WAY_HORIZONTAL = 3;</code>
+       */
+      public static final int TWO_WAY_HORIZONTAL_VALUE = 3;
+      /**
+       * <code>TWO_WAY_VERTICAL = 4;</code>
+       */
+      public static final int TWO_WAY_VERTICAL_VALUE = 4;
+
+
+      public final int getNumber() { return value; }
+
+      public static TwoWayFacing valueOf(int value) {
+        switch (value) {
+          case 1: return TWO_WAY_UNUSED;
+          case 2: return SINGLE;
+          case 3: return TWO_WAY_HORIZONTAL;
+          case 4: return TWO_WAY_VERTICAL;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<TwoWayFacing>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static com.google.protobuf.Internal.EnumLiteMap<TwoWayFacing>
+          internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<TwoWayFacing>() {
+              public TwoWayFacing findValueByNumber(int number) {
+                return TwoWayFacing.valueOf(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(index);
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.getDescriptor().getEnumTypes().get(3);
+      }
+
+      private static final TwoWayFacing[] VALUES = values();
+
+      public static TwoWayFacing valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int index;
+      private final int value;
+
+      private TwoWayFacing(int index, int value) {
+        this.index = index;
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:monkeyshines.World.TwoWayFacing)
+    }
+
+    /**
      * Protobuf enum {@code monkeyshines.World.AnimationSpeed}
      *
      * <pre>
@@ -695,7 +805,7 @@ public final class WorldFormatProtos {
       }
       public static final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptor() {
-        return org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.getDescriptor().getEnumTypes().get(3);
+        return org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.getDescriptor().getEnumTypes().get(4);
       }
 
       private static final AnimationSpeed[] VALUES = values();
@@ -786,7 +896,7 @@ public final class WorldFormatProtos {
       }
       public static final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptor() {
-        return org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.getDescriptor().getEnumTypes().get(4);
+        return org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.getDescriptor().getEnumTypes().get(5);
       }
 
       private static final ForcedDirection[] VALUES = values();
@@ -907,7 +1017,7 @@ public final class WorldFormatProtos {
       }
       public static final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptor() {
-        return org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.getDescriptor().getEnumTypes().get(5);
+        return org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.getDescriptor().getEnumTypes().get(6);
       }
 
       private static final SpriteType[] VALUES = values();
@@ -1034,7 +1144,7 @@ public final class WorldFormatProtos {
       }
       public static final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptor() {
-        return org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.getDescriptor().getEnumTypes().get(6);
+        return org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.getDescriptor().getEnumTypes().get(7);
       }
 
       private static final TileType[] VALUES = values();
@@ -1116,7 +1226,7 @@ public final class WorldFormatProtos {
       }
       public static final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptor() {
-        return org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.getDescriptor().getEnumTypes().get(7);
+        return org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.getDescriptor().getEnumTypes().get(8);
       }
 
       private static final Rotation[] VALUES = values();
@@ -7270,6 +7380,24 @@ public final class WorldFormatProtos {
        * <code>optional .monkeyshines.World.ForcedDirection forced_direction = 8;</code>
        */
       org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.ForcedDirection getForcedDirection();
+
+      // optional .monkeyshines.World.TwoWayFacing two_sets_direction = 9;
+      /**
+       * <code>optional .monkeyshines.World.TwoWayFacing two_sets_direction = 9;</code>
+       *
+       * <pre>
+       * Older world files don't have this 
+       * </pre>
+       */
+      boolean hasTwoSetsDirection();
+      /**
+       * <code>optional .monkeyshines.World.TwoWayFacing two_sets_direction = 9;</code>
+       *
+       * <pre>
+       * Older world files don't have this 
+       * </pre>
+       */
+      org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TwoWayFacing getTwoSetsDirection();
     }
     /**
      * Protobuf type {@code monkeyshines.World.Sprite}
@@ -7407,6 +7535,17 @@ public final class WorldFormatProtos {
                 } else {
                   bitField0_ |= 0x00000080;
                   forcedDirection_ = value;
+                }
+                break;
+              }
+              case 72: {
+                int rawValue = input.readEnum();
+                org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TwoWayFacing value = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TwoWayFacing.valueOf(rawValue);
+                if (value == null) {
+                  unknownFields.mergeVarintField(9, rawValue);
+                } else {
+                  bitField0_ |= 0x00000100;
+                  twoSetsDirection_ = value;
                 }
                 break;
               }
@@ -7596,6 +7735,30 @@ public final class WorldFormatProtos {
         return forcedDirection_;
       }
 
+      // optional .monkeyshines.World.TwoWayFacing two_sets_direction = 9;
+      public static final int TWO_SETS_DIRECTION_FIELD_NUMBER = 9;
+      private org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TwoWayFacing twoSetsDirection_;
+      /**
+       * <code>optional .monkeyshines.World.TwoWayFacing two_sets_direction = 9;</code>
+       *
+       * <pre>
+       * Older world files don't have this 
+       * </pre>
+       */
+      public boolean hasTwoSetsDirection() {
+        return ((bitField0_ & 0x00000100) == 0x00000100);
+      }
+      /**
+       * <code>optional .monkeyshines.World.TwoWayFacing two_sets_direction = 9;</code>
+       *
+       * <pre>
+       * Older world files don't have this 
+       * </pre>
+       */
+      public org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TwoWayFacing getTwoSetsDirection() {
+        return twoSetsDirection_;
+      }
+
       private void initFields() {
         id_ = 0;
         startLocation_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.Point.getDefaultInstance();
@@ -7605,6 +7768,7 @@ public final class WorldFormatProtos {
         animationSpeed_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.AnimationSpeed.NORMAL_SPEED;
         type_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.SpriteType.NORMAL;
         forcedDirection_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.ForcedDirection.FORCED_NONE;
+        twoSetsDirection_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TwoWayFacing.TWO_WAY_UNUSED;
       }
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
@@ -7660,6 +7824,9 @@ public final class WorldFormatProtos {
         if (((bitField0_ & 0x00000080) == 0x00000080)) {
           output.writeEnum(8, forcedDirection_.getNumber());
         }
+        if (((bitField0_ & 0x00000100) == 0x00000100)) {
+          output.writeEnum(9, twoSetsDirection_.getNumber());
+        }
         getUnknownFields().writeTo(output);
       }
 
@@ -7700,6 +7867,10 @@ public final class WorldFormatProtos {
         if (((bitField0_ & 0x00000080) == 0x00000080)) {
           size += com.google.protobuf.CodedOutputStream
             .computeEnumSize(8, forcedDirection_.getNumber());
+        }
+        if (((bitField0_ & 0x00000100) == 0x00000100)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeEnumSize(9, twoSetsDirection_.getNumber());
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSerializedSize = size;
@@ -7848,6 +8019,8 @@ public final class WorldFormatProtos {
           bitField0_ = (bitField0_ & ~0x00000040);
           forcedDirection_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.ForcedDirection.FORCED_NONE;
           bitField0_ = (bitField0_ & ~0x00000080);
+          twoSetsDirection_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TwoWayFacing.TWO_WAY_UNUSED;
+          bitField0_ = (bitField0_ & ~0x00000100);
           return this;
         }
 
@@ -7920,6 +8093,10 @@ public final class WorldFormatProtos {
             to_bitField0_ |= 0x00000080;
           }
           result.forcedDirection_ = forcedDirection_;
+          if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
+            to_bitField0_ |= 0x00000100;
+          }
+          result.twoSetsDirection_ = twoSetsDirection_;
           result.bitField0_ = to_bitField0_;
           onBuilt();
           return result;
@@ -7959,6 +8136,9 @@ public final class WorldFormatProtos {
           }
           if (other.hasForcedDirection()) {
             setForcedDirection(other.getForcedDirection());
+          }
+          if (other.hasTwoSetsDirection()) {
+            setTwoSetsDirection(other.getTwoSetsDirection());
           }
           this.mergeUnknownFields(other.getUnknownFields());
           return this;
@@ -8529,6 +8709,58 @@ public final class WorldFormatProtos {
         public Builder clearForcedDirection() {
           bitField0_ = (bitField0_ & ~0x00000080);
           forcedDirection_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.ForcedDirection.FORCED_NONE;
+          onChanged();
+          return this;
+        }
+
+        // optional .monkeyshines.World.TwoWayFacing two_sets_direction = 9;
+        private org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TwoWayFacing twoSetsDirection_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TwoWayFacing.TWO_WAY_UNUSED;
+        /**
+         * <code>optional .monkeyshines.World.TwoWayFacing two_sets_direction = 9;</code>
+         *
+         * <pre>
+         * Older world files don't have this 
+         * </pre>
+         */
+        public boolean hasTwoSetsDirection() {
+          return ((bitField0_ & 0x00000100) == 0x00000100);
+        }
+        /**
+         * <code>optional .monkeyshines.World.TwoWayFacing two_sets_direction = 9;</code>
+         *
+         * <pre>
+         * Older world files don't have this 
+         * </pre>
+         */
+        public org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TwoWayFacing getTwoSetsDirection() {
+          return twoSetsDirection_;
+        }
+        /**
+         * <code>optional .monkeyshines.World.TwoWayFacing two_sets_direction = 9;</code>
+         *
+         * <pre>
+         * Older world files don't have this 
+         * </pre>
+         */
+        public Builder setTwoSetsDirection(org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TwoWayFacing value) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          bitField0_ |= 0x00000100;
+          twoSetsDirection_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional .monkeyshines.World.TwoWayFacing two_sets_direction = 9;</code>
+         *
+         * <pre>
+         * Older world files don't have this 
+         * </pre>
+         */
+        public Builder clearTwoSetsDirection() {
+          bitField0_ = (bitField0_ & ~0x00000100);
+          twoSetsDirection_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.TwoWayFacing.TWO_WAY_UNUSED;
           onChanged();
           return this;
         }
@@ -11413,7 +11645,7 @@ public final class WorldFormatProtos {
     java.lang.String[] descriptorData = {
       "\nCorg/erikaredmark/monkeyshines/encoder/" +
       "proto/world_file_format.proto\022\014monkeyshi" +
-      "nes\"\263\020\n\005World\022\014\n\004name\030\001 \001(\t\0228\n\007goodies\030\002" +
+      "nes\"\317\021\n\005World\022\014\n\004name\030\001 \001(\t\0228\n\007goodies\030\002" +
       " \003(\0132\'.monkeyshines.World.StringToGoodie" +
       "Tuple\0227\n\006levels\030\003 \003(\0132\'.monkeyshines.Wor" +
       "ld.IntegerToLevelTuple\022+\n\007hazards\030\004 \003(\0132" +
@@ -11438,7 +11670,7 @@ public final class WorldFormatProtos {
       ".World.Sprite\022\'\n\005tiles\030\005 \003(\0132\030.monkeyshi" +
       "nes.World.Tile\032J\n\nBackground\022\n\n\002id\030\001 \001(\r" +
       "\0220\n\004type\030\002 \001(\0162\".monkeyshines.World.Back" +
-      "groundType\032\210\003\n\006Sprite\022\n\n\002id\030\001 \001(\r\0221\n\016sta" +
+      "groundType\032\306\003\n\006Sprite\022\n\n\002id\030\001 \001(\r\0221\n\016sta" +
       "rt_location\030\002 \001(\0132\031.monkeyshines.World.P" +
       "oint\022-\n\014bounding_box\030\003 \001(\0132\027.monkeyshine",
       "s.World.Box\0220\n\rinitial_speed\030\004 \001(\0132\031.mon" +
@@ -11448,26 +11680,30 @@ public final class WorldFormatProtos {
       "d.AnimationSpeed\022,\n\004type\030\007 \001(\0162\036.monkeys" +
       "hines.World.SpriteType\022=\n\020forced_directi" +
       "on\030\010 \001(\0162#.monkeyshines.World.ForcedDire" +
-      "ction\032\233\001\n\004Tile\022\n\n\002id\030\001 \001(\r\022+\n\010location\030\002" +
-      " \001(\0132\031.monkeyshines.World.Point\022*\n\004type\030" +
-      "\003 \001(\0162\034.monkeyshines.World.TileType\022.\n\010r",
-      "otation\030\004 \001(\0162\034.monkeyshines.World.Rotat" +
-      "ion\"C\n\016DeathAnimation\022\020\n\014NORMAL_DEATH\020\000\022" +
-      "\007\n\003BEE\020\001\022\010\n\004BURN\020\002\022\014\n\010ELECTRIC\020\003\"8\n\016Back" +
-      "groundType\022\013\n\007PATTERN\020\001\022\010\n\004FULL\020\002\022\017\n\013SOL" +
-      "ID_COLOR\020\003\":\n\rAnimationType\022\025\n\021INCREASIN" +
-      "G_FRAMES\020\001\022\022\n\016CYLCING_FRAMES\020\002\",\n\016Animat" +
-      "ionSpeed\022\020\n\014NORMAL_SPEED\020\001\022\010\n\004SLOW\020\002\"E\n\017" +
-      "ForcedDirection\022\017\n\013FORCED_NONE\020\001\022\020\n\014FORC" +
-      "ED_RIGHT\020\002\022\017\n\013FORCED_LEFT\020\003\"]\n\nSpriteTyp" +
-      "e\022\n\n\006NORMAL\020\001\022\020\n\014HEALTH_DRAIN\020\002\022\r\n\tEXIT_",
-      "DOOR\020\003\022\016\n\nBONUS_DOOR\020\004\022\022\n\016SCENERY_SPRITE" +
-      "\020\005\"^\n\010TileType\022\t\n\005SOLID\020\001\022\010\n\004THRU\020\002\022\013\n\007S" +
-      "CENERY\020\003\022\n\n\006HAZARD\020\004\022\014\n\010CONVEYER\020\005\022\014\n\010BR" +
-      "EAKING\020\006\022\010\n\004NONE\020\007\"-\n\010Rotation\022\r\n\tCLOCKW" +
-      "ISE\020\001\022\022\n\016ANTI_CLOCKWISE\020\002B@\n+org.erikare" +
-      "dmark.monkeyshines.encoder.protoB\021WorldF" +
-      "ormatProtos"
+      "ction\022<\n\022two_sets_direction\030\t \001(\0162 .monk" +
+      "eyshines.World.TwoWayFacing\032\233\001\n\004Tile\022\n\n\002" +
+      "id\030\001 \001(\r\022+\n\010location\030\002 \001(\0132\031.monkeyshine",
+      "s.World.Point\022*\n\004type\030\003 \001(\0162\034.monkeyshin" +
+      "es.World.TileType\022.\n\010rotation\030\004 \001(\0162\034.mo" +
+      "nkeyshines.World.Rotation\"C\n\016DeathAnimat" +
+      "ion\022\020\n\014NORMAL_DEATH\020\000\022\007\n\003BEE\020\001\022\010\n\004BURN\020\002" +
+      "\022\014\n\010ELECTRIC\020\003\"8\n\016BackgroundType\022\013\n\007PATT" +
+      "ERN\020\001\022\010\n\004FULL\020\002\022\017\n\013SOLID_COLOR\020\003\":\n\rAnim" +
+      "ationType\022\025\n\021INCREASING_FRAMES\020\001\022\022\n\016CYLC" +
+      "ING_FRAMES\020\002\"\\\n\014TwoWayFacing\022\022\n\016TWO_WAY_" +
+      "UNUSED\020\001\022\n\n\006SINGLE\020\002\022\026\n\022TWO_WAY_HORIZONT" +
+      "AL\020\003\022\024\n\020TWO_WAY_VERTICAL\020\004\",\n\016AnimationS",
+      "peed\022\020\n\014NORMAL_SPEED\020\001\022\010\n\004SLOW\020\002\"E\n\017Forc" +
+      "edDirection\022\017\n\013FORCED_NONE\020\001\022\020\n\014FORCED_R" +
+      "IGHT\020\002\022\017\n\013FORCED_LEFT\020\003\"]\n\nSpriteType\022\n\n" +
+      "\006NORMAL\020\001\022\020\n\014HEALTH_DRAIN\020\002\022\r\n\tEXIT_DOOR" +
+      "\020\003\022\016\n\nBONUS_DOOR\020\004\022\022\n\016SCENERY_SPRITE\020\005\"^" +
+      "\n\010TileType\022\t\n\005SOLID\020\001\022\010\n\004THRU\020\002\022\013\n\007SCENE" +
+      "RY\020\003\022\n\n\006HAZARD\020\004\022\014\n\010CONVEYER\020\005\022\014\n\010BREAKI" +
+      "NG\020\006\022\010\n\004NONE\020\007\"-\n\010Rotation\022\r\n\tCLOCKWISE\020" +
+      "\001\022\022\n\016ANTI_CLOCKWISE\020\002B@\n+org.erikaredmar" +
+      "k.monkeyshines.encoder.protoB\021WorldForma",
+      "tProtos"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -11533,7 +11769,7 @@ public final class WorldFormatProtos {
           internal_static_monkeyshines_World_Sprite_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_monkeyshines_World_Sprite_descriptor,
-              new java.lang.String[] { "Id", "StartLocation", "BoundingBox", "InitialSpeed", "Animation", "AnimationSpeed", "Type", "ForcedDirection", });
+              new java.lang.String[] { "Id", "StartLocation", "BoundingBox", "InitialSpeed", "Animation", "AnimationSpeed", "Type", "ForcedDirection", "TwoSetsDirection", });
           internal_static_monkeyshines_World_Tile_descriptor =
             internal_static_monkeyshines_World_descriptor.getNestedTypes().get(9);
           internal_static_monkeyshines_World_Tile_fieldAccessorTable = new

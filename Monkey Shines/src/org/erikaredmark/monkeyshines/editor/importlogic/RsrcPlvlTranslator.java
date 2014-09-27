@@ -120,7 +120,8 @@ public class RsrcPlvlTranslator {
 										spriteData.getSpriteAnimationType(), 
 										spriteData.getSpriteAnimationSpeed(), 
 										spriteData.getSpriteType(), 
-										spriteData.getPortDirection(), 
+										spriteData.getPortDirection(),
+										spriteData.getTwoFacing(),
 										rsrc);
 			spritesOnScreen.add(s);
 		}

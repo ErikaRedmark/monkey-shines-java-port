@@ -921,6 +921,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 														 model.getAnimationSpeed(), 
 														 model.getSpriteType(), 
 														 model.getForceDirection(),
+														 model.getTwoWayFacing(),
 														 editor.currentWorldEditor.getWorldResource() );
 				}
 			}
@@ -945,6 +946,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 														 model.getAnimationSpeed(), 
 														 model.getSpriteType(),
 														 model.getForceDirection(),
+														 model.getTwoWayFacing(),
 														 editor.currentWorldEditor.getWorldResource() );
 				}
 			}

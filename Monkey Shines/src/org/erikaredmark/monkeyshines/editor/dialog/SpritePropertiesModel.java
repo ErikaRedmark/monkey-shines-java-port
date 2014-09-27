@@ -7,6 +7,7 @@ import org.erikaredmark.monkeyshines.ImmutableRectangle;
 import org.erikaredmark.monkeyshines.Sprite;
 import org.erikaredmark.monkeyshines.Sprite.ForcedDirection;
 import org.erikaredmark.monkeyshines.Sprite.SpriteType;
+import org.erikaredmark.monkeyshines.Sprite.TwoWayFacing;
 import org.erikaredmark.util.ObservableModel;
 
 /**
@@ -32,6 +33,10 @@ public final class SpritePropertiesModel extends ObservableModel {
 	private AnimationType animationType;
 	private AnimationSpeed animationSpeed;
 	private SpriteType spriteType;
+	// This field is ignored for sprites that do not have two-way sprite sheets.
+	// Defaults to horizontal internally but should be considered 'single' if the sprite
+	// can't handle two-way facing.
+	private TwoWayFacing twoWayDirection;
 	
 	// Only relevant for two-way facing sprites.
 	private ForcedDirection forceDirection;
@@ -47,6 +52,7 @@ public final class SpritePropertiesModel extends ObservableModel {
 								  final AnimationSpeed   animationSpeed,
 								  final SpriteType		 spriteType,
 								  final ForcedDirection  forcedDirection,
+								  final TwoWayFacing     twoWayDirection,
 								  final int 			 spriteId) {
 		
 		this.spriteBoundingBox = spriteBoundingBox;
@@ -56,6 +62,7 @@ public final class SpritePropertiesModel extends ObservableModel {
 		this.animationSpeed = animationSpeed;
 		this.spriteId = spriteId;
 		this.forceDirection = forcedDirection;
+		this.twoWayDirection = twoWayDirection;
 		this.spriteType = spriteType;
 	}
 	
@@ -69,7 +76,8 @@ public final class SpritePropertiesModel extends ObservableModel {
 										 AnimationType.INCREASING_FRAMES, 
 										 AnimationSpeed.NORMAL, 
 										 SpriteType.NORMAL,
-										 Sprite.ForcedDirection.NONE,
+										 ForcedDirection.NONE,
+										 TwoWayFacing.HORIZONTAL,
 										 0);
 	}
 	
@@ -93,6 +101,7 @@ public final class SpritePropertiesModel extends ObservableModel {
 										 s.getAnimationSpeed(),
 										 s.getType(), 
 										 s.getForcedDirection(),
+										 s.getTwoWayFacing(),
 										 s.getId() );
 	}
 	
@@ -105,6 +114,7 @@ public final class SpritePropertiesModel extends ObservableModel {
 	public AnimationSpeed getAnimationSpeed() { return animationSpeed; }
 	public SpriteType getSpriteType() { return spriteType; }
 	public ForcedDirection getForceDirection() { return forceDirection; }
+	public TwoWayFacing getTwoWayFacing() { return twoWayDirection; }
 	/**
 	 * @return {@code true} if the user hit okay, {@code false} if the window was just closed or cancel was hit.
 	 */
@@ -155,6 +165,8 @@ public final class SpritePropertiesModel extends ObservableModel {
 	}
 	
 	public void setForcedDirection(ForcedDirection force) { this.forceDirection = force; }
+	
+	public void setTwoWayFacing(TwoWayFacing direction) { this.twoWayDirection = direction; }
 	
 	public void setSpriteBoundingBox(ImmutableRectangle spriteBoundingBox) { this.spriteBoundingBox = spriteBoundingBox; }
 	public void setSpriteVelocity(ImmutablePoint2D spriteVelocity) { this.spriteVelocity = spriteVelocity; }

@@ -10,6 +10,7 @@ import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.ImmutableRectangle;
 import org.erikaredmark.monkeyshines.Sprite.ForcedDirection;
 import org.erikaredmark.monkeyshines.Sprite.SpriteType;
+import org.erikaredmark.monkeyshines.Sprite.TwoWayFacing;
 import org.erikaredmark.monkeyshines.editor.importlogic.WorldTranslationException.TranslationFailure;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 
@@ -48,8 +49,7 @@ final class MSSpriteData {
 	// Second bit is skipped. It has a 1 for cycling frames. No point since a 0 for increasing frames means the same thing
 	private static final int FLAG_SLOW_ANIMATION = 1 << 2;
 	
-	// TODO port does not handle vertical two-set sprites currently. Uncomment when it does.
-	// private static final int FLAG_TWO_WAY_FACING_VERTICAL = 1 << 4;
+	private static final int FLAG_TWO_WAY_FACING_VERTICAL = 1 << 4;
 	
 	
 	private static final int FLAG_TWO_WAY_FACING_HORIZONTAL = 1 << 3;
@@ -210,12 +210,36 @@ final class MSSpriteData {
 	
 	/**
 	 * Returns the forced direction, if any, of the sprite
-	 * TODO this will have to be augmented to handle vertical flags.
 	 */
 	ForcedDirection getPortDirection() {
-		if (alwaysFacingLeft)  		 return ForcedDirection.LEFT;
-		else if (alwaysFacingRight)  return ForcedDirection.RIGHT;
-		else						 return ForcedDirection.NONE;
+		// Always facing left and always facing right can apply to always bottom/top identically given how
+		// the sprite graphics are computed. In the event that the vertical flag is set, use the vertical
+		// types. Otherwise, default to the standard horizontal types.
+		
+		if ((flags & FLAG_TWO_WAY_FACING_VERTICAL) != 0) {
+			if (alwaysFacingLeft)  		 return ForcedDirection.DOWN;
+			else if (alwaysFacingRight)  return ForcedDirection.UP;
+		} else {
+			if (alwaysFacingLeft)  		 return ForcedDirection.LEFT;
+			else if (alwaysFacingRight)  return ForcedDirection.RIGHT;
+		}
+		
+		// Else if not returned yet
+		return ForcedDirection.NONE;
+	}
+	
+	/**
+	 * Returns whether the sprite has two sets vertical, horizontal, or is just one set.
+	 * @return
+	 */
+	TwoWayFacing getTwoFacing() {
+		if ((flags & FLAG_TWO_WAY_FACING_HORIZONTAL) != 0) {
+			return TwoWayFacing.HORIZONTAL;
+		} else if ((flags & FLAG_TWO_WAY_FACING_HORIZONTAL) != 1) {
+			return TwoWayFacing.VERTICAL;
+		} else {
+			return TwoWayFacing.SINGLE;
+		}
 	}
 	
 	/**

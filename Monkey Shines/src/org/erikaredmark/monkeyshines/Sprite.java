@@ -10,13 +10,13 @@ import org.erikaredmark.monkeyshines.resource.WorldResource;
 
 /**
  * 
- * Represents a moving entity in the world, bounded within a region, that will kill bonzo if he
- * touched it.
+ * Represents a moving entity in the world, bounded within a region, that may affect Bonzo in some way if
+ * he collides with it.
  * 
  * @author Erika Redmark
  *
  */
-public class Sprite {
+public final class Sprite {
 
 	// Initial state information
 	private final ImmutablePoint2D   startLocation;
@@ -54,14 +54,14 @@ public class Sprite {
 	// two rows of sprites are automatically considered two way facing.
 	// A two-way facing sprite may be set not to be, but canBeTwoWayFacing simply states whether it has the 
 	// capability, not whether it currently is.
-	private final boolean canBeTwoWayFacing;
+	private TwoWayFacing twoWayDirection;
 	private ForcedDirection forcedDirection;
 	
 	private WorldResource rsrc;
 	/** 
 	 * 
 	 * Creates a new unmoving sprite with the given and resource pack. The sprite starts at 0,0, has no bounding box to
-	 * move in, and has no velocity at all.
+	 * move in, and has no velocity at all. If it is a two-way facing sprite, it starts as horizontal.
 	 * <p/>
 	 * A valid animation type must still be supplied
 	 * 
@@ -81,6 +81,7 @@ public class Sprite {
 	 * 		a new instance of this class
 	 */
 	public static Sprite newUnmovingSprite(int id, AnimationType type, AnimationSpeed speed, SpriteType spriteType, WorldResource rsrc) {
+		boolean canBeTwoWayFacing = (rsrc.getSpritesheetFor(id).getHeight() > GameConstants.SPRITE_SIZE_Y);
 		return new Sprite(id, 
 						  ImmutablePoint2D.of(0, 0), 
 						  ImmutableRectangle.of(0, 0, 0, 0), 
@@ -90,6 +91,7 @@ public class Sprite {
 						  speed,
 						  spriteType,
 						  ForcedDirection.NONE,
+						  canBeTwoWayFacing ? TwoWayFacing.HORIZONTAL : TwoWayFacing.SINGLE, 
 						  rsrc);
 	}
 	
@@ -115,6 +117,20 @@ public class Sprite {
 	 * @param animationType
 	 * 		the type of animation this sprite will undergo
 	 * 
+	 * @param animationSpeed
+	 * 		how many ticks between sprite animations
+	 * 
+	 * @param spriteType
+	 * 		how the sprite affects Bonzo on contact
+	 * 
+	 * @param forcedDirection
+	 * 		whether the sprite always should face a particular direction. Only applicable for two-way facing sprites
+	 * 
+	 * @param twoWayFacing
+	 * 		whether the sprite handles it's double sprite sheet as left-right or up-down. This can be
+	 * 		{@code Single} to indicate it only uses one sheet. Types other than {@code Single} are ignored
+	 * 		if the sprite can't support two-way facing.
+	 * 
 	 * @param rsrc
 	 * 		graphics resource for giving the sprite a proper graphics context
 	 * 
@@ -127,6 +143,7 @@ public class Sprite {
 								  AnimationSpeed speed, 
 								  SpriteType spriteType,
 								  ForcedDirection forcedDirection,
+								  TwoWayFacing twoWayFacing,
 								  WorldResource rsrc) {
 		
 		return new Sprite(spriteId, 
@@ -138,6 +155,7 @@ public class Sprite {
 						  speed, 
 						  spriteType,
 						  forcedDirection,
+						  twoWayFacing,
 						  rsrc);
 	}
 	
@@ -151,6 +169,7 @@ public class Sprite {
 			  	   final AnimationSpeed speed,
 			  	   final SpriteType spriteType,
 			  	   final ForcedDirection forcedDirection,
+			  	   final TwoWayFacing twoWayDirection,
 			  	   final WorldResource rsrc) {
 		
 		this.id = id;
@@ -162,8 +181,11 @@ public class Sprite {
 		this.animationSpeed = speed;
 		this.type = spriteType;
 		this.rsrc = rsrc;
-		this.canBeTwoWayFacing = (rsrc.getSpritesheetFor(this.id).getHeight() > GameConstants.SPRITE_SIZE_Y);
+		boolean canBeTwoWayFacing = (rsrc.getSpritesheetFor(this.id).getHeight() > GameConstants.SPRITE_SIZE_Y);
 		this.forcedDirection = forcedDirection;
+		this.twoWayDirection =   canBeTwoWayFacing 
+							   ? twoWayDirection
+							   : TwoWayFacing.SINGLE;
 		
 		// State information
 		setStateToDefaults();
@@ -199,11 +221,18 @@ public class Sprite {
 		currentClip.setX(0);
 		currentClip.setY(0);
 		ForcedDirection dir = getForcedDirection();
-		if (canBeTwoWayFacing) {
-			if (  (dir == ForcedDirection.NONE && speedX >= 0) 
-			    || dir == ForcedDirection.LEFT) {
+		if (this.twoWayDirection == TwoWayFacing.HORIZONTAL) {
+			if (   (dir == ForcedDirection.NONE && speedX >= 0)
+			    ||  dir == ForcedDirection.LEFT) {
+				
 				this.currentClip.setY(GameConstants.SPRITE_SIZE_Y);
 			}
+		} else if (this.twoWayDirection == TwoWayFacing.VERTICAL) {
+		    if (   (dir == ForcedDirection.NONE && speedY >= 0)
+		    	|| dir == ForcedDirection.DOWN) {
+		    	
+		    	this.currentClip.setY(GameConstants.SPRITE_SIZE_Y);
+		    }
 		}
 	}
 	
@@ -254,6 +283,14 @@ public class Sprite {
 	 * 
 	 */
 	public AnimationSpeed getAnimationSpeed() { return animationSpeed; }
+	
+	/**
+	 * 
+	 * Returns the back-forth direction required to make this sprite animate between its different
+	 * frames of animation.
+	 * 
+	 */
+	public TwoWayFacing getTwoWayFacing() { return twoWayDirection; }
 	
 	/**
 	 * 
@@ -400,7 +437,7 @@ public class Sprite {
 	 * 
 	 */
 	public ForcedDirection getForcedDirection() {
-		return   canBeTwoWayFacing
+		return   twoWayDirection != TwoWayFacing.SINGLE
 			   ? this.forcedDirection
 			   : ForcedDirection.NONE;
 	}
@@ -412,9 +449,9 @@ public class Sprite {
 	 */
 	private void reverseX() { 
 		speedX = -speedX;
-		// Don't swap directinos unless it is not forced and two-way
+		// Don't swap directions unless it is not forced and two-way
 		if (   getForcedDirection() == ForcedDirection.NONE
-		    && canBeTwoWayFacing) {
+		    && twoWayDirection == TwoWayFacing.HORIZONTAL) {
 			if (speedX < 0) {
 				currentClip.setY(0);
 		    } else {
@@ -423,7 +460,18 @@ public class Sprite {
 		}
 	}
 	
-	private void reverseY() { speedY = -speedY; }
+	private void reverseY() { 
+		speedY = -speedY; 
+		// Copy pasta of reverseY, but looks at up/down directions
+		if (   getForcedDirection() == ForcedDirection.NONE
+			    && twoWayDirection == TwoWayFacing.VERTICAL) {
+				if (speedX < 0) {
+					currentClip.setY(0);
+			    } else {
+					currentClip.setY(GameConstants.SPRITE_SIZE_Y);
+				}
+			}
+	}
 	
 	/**
 	 * 
@@ -464,7 +512,7 @@ public class Sprite {
 		final int intersectionX = intersection.getLocation().x();
 		final int intersectionY = intersection.getLocation().y();
 		
-		// Initial location logic: Resole the intersection location in the world against
+		// Initial location logic: Resolve the intersection location in the world against
 		// our drawing location. Wherever the difference is negative, the location in the
 		// source image is just the normal initial 0 point for that frame. Otherwise, it
 		// is the 0 point with the positive offset.
@@ -532,8 +580,20 @@ public class Sprite {
 	 */
 	public enum ForcedDirection {
 		NONE,
+		// Right and Up are practically the same; right facing and top facing are always the first row
 		RIGHT,
-		LEFT;
+		UP,
+		// Similiar practical identity to right/up. Left and down are always the bottom row
+		LEFT,
+		DOWN;
+	}
+	
+	public enum TwoWayFacing {
+		// One row of spritesheet
+		SINGLE,
+		// Two rows: default is horiztonal if two rows
+		HORIZONTAL,
+		VERTICAL;
 	}
 	
 	public enum SpriteType {

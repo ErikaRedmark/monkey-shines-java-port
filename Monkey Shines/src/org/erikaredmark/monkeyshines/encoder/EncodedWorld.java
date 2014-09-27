@@ -22,6 +22,7 @@ import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.ImmutableRectangle;
 import org.erikaredmark.monkeyshines.LevelScreen;
 import org.erikaredmark.monkeyshines.Sprite;
+import org.erikaredmark.monkeyshines.Sprite.TwoWayFacing;
 import org.erikaredmark.monkeyshines.Tile;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.Conveyer.Rotation;
@@ -378,6 +379,7 @@ public final class EncodedWorld {
 		protoSprite.setAnimationSpeed(animationSpeedToProto(sprite.getAnimationSpeed() ) );
 		protoSprite.setType(spriteTypeToProto(sprite.getType() ) );
 		protoSprite.setForcedDirection(forcedDirectionToProto(sprite.getForcedDirection() ) );
+		protoSprite.setTwoSetsDirection(twoWayFacingToProto(sprite.getTwoWayFacing() ) );
 		
 		// Build a point for storage
 		WorldFormatProtos.World.Point.Builder initialSpeed = WorldFormatProtos.World.Point.newBuilder();
@@ -404,7 +406,36 @@ public final class EncodedWorld {
 								protoToAnimationSpeed(protoSprite.getAnimationSpeed() ),
 								protoToSpriteType(protoSprite.getType() ),
 								protoToForcedDirection(protoSprite.getForcedDirection() ),
+								protoToTwoWayFacing(protoSprite.getTwoSetsDirection() ),
 								rsrc);
+	}
+	
+	/* ------------------------- Two Way Facing -------------------------- */
+	static WorldFormatProtos.World.TwoWayFacing twoWayFacingToProto(TwoWayFacing facing) {
+		switch (facing) {
+		case SINGLE:      return WorldFormatProtos.World.TwoWayFacing.SINGLE;
+		case HORIZONTAL:  return WorldFormatProtos.World.TwoWayFacing.TWO_WAY_HORIZONTAL;
+		case VERTICAL:    return WorldFormatProtos.World.TwoWayFacing.TWO_WAY_VERTICAL;
+		default:   throw new RuntimeException("Two Way facing type " + facing + " has no defined proto version");
+		}
+	}
+	
+	static TwoWayFacing protoToTwoWayFacing(WorldFormatProtos.World.TwoWayFacing protoFacing) {
+		// note: protoFacing may be null and probably is even in the distributed worlds, as two-way facing
+		// was an automatic property based on the graphics resource and assumed horizontal. Whilst it is
+		// still automatic to a degree, it can now be requested vertical (although it won't comply if the
+		// graphics can't handle it).
+		if (protoFacing == null || protoFacing == WorldFormatProtos.World.TwoWayFacing.TWO_WAY_UNUSED) {
+			// Will become SINGLE if the graphics can't take it.
+			return TwoWayFacing.HORIZONTAL;
+		} else {
+			switch (protoFacing) {
+			case SINGLE:             return TwoWayFacing.SINGLE;
+			case TWO_WAY_HORIZONTAL: return TwoWayFacing.HORIZONTAL;
+			case TWO_WAY_VERTICAL:   return TwoWayFacing.VERTICAL;
+			default:   throw new RuntimeException("Two Way facing type " + protoFacing + " has no defined java object");
+			}
+		}
 	}
 	
 	/* ------------------------ Forced Direction ------------------------- */
