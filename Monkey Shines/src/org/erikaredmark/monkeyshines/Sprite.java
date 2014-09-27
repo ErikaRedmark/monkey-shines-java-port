@@ -223,13 +223,13 @@ public final class Sprite {
 		ForcedDirection dir = getForcedDirection();
 		if (this.twoWayDirection == TwoWayFacing.HORIZONTAL) {
 			if (   (dir == ForcedDirection.NONE && speedX >= 0)
-			    ||  dir == ForcedDirection.LEFT) {
+			    ||  dir == ForcedDirection.LEFT_DOWN) {
 				
 				this.currentClip.setY(GameConstants.SPRITE_SIZE_Y);
 			}
 		} else if (this.twoWayDirection == TwoWayFacing.VERTICAL) {
 		    if (   (dir == ForcedDirection.NONE && speedY >= 0)
-		    	|| dir == ForcedDirection.DOWN) {
+		    	||  dir == ForcedDirection.LEFT_DOWN) {
 		    	
 		    	this.currentClip.setY(GameConstants.SPRITE_SIZE_Y);
 		    }
@@ -253,6 +253,11 @@ public final class Sprite {
 	 */
 	public void setVisible(boolean visible) { this.visible = visible; }
 
+	/**
+	 * Returns the resource that this sprite draws its graphics from.
+	 */
+	public WorldResource getWorldResource() { return this.rsrc; }
+	
 	/**
 	 * 
 	 * Returns the starting location of this sprite. The returned object is immutable.
@@ -464,13 +469,13 @@ public final class Sprite {
 		speedY = -speedY; 
 		// Copy pasta of reverseY, but looks at up/down directions
 		if (   getForcedDirection() == ForcedDirection.NONE
-			    && twoWayDirection == TwoWayFacing.VERTICAL) {
-				if (speedX < 0) {
-					currentClip.setY(0);
-			    } else {
-					currentClip.setY(GameConstants.SPRITE_SIZE_Y);
-				}
+			&& twoWayDirection == TwoWayFacing.VERTICAL) {
+			if (speedY < 0) {
+				currentClip.setY(0);
+		    } else {
+				currentClip.setY(GameConstants.SPRITE_SIZE_Y);
 			}
+		}
 	}
 	
 	/**
@@ -581,11 +586,9 @@ public final class Sprite {
 	public enum ForcedDirection {
 		NONE,
 		// Right and Up are practically the same; right facing and top facing are always the first row
-		RIGHT,
-		UP,
+		RIGHT_UP,
 		// Similiar practical identity to right/up. Left and down are always the bottom row
-		LEFT,
-		DOWN;
+		LEFT_DOWN;
 	}
 	
 	public enum TwoWayFacing {

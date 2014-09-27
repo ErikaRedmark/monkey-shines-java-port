@@ -443,8 +443,8 @@ public final class EncodedWorld {
 	static WorldFormatProtos.World.ForcedDirection forcedDirectionToProto(ForcedDirection forced) {
 		switch (forced) {
 		case NONE:  return WorldFormatProtos.World.ForcedDirection.FORCED_NONE;
-		case RIGHT: return WorldFormatProtos.World.ForcedDirection.FORCED_RIGHT;
-		case LEFT:  return WorldFormatProtos.World.ForcedDirection.FORCED_LEFT;
+		case RIGHT_UP: return WorldFormatProtos.World.ForcedDirection.FORCED_RIGHT;
+		case LEFT_DOWN:  return WorldFormatProtos.World.ForcedDirection.FORCED_LEFT;
 		default:   throw new RuntimeException("Forced Direction type " + forced + " has no defined proto version");
 		}
 	}
@@ -452,8 +452,8 @@ public final class EncodedWorld {
 	static ForcedDirection protoToForcedDirection(WorldFormatProtos.World.ForcedDirection protoForced) {
 		switch (protoForced) {
 		case FORCED_NONE:  return ForcedDirection.NONE;
-		case FORCED_RIGHT: return ForcedDirection.RIGHT;
-		case FORCED_LEFT:  return ForcedDirection.LEFT;
+		case FORCED_RIGHT: return ForcedDirection.RIGHT_UP;
+		case FORCED_LEFT:  return ForcedDirection.LEFT_DOWN;
 		default:   throw new RuntimeException("Forced Direction type " + protoForced + " has no defined java object");
 		}
 	}

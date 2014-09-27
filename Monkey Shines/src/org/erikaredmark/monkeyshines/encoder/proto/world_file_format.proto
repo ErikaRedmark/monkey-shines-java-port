@@ -135,6 +135,8 @@ message World {
   }
   
   enum ForcedDirection {
+  	// RIGHT stands for RIGHT and UP. LEFT stands for LEFT and DOWN. TwoWayFacing decides which of the
+  	// two makes sense in the context.
   	FORCED_NONE = 1;
   	FORCED_RIGHT = 2;
   	FORCED_LEFT = 3;

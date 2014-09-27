@@ -213,16 +213,9 @@ final class MSSpriteData {
 	 */
 	ForcedDirection getPortDirection() {
 		// Always facing left and always facing right can apply to always bottom/top identically given how
-		// the sprite graphics are computed. In the event that the vertical flag is set, use the vertical
-		// types. Otherwise, default to the standard horizontal types.
-		
-		if ((flags & FLAG_TWO_WAY_FACING_VERTICAL) != 0) {
-			if (alwaysFacingLeft)  		 return ForcedDirection.DOWN;
-			else if (alwaysFacingRight)  return ForcedDirection.UP;
-		} else {
-			if (alwaysFacingLeft)  		 return ForcedDirection.LEFT;
-			else if (alwaysFacingRight)  return ForcedDirection.RIGHT;
-		}
+		// the sprite graphics are computed.
+		if (alwaysFacingLeft)  		 return ForcedDirection.LEFT_DOWN;
+		else if (alwaysFacingRight)  return ForcedDirection.RIGHT_UP;
 		
 		// Else if not returned yet
 		return ForcedDirection.NONE;
@@ -235,7 +228,7 @@ final class MSSpriteData {
 	TwoWayFacing getTwoFacing() {
 		if ((flags & FLAG_TWO_WAY_FACING_HORIZONTAL) != 0) {
 			return TwoWayFacing.HORIZONTAL;
-		} else if ((flags & FLAG_TWO_WAY_FACING_HORIZONTAL) != 1) {
+		} else if ((flags & FLAG_TWO_WAY_FACING_VERTICAL) != 1) {
 			return TwoWayFacing.VERTICAL;
 		} else {
 			return TwoWayFacing.SINGLE;

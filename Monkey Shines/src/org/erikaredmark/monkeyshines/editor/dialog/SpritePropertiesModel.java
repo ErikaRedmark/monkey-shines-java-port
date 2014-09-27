@@ -2,12 +2,14 @@ package org.erikaredmark.monkeyshines.editor.dialog;
 
 import org.erikaredmark.monkeyshines.AnimationSpeed;
 import org.erikaredmark.monkeyshines.AnimationType;
+import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.ImmutableRectangle;
 import org.erikaredmark.monkeyshines.Sprite;
 import org.erikaredmark.monkeyshines.Sprite.ForcedDirection;
 import org.erikaredmark.monkeyshines.Sprite.SpriteType;
 import org.erikaredmark.monkeyshines.Sprite.TwoWayFacing;
+import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.util.ObservableModel;
 
 /**
@@ -37,9 +39,15 @@ public final class SpritePropertiesModel extends ObservableModel {
 	// Defaults to horizontal internally but should be considered 'single' if the sprite
 	// can't handle two-way facing.
 	private TwoWayFacing twoWayDirection;
+	private TwoWayFacing lastNonSingleDirection;
 	
 	// Only relevant for two-way facing sprites.
 	private ForcedDirection forceDirection;
+	
+	// Graphics are needed to determine if a sprite can handle two-way facing or if it is stuck
+	// without that. Recomputed on each id change
+	private boolean canBeTwoWayFacing;
+	private final WorldResource rsrc;
 	
 	/** Both old and new values will be {@code Integer}, never null
 	 */
@@ -53,6 +61,7 @@ public final class SpritePropertiesModel extends ObservableModel {
 								  final SpriteType		 spriteType,
 								  final ForcedDirection  forcedDirection,
 								  final TwoWayFacing     twoWayDirection,
+								  final WorldResource    rsrc,
 								  final int 			 spriteId) {
 		
 		this.spriteBoundingBox = spriteBoundingBox;
@@ -62,14 +71,36 @@ public final class SpritePropertiesModel extends ObservableModel {
 		this.animationSpeed = animationSpeed;
 		this.spriteId = spriteId;
 		this.forceDirection = forcedDirection;
-		this.twoWayDirection = twoWayDirection;
 		this.spriteType = spriteType;
+		this.rsrc = rsrc;
+		
+		if (twoWayDirection != TwoWayFacing.SINGLE) {
+			this.lastNonSingleDirection = twoWayDirection;
+		}
+		
+		computeTwoWayFacingInstructions();
+	}
+	
+	private void computeTwoWayFacingInstructions() {
+		this.canBeTwoWayFacing = (this.rsrc.getSpritesheetFor(this.spriteId).getHeight() > GameConstants.SPRITE_SIZE_Y);
+		
+		// Two way direction is ALWAYS single (and should be grayed out in dialog) regardless of input if the graphics
+		// can't take it. Otherwise, set to passed value
+		this.twoWayDirection =   !(this.canBeTwoWayFacing)
+							   ? TwoWayFacing.SINGLE
+							   : (   lastNonSingleDirection != null
+								   ? lastNonSingleDirection
+								   : TwoWayFacing.HORIZONTAL);
+							   
+		if (this.twoWayDirection != TwoWayFacing.SINGLE) {
+			this.lastNonSingleDirection = this.twoWayDirection;
+		}
 	}
 	
 	/** Creates a new backing model with default sprite information (0, 0) for all points, sprite id 0, and increasing frames
 	 *  for animation
 	 */
-	public static SpritePropertiesModel newModelWithDefaults() {
+	public static SpritePropertiesModel newModelWithDefaults(WorldResource rsrc) {
 		return new SpritePropertiesModel(ImmutableRectangle.of(0, 0, 0, 0), 
 										 ImmutablePoint2D.of(0, 0), 
 										 ImmutablePoint2D.of(0, 0), 
@@ -78,6 +109,7 @@ public final class SpritePropertiesModel extends ObservableModel {
 										 SpriteType.NORMAL,
 										 ForcedDirection.NONE,
 										 TwoWayFacing.HORIZONTAL,
+										 rsrc,
 										 0);
 	}
 	
@@ -102,6 +134,7 @@ public final class SpritePropertiesModel extends ObservableModel {
 										 s.getType(), 
 										 s.getForcedDirection(),
 										 s.getTwoWayFacing(),
+										 s.getWorldResource(),
 										 s.getId() );
 	}
 	
@@ -115,6 +148,7 @@ public final class SpritePropertiesModel extends ObservableModel {
 	public SpriteType getSpriteType() { return spriteType; }
 	public ForcedDirection getForceDirection() { return forceDirection; }
 	public TwoWayFacing getTwoWayFacing() { return twoWayDirection; }
+	public boolean isTwoWayCapable() { return canBeTwoWayFacing; }
 	/**
 	 * @return {@code true} if the user hit okay, {@code false} if the window was just closed or cancel was hit.
 	 */
@@ -177,6 +211,7 @@ public final class SpritePropertiesModel extends ObservableModel {
 	public void setSpriteId(int spriteId) { 
 		int oldId = this.spriteId;
 		this.spriteId = spriteId;
+		computeTwoWayFacingInstructions();
 		firePropertyChange(PROPERTY_SPRITE_ID, oldId, this.spriteId);
 	}
 

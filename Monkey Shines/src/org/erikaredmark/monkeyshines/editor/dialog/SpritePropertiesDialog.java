@@ -31,6 +31,7 @@ import org.erikaredmark.monkeyshines.ImmutableRectangle;
 import org.erikaredmark.monkeyshines.Sprite;
 import org.erikaredmark.monkeyshines.Sprite.ForcedDirection;
 import org.erikaredmark.monkeyshines.Sprite.SpriteType;
+import org.erikaredmark.monkeyshines.Sprite.TwoWayFacing;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 
 public class SpritePropertiesDialog extends JDialog {
@@ -53,6 +54,7 @@ public class SpritePropertiesDialog extends JDialog {
 	private JSpinner spriteIdSpinner;
 	private JCheckBox forceDirection;
 	private JComboBox<String> direction;
+	private JComboBox<String> twoWayFacing;
 	
 	private final SpritePropertiesModel model;
 	// True if user hits okay, false if otherwise
@@ -285,21 +287,21 @@ public class SpritePropertiesDialog extends JDialog {
 				direction.setEnabled(sel);
 				if (sel) {
 					direction.setSelectedItem("Right");
-					model.setForcedDirection(ForcedDirection.RIGHT);
+					model.setForcedDirection(ForcedDirection.RIGHT_UP);
 				} else {
 					model.setForcedDirection(ForcedDirection.NONE);
 				}
 			}
 		});
 		
-		direction = new JComboBox<>(new String[] { "Right", "Left" } );
+		direction = new JComboBox<>(new String[] { "Right/Up", "Left/Down" } );
 		direction.setSelectedItem("Right");
 		direction.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-				if ("Right".equals(direction.getSelectedItem() ) ) {
-					model.setForcedDirection(ForcedDirection.RIGHT);
+				if ("Right/Up".equals(direction.getSelectedItem() ) ) {
+					model.setForcedDirection(ForcedDirection.RIGHT_UP);
 				} else {
-					model.setForcedDirection(ForcedDirection.LEFT);
+					model.setForcedDirection(ForcedDirection.LEFT_DOWN);
 				}
 			}
 		});
@@ -317,6 +319,36 @@ public class SpritePropertiesDialog extends JDialog {
 		springLayout.putConstraint(SpringLayout.SOUTH, forceDirection, 0, SpringLayout.SOUTH, direction);
 		getContentPane().add(forceDirection);
 		
+		twoWayFacing = new JComboBox<>(new String[] { "Two Sets Horizontal", "Two Sets Vertical" } );
+		twoWayFacing.setEnabled(model.isTwoWayCapable() );
+		twoWayFacing.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent e) {
+				String selection = (String)twoWayFacing.getSelectedItem();
+				if ("Two Sets Horizontal".equals(selection) ) {
+					model.setTwoWayFacing(TwoWayFacing.HORIZONTAL);
+				} else {
+					model.setTwoWayFacing(TwoWayFacing.VERTICAL);
+				}
+			}
+		});
+		
+		updateTwoWayFacing();
+		// Changing the sprite id affects the enabled-ness and selection
+		model.addPropertyChangeListener(SpritePropertiesModel.PROPERTY_SPRITE_ID, new PropertyChangeListener() {
+			@Override public void propertyChange(PropertyChangeEvent e) {
+				if (model.isTwoWayCapable() ) {
+					twoWayFacing.setEnabled(true);
+					updateTwoWayFacing();
+				} else {
+					twoWayFacing.setEnabled(false);
+				}
+			}
+		});
+		
+		springLayout.putConstraint(SpringLayout.WEST, twoWayFacing, 6, SpringLayout.EAST, spriteDrawCanvas);
+		springLayout.putConstraint(SpringLayout.SOUTH, twoWayFacing, 75, SpringLayout.SOUTH, spriteDrawCanvas);
+		springLayout.putConstraint(SpringLayout.EAST, twoWayFacing, 4, SpringLayout.WEST, txtWidth);
+		getContentPane().add(twoWayFacing);
 		
 		JButton btnNewButton = new JButton("Okay");
 		springLayout.putConstraint(SpringLayout.SOUTH, btnNewButton, 0, SpringLayout.SOUTH, spriteDrawCanvas);
@@ -348,6 +380,14 @@ public class SpritePropertiesDialog extends JDialog {
 		animationType.setSelectedItem(model.getAnimationType() );
 		animationSpeed.setSelectedItem(model.getAnimationSpeed() );
 	}
+	
+	private void updateTwoWayFacing() {
+		if (model.getTwoWayFacing() == TwoWayFacing.VERTICAL) {
+			twoWayFacing.setSelectedItem("Two Sets Vertical");
+		} else {
+			twoWayFacing.setSelectedItem("Two Sets Horizontal");
+		}
+	}
 
 	
 	/**
@@ -369,7 +409,7 @@ public class SpritePropertiesDialog extends JDialog {
 	 * 
 	 */
 	public static SpritePropertiesModel launch(JComponent parent, WorldResource rsrc, ImmutablePoint2D startingPoint) {
-		final SpritePropertiesModel model = SpritePropertiesModel.newModelWithDefaults();
+		final SpritePropertiesModel model = SpritePropertiesModel.newModelWithDefaults(rsrc);
 		// Give some intelligent auto-complete based on selection
 		model.setSpriteLocationX(startingPoint.x() );
 		model.setSpriteLocationY(startingPoint.y() );
