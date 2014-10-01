@@ -2,6 +2,7 @@ package org.erikaredmark.monkeyshines.menu;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JCheckBoxMenuItem;
@@ -13,6 +14,7 @@ import javax.swing.JMenuItem;
 import org.erikaredmark.monkeyshines.KeyboardInput;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.global.KeySettings;
+import org.erikaredmark.monkeyshines.global.PreferencePersistException;
 import org.erikaredmark.monkeyshines.global.VideoSettings;
 import org.erikaredmark.monkeyshines.util.GameEndCallbacks;
 import org.erikaredmark.monkeyshines.menu.SelectAWorld.WorldSelectionCallback;
@@ -87,6 +89,13 @@ public final class MainWindow extends JFrame {
 		changeFullscreen.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
 				VideoSettings.setFullscreen(changeFullscreen.isSelected() );
+				try {
+					VideoSettings.persist();
+				} catch (PreferencePersistException e) {
+					LOGGER.log(Level.WARNING,
+							   CLASS_NAME + ": cannot persist preferences: " + e.getMessage(),
+							   e);
+				}
 			}
 		});
 		

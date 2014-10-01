@@ -1,5 +1,7 @@
 package org.erikaredmark.monkeyshines.global;
 
+import org.erikaredmark.monkeyshines.global.PreferencePersistException;
+
 /**
  * 
  * Global settings object for information on how the graphics should be displayed
@@ -10,7 +12,7 @@ package org.erikaredmark.monkeyshines.global;
 public class VideoSettings {
 	
 	// Debug: testing fullscreen
-	private static boolean fullScreen = false;
+	private static boolean fullScreen = MonkeyShinesPreferences.defaultFullscreen();
 	
 	/**
 	 * 
@@ -35,4 +37,12 @@ public class VideoSettings {
 	 * 
 	 */
 	public static void setFullscreen(boolean full) { fullScreen = full; } 
+	
+	/**
+	 *
+	 * Updates preferences file (if possible) with changes. This is called manually so that playing around with
+	 * preferences doesn't cause excessive disk usage. Only call when the preference is okayed or saved by the user.
+	 * 
+	 */
+	public static void persist() throws PreferencePersistException { MonkeyShinesPreferences.persistVideo(); }
 }

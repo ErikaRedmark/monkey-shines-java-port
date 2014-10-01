@@ -166,6 +166,10 @@ public final class SoundControlDialog extends JDialog {
 	 * 
 	 * Launches the sound control dialog for the user to modify the sound. This dialog is modal, so
 	 * control will not return from this method until the user closes the dialog.
+	 * <p/>
+	 * Clients should call {@code SoundSettings.persist() } after the dialog has launched if they want
+	 * to save the settings to the disk. Settings are not saved whilst the user is playing with the
+	 * sliders.
 	 * 
 	 */
 	public static void launch(final SoundType sound) {

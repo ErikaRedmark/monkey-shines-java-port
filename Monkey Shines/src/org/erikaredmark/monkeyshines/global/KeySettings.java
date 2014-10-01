@@ -1,21 +1,20 @@
 package org.erikaredmark.monkeyshines.global;
 
-import java.awt.event.KeyEvent;
-
 import org.erikaredmark.monkeyshines.KeyBindings;
+import org.erikaredmark.monkeyshines.global.PreferencePersistException;
 
 /**
  * 
  * Global class that handles the user's current keyboard preferences. On initialisation it defaults
- * to the basic (arrow keys for left and right movement, up arrow key for jump) but can be changed
- * in preferences
+ * to the basic (arrow keys for left and right movement, up arrow key for jump) or the preferences
+ * loaded but can be changed in-game preferences
  * 
  * @author Erika Redmark
  *
  */
 public final class KeySettings {
-
-	private static KeyBindings currentBindings = new KeyBindings(KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, KeyEvent.VK_UP);
+	
+	private static KeyBindings currentBindings = MonkeyShinesPreferences.defaultKeyBindings();
 	
 	public static void setBindings(final KeyBindings bindings) {
 		currentBindings = bindings;
@@ -24,5 +23,13 @@ public final class KeySettings {
 	public static KeyBindings getBindings() {
 		return currentBindings;
 	}
+	
+	/**
+	 *
+	 * Updates preferences file (if possible) with changes. This is called manually so that playing around with
+	 * preferences doesn't cause excessive disk usage. Only call when the preference is okayed or saved by the user.
+	 * 
+	 */
+	public static void persist() throws PreferencePersistException { MonkeyShinesPreferences.persistKeyBindings(); }
 	
 }

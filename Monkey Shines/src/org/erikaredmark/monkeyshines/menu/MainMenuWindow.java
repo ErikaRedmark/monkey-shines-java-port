@@ -6,6 +6,8 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
@@ -14,6 +16,8 @@ import javax.swing.JPanel;
 
 import org.erikaredmark.monkeyshines.KeyBindings;
 import org.erikaredmark.monkeyshines.global.KeySettings;
+import org.erikaredmark.monkeyshines.global.PreferencePersistException;
+import org.erikaredmark.monkeyshines.global.SoundSettings;
 import org.erikaredmark.monkeyshines.global.SoundType;
 
 
@@ -27,6 +31,9 @@ import org.erikaredmark.monkeyshines.global.SoundType;
  *
  */
 public class MainMenuWindow extends JPanel {
+	private static final String CLASS_NAME = "org.erikaredmark.monkeyshines.menu.MainMenuWindow";
+	private static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
+	
 	private static final long serialVersionUID = 1L;
 	
 	// A single instance of the resource is tied to the window. When it is GC'd the image resources
@@ -133,6 +140,14 @@ public class MainMenuWindow extends JPanel {
 					KeyBindings newBindings = KeyboardControlDialog.launch(KeySettings.getBindings() );
 					// return values used to make it easier to remove the singleton if ever required.
 					KeySettings.setBindings(newBindings);
+					// TODO dialog
+					try {
+						KeySettings.persist();
+					} catch (PreferencePersistException e) {
+						LOGGER.log(Level.WARNING,
+								   CLASS_NAME + ": cannot persist preferences: " + e.getMessage(),
+								   e);
+					}
 				}
 			},
 			rsrc.BUTTON_CONTROLS,
@@ -141,7 +156,16 @@ public class MainMenuWindow extends JPanel {
 		
 		JButton music = menuButton(
 			new Runnable() {
-				@Override public void run() { SoundControlDialog.launch(SoundType.MUSIC); }
+				@Override public void run() { 
+					SoundControlDialog.launch(SoundType.MUSIC);
+					try {
+						SoundSettings.persist();
+					} catch (PreferencePersistException e) {
+						LOGGER.log(Level.WARNING,
+								   CLASS_NAME + ": cannot persist preferences: " + e.getMessage(),
+								   e);
+					}
+				}
 			},
 			rsrc.BUTTON_MUSIC,
 			MUSIC_X,
@@ -149,7 +173,16 @@ public class MainMenuWindow extends JPanel {
 		
 		JButton sound = menuButton(
 			new Runnable() {
-				@Override public void run() { SoundControlDialog.launch(SoundType.SOUND); }
+				@Override public void run() { 
+					SoundControlDialog.launch(SoundType.SOUND); 
+					try {
+						SoundSettings.persist();
+					} catch (PreferencePersistException e) {
+						LOGGER.log(Level.WARNING,
+								   CLASS_NAME + ": cannot persist preferences: " + e.getMessage(),
+								   e);
+					}
+				}
 			},
 			rsrc.BUTTON_SOUND,
 			SOUND_X,

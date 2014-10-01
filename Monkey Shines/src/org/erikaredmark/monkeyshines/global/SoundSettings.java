@@ -1,5 +1,6 @@
 package org.erikaredmark.monkeyshines.global;
 
+import org.erikaredmark.monkeyshines.global.PreferencePersistException;
 import org.erikaredmark.monkeyshines.resource.SoundManager;
 import org.erikaredmark.util.ObservableModel;
 
@@ -10,6 +11,9 @@ import org.erikaredmark.util.ObservableModel;
  * <p/>
  * A {@code SoundManager} can register for events if the changes are desired to be able to
  * take place in real time.
+ * <p/>
+ * Preference changes are not persisted to the filesystem until told to do so. This is prevent
+ * large numbers of FS writes when a user is playing around with preferences.
  * 
  * @author Erika Redmark
  *
@@ -25,10 +29,10 @@ public final class SoundSettings {
 	
 	// Value from 0 - 100: indicates relative volume of the music that plays
 	// during the game
-	private static int musicVolumePercent = 50;
+	private static int musicVolumePercent = MonkeyShinesPreferences.defaultMusicVolume();
 	
 	// Value from 0 - 100: indicates relative volume of all sound effects
-	private static int soundVolumePercent = 100;
+	private static int soundVolumePercent = MonkeyShinesPreferences.defaultSoundVolume();
 	
 	/**
 	 * 
@@ -114,6 +118,16 @@ public final class SoundSettings {
 
 	private static boolean isPercent(final int value) {
 		return !(value < 0 || value > 100);
+	}
+	
+	/**
+	 *
+	 * Updates preferences file (if possible) with changes. This is called manually so that playing around with
+	 * preferences doesn't cause excessive disk usage. Only call when the preference is okayed or saved by the user.
+	 * 
+	 */
+	public static void persist() throws PreferencePersistException {
+		MonkeyShinesPreferences.persistSound();
 	}
 	
 }
