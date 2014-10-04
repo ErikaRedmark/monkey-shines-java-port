@@ -25,7 +25,7 @@ import org.erikaredmark.util.BinaryLocation;
  * @author Erika Redmark
  *
  */
-final class MonkeyShinesPreferences {
+public final class MonkeyShinesPreferences {
 	private static final String CLASS_NAME = "org.erikaredmark.monkeyshines.global.MonkeyShinesPreferences";
 	private static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
 
@@ -99,12 +99,34 @@ final class MonkeyShinesPreferences {
 		}
 		
 	}
+	
+	/**
+	 * 
+	 * Returns the path to the expected preferences file. This file is NOT guaranteed to exist. Clients
+	 * should make no attempt to create it themselves.
+	 * 
+	 * @return
+	 * 		location the preferences file is expected to be
+	 * 
+	 */
+	public static Path getPreferencesPath() { return PREFERENCES_EXPECTED; }
+	
+	/**
+	 * 
+	 * In order for other objects to store (such as highscores) if they have a reference to a properties file
+	 * that is a preferences file, they must use the same comments.
+	 * 
+	 * @return
+	 * 		comments for the {@code store} method in {@code Properties}
+	 * 	
+	 */
+	public static String getPreferencesComments() { return "Monkey Shines Preferences File"; }
 
 
-	public static int defaultSoundVolume() { return Integer.valueOf(PREF_INTERNAL.getProperty(SOUND_VOLUME) ); }
-	public static int defaultMusicVolume() { return Integer.valueOf(PREF_INTERNAL.getProperty(MUSIC_VOLUME) ); }
-	public static boolean defaultFullscreen() { return Boolean.valueOf(PREF_INTERNAL.getProperty(FULLSCREEN) ); }
-	public static KeyBindings defaultKeyBindings() { 
+	static int defaultSoundVolume() { return Integer.valueOf(PREF_INTERNAL.getProperty(SOUND_VOLUME) ); }
+	static int defaultMusicVolume() { return Integer.valueOf(PREF_INTERNAL.getProperty(MUSIC_VOLUME) ); }
+	static boolean defaultFullscreen() { return Boolean.valueOf(PREF_INTERNAL.getProperty(FULLSCREEN) ); }
+	static KeyBindings defaultKeyBindings() { 
 		return new KeyBindings(Integer.valueOf(PREF_INTERNAL.getProperty(KEY_BINDING_LEFT) ), 
 							   Integer.valueOf(PREF_INTERNAL.getProperty(KEY_BINDING_RIGHT) ), 
 							   Integer.valueOf(PREF_INTERNAL.getProperty(KEY_BINDING_JUMP) ) ); 
@@ -112,13 +134,13 @@ final class MonkeyShinesPreferences {
 	
 	private static void save() throws PreferencePersistException {
 		try (OutputStream out = Files.newOutputStream(PREFERENCES_EXPECTED) ) {
-			PREF_INTERNAL.store(out, "Monkey Shines Preferences File");
+			PREF_INTERNAL.store(out, getPreferencesComments() );
 		} catch (IOException e) {
 			throw new PreferencePersistException(e.getMessage(), e);
 		}
 	}
 
-	public static void persistKeyBindings() throws PreferencePersistException {
+	static void persistKeyBindings() throws PreferencePersistException {
 		PREF_INTERNAL.setProperty(KEY_BINDING_LEFT, String.valueOf(KeySettings.getBindings().left) );
 		PREF_INTERNAL.setProperty(KEY_BINDING_RIGHT, String.valueOf(KeySettings.getBindings().right) );
 		PREF_INTERNAL.setProperty(KEY_BINDING_JUMP, String.valueOf(KeySettings.getBindings().jump) );
@@ -126,14 +148,14 @@ final class MonkeyShinesPreferences {
 		save();
 	}
 	
-	public static void persistSound() throws PreferencePersistException {
+	static void persistSound() throws PreferencePersistException {
 		PREF_INTERNAL.setProperty(SOUND_VOLUME, String.valueOf(SoundSettings.getSoundVolumePercent() ) );
 		PREF_INTERNAL.setProperty(MUSIC_VOLUME, String.valueOf(SoundSettings.getMusicVolumePercent() ) );
 		
 		save();
 	}
 	
-	public static void persistVideo() throws PreferencePersistException {
+	static void persistVideo() throws PreferencePersistException {
 		PREF_INTERNAL.setProperty(FULLSCREEN, String.valueOf(VideoSettings.isFullscreen() ) );
 		
 		save();

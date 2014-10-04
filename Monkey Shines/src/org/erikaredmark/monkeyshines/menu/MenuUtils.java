@@ -32,4 +32,26 @@ public final class MenuUtils {
 		button.setOpaque(false);
 	}
 	
+	/**
+	 * 
+	 * Cuts the string such that it contains {@code size} relevant characters, PLUS 3 periods for an ellipses. Intended
+	 * for drawing routines with width restrictions. If the string is already at or less than the size, the string itself
+	 * is returned unchanged.
+	 * 
+	 * @param s
+	 * 		the string to cut
+	 * 
+	 * @param size
+	 * 		the number of <strong> significant </strong> characters to keep
+	 * 
+	 * @return
+	 * 		the cut string, or the original string if it didn't need cutting.
+	 * 
+	 */
+	public static String cutString(String s, int size) {
+		if (s.length() <= size)  return s;
+		
+		return s.substring(0, size + 1) + "...";
+	}
+	
 }

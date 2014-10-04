@@ -11,9 +11,11 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
+import org.erikaredmark.monkeyshines.HighScores;
 import org.erikaredmark.monkeyshines.KeyboardInput;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.global.KeySettings;
+import org.erikaredmark.monkeyshines.global.MonkeyShinesPreferences;
 import org.erikaredmark.monkeyshines.global.PreferencePersistException;
 import org.erikaredmark.monkeyshines.global.VideoSettings;
 import org.erikaredmark.monkeyshines.util.GameEndCallbacks;
@@ -49,6 +51,9 @@ public final class MainWindow extends JFrame {
 	// Main menu displayed. May be null if the main menu is no longer displayed
 	private MainMenuWindow menu;
 	
+	// High scores displayed. May be null if the high scores are not displayed
+	private ViewHighScores highScores;
+	
 	private GameState state = GameState.NONE;
 	
 	// current key setup is stored so it can be removed as an observer from the main window during state
@@ -67,13 +72,12 @@ public final class MainWindow extends JFrame {
 	private final Runnable playGameCallback = new Runnable() {
 		@Override public void run() {
 			setGameState(GameState.CHOOSE_WORLD);
-			// DEBUG
-			/*World world = SelectAWorld.loadCustomWorld(MainWindow.this);
-			if (world != null) {
-				tempWorld = world;
-			}
-			
-			playGame();*/
+		}
+	};
+	
+	private final Runnable highScoresCallback = new Runnable() {
+		@Override public void run() {
+			setGameState(GameState.HIGH_SCORES);
 		}
 	};
 	
@@ -277,7 +281,7 @@ public final class MainWindow extends JFrame {
 		MENU {
 			@Override public boolean transitionTo(MainWindow mainWindow) {
 				mainWindow.state.transitionFrom(mainWindow);
-				mainWindow.menu = new MainMenuWindow(mainWindow.playGameCallback);
+				mainWindow.menu = new MainMenuWindow(mainWindow.playGameCallback, mainWindow.highScoresCallback);
 				mainWindow.add(mainWindow.menu);
 				mainWindow.pack();
 				
@@ -292,6 +296,29 @@ public final class MainWindow extends JFrame {
 				}
 			}
 			
+		},
+		HIGH_SCORES {
+			@Override public boolean transitionTo(final MainWindow mainWindow) {
+				mainWindow.state.transitionFrom(mainWindow);
+				mainWindow.highScores = 
+					new ViewHighScores(
+						HighScores.fromPreferences(MonkeyShinesPreferences.getPreferencesPath() ),
+						new ViewHighScores.BackButtonCallback() {
+							@Override public void backButtonPressed() { mainWindow.setGameState(GameState.MENU); }
+						});
+				
+				mainWindow.add(mainWindow.highScores);
+				mainWindow.pack();
+				mainWindow.state = this;
+				return true;
+			}
+			
+			@Override protected void transitionFrom(MainWindow mainWindow) {
+				if (mainWindow.highScores != null) {
+					mainWindow.remove(mainWindow.highScores);
+					mainWindow.highScores = null;
+				}
+			}
 		},
 		// Represents no state, so null checks aren't required on state object
 		NONE {
