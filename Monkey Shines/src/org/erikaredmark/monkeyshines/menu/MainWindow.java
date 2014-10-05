@@ -309,6 +309,8 @@ public final class MainWindow extends JFrame {
 				
 				mainWindow.add(mainWindow.highScores);
 				mainWindow.pack();
+				mainWindow.highScores.setVisible(true);
+				mainWindow.repaint();
 				mainWindow.state = this;
 				return true;
 			}

@@ -51,7 +51,7 @@ public final class MenuUtils {
 	public static String cutString(String s, int size) {
 		if (s.length() <= size)  return s;
 		
-		return s.substring(0, size + 1) + "...";
+		return s.substring(0, size) + "...";
 	}
 	
 }

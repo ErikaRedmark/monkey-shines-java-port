@@ -195,7 +195,7 @@ public class MainMenuWindow extends JPanel {
 		
 		JButton highscores = menuButton(
 			new Runnable() {
-				@Override public void run() { System.err.println("High Scores Not Implemented Yet"); }
+				@Override public void run() { highScoresCallback.run(); }
 			},
 			rsrc.BUTTON_HIGH,
 			HIGH_X,

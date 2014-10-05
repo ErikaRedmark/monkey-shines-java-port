@@ -1,6 +1,8 @@
 package org.erikaredmark.monkeyshines.menu;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -57,6 +59,11 @@ public final class ViewHighScores extends JPanel {
 		
 		back.setLocation(546, 434);
 		add(back);
+		
+		
+		setSize(640, 480);
+		setMinimumSize(new Dimension(640, 480) );
+		setPreferredSize(new Dimension(640, 480) );
 	}
 	
 	/**
@@ -71,12 +78,15 @@ public final class ViewHighScores extends JPanel {
 		
 		List<HighScore> scores = highScores.getHighScores();
 
-		g.setColor(Color.red);
+		g.setColor(Color.GREEN);
+		g.setFont(new Font("sansserif", Font.BOLD, 14) );
 		{
 			// Keep index number; we need it for drawing purposes.
 			int index = 0;
 			for (HighScore score : scores) {
-				g.drawString(MenuUtils.cutString(score.getName(), 60), 40, (index * 14) + 128);
+				int yPos =  (index * 24) + 128;
+				g.drawString(MenuUtils.cutString(score.getName(), 50), 40, yPos);
+				g.drawString(String.valueOf(score.getScore() ), 500, yPos);
 				++index;
 			}
 		}

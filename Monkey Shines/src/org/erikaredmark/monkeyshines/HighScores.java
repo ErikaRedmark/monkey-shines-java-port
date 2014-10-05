@@ -92,7 +92,7 @@ public final class HighScores {
 			++scoreSize;
 		}
 		
-		Arrays.sort(scores);
+		Arrays.sort(scores, 0, scoreSize);
 	}
 	
 	/**
@@ -206,7 +206,7 @@ public final class HighScores {
 			String possibleName = (String) o;
 			// Length check ensures it is not JUST 'high_'
 			if (possibleName.contains("high_") && possibleName.length() > 5) {
-				String name = possibleName.substring(6);
+				String name = possibleName.substring(5);
 				Optional<Integer> score = StringToNumber.string2Int(props.getProperty(possibleName) );
 				if (score.isPresent() ) {
 					returnScores.addScore(name, score.get() );
@@ -228,7 +228,8 @@ public final class HighScores {
 
 		/** Comparison is on score only. */
 		@Override public int compareTo(HighScore o) {
-			return this.score - o.score;
+			// We invert the logic and return -1 if we are greater to force descending order sort.
+			return o.score - this.score;
 		}
 	}
 }
