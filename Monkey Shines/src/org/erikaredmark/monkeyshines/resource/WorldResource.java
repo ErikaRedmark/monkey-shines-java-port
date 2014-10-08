@@ -7,8 +7,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipFile;
@@ -99,6 +101,7 @@ public final class WorldResource {
 	// SoundManager. null sounds are possible; in that case, that means
 	// that there is no sound available for a particular event.
 	private final Map<GameSoundEffect, Clip> sounds;
+	private final Set<GameSoundEffect> holdSounds = new HashSet<>();
 	
 	// Package-private: Only intended for SoundManager
 	final Clip backgroundMusic;
@@ -112,6 +115,8 @@ public final class WorldResource {
 	private static final Pattern INDEX_PATTERN = Pattern.compile("^.*?([0-9]+)\\.png$");
 	/** Static factories call this with proper defensive copying. No defensive copying is done in constructor
 	 */
+	private boolean isDisposed;
+	
 	private WorldResource(final BufferedImage solidTiles,
 					      final BufferedImage thruTiles,
 					      final BufferedImage sceneTiles,
@@ -933,9 +938,72 @@ public final class WorldResource {
 	 * 
 	 */
 	public void dispose() {
-		for (Clip c : sounds.values() )  c.close();
+		for (GameSoundEffect effect : sounds.keySet() ) {
+			Clip c = sounds.get(effect);
+			if (!(isSoundHeld(effect) ) ) {
+				c.close();
+			}
+		}
 		
 		SoundSettings.unregisterSoundManager(soundManager);
+		
+		// Intended for anything that requires late disposal.
+		isDisposed = true;
+	}
+	
+	/**
+	 * 
+	 * Prevents the given sound effect from being disposed on the dispose call. This is intended for fine-tuned 
+	 * resource holding in case a single effect is required later even if the rest of the world is disposed.
+	 * <p/>
+	 * It is an error to call this whilst a sound is already held
+	 * 
+	 * @param effect
+	 * 		the effect to NOT dispose
+	 * 
+	 * @throws IllegalStateException
+	 * 		if a hold is already on the sound
+	 * 
+	 */
+	public void holdSound(GameSoundEffect effect) {
+		if (!(holdSounds.add(effect) ) ) {
+			throw new IllegalArgumentException("Sound effect " + effect + " already held in previous request");
+		}
+	}
+	
+	/**
+	 * 
+	 * Releases the resource, allowing it to be disposed. If this object was already disposed, the resource is closed
+	 * as soon as this method returns. Otherwise, the resource becomes eligble to be destroyed on the next call to dispose.
+	 * 
+	 * @param effect
+	 * 		the effect to release
+	 * 
+	 * @throws IllegalStateException
+	 * 		if the resource is not already held
+	 * 
+	 */
+	public void releaseSound(GameSoundEffect effect) {
+		if (!(holdSounds.remove(effect) ) ) {
+			throw new IllegalArgumentException("Sound effect " + effect + " was not previously held");
+		}
+		
+		// Are we already disposed? Clean it now.
+		if (isDisposed) {
+			Clip c = sounds.get(effect);
+			c.close();
+		}
+	}
+	
+	/**
+	 * 
+	 * Determines if a resource is held. Held resources may not be destroyed until released.
+	 * 
+	 * @param effect
+	 * 
+	 */
+	public boolean isSoundHeld(GameSoundEffect effect) {
+		return holdSounds.contains(effect);
 	}
 
 	/**
@@ -972,5 +1040,4 @@ public final class WorldResource {
 		GAME,
 		EDITOR;
 	}
-	
 }

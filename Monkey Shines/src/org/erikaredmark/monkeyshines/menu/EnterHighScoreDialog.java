@@ -1,5 +1,6 @@
 package org.erikaredmark.monkeyshines.menu;
 
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -38,6 +39,11 @@ public final class EnterHighScoreDialog extends JDialog {
 			}
 
 		});
+		
+		setSize(500, 200);
+		setPreferredSize(new Dimension(500, 200) );
+		setMinimumSize(new Dimension(500, 200) );
+		
 		add(okay);
 	}
 	

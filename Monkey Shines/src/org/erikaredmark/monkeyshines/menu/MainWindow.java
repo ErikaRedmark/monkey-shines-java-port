@@ -3,6 +3,7 @@ package org.erikaredmark.monkeyshines.menu;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,6 +13,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
+import org.erikaredmark.monkeyshines.GameSoundEffect;
 import org.erikaredmark.monkeyshines.HighScores;
 import org.erikaredmark.monkeyshines.KeyboardInput;
 import org.erikaredmark.monkeyshines.World;
@@ -19,6 +21,7 @@ import org.erikaredmark.monkeyshines.global.KeySettings;
 import org.erikaredmark.monkeyshines.global.MonkeyShinesPreferences;
 import org.erikaredmark.monkeyshines.global.PreferencePersistException;
 import org.erikaredmark.monkeyshines.global.VideoSettings;
+import org.erikaredmark.monkeyshines.resource.SoundManager;
 import org.erikaredmark.monkeyshines.util.GameEndCallback;
 import org.erikaredmark.monkeyshines.menu.SelectAWorld.WorldSelectionCallback;
 
@@ -380,9 +383,13 @@ public final class MainWindow extends JFrame {
 	 * <p/>
 	 * Should only be called when the level is completed normally and not via escape or death. It is an error to call
 	 * this function whilst the world is still in play.
+	 * <p/>
+	 * A successful high score from a call to this method readies this object to play the applause sound on the next
+	 * state change to the high scores part of the window by saving the sound manager. The reference will be removed
+	 * once played.
 	 * 
 	 * @param w
-	 * 		the world that was completed
+	 * 		the world that was completed.
 	 * 
 	 */
 	private void checkHighScore(World w) {
@@ -395,9 +402,14 @@ public final class MainWindow extends JFrame {
 		
 		HighScores highScores = HighScores.fromPreferences(prefPath);
 		if (highScores.isScoreHigh(score) ) {
+			SoundManager snd = w.getResource().getSoundManager();
+			
+			snd.playOnce(GameSoundEffect.YES);
 			String playerName = EnterHighScoreDialog.launch();
 			highScores.addScore(playerName, score);
 			highScores.persist(prefPath);
+			// In preparation for high scores movement
+			snd.playOnceDelayed(GameSoundEffect.APPLAUSE, 1, TimeUnit.SECONDS);
 		}		
 	}
 	

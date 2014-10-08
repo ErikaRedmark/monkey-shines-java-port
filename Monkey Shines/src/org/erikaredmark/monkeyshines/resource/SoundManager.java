@@ -2,9 +2,15 @@ package org.erikaredmark.monkeyshines.resource;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
+import javax.sound.sampled.LineEvent;
+import javax.sound.sampled.LineEvent.Type;
+import javax.sound.sampled.LineListener;
 
 import org.erikaredmark.monkeyshines.GameSoundEffect;
 import org.erikaredmark.monkeyshines.global.SoundSettings;
@@ -33,6 +39,9 @@ public final class SoundManager implements PropertyChangeListener {
 	private boolean musicCut;
 	
 	private boolean soundOff;
+	
+	// Intended for playing sounds after a delayed period of time.
+	private final ScheduledExecutorService delaySound = Executors.newSingleThreadScheduledExecutor();
 
 	// Created by WorldResource ONLY. That also handles registering/unregistering it from listening to the
 	// SoundSettings global.
@@ -65,6 +74,49 @@ public final class SoundManager implements PropertyChangeListener {
 		}
 	}
 
+	/**
+	 * 
+	 * Plays the given sound effect after the specified number of time have elapsed. If the
+	 * sound effect is already playing, it will stop, and after the given time restart from the beginning.
+	 * <p/>
+	 * If the given {@code WorldResource} has no sound for that effect, no sound is played. No sound is played if the
+	 * volume has been set to 0.
+	 * <p/>
+	 * This method is safe to use even if dispose happens after called but before the sound is played. The queued
+	 * request contains all the value data required to play the sound even if the object is disposed.
+	 * 
+	 * @param effect
+	 * 		the sound effect to play
+	 * 
+	 * @param delay
+	 * 		the number of units of delay (see next parameter)
+	 * 
+	 * @param unit
+	 * 		the measurement of the units in the previous argument, such as seconds or milliseconds
+	 * 
+	 */
+	public void playOnceDelayed(final GameSoundEffect effect, final int delay, final TimeUnit unit) {
+		if (soundOff)  return;
+		
+		rsrc.holdSound(effect);
+		
+		delaySound.schedule(new Runnable() { 
+								@Override public void run() { 
+									playOnce(effect);
+									// Block this scheduled thread until sound is over
+									Clip clip = rsrc.getSoundFor(effect);
+									clip.addLineListener(new LineListener() {
+										@Override public void update(LineEvent event) {
+											if (event.getType() == Type.STOP) {
+												rsrc.releaseSound(effect);
+											}
+										}
+									});
+								} 
+							}, 
+							delay,
+							unit);
+	}
 	
 	/**
 	 * 
