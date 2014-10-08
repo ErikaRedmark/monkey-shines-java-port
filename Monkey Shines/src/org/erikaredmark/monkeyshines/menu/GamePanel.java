@@ -45,21 +45,21 @@ public class GamePanel extends JPanel {
 		// Wrap the endGame callback in another callback. We intercept for drawing the end screens
 		// if needed.
 		final GameEndCallback endGameWrapped = new GameEndCallback() {
-			@Override public void gameOverWin() {
+			@Override public void gameOverWin(World w) {
 				Graphics2D g2d = (Graphics2D) getGraphics();
 				EndGameBonusAnimation.runOn(
 					g2d, 
 					universe.getWorld(),
 					new Runnable() { @Override public void run() { repaint(); } });
-				endGame.gameOverWin();
+				endGame.gameOverWin(w);
 			}
 			
-			@Override public void gameOverFail() {
-				endGame.gameOverFail();
+			@Override public void gameOverFail(World w) {
+				endGame.gameOverFail(w);
 			}
 			
-			@Override public void gameOverEscape() {
-				endGame.gameOverEscape();
+			@Override public void gameOverEscape(World w) {
+				endGame.gameOverEscape(w);
 			}
 		};
 		

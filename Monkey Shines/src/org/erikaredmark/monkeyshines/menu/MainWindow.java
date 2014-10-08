@@ -2,6 +2,7 @@ package org.erikaredmark.monkeyshines.menu;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,7 +19,7 @@ import org.erikaredmark.monkeyshines.global.KeySettings;
 import org.erikaredmark.monkeyshines.global.MonkeyShinesPreferences;
 import org.erikaredmark.monkeyshines.global.PreferencePersistException;
 import org.erikaredmark.monkeyshines.global.VideoSettings;
-import org.erikaredmark.monkeyshines.util.GameEndCallbacks;
+import org.erikaredmark.monkeyshines.util.GameEndCallback;
 import org.erikaredmark.monkeyshines.menu.SelectAWorld.WorldSelectionCallback;
 
 /**
@@ -158,10 +159,21 @@ public final class MainWindow extends JFrame {
 		return state.transitionTo(this);
 	}
 	
-	private final Runnable resetCallback = new Runnable() {
-		@Override public void run() {
+	// Called both ending a standard and a fullscreen game.
+	private final GameEndCallback gameEndCallback = new GameEndCallback() {
+		@Override public void gameOverFail(World w) {
 			setGameState(GameState.MENU);
 		}
+
+		@Override public void gameOverEscape(World w) {
+			setGameState(GameState.MENU);
+		}
+
+		@Override public void gameOverWin(World w) {
+			checkHighScore(w);
+			setGameState(GameState.HIGH_SCORES);
+		}
+
 	};
 
 	
@@ -218,7 +230,7 @@ public final class MainWindow extends JFrame {
 				mainWindow.runningGameWindowed = 
 					GamePanel.newGamePanel(mainWindow.currentKeyListener, 
 										   KeySettings.getBindings(),
-										   GameEndCallbacks.singleCallback(mainWindow.resetCallback), 
+										   mainWindow.gameEndCallback, 
 										   mainWindow.tempWorld);
 				
 				// Ensure that keyboard events get focus for the listener
@@ -253,7 +265,7 @@ public final class MainWindow extends JFrame {
 				
 				GameFullscreenWindow fullscreen = new GameFullscreenWindow(new KeyboardInput(), 
 																		   KeySettings.getBindings(),
-																		   mainWindow.resetCallback,
+																		   mainWindow.gameEndCallback,
 																		   mainWindow.tempWorld);
 				
 				if (fullscreen.start() ) {
@@ -358,6 +370,35 @@ public final class MainWindow extends JFrame {
 		 * 
 		 */
 		protected abstract void transitionFrom(final MainWindow mainWindow);
+	}
+	
+	/**
+	 * 
+	 * Determines if the level score is sufficient enough for the high scores (read from a file when this method
+	 * is called), and if so fires up the dialog and prompts the user to enter their name. No further state change
+	 * continues until they do so making this a blocking call.
+	 * <p/>
+	 * Should only be called when the level is completed normally and not via escape or death. It is an error to call
+	 * this function whilst the world is still in play.
+	 * 
+	 * @param w
+	 * 		the world that was completed
+	 * 
+	 */
+	private void checkHighScore(World w) {
+		if (!(w.isWorldFinished() ) ) {
+			throw new IllegalStateException("Cannot tally high scores for an unfinished world");
+		}
+		
+		final int score = w.getStatistics().getTotalScore();
+		final Path prefPath = MonkeyShinesPreferences.getPreferencesPath();
+		
+		HighScores highScores = HighScores.fromPreferences(prefPath);
+		if (highScores.isScoreHigh(score) ) {
+			String playerName = EnterHighScoreDialog.launch();
+			highScores.addScore(playerName, score);
+			highScores.persist(prefPath);
+		}		
 	}
 	
 }

@@ -60,9 +60,7 @@ public final class GameWorldLogic {
 	public static int BONUS_NUM_DIGITS = 4;
 	// Each new game starts with 10000 countdown, represented by 9999
 	private int countdownDigits[] = new int[] {9, 9, 9, 9};
-	
-	private final GameEndCallback gameEndCallback;
-	
+
 	/**
 	 * 
 	 * Constructs the living game world. Gigantic constructor but admittedly it
@@ -96,8 +94,7 @@ public final class GameWorldLogic {
 			  			  final GameEndCallback gameEndCallback,
 						  final Runnable gameTickCallback) {
 		assert keys != null;
-		
-		this.gameEndCallback = gameEndCallback;
+
 		this.currentWorld = world;
 
 		bonzo = new Bonzo(currentWorld,
@@ -105,9 +102,9 @@ public final class GameWorldLogic {
 			4,
 			new Runnable() { @Override public void run() { scoreUpdate(); } },
 			new GameEndCallback() {
-				@Override public void gameOverWin() { levelComplete(); }
-				@Override public void gameOverFail() { gameOver(); }
-				@Override public void gameOverEscape() { escape(); }
+				@Override public void gameOverWin(World sw) { endGame_internal(); gameEndCallback.gameOverWin(world); }
+				@Override public void gameOverFail(World w) { endGame_internal(); gameEndCallback.gameOverFail(world); }
+				@Override public void gameOverEscape(World w) { endGame_internal(); gameEndCallback.gameOverEscape(world); }
 			});
 		
 		currentWorld.setAllRedKeysCollectedCallback(
@@ -144,7 +141,8 @@ public final class GameWorldLogic {
 					
 					// The only hardcoded key: Esc is a game over
 					if (keys.keyDown(KeyEvent.VK_ESCAPE) ) {
-						gameOver();
+						endGame_internal(); 
+						gameEndCallback.gameOverEscape(world);
 					}
 					
 					// Update the game first before calling what is possibly a paint
@@ -286,24 +284,6 @@ public final class GameWorldLogic {
 	private void redKeysCollected() {
 		// Start the countdown timer
 		bonusTimer.start();
-	}
-	
-	// Called when bonzo collides with the exit door.
-	private void levelComplete() {
-		endGame_internal();
-		gameEndCallback.gameOverWin();
-	}
-	
-	// Called during a game over of lost lives
-	private void gameOver() {
-		endGame_internal();
-		gameEndCallback.gameOverFail();
-	}
-	
-	// Called when using escape to leave the game
-	private void escape() {
-		endGame_internal();
-		gameEndCallback.gameOverEscape();
 	}
 	
 	// Common code for all types of game endings

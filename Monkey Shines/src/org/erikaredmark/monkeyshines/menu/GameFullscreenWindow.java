@@ -37,7 +37,7 @@ public final class GameFullscreenWindow extends Frame {
 	private static final long serialVersionUID = 1L;
 
 	private final StandardSurface surface;
-	private final Runnable gameOverCallback;
+	private final GameEndCallback gameOverCallback;
 	
 	// Configuration information
 	private final GraphicsDevice mainScreen;
@@ -69,7 +69,7 @@ public final class GameFullscreenWindow extends Frame {
 	 */
 	public GameFullscreenWindow(final KeyboardInput keys, 
 								final KeyBindings keyBindings, 
-								final Runnable gameOver,
+								final GameEndCallback gameOver,
 								final World w) {
 		
 		gameOverCallback = gameOver;
@@ -89,18 +89,20 @@ public final class GameFullscreenWindow extends Frame {
 							   w,
 							   // Game over: set variable to stop loop
 							   new GameEndCallback() { 
-									@Override public void gameOverWin() { 
+									@Override public void gameOverWin(World w) { 
 										// Allow tally screen
-										gameOver(false);
+										gameOverPreparations(false);
+										gameOverCallback.gameOverWin(w);
 									}
 									
-									@Override public void gameOverFail() {
-										// Do not show tally screen
-										gameOver(true);
+									@Override public void gameOverFail(World w) {
+										gameOverPreparations(true);
+										gameOverCallback.gameOverFail(w);
 									}
 									
-									@Override public void gameOverEscape() {
-										gameOver(true);
+									@Override public void gameOverEscape(World w) {
+										gameOverPreparations(true);
+										gameOverCallback.gameOverEscape(w);
 									}
 							   },
 							   // Each game tick, rerender volatile
@@ -228,9 +230,12 @@ public final class GameFullscreenWindow extends Frame {
 	 * restoring all settings. At this point the object is effectively 'dead' and cannot be reused.
 	 * <p/>
 	 * If {@code endInstant} is {@code false}, this will display the score tally first.
+	 * <p/>
+	 * This does not call the gameOverCallback. It simply decides whether to show the tally screen first (which
+	 * is shown before any callbacks are used)
 	 * 
 	 */
-	private void gameOver(boolean endInstant) {
+	private void gameOverPreparations(boolean endInstant) {
 		gameOver = true;
 		
 		if (!(endInstant) ) {
@@ -248,7 +253,6 @@ public final class GameFullscreenWindow extends Frame {
 		universe.dispose();
 		setVisible(false);
 		dispose();
-		gameOverCallback.run();
 	}
 	
 }

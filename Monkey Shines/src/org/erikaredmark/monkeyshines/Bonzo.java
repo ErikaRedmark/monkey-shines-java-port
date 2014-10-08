@@ -317,7 +317,7 @@ public final class Bonzo {
 	 * 
 	 */
 	void hitExitDoor() {
-		gameEndCallback.gameOverWin();
+		gameEndCallback.gameOverWin(worldPointer);
 	}
 	
 
@@ -870,7 +870,7 @@ public final class Bonzo {
 					// Equality because -2 is infinite
 					assert lives >= -2 : "Lives can be -2 (infinite) -1 (dead) and 0-9, but never less than -2";
 					if (lives == -1) {
-						gameEndCallback.gameOverFail();
+						gameEndCallback.gameOverFail(worldPointer);
 					} else {
 						worldPointer.restartBonzo(this);
 					}
