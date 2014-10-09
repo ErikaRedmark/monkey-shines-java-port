@@ -244,7 +244,7 @@ public final class SelectAWorld extends JPanel {
 	 */
 	public static World loadCustomWorld(final Component parent) {
 		JFileChooser fileChooser = new JFileChooser();
-		fileChooser.setCurrentDirectory(BinaryLocation.BINARY_FOLDER.toFile() );
+		fileChooser.setCurrentDirectory(BinaryLocation.BINARY_LOCATION.toFile() );
 		System.out.println(fileChooser.getCurrentDirectory() );
 		
 		if (fileChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {

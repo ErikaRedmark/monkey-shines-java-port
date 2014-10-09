@@ -57,7 +57,7 @@ public class NewWorldDialog extends JPanel {
 			private static final long serialVersionUID = 6168460348517517770L;
 			@Override public void actionPerformed(ActionEvent e) {
 				JFileChooser fileChooser = new JFileChooser();
-				fileChooser.setCurrentDirectory(BinaryLocation.BINARY_FOLDER.toFile() );
+				fileChooser.setCurrentDirectory(BinaryLocation.BINARY_LOCATION.toFile() );
 				if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
 					File file = fileChooser.getSelectedFile();
 					Path rsrcPath = file.toPath();
@@ -84,7 +84,7 @@ public class NewWorldDialog extends JPanel {
 			private static final long serialVersionUID = 3229707262753672755L;
 			@Override public void actionPerformed(ActionEvent e) {
 				JFileChooser fileChooser = new JFileChooser();
-				fileChooser.setCurrentDirectory(BinaryLocation.BINARY_FOLDER.toFile() );
+				fileChooser.setCurrentDirectory(BinaryLocation.BINARY_LOCATION.toFile() );
 				if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
 					File file = fileChooser.getSelectedFile();
 					Path savePath = file.toPath();

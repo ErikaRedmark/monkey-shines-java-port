@@ -391,7 +391,7 @@ public class LevelEditor extends JFrame {
 			@Override public void actionPerformed(ActionEvent e) {
 				
 				JFileChooser fileChooser = new JFileChooser();
-				fileChooser.setCurrentDirectory(BinaryLocation.BINARY_FOLDER.toFile() );
+				fileChooser.setCurrentDirectory(BinaryLocation.BINARY_LOCATION.toFile() );
 				if (fileChooser.showOpenDialog(editor) == JFileChooser.APPROVE_OPTION) {
 					File worldFile = fileChooser.getSelectedFile();
 					

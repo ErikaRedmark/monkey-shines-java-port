@@ -38,7 +38,7 @@ public final class MonkeyShinesLog {
 	public static final void initialise() {
 		if (LOG != null)  throw new IllegalStateException("Logging system already initialised");
 
-		try (InputStream configStream = Files.newInputStream(BinaryLocation.BINARY_FOLDER.resolve("logging.properties") ) ){
+		try (InputStream configStream = Files.newInputStream(BinaryLocation.BINARY_LOCATION.resolve("logging.properties") ) ){
 		    LogManager.getLogManager().readConfiguration(configStream);
 		} catch (IOException ex) {
 			// Do it ourselves

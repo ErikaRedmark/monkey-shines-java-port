@@ -29,7 +29,7 @@ public final class MonkeyShinesPreferences {
 	private static final String CLASS_NAME = "org.erikaredmark.monkeyshines.global.MonkeyShinesPreferences";
 	private static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
 
-	private static final Path PREFERENCES_EXPECTED = BinaryLocation.BINARY_FOLDER.resolve("monkeyshines.pref");
+	private static final Path PREFERENCES_EXPECTED = BinaryLocation.BINARY_LOCATION.getParent().resolve("monkeyshines.pref");
 
 	private static final Properties PREF_INTERNAL = new Properties();
 

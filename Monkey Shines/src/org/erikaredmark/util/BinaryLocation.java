@@ -12,7 +12,8 @@ import java.nio.file.Paths;
  *
  */
 public final class BinaryLocation {
-	public static final Path BINARY_FOLDER;
+	/** The location of the binary. THIS INCLUDES THE BINARY ITSELF, IT IS NOT A FOLDER. Use getParent() for the folder */
+	public static final Path BINARY_LOCATION;
 	
 	static {
 		Path tempBinaryFolder = null;
@@ -28,7 +29,7 @@ public final class BinaryLocation {
 		
 		assert tempBinaryFolder != null : "Null binary folder";
 		
-		BINARY_FOLDER = tempBinaryFolder;
-		System.out.println("Binary Location: " + BINARY_FOLDER);
+		BINARY_LOCATION = tempBinaryFolder;
+		System.out.println("Binary Location: " + BINARY_LOCATION);
 	}
 }
