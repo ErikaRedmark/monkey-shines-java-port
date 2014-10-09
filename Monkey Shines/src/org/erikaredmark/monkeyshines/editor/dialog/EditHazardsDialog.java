@@ -9,14 +9,12 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
@@ -46,6 +44,9 @@ public class EditHazardsDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
 	
 	private final EditHazardsModel model;
+	private final DefaultListModel<Hazard> hazardListModel;
+	private final EditSingleHazardPanel editPanel;
+	private final JList<Hazard> hazardList;
 	
 	/**
 	 * 
@@ -64,7 +65,7 @@ public class EditHazardsDialog extends JDialog {
 
 		/* ------------------ Hazard list ------------------- */
 		// This list will sync changes to the underlying EditHazardsModel
-		final DefaultListModel<Hazard> hazardListModel = new DefaultListModel<>();
+		hazardListModel = new DefaultListModel<>();
 		
 		// Assumption: All elements in the passed model are sorted, since they can only be actually generated from here,
 		// and all elements generated here will be sorted
@@ -72,7 +73,7 @@ public class EditHazardsDialog extends JDialog {
 			hazardListModel.addElement(h);
 		}
 		
-		final JList<Hazard> hazardList = new JList<Hazard>(hazardListModel);
+		hazardList = new JList<Hazard>(hazardListModel);
 		hazardList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		// Attach to upper left of window and extend to bottom
 		
@@ -88,75 +89,9 @@ public class EditHazardsDialog extends JDialog {
 		JScrollPane hazardListWrapped = new JScrollPane(hazardList);
 		getContentPane().add(hazardListWrapped, hazardListGbc);
 		
-		/* ------------------ New Hazard -------------------- */
-		final JButton newHazardButton = new JButton(new AbstractAction("New Hazard") {
-			private static final long serialVersionUID = 1L;
-
-			@Override public void actionPerformed(ActionEvent e) {
-				// Get the list, make a new hazard to it, and redo the model.
-				List<Hazard> newModel = model.getMutableHazards();
-				
-				// Perform a check: We cannot add a new hazard if there is not enough space in the graphics context to 
-				// render the hazard. Number of hazards is limited by the size of our resource.
-				if (!(rsrc.canAddHazard(newModel.size() ) ) ) {
-					JOptionPane.showMessageDialog(EditHazardsDialog.this,
-						    "No more hazards can be added. Not enough graphics resources. Add more sprites to hazard sprite sheet to add more hazards.",
-						    "No More Hazard Graphics",
-						    JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-				
-				// newModel.size means assign the next Id. Assuming sorted list, size will always equal the next index of a new element
-				Hazard.newHazardTo(newModel, newModel.size() );
-				
-				// Update the list model used by the view
-				hazardListModel.clear();
-				for (Hazard h : newModel) {
-					hazardListModel.addElement(h);
-				}
-			}
-		});
-		
-		final GridBagConstraints newHazardButtonGbc = new GridBagConstraints();
-		newHazardButtonGbc.gridx = 2;
-		newHazardButtonGbc.gridy = 0;
-		getContentPane().add(newHazardButton, newHazardButtonGbc);
-		
 		// Define edit panel here so listener for delete hazard can access it now
-		final EditSingleHazardPanel editPanel = new EditSingleHazardPanel();
+		editPanel = new EditSingleHazardPanel();
 		
-		/* ------------------ Delete Hazard ------------------- */
-		final JButton deleteHazardButton = new JButton(new AbstractAction("Delete Hazard") {
-			private static final long serialVersionUID = 1L;
-
-			@Override public void actionPerformed(ActionEvent e) {
-				// Get the list, remove the hazard currently selected in view
-				List<Hazard> newModel = model.getMutableHazards();
-				
-				Hazard hazardToRemove = hazardList.getSelectedValue();
-				
-				if (hazardToRemove != null) {
-				
-					Hazard.removeHazard(newModel, hazardToRemove);
-					
-					// update edit panel view since the currently selected hazard was deleted, meaning there is nothing
-					// selected anymore
-					editPanel.noHazardEditing();
-					
-					// update the list model used by the view
-					hazardListModel.clear();
-					for (Hazard h : newModel) {
-						hazardListModel.addElement(h);
-					}
-				
-				}
-			}
-		});
-		
-		final GridBagConstraints deleteHazardButtonGbc = new GridBagConstraints();
-		deleteHazardButtonGbc.gridx = 2;
-		deleteHazardButtonGbc.gridy = 1;
-		getContentPane().add(deleteHazardButton, deleteHazardButtonGbc);
 		
 		/* -------------------- Edit Hazard Panel --------------------- */
 		
@@ -165,10 +100,10 @@ public class EditHazardsDialog extends JDialog {
 		/* This listener binds to the original hazard list.		  */
 		hazardList.addListSelectionListener(new ListSelectionListener() {
 			@Override public void valueChanged(ListSelectionEvent event) {
+				// Does not save the current hazard. Saving should be done on each property change.
 				Hazard newHazard = hazardList.getSelectedValue();
 				if (newHazard == null)  return;
 				
-				// TODO some 'are you sure?' code if replacing an existing edit hazard context
 				editPanel.setHazardEditing(newHazard);
 			}
 		});
@@ -180,37 +115,30 @@ public class EditHazardsDialog extends JDialog {
 		editPanelGbc.gridheight = GridBagConstraints.REMAINDER;
 		getContentPane().add(editPanel, editPanelGbc);
 		
-		/* ----------------------- Apply Edit ------------------------- */
-		final JButton applyEditButton = new JButton(new AbstractAction("Apply Changes") {
-			private static final long serialVersionUID = 1L;
-
-			@Override public void actionPerformed(ActionEvent e) {
-				// Get mutable hazard from edit panel
-				if (editPanel.isEditingHazard() ) {
-					if (!(editPanel.isHazardEdited() ) )  return;
-
-					
-					Hazard editedCopy = editPanel.getHazardEdited();
-					List<Hazard> newModel = model.getMutableHazards();
-					
-					Hazard.replaceHazard(newModel, editedCopy);
-					
-					// update the list model used by the view
-					hazardListModel.clear();
-					for (Hazard h : newModel) {
-						hazardListModel.addElement(h);
-					}
-				}
-			}
-		});
-		
-		final GridBagConstraints applyEditButtonGbc = new GridBagConstraints();
-		applyEditButtonGbc.gridx = 2;
-		applyEditButtonGbc.gridy = 2;
-		getContentPane().add(applyEditButton, applyEditButtonGbc);
-		
 		hazardList.setVisible(true);
 		setSize(700, 300);
+	}
+	
+	private void save() {
+		if (this.editPanel.isEditingHazard() ) {
+			if (!(this.editPanel.isHazardEdited() ) )  return;
+
+			// Save the current selection so we can re-select when we redo the list model.
+			int currentSelection = hazardList.getSelectedIndex();
+			
+			Hazard editedCopy = this.editPanel.getHazardEdited();
+			List<Hazard> newModel = model.getMutableHazards();
+			
+			Hazard.replaceHazard(newModel, editedCopy);
+			
+			// update the list model used by the view
+			this.hazardListModel.clear();
+			for (Hazard h : newModel) {
+				this.hazardListModel.addElement(h);
+			}
+			
+			hazardList.setSelectedIndex(currentSelection);
+		}
 	}
 	
 	/**
@@ -221,7 +149,7 @@ public class EditHazardsDialog extends JDialog {
 	 * @author Erika Redmark
 	 *
 	 */
-	private static final class EditSingleHazardPanel extends JPanel {
+	private final class EditSingleHazardPanel extends JPanel {
 		private static final long serialVersionUID = 1L;
 		
 		// This mutable copy is never published outside of this object.
@@ -242,6 +170,7 @@ public class EditHazardsDialog extends JDialog {
 			deathAnimation.addActionListener(new ActionListener() {
 				@Override public void actionPerformed(ActionEvent evt) {
 					currentlyEditingHazard.setDeathAnimation((DeathAnimation)deathAnimation.getSelectedItem() );
+					EditHazardsDialog.this.save();
 				}
 				
 			});
@@ -252,6 +181,7 @@ public class EditHazardsDialog extends JDialog {
 				@Override public void actionPerformed(ActionEvent evt) {
 					// set mutable hazard to same exploded state as checkbox
 					currentlyEditingHazard.setExplodes(((JCheckBox)evt.getSource()).isSelected() );
+					EditHazardsDialog.this.save();
 				}
 				
 			});

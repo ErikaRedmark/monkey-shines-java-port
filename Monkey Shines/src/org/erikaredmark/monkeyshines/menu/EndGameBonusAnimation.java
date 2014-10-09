@@ -1,7 +1,6 @@
 package org.erikaredmark.monkeyshines.menu;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
@@ -19,7 +18,6 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.WorldStatistics;
 import org.erikaredmark.monkeyshines.global.SoundUtils;
-import org.erikaredmark.monkeyshines.resource.CoreResource;
 
 /**
  * 
@@ -73,13 +71,13 @@ public final class EndGameBonusAnimation {
 		animationState = AnimationState.FRUIT_COLLECTED;
 	};
 	
-	// Mutates the g2d instance to set it to the chicago font, if that font was successfully loaded.
+	// Mutates the g2d instance to set it to the right font, if that font was successfully loaded.
 	// In either case, it sets up the font for display on the tally page.
 	private static void setupTallyFont(Graphics2D g2d) {
-		Font chicago = CoreResource.INSTANCE.getChicago();
-		if (chicago != null) {
-			g2d.setFont(chicago);
-		}
+//		Font chicago = CoreResource.INSTANCE.getChicago();
+//		if (chicago != null) {
+//			g2d.setFont(chicago);
+//		}
 		
 		g2d.setColor(Color.GREEN);
 	}

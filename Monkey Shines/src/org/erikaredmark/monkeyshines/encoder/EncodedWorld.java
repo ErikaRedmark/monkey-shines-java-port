@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 import org.erikaredmark.monkeyshines.AnimationSpeed;
 import org.erikaredmark.monkeyshines.AnimationType;
@@ -61,8 +62,8 @@ import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
  * 
  */
 public final class EncodedWorld {
-//	private static final String CLASS_NAME = "org.erikaredmark.monkeyshines.encoder.EncodedWorld";
-//	private static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
+	private static final String CLASS_NAME = "org.erikaredmark.monkeyshines.encoder.EncodedWorld";
+	private static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
 	
 	private final WorldFormatProtos.World world;
 	
@@ -156,10 +157,21 @@ public final class EncodedWorld {
 		final String worldName = world.getName();
 		final Map<WorldCoordinate, Goodie> goodiesInWorld = protoToGoodies(world.getGoodiesList(), rsrc);
 		final List<Hazard> hazards = protoToHazards(world.getHazardsList() );
-		final int bonusScreen = this.world.getBonusScreen();
 		
-		// Intentionally omitted; return screen auto-calculated from the first bonus door bonzo touches.
-		// final int returnScreen = this.world.getReturnScreen();
+		// Compare the generated hazards with the number in the resource. If less, add extra.
+		// If more... log a warning, user is losing a hazard if they save.
+		int expectedHazards = rsrc.getHazardCount();
+		if (hazards.size() > expectedHazards) {
+			LOGGER.warning("Expected " + expectedHazards + " but save file shows " + hazards.size() + ". Hazards after the cutoff point will be auto-deleted on next size. Exit without saving and add hazards to the resource pack to fix.");
+			for (int i = hazards.size() - 1; i >= expectedHazards; --i) {
+				hazards.remove(i);
+			}
+		} else if (hazards.size() < expectedHazards){
+			List<Hazard> newHazards = Hazard.initialise(hazards.size(), expectedHazards - hazards.size(), rsrc);
+			hazards.addAll(newHazards);
+		}
+		
+		final int bonusScreen = this.world.getBonusScreen();
 		
 		// Size of conveyers may be added to if the world is skinned with an updated
 		// resource containing new conveyers.

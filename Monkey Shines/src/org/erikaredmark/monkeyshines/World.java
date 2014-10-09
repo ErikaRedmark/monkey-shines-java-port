@@ -30,7 +30,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
 /**
- * Holds all information about the entire world.
+ * Holds all information about the entire world, including methods and data to perform the actual running of the
+ * game.
  * Loads up all sprite sheets, sends references of them to the screens who send references to the tiles.
  * stores all the data for the screens, allowing the screens to draw themselves easily.
  * 
@@ -67,7 +68,7 @@ public class World {
 	public static void generateConveyers(List<Conveyer> conveyers, int amt) {
 		// Two entries in the list per conveyer id. Rotation determines which one.
 		int startId = conveyers.size() / 2;
-		for (int i = 0; i < amt; i++) {
+		for (int i = 0; i < amt; ++i) {
 			conveyers.add(new Conveyer(startId + i, Rotation.CLOCKWISE) );
 			conveyers.add(new Conveyer(startId + i, Rotation.ANTI_CLOCKWISE) );
 		}
@@ -96,10 +97,13 @@ public class World {
 		List<Conveyer> conveyers = new ArrayList<>(rsrc.getConveyerCount() * 2);
 		generateConveyers(conveyers, rsrc.getConveyerCount() );
 		
+		// Generate # of hazards proportional to graphics context size.
+		List<Hazard> hazards = Hazard.initialise(0, rsrc.getHazardCount(), rsrc);
+		
 		return new World(name, 
 						 new HashMap<WorldCoordinate, Goodie>(), 
 						 screens, 
-						 new ArrayList<Hazard>(), 
+						 hazards, 
 						 conveyers, 
 						 GameConstants.DEFAULT_BONUS_SCREEN,
 						 rsrc);
