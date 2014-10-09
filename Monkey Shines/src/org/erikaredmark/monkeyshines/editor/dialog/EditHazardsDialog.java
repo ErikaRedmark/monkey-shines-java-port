@@ -1,14 +1,29 @@
 package org.erikaredmark.monkeyshines.editor.dialog;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -43,6 +58,10 @@ import org.erikaredmark.monkeyshines.resource.WorldResource;
 public class EditHazardsDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
 	
+	private static final String CLASS_NAME = "org.erikaredmark.monkeyshines.editor.dialog.EditHazardsDialog";
+	private static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
+	
+	
 	private final EditHazardsModel model;
 	private final DefaultListModel<Hazard> hazardListModel;
 	private final EditSingleHazardPanel editPanel;
@@ -75,15 +94,16 @@ public class EditHazardsDialog extends JDialog {
 		
 		hazardList = new JList<Hazard>(hazardListModel);
 		hazardList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		hazardList.setCellRenderer(new HazardCellRenderer(rsrc) );
 		// Attach to upper left of window and extend to bottom
 		
 		final GridBagConstraints hazardListGbc = new GridBagConstraints();
 		hazardListGbc.gridx = 0;
 		hazardListGbc.gridy = 0;
-		hazardListGbc.weightx = 2;
-		hazardListGbc.weighty = 2;
+		hazardListGbc.weightx = 1;
+		hazardListGbc.weighty = 1;
 		hazardListGbc.gridheight = GridBagConstraints.REMAINDER;
-		hazardListGbc.gridwidth = 2;
+		hazardListGbc.gridwidth = 1;
 		hazardListGbc.fill = GridBagConstraints.BOTH;
 		// Embed list in Scrollable pane to allow scrollbars, but apply constraints to scrollable pane
 		JScrollPane hazardListWrapped = new JScrollPane(hazardList);
@@ -109,14 +129,14 @@ public class EditHazardsDialog extends JDialog {
 		});
 		
 		final GridBagConstraints editPanelGbc = new GridBagConstraints();
-		editPanelGbc.gridx = 3;
+		editPanelGbc.gridx = 2;
 		editPanelGbc.gridy = 1;
 		editPanelGbc.gridwidth = GridBagConstraints.REMAINDER;
 		editPanelGbc.gridheight = GridBagConstraints.REMAINDER;
 		getContentPane().add(editPanel, editPanelGbc);
 		
 		hazardList.setVisible(true);
-		setSize(700, 300);
+		setSize(600, 300);
 	}
 	
 	private void save() {
@@ -284,6 +304,99 @@ public class EditHazardsDialog extends JDialog {
 		}
 		
 		
+	}
+	
+	/**
+	 * 
+	 * Allows rendering of the Image of the hazard, whether or not it explodes, and the type of
+	 * death animation (in that order) in 20x20 chunks with 2px padding in-between each.
+	 * <p/>
+	 * The graphic used for the hazard is taken from the index in the list (index in list = rsrc
+	 * index). The graphics used for the other properties are internal to the .jar and are taken if
+	 * the data model requires them.
+	 * 
+	 * @author Erika Redmark
+	 *
+	 */
+	private static final class HazardCellRenderer extends DefaultListCellRenderer {
+		private static final long serialVersionUID = 1L;
+		
+		private final Map<DeathAnimation, ImageIcon> deathTypeIcons = new HashMap<>();
+		private ImageIcon explodesIcon;
+		private final List<ImageIcon> indexToHazard = new ArrayList<>();
+		
+		private HazardCellRenderer(final WorldResource rsrc) {
+			try {
+				// All or none. If any one load fails, all image icons will not be initialised.
+				BufferedImage explodes = ImageIO.read(EditHazardsDialog.class.getResourceAsStream("/resources/graphics/editor/hazard/explodesIcon.png") );
+				BufferedImage burn = ImageIO.read(EditHazardsDialog.class.getResourceAsStream("/resources/graphics/editor/hazard/burnIcon.png") );
+				BufferedImage bee = ImageIO.read(EditHazardsDialog.class.getResourceAsStream("/resources/graphics/editor/hazard/beeSting.png") );
+				BufferedImage standardDeath = ImageIO.read(EditHazardsDialog.class.getResourceAsStream("/resources/graphics/editor/hazard/standardDeath.png") );
+				BufferedImage electricDeath = ImageIO.read(EditHazardsDialog.class.getResourceAsStream("/resources/graphics/editor/hazard/electricDeath.png") );
+				
+				deathTypeIcons.put(DeathAnimation.BURN, new ImageIcon(burn) );
+				deathTypeIcons.put(DeathAnimation.BEE, new ImageIcon(bee) );
+				deathTypeIcons.put(DeathAnimation.NORMAL, new ImageIcon(standardDeath) );
+				deathTypeIcons.put(DeathAnimation.ELECTRIC, new ImageIcon(electricDeath) );
+				
+				explodesIcon = new ImageIcon(explodes);
+				
+			} catch (IOException e) {
+				// No big deal, we just can't render the images like we wanted.
+				LOGGER.log(Level.SEVERE,
+						   "Missing graphics resources in .jar; cannot render information images in hazards display: " + e.getMessage(),
+						   e);
+			}
+			
+			// indexToHazard ALWAYS works.
+			BufferedImage source = rsrc.getHazardSheet();
+			for (int srcX = 0; srcX < source.getWidth(); srcX += 20) {
+				BufferedImage destination = new BufferedImage(20, 20, source.getType() );
+				Graphics2D g2d = destination.createGraphics();
+				try {
+					g2d.drawImage(source, 0, 0, 20, 20, srcX, 0, srcX + 20, 20, null);
+					indexToHazard.add(new ImageIcon(destination) ); 
+				} finally {
+					g2d.dispose();
+				}
+			}
+		}
+		
+		@Override public Component getListCellRendererComponent(JList<?> list, 
+																Object v, 
+																int index,
+																boolean isSelected, 
+																boolean cellHasFocus) {
+			
+			assert v instanceof Hazard;
+			Hazard value = (Hazard) v;
+			
+			// Return a composite of three labels, each showing one image based on either the id,
+			// explosion type, or death type of the hazard
+			JPanel display = new JPanel();
+			display.setLayout(new FlowLayout(FlowLayout.LEFT) );
+			
+			JLabel hazardItself = new JLabel();
+			hazardItself.setIcon(indexToHazard.get(index) );
+			display.add(hazardItself);
+			
+			// Null is acceptable for the next two
+			JLabel deathType = new JLabel();
+			deathType.setIcon(deathTypeIcons.get(value.getDeathAnimation() ) );
+			display.add(deathType);
+			
+			if (value.explodes() && explodesIcon != null ) {
+				JLabel explod = new JLabel();
+				explod.setIcon(explodesIcon);
+				display.add(explod);
+			}
+			
+			if (isSelected) {
+				display.setBackground(Color.GRAY);
+			}
+			
+			return display;
+		}
 	}
 
 	/**
