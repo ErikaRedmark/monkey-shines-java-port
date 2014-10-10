@@ -142,6 +142,13 @@ public class LevelEditor extends JFrame {
 		}
 	});
 	
+	private JMenuItem editOffscreenSprites = new JMenuItem(new AbstractAction("Edit Offscreen Sprites...") { 
+		private static final long serialVersionUID = 1L;
+		@Override public void actionPerformed(ActionEvent e) {
+			currentWorld.actionEditOffscreenSprites();
+		}
+	});
+	
 	/* ------------------------ MENU ITEM DELETE SPRITES --------------------------- */
 	private JMenuItem deleteSprites = new JMenuItem(new AbstractAction("Delete Sprites") {
 		private static final long serialVersionUID = 1L;
@@ -486,6 +493,7 @@ public class LevelEditor extends JFrame {
 		
 		spritesMenu.add(placeSprites);
 		spritesMenu.add(editSprites);
+		spritesMenu.add(editOffscreenSprites);
 		spritesMenu.add(deleteSprites);
 		mainMenuBar.add(spritesMenu);
 		

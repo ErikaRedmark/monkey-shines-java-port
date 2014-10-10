@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -380,6 +381,29 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		changeState(EditorState.EDITING_SPRITES);
 	}
 	
+	public void actionEditOffscreenSprites() {
+		List<Sprite> sprites = currentScreenEditor.getSpritesOutOfBounds();
+		switch(sprites.size() ) {
+		case 0: 
+			JOptionPane.showMessageDialog(this, "There are no offscreen sprites to edit");
+			break;
+		case 1: { 
+			Sprite s = sprites.get(0);
+			SpritePropertiesModel model = SpritePropertiesDialog.launch(this, this.currentWorldEditor.getWorldResource(), s);
+			changeSpriteFromDialogModel(s, model);
+			break;
+		}
+		default: {
+			Optional<Sprite> sOp = SpriteChooserDialog.launch(this, sprites, this.currentWorldEditor.getWorldResource() );
+			if (sOp.isPresent() ) {
+				Sprite s = sOp.get();
+				SpritePropertiesModel model = SpritePropertiesDialog.launch(this, this.currentWorldEditor.getWorldResource(), s);
+				changeSpriteFromDialogModel(s, model);
+			}
+		}
+		
+		}
+	}
 
 	public void actionDeletingSprites() {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
@@ -937,17 +961,8 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 					// Open properties editor for sprite
 					SpritePropertiesModel model = SpritePropertiesDialog.launch(editor, editor.currentWorldEditor.getWorldResource(), selected.get() );
 					// Remove sprite from screen, create a new one with new properties.
-					editor.currentScreenEditor.removeSprite(selected.get() );
-					editor.currentScreenEditor.addSprite(model.getSpriteId(), 
-														 model.getSpriteStartingLocation(), 
-														 model.getSpriteBoundingBox(), 
-														 model.getSpriteVelocity(), 
-														 model.getAnimationType(), 
-														 model.getAnimationSpeed(), 
-														 model.getSpriteType(),
-														 model.getForceDirection(),
-														 model.getTwoWayFacing(),
-														 editor.currentWorldEditor.getWorldResource() );
+					editor.changeSpriteFromDialogModel(selected.get(), model);
+
 				}
 			}
 			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { }
@@ -992,6 +1007,32 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	 */
 	public LevelScreenEditor getVisibleScreenEditor() {
 		return this.currentScreenEditor;
+	}
+
+	/**
+	 * 
+	 * Removes the selected sprite from the level and replaces it with the information taken from the
+	 * editor sprite dialog model
+	 * 
+	 * @param sprite
+	 * 		the old sprite to replace
+	 * 
+	 * @param model
+	 * 		the model for the new sprite
+	 * 
+	 */
+	private void changeSpriteFromDialogModel(Sprite sprite, SpritePropertiesModel model) {
+		currentScreenEditor.removeSprite(sprite);
+		currentScreenEditor.addSprite(model.getSpriteId(), 
+									  model.getSpriteStartingLocation(), 
+									  model.getSpriteBoundingBox(), 
+									  model.getSpriteVelocity(), 
+									  model.getAnimationType(), 
+									  model.getAnimationSpeed(), 
+									  model.getSpriteType(),
+									  model.getForceDirection(),
+									  model.getTwoWayFacing(),
+									  currentWorldEditor.getWorldResource() );
 	}
 
 

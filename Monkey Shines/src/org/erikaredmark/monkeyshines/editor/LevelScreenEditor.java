@@ -1,9 +1,12 @@
 package org.erikaredmark.monkeyshines.editor;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.erikaredmark.monkeyshines.AnimationSpeed;
 import org.erikaredmark.monkeyshines.AnimationType;
+import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.ImmutableRectangle;
 import org.erikaredmark.monkeyshines.LevelScreen;
@@ -24,8 +27,8 @@ import org.erikaredmark.monkeyshines.tiles.TileType;
  */
 public class LevelScreenEditor {
 
-	/* unmodifiable version from the level data.																		*/
 	private final LevelScreen screen;
+	private static final ImmutableRectangle PLAYABLE_FIELD = ImmutableRectangle.of(0, 0, GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT);
 	
 	private LevelScreenEditor(final LevelScreen screen) {
 		this.screen = screen;
@@ -83,7 +86,7 @@ public class LevelScreenEditor {
 	
 	/**
 	 * 
-	 * Returns every sprite on the screen
+	 * Returns every sprite on the screen, screen being the level screen, not the displayable area.
 	 * 
 	 * @return
 	 * 		all sprites
@@ -91,6 +94,31 @@ public class LevelScreenEditor {
 	 */
 	public List<Sprite> getSpritesOnScreen() {
 		return this.screen.getSpritesOnScreen();
+	}
+	
+	/**
+	 * 
+	 * Returns every sprite that is currently out of bounds of the drawable area. This means that at least some part
+	 * of the sprite is clipped by the edge of the drawable area, and includes sprites that are COMPLETELY clipped off
+	 * the edge. Some sprites may start out of bounds and move inside bounds, or go in and out of bounds. This allows the
+	 * editor to load up, modify, or delete sprites that cannot otherwise be clicked on.
+	 * <p/>
+	 * The returned list cannot be modified
+	 * 
+	 * @return
+	 * 		list of sprites currently out of bounds. Cannot be modified
+	 * 
+	 */
+	public List<Sprite> getSpritesOutOfBounds() {
+		List<Sprite> outOfBounds = new ArrayList<>();
+		for (Sprite s : this.screen.getSpritesOnScreen() ) {
+			ImmutableRectangle rect = s.getCurrentBounds();
+			if (rect.intersect(PLAYABLE_FIELD) == null) {
+				outOfBounds.add(s);
+			}
+		}
+		
+		return Collections.unmodifiableList(outOfBounds);
 	}
 
 	/**
