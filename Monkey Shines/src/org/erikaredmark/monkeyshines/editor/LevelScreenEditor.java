@@ -155,9 +155,19 @@ public class LevelScreenEditor {
 		screen.addSprite(s);
 		
 	}
+	
+
+	/**
+	 * 
+	 * Forwards to {@code LevelScreen.replaceSprite(Sprite, Sprite) }
+	 * 
+	 */
+	public void replaceSprite(Sprite sprite, Sprite newSprite) {
+		screen.replaceSprite(sprite, newSprite);
+	}
 
 	public void removeSprite(Sprite sprite) {
-		screen.remove(sprite);
+		screen.removeSprite(sprite);
 	}
 	
 	/**
@@ -197,5 +207,6 @@ public class LevelScreenEditor {
 	public void resetCurrentScreen() {
 		screen.resetScreen();
 	}
+
 
 }

@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 
 import org.erikaredmark.monkeyshines.background.Background;
 import org.erikaredmark.monkeyshines.background.SingleColorBackground;
@@ -297,8 +298,38 @@ public final class LevelScreen {
 	 * 		the sprite to remove
 	 * 
 	 */
-	public void remove(Sprite sprite) {
+	public void removeSprite(Sprite sprite) {
 		this.spritesOnScreen.remove(sprite);
+	}
+	
+	/**
+	 * 
+	 * Replaces the sprite given by the first argument in the list with the one in the second argument.
+	 * The order of the list is preserved.
+	 * <p/>
+	 * If {@code sprite} is not found in the sprite list, this method throws an exception.
+	 * 
+	 * @param sprite
+	 * 		old sprite
+	 * 
+	 * @param newSprite
+	 * 		new sprite to replace it with
+	 * 
+	 * @throws IllegalArgumentException
+	 * 		if the first sprite argument is not found in the list
+	 * 
+	 */
+	public void replaceSprite(Sprite sprite, Sprite newSprite) {
+		for (ListIterator<Sprite> it = this.spritesOnScreen.listIterator(); it.hasNext(); /* no op */) {
+			Sprite next = it.next();
+			if (sprite.equals(next) ) {
+				it.remove();
+				it.add(newSprite);
+				return;
+			}
+		}
+		// Natural termination of loop means not found. not found is not legal.
+		throw new IllegalArgumentException("Sprite not found in level screen to replace: " + sprite);
 	}
 	
 	/**
@@ -524,5 +555,6 @@ public final class LevelScreen {
 	public boolean getSpriteAnimation() {
 		return this.animateSprites;
 	}
+
 
 }

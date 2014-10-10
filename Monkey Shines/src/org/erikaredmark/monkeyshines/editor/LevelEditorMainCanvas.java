@@ -1013,6 +1013,10 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	 * 
 	 * Removes the selected sprite from the level and replaces it with the information taken from the
 	 * editor sprite dialog model
+	 * <p/>
+	 * The new sprite replaces the removed sprite, so the list of sprites is not re-ordered by this operation.
+	 * This is important as sprite chooser dialogs, if the sprite is otherwise identical, the only other info
+	 * the user has in choosing a sprite is where it appears in the dialog.
 	 * 
 	 * @param sprite
 	 * 		the old sprite to replace
@@ -1022,17 +1026,19 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	 * 
 	 */
 	private void changeSpriteFromDialogModel(Sprite sprite, SpritePropertiesModel model) {
-		currentScreenEditor.removeSprite(sprite);
-		currentScreenEditor.addSprite(model.getSpriteId(), 
-									  model.getSpriteStartingLocation(), 
-									  model.getSpriteBoundingBox(), 
-									  model.getSpriteVelocity(), 
-									  model.getAnimationType(), 
-									  model.getAnimationSpeed(), 
-									  model.getSpriteType(),
-									  model.getForceDirection(),
-									  model.getTwoWayFacing(),
-									  currentWorldEditor.getWorldResource() );
+		Sprite newSprite = Sprite.newSprite(
+			model.getSpriteId(), 
+		    model.getSpriteStartingLocation(), 
+		    model.getSpriteBoundingBox(), 
+		    model.getSpriteVelocity(), 
+		    model.getAnimationType(), 
+		    model.getAnimationSpeed(), 
+		    model.getSpriteType(),
+		    model.getForceDirection(),
+		    model.getTwoWayFacing(),
+		    currentWorldEditor.getWorldResource() );
+		
+		currentScreenEditor.replaceSprite(sprite, newSprite);
 	}
 
 

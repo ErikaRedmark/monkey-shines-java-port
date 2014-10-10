@@ -2,17 +2,17 @@ package org.erikaredmark.monkeyshines.editor.dialog;
 
 import java.awt.Canvas;
 import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.List;
 
-import javax.swing.AbstractAction;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 import org.erikaredmark.monkeyshines.Sprite;
+import org.erikaredmark.monkeyshines.bounds.IPoint2D;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 
 import com.google.common.base.Optional;
@@ -23,22 +23,22 @@ public final class SpriteChooserDialog extends JDialog {
 	private Optional<Sprite> selectedSprite = Optional.absent();
 	
 	public SpriteChooserDialog(List<Sprite> sprites, WorldResource rsrc) {
-		getContentPane().setLayout(new FlowLayout() );
+		getContentPane().setLayout(new FlowLayout(FlowLayout.LEFT) );
 		
 		for (Sprite s : sprites) {
+			JPanel spriteSelector = new JPanel();
+			spriteSelector.setLayout(new FlowLayout() );
+			spriteSelector.addMouseListener(new SetSpriteMouseListener(s) );
 			Canvas c = new SpriteAnimationCanvas(s.getId(), s.getAnimationType(), s.getAnimationSpeed(), rsrc);
+			// Both have mouse listeners; for some reason the canvas steals the general JPanel click.
 			c.addMouseListener(new SetSpriteMouseListener(s) );
-			getContentPane().add(c);
+			spriteSelector.add(c);
+			IPoint2D loc = s.getCurrentBounds().getLocation();
+			JLabel location = new JLabel(loc.x() + ", " + loc.y() );
+			spriteSelector.add(location);
+			
+			getContentPane().add(spriteSelector);
 		}
-		
-		JButton none = new JButton(new AbstractAction("None") {
-			private static final long serialVersionUID = 1L;
-			@Override public void actionPerformed(ActionEvent e) {
-				selectAndQuit(Optional.<Sprite>absent() );
-			}
-		});
-		
-		getContentPane().add(none);
 
 	}
 	
@@ -53,7 +53,7 @@ public final class SpriteChooserDialog extends JDialog {
 		SpriteChooserDialog dialog = new SpriteChooserDialog(spriteChoices, rsrc);
 		dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		dialog.setModal(true);
-		dialog.setSize(200, 200);
+		dialog.setSize(240, 200);
 		dialog.setLocationRelativeTo(null);
 		dialog.setVisible(true);
 		
