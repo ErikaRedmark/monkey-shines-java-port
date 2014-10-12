@@ -1,30 +1,13 @@
 package org.erikaredmark.monkeyshines.editor.dialog;
 
-import java.awt.BorderLayout;
-import java.awt.Canvas;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.image.BufferedImage;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.plaf.basic.BasicArrowButton;
 
 import org.erikaredmark.monkeyshines.World;
-import org.erikaredmark.monkeyshines.editor.resource.EditorResource;
-import org.erikaredmark.util.StringToNumber;
-
-import com.google.common.base.Optional;
 
 /**
  * 
@@ -36,110 +19,18 @@ import com.google.common.base.Optional;
 public final class GoToScreenDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
 
-	// The 'model' of the dialog is simply a number. No need for extra classes.
-	private int selectedScreenId;
+	private final SelectScreenPanel selectScreen;
 	
-	// Canceling sets the selected back to original.
-	private int originalScreenId;
-	
-	// Level thumbnail: Current id is mapped to a thumbnail to display
-	private final Canvas levelThumbnail;
-	private BufferedImage levelThumbnailToDraw;
-	
-	// Text box containing current screen id
-	private final JTextField screenIdText;
-	
-	// World reference for generating thumbnails
-	private final World world;
-	
-	private final boolean allowNew;
+	private final int originalId;
+	private boolean useOriginal;
 	
 	private GoToScreenDialog(final int currentId, final World world, final boolean allowNew) {
-		this.allowNew = allowNew;
-		getContentPane().setLayout(new GridBagLayout() );
+		getContentPane().setLayout(new FlowLayout(FlowLayout.LEFT) );
+		originalId = currentId;
+		useOriginal = false;
+		selectScreen = new SelectScreenPanel(currentId, world, allowNew);
+		getContentPane().add(selectScreen);
 		
-		// -------- Left side: Thumbnail
-		levelThumbnail = new Canvas() {
-			private static final long serialVersionUID = 1L;
-
-			@Override public void paint(Graphics g) {
-				if (levelThumbnailToDraw == null)  return;
-				
-				Graphics2D g2d = (Graphics2D) g;
-				g2d.drawImage(levelThumbnailToDraw, 
-						  0, 0, 		// Dest 1
-						  160, 100, 	// Dest 2
-						  0, 0, 		// Src 1
-						  160, 100, 	// Src 2
-						  null);
-			}
-		};
-		GridBagConstraints levelThumbnailGbc = new GridBagConstraints();
-		levelThumbnailGbc.gridx = 0;
-		levelThumbnailGbc.gridy = 0;
-		levelThumbnailGbc.weightx = 1;
-		levelThumbnailGbc.weighty = 1;
-		levelThumbnailGbc.gridheight = 1;
-		levelThumbnailGbc.gridwidth = 1;
-		// Thumbnail size
-		levelThumbnail.setPreferredSize(new Dimension(160, 100) ); // width and height are both /4 of normal game window
-		getContentPane().add(levelThumbnail, levelThumbnailGbc);
-		
-		// -------- RightSide: Level id selection
-		JPanel levelSelect = new JPanel();
-		levelSelect.setLayout(new BorderLayout() );
-		GridBagConstraints levelSelectGbc = new GridBagConstraints();
-		levelThumbnailGbc.gridx = 1;
-		levelThumbnailGbc.gridy = 0;
-		levelThumbnailGbc.weightx = 1;
-		levelThumbnailGbc.weighty = 1;
-		levelThumbnailGbc.gridheight = 1;
-		levelThumbnailGbc.gridwidth = 1;
-		getContentPane().add(levelSelect, levelSelectGbc);
-		
-		// Arrows and id selection
-		BasicArrowButton upArrow = new BasicArrowButton(BasicArrowButton.NORTH);
-		BasicArrowButton rightArrow = new BasicArrowButton(BasicArrowButton.EAST);
-		BasicArrowButton downArrow = new BasicArrowButton(BasicArrowButton.SOUTH);
-		BasicArrowButton leftArrow = new BasicArrowButton(BasicArrowButton.WEST);
-		
-		upArrow.addActionListener(new ActionListener() {
-			@Override public void actionPerformed(ActionEvent arg0) { modifyIdBy(100); }
-		});
-		
-		rightArrow.addActionListener(new ActionListener() {
-			@Override public void actionPerformed(ActionEvent arg0) { modifyIdBy(1); }
-		});
-		
-		downArrow.addActionListener(new ActionListener() {
-			@Override public void actionPerformed(ActionEvent arg0) { modifyIdBy(-100); }
-		});
-		
-		leftArrow.addActionListener(new ActionListener() {
-			@Override public void actionPerformed(ActionEvent arg0) { modifyIdBy(-1); }
-		});
-		
-		screenIdText = new JTextField(6);
-		screenIdText.addKeyListener(new KeyListener() {
-			@Override public void keyPressed(KeyEvent e) { }
-			@Override public void keyReleased(KeyEvent e) { 
-				Optional<Integer> userValue = StringToNumber.string2Int(screenIdText.getText() );
-				if (userValue.isPresent() ) {
-					setId(userValue.get().intValue() );
-				} else {
-					// TODO show warning icon
-					System.err.println("Non-integer value " + screenIdText.getText() );
-				}
-			}
-			@Override public void keyTyped(KeyEvent e) { }
-
-		});
-		
-		levelSelect.add(rightArrow, BorderLayout.EAST);
-		levelSelect.add(upArrow, BorderLayout.NORTH);
-		levelSelect.add(downArrow, BorderLayout.SOUTH);
-		levelSelect.add(leftArrow, BorderLayout.WEST);
-		levelSelect.add(screenIdText, BorderLayout.CENTER);
 		
 		// --------- Okay and Cancel buttons
 		JButton okay = new JButton(new AbstractAction("Okay") {
@@ -154,100 +45,19 @@ public final class GoToScreenDialog extends JDialog {
 			private static final long serialVersionUID = 1L;
 			@Override public void actionPerformed(ActionEvent e) {
 				// Reset model before closing window
-				selectedScreenId = originalScreenId;
+				useOriginal = true;
 				setVisible(false);
 			}
 		});
 		
-		GridBagConstraints okayGbc = new GridBagConstraints();
-		okayGbc.gridx = 1;
-		okayGbc.gridy = 1;
-		okayGbc.weightx = 1;
-		okayGbc.weighty = 1;
-		okayGbc.gridheight = 1;
-		okayGbc.gridwidth = 1;
-		
-		GridBagConstraints cancelGbc = new GridBagConstraints();
-		cancelGbc.gridx = 0;
-		cancelGbc.gridy = 1;
-		cancelGbc.weightx = 1;
-		cancelGbc.weighty = 1;
-		cancelGbc.gridheight = 1;
-		cancelGbc.gridwidth = 1;
-		
-		getContentPane().add(okay, okayGbc);
-		getContentPane().add(cancel, cancelGbc);
-		
-		// Set initial model values
-		this.originalScreenId = currentId;
-		this.selectedScreenId = currentId;
-		this.world = world;
-		this.screenIdText.setText(String.valueOf(currentId) );
-		updateThumbnail();
+		add(okay);
+		add(cancel);
 	}
 	
-	/**
-	 * 
-	 * Modifies the current screen id this dialog displays. This is called by arrow buttons only, and
-	 * it syncs up with the main textbox to reflect the new value, as well as updating the model.
-	 * <p/>
-	 * The id will NOT change if the given screen does not exist AND the dialog is set to now allow
-	 * new screens.
-	 * 
-	 * @param value
-	 * 		amount to change level screen id; may be negative
-	 * 
-	 */
-	private void modifyIdBy(int value) {
-		int newValue = selectedScreenId + value;
-		if (!(this.allowNew) && !(this.world.screenIdExists(newValue) ) ) {
-			return;
-		}
-		
-		this.selectedScreenId += value;
-		screenIdText.setText(String.valueOf(selectedScreenId) );
-		updateThumbnail();
+	public int getSelectedScreenId() {
+		return selectScreen.getSelectedScreenId();
 	}
-	
-	/**
-	 * 
-	 * Sets the current screen id. This is intended to be called ONLY from the text box so
-	 * now view syncing is done; the model value is simply set to the new value. If the
-	 * goto screen is set to not allow new screens, this will NOT update the model, and
-	 * the thumbnail update will indicate the screen model has not changed
-	 * 
-	 * @param value
-	 * 
-	 */
-	private void setId(int value) {
-		// Don't update model unless we either allow news, or are looking at existing screen
-		if (this.allowNew || this.world.screenIdExists(value) ) {
-			this.selectedScreenId = value;
-		}
-		
 
-		updateThumbnail();
-	}
-	
-	/**
-	 * 
-	 * Draws the currently selected screen on the canvas. If no screen exists, draws special
-	 * NEW image.
-	 * 
-	 */
-	private void updateThumbnail() {
-		if (this.world.screenIdExists(selectedScreenId) ) {
-			this.levelThumbnailToDraw = EditorResource.generateThumbnailFor(world, selectedScreenId);
-		} else {
-			if (this.allowNew) {
-				this.levelThumbnailToDraw = EditorResource.getNewScreenThumbnail();
-			} else {
-				this.levelThumbnailToDraw = EditorResource.getNoScreenHereThumbnail();
-			}
-		}
-		
-		this.levelThumbnail.repaint();
-	}
 	
 	/**
 	 * Displays the dialog and gets the id the user selected. This is a blocking call, and effectively makes the dialog 
@@ -276,7 +86,11 @@ public final class GoToScreenDialog extends JDialog {
 		dialog.setModal(true);
 		dialog.setVisible(true);
 		
-		return dialog.selectedScreenId;
+		if (dialog.useOriginal) {
+			return dialog.originalId;
+		} else {
+			return dialog.getSelectedScreenId();
+		}
 	}
 	
 }

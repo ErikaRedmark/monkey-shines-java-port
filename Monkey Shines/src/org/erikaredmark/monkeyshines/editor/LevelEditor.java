@@ -18,6 +18,8 @@ import javax.swing.JOptionPane;
 
 import org.erikaredmark.monkeyshines.*;
 import org.erikaredmark.monkeyshines.editor.LevelEditorMainCanvas.EditorState;
+import org.erikaredmark.monkeyshines.editor.dialog.CopyPasteDialog;
+import org.erikaredmark.monkeyshines.editor.dialog.CopyPasteDialog.CopyPasteConfiguration;
 import org.erikaredmark.monkeyshines.editor.dialog.GoToScreenDialog;
 import org.erikaredmark.monkeyshines.editor.dialog.NewWorldDialog;
 import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
@@ -188,6 +190,13 @@ public class LevelEditor extends JFrame {
 		}
 	});
 	
+	private JMenuItem copyPasteScreen = new JMenuItem(new AbstractAction("Copy Screen To...") {
+		private static final long serialVersionUID = 1L;
+		@Override public void actionPerformed(ActionEvent e) {
+			actionCopyPasteLevel();
+		}
+	});
+	
 	private JMenuItem changeBackground = new JMenuItem(new AbstractAction("Change Background...") {
 		private static final long serialVersionUID = 1L;
 		@Override public void actionPerformed(ActionEvent e) {
@@ -272,6 +281,13 @@ public class LevelEditor extends JFrame {
 		int selectedScreenId = GoToScreenDialog.displayAndGetId(world.getBonusScreen(), world, false);
 		
 		world.setBonusScreen(selectedScreenId);
+	}
+	
+	public void actionCopyPasteLevel() {
+		CopyPasteConfiguration config = CopyPasteDialog.launch(currentWorld.getVisibleScreenEditor().getId(), currentWorld.getWorldEditor().getWorld() );
+		if (config != null) {
+			currentWorld.getWorldEditor().copyAndPasteLevel(config.copyFromId, config.copyToId);
+		}
 	}
 	
 	/**
@@ -503,6 +519,7 @@ public class LevelEditor extends JFrame {
 		mainMenuBar.add(hazardMenu);
 		
 		screenMenu.add(gotoScreen);
+		screenMenu.add(copyPasteScreen);
 		screenMenu.add(changeBackground);
 		screenMenu.add(resetScreen);
 		

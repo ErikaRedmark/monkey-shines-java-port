@@ -505,14 +505,62 @@ public class World {
 	}
 	
 	/** 
-	 * Adds a level screen to the world. Unless this is done via an editor, changes will not be persisted when the
-	 * world is reloaded.
+	 * 
+	 * Adds a level screen to the world. If the screen already exists, this method throws an exception
 	 *  
 	 * @param screen
 	 * 		the new screen to add
+	 * 
+	 * @throws IllegalArgumentException
+	 * 		if the given screen already exists in the world. Use {@code screenIdExists() } to check and {@code removeScreen}
+	 * 		first if the intent is to replace
+	 * 
 	 */
 	public void addScreen(final LevelScreen screen) {
+		if (this.worldScreens.containsKey(screen.getId() ) ) {
+			throw new IllegalArgumentException("Screen id " + screen.getId() + " already exists");
+		}
+		
 		this.worldScreens.put(screen.getId(), screen);
+	}
+	
+	/**
+	 * 
+	 * Adds the given level screen to the world, with no checks if a screen by that id already exists in the world. If it
+	 * did, it is replaced with the new screen.
+	 * 
+	 * @param screen
+	 * 		new screen to add
+	 * 
+	 */
+	public void addOrReplaceScreen(final LevelScreen screen) {
+		this.worldScreens.put(screen.getId(), screen);
+	}
+	
+	/**
+	 * 
+	 * Removes the given level screen from the world based on the id. If the screen does not exist, throws an exception.
+	 * <p/>
+	 * There is one very special case: screen id 1000 may NEVER be removed under any circumstances. If the intent is to replace,
+	 * use {@code addOrReplaceScreen(LevelScreen) }
+	 * 
+	 * @param screenId
+	 * 		screen id to remove
+	 * 
+	 * @throws IllegalArgumentException
+	 * 		if no screen by that id exists in the world, or if this tried to delete screen 1000
+	 * 
+	 */
+	public void removeScreen(int screenId) {
+		if (!(this.worldScreens.containsKey(screenId) ) ) {
+			throw new IllegalArgumentException("Screen id " + screenId + " does not exist");
+		}
+		
+		if (screenId == 1000) {
+			throw new IllegalArgumentException("Screen 1000 may not be removed from a world, ever");
+		}
+		
+		this.worldScreens.remove(screenId);
 	}
 	
 	

@@ -148,7 +148,7 @@ public final class WorldEditor {
 			throw new IllegalArgumentException("Screen id " + copyFromId + " does not exist for copy/paste");
 		}
 		
-		LevelScreen newScreen = LevelScreen.copyAndAddToWorld(levelScreenEditors.get(copyFromId).getLevelScreen(), copyToId, world);
+		LevelScreen newScreen = LevelScreen.copyAndAddToWorld(world.getScreenByID(copyFromId), copyToId, world);
 		
 		// Screen already added; just need to create an editor for it
 		levelScreenEditors.put(newScreen.getId(), LevelScreenEditor.from(newScreen) );

@@ -566,6 +566,8 @@ public final class LevelScreen {
 	 * ALSO has the side-effect of adding the new level to the given world (a requirement in order for the
 	 * goodie information to transfer properly), so calling this method is good enough to actually add the
 	 * new screen to the world. Returns an instance of the created screen
+	 * <p/>
+	 * WARNING: If the target screen, {@code newId}, already exists in the world it WILL be overwritten.
 	 * 
 	 * @param levelScreen
 	 * 		the level screen to copy
@@ -606,8 +608,8 @@ public final class LevelScreen {
 					    	levelScreen.getBonzoStartingLocation(),
 					    	newSprites,
 					    	levelScreen.rsrc);
-		
-		world.addScreen(newScreen);
+
+		world.addOrReplaceScreen(newScreen);
  		
  		// Handle goodies
  		Collection<GoodieLocationPair> originalGoodiePairs = world.getGoodiesForLevel(levelScreen.getId() );
