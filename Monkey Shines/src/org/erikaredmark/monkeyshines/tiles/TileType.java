@@ -87,6 +87,17 @@ public interface TileType {
 	
 	/**
 	 * 
+	 * Returns a copy of the tile type. Even stateless tile types should return copies, as some collision detection
+	 * algorithms require the ability to distinquish between instances. TODO is this really required?
+	 * 
+	 * @return
+	 * 		copy of this tile
+	 * 
+	 */
+	TileType copy();
+	
+	/**
+	 * 
 	 * Paints the given tile on the world. Container classes store location, and supply it to paint
 	 * method in pixel position. The tile will draw according to its internal id, its state, and
 	 * the current world resource.

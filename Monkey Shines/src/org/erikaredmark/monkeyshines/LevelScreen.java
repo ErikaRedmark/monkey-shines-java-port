@@ -3,9 +3,11 @@ package org.erikaredmark.monkeyshines;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 
+import org.erikaredmark.monkeyshines.World.GoodieLocationPair;
 import org.erikaredmark.monkeyshines.background.Background;
 import org.erikaredmark.monkeyshines.background.SingleColorBackground;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
@@ -227,7 +229,7 @@ public final class LevelScreen {
 	
 	
 	/**
-	 * Returns the tile type at the given cordinates. These are PIXEL cordinates in the screen
+	 * Returns the tile type at the given coordinates. These are PIXEL coordinates in the screen
 	 * 
 	 * @param x
 	 * 		x location in terms of pixels
@@ -513,8 +515,8 @@ public final class LevelScreen {
 	 */
 	public void paintForThumbnail(Graphics2D g2d) {
 		background.draw(g2d);
-		for (int i = 0; i < GameConstants.TILES_IN_COL; i++) { // for every tile in the row
-			for (int j = 0; j < GameConstants.TILES_IN_ROW; j++) {
+		for (int i = 0; i < GameConstants.TILES_IN_COL; ++i) { // for every tile in the row
+			for (int j = 0; j < GameConstants.TILES_IN_ROW; ++j) {
 				if (screenTiles[i][j] != null) {
 					screenTiles[i][j].paint(g2d);
 				}
@@ -554,6 +556,67 @@ public final class LevelScreen {
 	 */
 	public boolean getSpriteAnimation() {
 		return this.animateSprites;
+	}
+
+
+	/**
+	 * 
+	 * Provides a deep-copy of all the elements of this screen, with the new id and a world reference
+	 * so that the goodies that appear on this screen can have copies made for the next screen. This method
+	 * ALSO has the side-effect of adding the new level to the given world (a requirement in order for the
+	 * goodie information to transfer properly), so calling this method is good enough to actually add the
+	 * new screen to the world. Returns an instance of the created screen
+	 * 
+	 * @param levelScreen
+	 * 		the level screen to copy
+	 * 
+	 * @param newId
+	 * 		the new id the copy will take on
+	 * 
+	 * @param world
+	 * 		a reference to the world so the Goodies entries can be updated
+	 * 
+	 * @return
+	 * 		a new instance of this level, identical in design to the target level but existing in a different
+	 * 		location in the world.
+	 * 
+	 */
+	public static LevelScreen copyAndAddToWorld(LevelScreen levelScreen, int newId, World world) {
+		// Handle Tiles
+		Tile[][] originalTiles = levelScreen.screenTiles;
+		Tile[][] newTiles = new Tile[GameConstants.TILES_IN_COL][GameConstants.TILES_IN_ROW];
+ 		for (int i = 0; i < GameConstants.TILES_IN_COL; ++i) { // for every tile in the row
+			for (int j = 0; j < GameConstants.TILES_IN_ROW; ++j) {
+				newTiles[i][j] = originalTiles[i][j].copy();
+			}
+ 		}
+
+ 		// Handle Sprites
+ 		List<Sprite> originalSprites = levelScreen.getSpritesOnScreen();
+ 		List<Sprite> newSprites = new ArrayList<>(originalSprites.size() );
+ 		
+ 		for (Sprite s : originalSprites) {
+ 			newSprites.add(Sprite.copyOf(s) );
+ 		}
+		
+		LevelScreen newScreen = 
+			new LevelScreen(newId, 
+					    	levelScreen.background,
+					    	newTiles,
+					    	levelScreen.getBonzoStartingLocation(),
+					    	newSprites,
+					    	levelScreen.rsrc);
+		
+		world.addScreen(newScreen);
+ 		
+ 		// Handle goodies
+ 		Collection<GoodieLocationPair> originalGoodiePairs = world.getGoodiesForLevel(levelScreen.getId() );
+ 		for (GoodieLocationPair pair : originalGoodiePairs) {
+ 			WorldCoordinate loc = pair.location;
+ 			world.addGoodie(newId, loc.getRow(), loc.getCol(), pair.goodie.getGoodieType() );
+ 		}
+ 		
+ 		return newScreen;
 	}
 
 

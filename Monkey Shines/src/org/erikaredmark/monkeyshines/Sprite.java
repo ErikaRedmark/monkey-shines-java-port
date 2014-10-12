@@ -159,6 +159,31 @@ public final class Sprite {
 						  rsrc);
 	}
 	
+	/**
+	 * 
+	 * Creates a deep copy of the given sprite
+	 * 
+	 * @param s
+	 * 		target sprite
+	 * 
+	 * @return
+	 * 		new sprite that is a copy of the target
+	 * 
+	 */
+	public static Sprite copyOf(Sprite s) {
+		return new Sprite(s.getId(),
+						  s.getStaringLocation(),
+						  s.getBoundingBox(),
+						  s.getInitialSpeedX(),
+						  s.getInitialSpeedY(),
+						  s.getAnimationType(),
+						  s.getAnimationSpeed(),
+						  s.getType(),
+						  s.getForcedDirection(),
+						  s.getTwoWayFacing(),
+						  s.rsrc);
+	}
+	
 	
 	private Sprite(final int id, 
 			  	   final ImmutablePoint2D startLocation, 

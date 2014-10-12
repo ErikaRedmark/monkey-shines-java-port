@@ -170,7 +170,7 @@ public class World {
 			LevelScreen screenForGoodie = worldScreens.get(coordinate.getLevelId() );
 			
 			Goodie value = entry.getValue();
-			goodiesPerScreen.put(screenForGoodie, value);
+			goodiesPerScreen.put(screenForGoodie.getId(), new GoodieLocationPair(value, coordinate) );
 			
 			// Now fill in the proper red and blue keys as required
 			if (value.getGoodieType() == Goodie.Type.RED_KEY)  		 this.redKeys.add(value);
@@ -476,10 +476,26 @@ public class World {
 		final LevelScreen currentScreen = getCurrentScreen();
 		currentScreen.resetScreen();
 		// reset goodies
-		for (Goodie goodie : goodiesPerScreen.get(currentScreen) ) {
-			goodie.resetIfApplicable();
+		for (GoodieLocationPair pair : goodiesPerScreen.get(currentScreen.getId() ) ) {
+			pair.goodie.resetIfApplicable();
 		}
 	}
+	
+	/**
+	 * 
+	 * Returns a listing of all the goodies that appear on the given level, including their locations.
+	 * 
+	 * @param id
+	 * 		id of the level
+	 * 
+	 * @return
+	 * 		goodies on level, or an empty collection if the level id does not exist
+	 * 
+	 */
+	public Collection<GoodieLocationPair> getGoodiesForLevel(int id) {
+		return goodiesPerScreen.get(id);
+	}
+	
 	
 	/**
 	 * Get the world name 
@@ -699,17 +715,17 @@ public class World {
 	 * Adds a goodie to the given world, typically only used by level editor.
 	 * 
 	 * @param screenId
-	 * @param x
-	 * @param y
+	 * @param row (also known as x)
+	 * @param col (also known as y)
 	 * @param type
 	 * 
 	 */
-	public void addGoodie(final int screenId, final int x, final int y, final Goodie.Type type) {
-		WorldCoordinate coordinate = new WorldCoordinate(screenId, x, y);
+	public void addGoodie(final int screenId, final int row, final int col, final Goodie.Type type) {
+		WorldCoordinate coordinate = new WorldCoordinate(screenId, row, col);
 		// If goodie already exists, take out and replace
 		if (goodiesInWorld.get(coordinate) != null)
 			goodiesInWorld.remove(coordinate);
-		goodiesInWorld.put(coordinate, Goodie.newGoodie(type, ImmutablePoint2D.of(x, y), screenId, rsrc) );
+		goodiesInWorld.put(coordinate, Goodie.newGoodie(type, ImmutablePoint2D.of(row, col), screenId, rsrc) );
 	}
 	
 	public void removeGoodie(final int screenId, final int x, final int y) {
@@ -916,6 +932,25 @@ public class World {
 		}
 	}
 	
+	/**
+	 * 
+	 * Provides a pairing of a location in the world to a goodie. This is NOT used in normal calculations (cooridnates are
+	 * in a map and obtained via checking the map). This is intended for when a system needs to know both the goodies
+	 * and the locations of the goodies on a specific screen only.
+	 * 
+	 * @author Erika Redmark
+	 *
+	 */
+	public static final class GoodieLocationPair {
+		public final Goodie goodie;
+		public final WorldCoordinate location;
+		
+		private GoodieLocationPair(final Goodie goodie, final WorldCoordinate location) {
+			this.goodie = goodie;
+			this.location = location;
+		}
+	}
+	
 	/***************
 	 * Private Data
 	 **************/
@@ -925,9 +960,9 @@ public class World {
 	private final Map<WorldCoordinate, Goodie> goodiesInWorld;
 	private int goodiesCollected;
 	
-	// Holds a list of all goodies on a particlar screen. During screen reset, relevant goodies may
+	// Holds a list of all goodies on a particlar screen Id. During screen reset, relevant goodies may
 	// need to be regenerated.
-	private final Multimap<LevelScreen, Goodie> goodiesPerScreen;
+	private final Multimap<Integer, GoodieLocationPair> goodiesPerScreen;
 	
 	// When a world is initialised, hold a set of all blue and red keys. When taken, they will
 	// be removed from the set. The moment a set becomes empty, it toggles the 'all blue keys' or
@@ -994,6 +1029,6 @@ public class World {
 	// This field is ONLY created after the game is over. See javadocs on accessor methods.
 	private WorldStatistics stats;
 	private boolean worldFinished;
-	
+
 
 }

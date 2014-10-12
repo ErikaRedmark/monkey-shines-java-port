@@ -129,6 +129,31 @@ public final class WorldEditor {
 		world.update();
 		world.paint(g);
 	}
+	
+	/**
+	 * 
+	 * Copies the level at {@code copyFromId} to the level at {@code copyToId}, either creating a new level if one does not
+	 * exist or overwriting an existing one.
+	 * 
+	 * @param copyFromId
+	 * 
+	 * @param copyToId
+	 * 
+	 * @throws IllegalArgumentException
+	 * 		if {@code copyFromId} does not refer to a valid screen
+	 * 
+	 */
+	public void copyAndPasteLevel(int copyFromId, int copyToId) {
+		if (!(screenExists(copyFromId) ) ) {
+			throw new IllegalArgumentException("Screen id " + copyFromId + " does not exist for copy/paste");
+		}
+		
+		LevelScreen newScreen = LevelScreen.copyAndAddToWorld(levelScreenEditors.get(copyFromId).getLevelScreen(), copyToId, world);
+		
+		// Screen already added; just need to create an editor for it
+		levelScreenEditors.put(newScreen.getId(), LevelScreenEditor.from(newScreen) );
+		
+	}
 
 	/**
 	 * Forwarding call to {@link World#addGoodie(int, int, int, int) }													

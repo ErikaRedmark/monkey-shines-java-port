@@ -69,6 +69,19 @@ public class Tile {
 		return new Tile(tileX, tileY, newType, rsrc);
 	}
 	
+	/**
+	 * 
+	 * Creates a copy of the current tile. Changes to the copy will not affect the original, and vice-versa
+	 * 
+	 * @return
+	 * 
+	 */
+	public Tile copy() {
+		// Stateful types may need copying.
+		TileType copyType = type.copy();
+		return new Tile(tileX, tileY, copyType, rsrc);
+	}
+	
 	public TileType getType() { return this.type; };
 
 	public void paint(Graphics2D g2d) {
@@ -152,5 +165,6 @@ public class Tile {
 				+ " col " + tileY / GameConstants.TILE_SIZE_Y 
 				+ " of type " + type;
 	}
+
 
 }

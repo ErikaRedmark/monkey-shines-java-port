@@ -6,6 +6,8 @@ import java.awt.Graphics2D;
  * 
  * Backgrounds are always the first thing drawn on a level. Different background types draw
  * backgrounds in different ways.
+ * <p/>
+ * All backgrounds should be immutable, as references may be shared in memory.
  * 
  * @author Erika Redmark
  *

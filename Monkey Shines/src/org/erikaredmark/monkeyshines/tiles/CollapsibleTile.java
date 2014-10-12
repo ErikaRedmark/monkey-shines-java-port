@@ -58,6 +58,10 @@ public final class CollapsibleTile implements TileType {
 		 */
 	}
 	
+	@Override public CollapsibleTile copy() {
+		return new CollapsibleTile(this.id);
+	}
+	
 	/**
 	 * 
 	 * Performs 1 tick of collapsing. This is typically called if bonzo is standing on a collapsible tile.

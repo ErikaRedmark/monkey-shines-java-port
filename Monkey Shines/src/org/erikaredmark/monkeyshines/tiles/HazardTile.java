@@ -191,6 +191,11 @@ public class HazardTile implements TileType {
 		timeToNextFrame = 0;
 	}
 	
+
+	@Override public TileType copy() {
+		return new HazardTile(hazard);
+	}
+	
 	/**
 	 * 
 	 * For hazard tiles that use a hazard that explodes, this represents whether the hazard is gone (it should no longer
@@ -221,5 +226,6 @@ public class HazardTile implements TileType {
 			soundManager.playOnce(GameSoundEffect.EXPLOSION);
 		}
 	}
+
 
 }

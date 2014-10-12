@@ -170,6 +170,17 @@ public class LevelScreenEditor {
 		screen.removeSprite(sprite);
 	}
 	
+
+	/** 
+	 * 
+	 * Provides direct access the the underlying level screen
+	 * 
+	 */
+	public LevelScreen getLevelScreen() {
+		return screen;
+	}
+
+	
 	/**
 	 * 
 	 * Forwards to an internal, special method in World that stops sprites from moving. They no longer

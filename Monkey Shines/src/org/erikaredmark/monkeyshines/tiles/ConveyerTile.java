@@ -92,4 +92,8 @@ public class ConveyerTile implements TileType {
 	
 	@Override public void reset() { /* No op */ }
 
+	@Override public TileType copy() {
+		return new ConveyerTile(conveyer);
+	}
+
 }
