@@ -51,15 +51,14 @@ import com.google.common.base.Optional;
 
 
 /**
- * This window runs the same Engine that the main game runs. The only difference is that game mechanics
- * such as physics and collision, are not available. What is available is Sprite movement and graphics.
+ * 
+ * This window runs the same game engine that the game runs, and allows the user to edit the world. 
  * <p/>
- * Running this class, instead of MonkeyShines, starts up the level editor, which uses the same base
- * classes. In this mode, the user has full control over level editing, and can save their work.
+ * Brush types are set from {@code BrushPalette} window.
  * 
  * @author Erika Redmark
  */
-/* Despite inheriting from a serialisable class, this class is not designed to be serialised presently.					*/
+
 @SuppressWarnings("serial")
 public final class LevelEditorMainCanvas extends JPanel implements ActionListener, MouseListener, MouseMotionListener {
 
@@ -614,6 +613,25 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		// Most complex, requires dialog.
 		default: return SpriteChooserDialog.launch(this, sprites, this.currentWorldEditor.getWorldResource() );
 		}
+	}
+	
+	/**
+	 * 
+	 * Sets the brush tile type to the given type and sets the id of the brush to the passed id.
+	 * <p/>
+	 * This will automatically deduce the actual tile from the passed paintbrush.
+	 * Calling this method will change the state of the editor to PLACING mode for either tiles,
+	 * hazards, or goodies, based on the paintbrush type.
+	 * 
+	 * @param type
+	 * 		the paintbrush type
+	 * 
+	 * @param id
+	 * 		the id of the tile
+	 * 
+	 */
+	public void setTileBrushAndId(PaintbrushType type, int id) {
+		//TODO method stub
 	}
 
 	@Override public void mouseClicked(MouseEvent e) {

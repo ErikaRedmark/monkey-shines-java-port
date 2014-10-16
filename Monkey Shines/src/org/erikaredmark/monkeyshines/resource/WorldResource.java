@@ -1020,6 +1020,66 @@ public final class WorldResource {
 	 * 
 	 */
 	public BufferedImage getSplashScreen() { return splashScreen; }
+	
+	/**
+	 * 
+	 * Chops the given image into an array of images, indexed from top left to bottom right. The width/height supplied
+	 * must be divisible into the size of the passed image.
+	 * <p/>
+	 * This is NOT intended for gameplay, which should just draw from the sprite sheet when needed. This is intended for
+	 * when the editor needs to show all the possible image selections and each one needs to be mapped to a separate button/
+	 * icon.
+	 * <p/>
+	 * Because of the way the algorithm works, the index in the array has a 1:1 mapping to the id of a tile when used to
+	 * chop up a tilesheet. Do not use for specialised tilesets, such as conveyers, collapsibles.
+	 * 
+	 * @param width
+	 * 		width of each chop. Must be a divisor of the width of the entire image
+	 * 
+	 * @param height
+	 * 		height of each chop. Must be a divisor of the height of the entire image
+	 * 
+	 * @param sprites
+	 * 		the image containing the sprites
+	 * 
+	 * @return
+	 * 		an array of buffered images of all the chops, indexed from 0 (top-left) to n (bottom-right)
+	 * 
+	 */
+	public static BufferedImage[] chop(int width, 
+									   int height,
+									   BufferedImage sprites) {
+
+		assert sprites.getWidth() % width == 0;
+		assert sprites.getHeight() % height == 0;
+
+		BufferedImage[] chops = new BufferedImage[(sprites.getWidth() / width) * (sprites.getHeight() / height)];
+		
+		{
+			int index = 0;
+			for (int i = 0; i < sprites.getWidth(); i += width) {
+				for (int j = 0; j < sprites.getHeight(); j += height) {
+					chops[index] = new BufferedImage(width, height, sprites.getType() );
+					Graphics2D g2d = chops[index].createGraphics();
+					try {
+						g2d.drawImage(sprites, 
+									  0, 0, 
+									  width, height, 
+									  i, j, 
+									  i + width, j + height, 
+									  null);
+					} finally {
+						g2d.dispose();
+					}
+					
+					++index;
+				}
+			}
+		}
+		
+		return chops;
+	}
+	
 	/**
 	 * 
 	 * Indicates how the client wishes to use the resources. This is mainly a division between editor and game.
