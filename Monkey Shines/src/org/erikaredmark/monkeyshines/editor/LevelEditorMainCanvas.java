@@ -622,6 +622,9 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	 * This will automatically deduce the actual tile from the passed paintbrush.
 	 * Calling this method will change the state of the editor to PLACING mode for either tiles,
 	 * hazards, or goodies, based on the paintbrush type.
+	 * <p/>
+	 * Since sprites are basically the same thing (an id for initial placement) this method can also handle
+	 * the sprite brush, although TODO presently id will be ignored.
 	 * 
 	 * @param type
 	 * 		the paintbrush type
@@ -631,7 +634,31 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	 * 
 	 */
 	public void setTileBrushAndId(PaintbrushType type, int id) {
-		//TODO method stub
+		currentTileType = type;
+		currentTileId = id;
+		
+		switch(type) {
+		case SOLIDS: // break omitted
+		case THRUS: // break omitted
+		case SCENES: // break omitted
+		case CONVEYERS: // break omitted
+		case COLLAPSIBLE:
+			changeState(EditorState.PLACING_TILES);
+			break;
+		case GOODIES:
+			currentGoodieType = Goodie.Type.byValue(id);
+			changeState(EditorState.PLACING_GOODIES);
+			break;
+		case HAZARDS:
+			currentHazard = currentWorldEditor.getHazards().get(id);
+			changeState(EditorState.PLACING_HAZARDS);
+			break;
+		case SPRITES:
+			changeState(EditorState.PLACING_SPRITES);
+			break;
+		default:
+			throw new RuntimeException("method not updated to handle new brush type " + type);
+		}
 	}
 
 	@Override public void mouseClicked(MouseEvent e) {

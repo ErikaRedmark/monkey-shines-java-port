@@ -38,8 +38,21 @@ public class BrushPalette extends JPanel {
 	private ActionListener solidTileListener = new ActionListener() {
 		@Override public void actionPerformed(ActionEvent e) {
 			int id = Integer.parseInt(e.getActionCommand() );
-			mainCanvas.actionPlacingSolids();
 			mainCanvas.setTileBrushAndId(PaintbrushType.SOLIDS, id);
+		}
+	};
+	
+	private ActionListener thruTileListener = new ActionListener() {
+		@Override public void actionPerformed(ActionEvent e) {
+			int id = Integer.parseInt(e.getActionCommand() );
+			mainCanvas.setTileBrushAndId(PaintbrushType.THRUS, id);
+		}
+	};
+	
+	private ActionListener sceneTileListener = new ActionListener() {
+		@Override public void actionPerformed(ActionEvent e) {
+			int id = Integer.parseInt(e.getActionCommand() );
+			mainCanvas.setTileBrushAndId(PaintbrushType.SCENES, id);
 		}
 	};
 	
@@ -52,26 +65,36 @@ public class BrushPalette extends JPanel {
 		
 		// Create tabs for all types of tiles
 		JPanel solidsPanel = new JPanel();
-		brushTypes.add(solidsPanel);
+		JPanel thrusPanel = new JPanel();
+		JPanel scenesPanel = new JPanel();
 		
 		// Fill tabs with buttons that correspond to their type, where their index in the list (their
 		// id) matches the graphic for the button, and the id that will be used when the button is clicked
 		// when setting the canvas brush type.
 		
-		// SOLIDS
-		solidsPanel.setLayout(new FlowLayout(FlowLayout.LEFT) );
-		BufferedImage[] solids = 
-			WorldResource.chop(GameConstants.TILE_SIZE_X, 
-							   GameConstants.TILE_SIZE_Y, 
-							   rsrc.getStatelessTileTypeSheet(StatelessTileType.SOLID) );
+		// SOLIDS, THRUS, and SCENES
+		initialiseBasicTilePanel(solidsPanel, brushTypes, StatelessTileType.SOLID, solidTileListener, rsrc);
+		initialiseBasicTilePanel(thrusPanel, brushTypes, StatelessTileType.THRU, thruTileListener, rsrc);
+		initialiseBasicTilePanel(scenesPanel, brushTypes, StatelessTileType.SCENE, sceneTileListener, rsrc);
+	}
+	
+	// Common code for initialising SOLIDS, THRUS, and SCENES Only
+	private void initialiseBasicTilePanel(JPanel panel, JTabbedPane brushTypes, StatelessTileType type, ActionListener listener, WorldResource rsrc) {
+		panel.setLayout(new FlowLayout(FlowLayout.LEFT) );
+		BufferedImage[] tiles =
+			WorldResource.chop(GameConstants.TILE_SIZE_X,
+							   GameConstants.TILE_SIZE_Y,
+							   rsrc.getStatelessTileTypeSheet(type) );
 		
-		for (int i = 0; i < solids.length; ++i) {
-			BufferedImage solid = solids[i];
-			JButton solidButton = new JButton(new ImageIcon(solid) );
-			MenuUtils.renderImageOnly(solidButton);
-			solidButton.setActionCommand(String.valueOf(i) );
-			solidButton.addActionListener(solidTileListener);
+		for (int i = 0; i < tiles.length; ++i) {
+			BufferedImage tile = tiles[i];
+			JButton tileButton = new JButton(new ImageIcon(tile) );
+			MenuUtils.renderImageOnly(tileButton);
+			tileButton.setActionCommand(String.valueOf(i) );
+			tileButton.addActionListener(listener);
 		}
 		
+		// Add the panel to the tabbed pane. The icon for the tab will be the first tile for the sheet.
+		brushTypes.addTab("", new ImageIcon(tiles[0]), panel);
 	}
 }
