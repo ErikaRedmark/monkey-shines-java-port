@@ -1,6 +1,8 @@
 package org.erikaredmark.monkeyshines.editor;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -8,16 +10,18 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import javax.swing.AbstractAction;
+import javax.swing.JDesktopPane;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
 import org.erikaredmark.monkeyshines.*;
-import org.erikaredmark.monkeyshines.editor.LevelEditorMainCanvas.EditorState;
+import org.erikaredmark.monkeyshines.editor.LevelDrawingCanvas.EditorState;
 import org.erikaredmark.monkeyshines.editor.dialog.CopyPasteDialog;
 import org.erikaredmark.monkeyshines.editor.dialog.CopyPasteDialog.CopyPasteConfiguration;
 import org.erikaredmark.monkeyshines.editor.dialog.GoToScreenDialog;
@@ -32,17 +36,38 @@ import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.resource.WorldResource.UseIntent;
 import org.erikaredmark.util.BinaryLocation;
 
+import com.google.common.base.Function;
+
 
 /*
  * The main GUI for the level editor. Contains in it a JPanel just like the game that contains the current screen
  */
+@SuppressWarnings("serial")
 public class LevelEditor extends JFrame {
 	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -1004295925422699855L;
-	private LevelEditorMainCanvas currentWorld;
+	private final JDesktopPane editorDesktop;
+	private final JInternalFrame paletteFrame;
+	private final JInternalFrame canvasFrame;
+	// Initialised each time the current world changes. Null and not added to the pane
+	// when there is no world. Callback called whenever a new world is loaded into the editor
+	private BrushPalette palette;
+	private Function<WorldResource, Void> paletteUpdateCallback = new Function<WorldResource, Void>() {
+		@Override public Void apply(WorldResource rsrc) {
+			assert currentWorld != null : "Callback for palette activated too early!";
+			// Remove original palette if exists, create the new one, add it, and pack it.
+			if (palette != null) {
+				paletteFrame.remove(palette);
+			}
+			palette = new BrushPalette(currentWorld, rsrc);
+			paletteFrame.add(palette);
+			paletteFrame.pack();
+			paletteFrame.setVisible(true);
+			return null;
+		}
+		
+	};
+	
+	private final LevelDrawingCanvas currentWorld;
 	/* Only set during loading a world, and only used during saving.	*/
 	private Path defaultSaveLocation;
 	
@@ -482,14 +507,39 @@ public class LevelEditor extends JFrame {
 
 	private LevelEditor() {
 		keys = new KeyboardInput();
-		currentWorld = new LevelEditorMainCanvas(keys);
+		paletteFrame = new JInternalFrame("Palette");
+		paletteFrame.setLayout(new FlowLayout(FlowLayout.LEFT) );
+		
+		canvasFrame = new JInternalFrame("Level");
+		canvasFrame.setLayout(new FlowLayout(FlowLayout.LEFT) );
+		
+		currentWorld = new LevelDrawingCanvas(keys, paletteUpdateCallback);
+		canvasFrame.add(currentWorld);
+		canvasFrame.pack();
 		// Must add to both.
 		this.addKeyListener(keys);
-		add(currentWorld);
 		setTitle("Monkey Shines Editor");
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setLocationRelativeTo(null);
 		
+		setUpMenuBar();
+		
+		// Now, set up the desktop. The desktop will contain both frames
+		editorDesktop = new JDesktopPane();
+		editorDesktop.add(canvasFrame);
+		canvasFrame.setVisible(true);
+		
+		editorDesktop.add(paletteFrame);
+		// Set visible later when palette initialised
+		add(editorDesktop);
+
+		setPreferredSize(new Dimension(840, 680) );
+		pack();
+		setLocationRelativeTo(null);
+		setVisible(true);
+		setResizable(true);
+	}
+
+	private void setUpMenuBar() {
 		fileMenu.add(newWorld);
 		fileMenu.add(loadWorld);
 		fileMenu.add(saveWorld);
@@ -533,12 +583,6 @@ public class LevelEditor extends JFrame {
 		
 		// Set up menus
 		setJMenuBar(mainMenuBar);
-		
-		pack();
-		setLocationRelativeTo(null);
-		setVisible(true);
-		setResizable(false);
 	}
-
 
 }

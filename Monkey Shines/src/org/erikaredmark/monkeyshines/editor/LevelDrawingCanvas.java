@@ -47,6 +47,7 @@ import org.erikaredmark.monkeyshines.tiles.HazardTile;
 import org.erikaredmark.monkeyshines.tiles.TileType;
 import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 
 
@@ -60,7 +61,7 @@ import com.google.common.base.Optional;
  */
 
 @SuppressWarnings("serial")
-public final class LevelEditorMainCanvas extends JPanel implements ActionListener, MouseListener, MouseMotionListener {
+public final class LevelDrawingCanvas extends JPanel implements ActionListener, MouseListener, MouseMotionListener {
 
 	// Point2D of the mouse position
 	private Point2D mousePosition;
@@ -77,6 +78,8 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	// Current overlay graphic
 	private BufferedImage currentTileSheet;
 	
+	private final Function<WorldResource, Void> worldLoaded;
+	
 	// THESE MAY BE NULL!
 	private LevelScreenEditor currentScreenEditor;
 	private WorldEditor currentWorldEditor;
@@ -88,8 +91,22 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	private PaintbrushType currentTileType;
 	private EditorState    currentState;
 	
-	public LevelEditorMainCanvas(final KeyboardInput keys) {
+	
+	/**
+	 * 
+     * Creates the canvas, is designed to display and allow editing of worlds.
+	 * 
+	 * @param keys
+	 * 		key input to allow the canvas to respond to keyboard shortcuts
+	 * 
+	 * @param worldLoaded
+	 * 		a callback that is called when a new world is loaded, indicating the resource for that world
+	 * 		for other functions at require it in the main editor
+	 * 
+	 */
+	public LevelDrawingCanvas(final KeyboardInput keys, final Function<WorldResource, Void> worldLoaded) {
 		super();
+		this.worldLoaded = worldLoaded;
 		currentTileId = 0;
 		currentGoodieType = Goodie.Type.BANANA; // Need to pick something for default. Bananas are good.
 		currentTileType = PaintbrushType.SOLIDS;
@@ -137,6 +154,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		currentWorldEditor = WorldEditor.fromEncoded(world, rsrc);
 		currentScreenEditor = currentWorldEditor.getLevelScreenEditor(1000);
 		changeState(EditorState.PLACING_TILES);
+		worldLoaded.apply(rsrc);
 	}
 	
 	/**
@@ -586,7 +604,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		int tileClickedX = x / GameConstants.TILE_SIZE_X;
 		int tileClickedY = y / GameConstants.TILE_SIZE_Y;
 		
-		// Calulate
+		// Calculate
 		int tileId = tileClickedX;
 		tileId += tilesPerRow * tileClickedY;
 		
@@ -815,11 +833,11 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	private interface EditorStateAction {
 		/** Action for the editor in this state during a mouse click
 		 */
-		public void defaultClickAction(LevelEditorMainCanvas editor);
+		public void defaultClickAction(LevelDrawingCanvas editor);
 		
 		/** Action for the editor in this state during a mouse drag
 		 */
-		public void defaultDragAction(LevelEditorMainCanvas editor);
+		public void defaultDragAction(LevelDrawingCanvas editor);
 	}
 	
 	/**
@@ -834,17 +852,17 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 	 */
 	public enum EditorState implements EditorStateAction { 
 		PLACING_TILES {
-			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
+			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
 				editor.addTile(editor.mousePosition.x(), editor.mousePosition.y() );
 			}
-			@Override public void defaultDragAction(LevelEditorMainCanvas editor) {
+			@Override public void defaultDragAction(LevelDrawingCanvas editor) {
 				defaultClickAction(editor);
 			}
 		}, 
 		
 		/* Click actions on this type will always produce a state change to PLACING_TILES */
 		SELECTING_TILES {
-			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
+			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
 				int tileId = editor.resolveObjectId(editor.currentTileSheet, editor.mousePosition.x(), editor.mousePosition.y() );
 				
 				// do nothing if click is out of bounds
@@ -853,7 +871,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 				editor.currentTileId = tileId;
 				editor.changeState(EditorState.PLACING_TILES);
 			}
-			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { 
+			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 
 				/* No Drag Action */
 			}
 		},
@@ -862,26 +880,26 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		 * same space as tiles)
 		 */
 		ERASING_TILES {
-			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
+			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
 				editor.eraseAt(editor.mousePosition.x(), editor.mousePosition.y() );
 			}
-			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { 
+			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 
 				defaultClickAction(editor);
 			}
 		},
 		
 		PLACING_GOODIES {
-			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
+			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
 				editor.addGoodie(editor.mousePosition.x(), editor.mousePosition.y() );
 			}
-			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { 
+			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 
 				defaultClickAction(editor);
 			}
 		}, 
 		
 		/* Click actions on this type will always produce a state change to PLACING_GOODIES */
 		SELECTING_GOODIES {
-			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
+			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
 				int goodieId = editor.resolveObjectId(editor.currentWorldEditor.getWorldResource().getGoodieSheet(), editor.mousePosition.x(), editor.mousePosition.y() );
 				
 				// do nothing if click is out of bounds
@@ -890,13 +908,13 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 				editor.currentGoodieType = Goodie.Type.byValue(goodieId);
 				editor.changeState(EditorState.PLACING_GOODIES);
 			}
-			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { 
+			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 
 				/* No Drag Action */
 			}
 		}, 
 		
 		SELECTING_HAZARDS {
-			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
+			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
 				int hazardId = editor.resolveObjectId(editor.currentWorldEditor.getWorldResource().getHazardSheet(), 
 													  editor.mousePosition.x(), 
 													  editor.mousePosition.y() );
@@ -916,7 +934,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 				editor.changeState(EditorState.PLACING_TILES);
 			}
 			
-			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { 
+			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 
 				defaultClickAction(editor);
 			}
 		},
@@ -924,7 +942,7 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 		// Displays the editor sprite sheet for conveyers, setting the specialId to be indicative of the INDEX
 		// in the conveyers list of the conveyer type selected.
 		SELECTING_CONVEYERS {
-			@Override public void defaultClickAction(LevelEditorMainCanvas editor) {
+			@Override public void defaultClickAction(LevelDrawingCanvas editor) {
 				int conveyerId = editor.resolveObjectId(editor.currentWorldEditor.getWorldResource().getEditorConveyerSheet(),
 														editor.mousePosition.x(), 
 														editor.mousePosition.y() );
@@ -943,13 +961,13 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 				editor.changeState(EditorState.PLACING_TILES);
 			}
 			
-			@Override public void defaultDragAction(LevelEditorMainCanvas editor) {
+			@Override public void defaultDragAction(LevelDrawingCanvas editor) {
 				defaultClickAction(editor);
 			}
 		},
 		
 		SELECTING_COLLAPSIBLE {
-			@Override public void defaultClickAction(LevelEditorMainCanvas editor) {
+			@Override public void defaultClickAction(LevelDrawingCanvas editor) {
 				// Editor sheet has layed them out in proper order for ids to match.
 				final WorldResource rsrc = editor.currentWorldEditor.getWorldResource();
 				int collapsibleId = editor.resolveObjectId(rsrc.getEditorCollapsingSheet(),
@@ -963,23 +981,23 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 				editor.changeState(EditorState.PLACING_TILES);
 			}
 			
-			@Override public void defaultDragAction(LevelEditorMainCanvas editor) {
+			@Override public void defaultDragAction(LevelDrawingCanvas editor) {
 				defaultClickAction(editor);
 			}
 		},
 		
 		PLACING_HAZARDS {
-			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
+			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
 				editor.addHazard(editor.mousePosition.x(), editor.mousePosition.y() );
 			}
 			
-			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { 
+			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 
 				defaultClickAction(editor);
 			}
 		},
 		
 		PLACING_SPRITES {
-			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
+			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
 				SpritePropertiesModel model = SpritePropertiesDialog.launch(editor, editor.currentWorldEditor.getWorldResource(), ImmutablePoint2D.of(editor.mousePosition.x(), editor.mousePosition.y() ) );
 				if (model.isOkay() ) {
 					editor.currentScreenEditor.addSprite(model.getSpriteId(), 
@@ -994,13 +1012,13 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 														 editor.currentWorldEditor.getWorldResource() );
 				}
 			}
-			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { 
+			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 
 				/* No Drag Action */
 			}
 		},
 		
 		EDITING_SPRITES {
-			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
+			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
 				Optional<Sprite> selected = editor.resolveSpriteAtLocation(ImmutablePoint2D.from(editor.mousePosition) );
 				if (selected.isPresent() ) {
 					// Open properties editor for sprite
@@ -1010,36 +1028,36 @@ public final class LevelEditorMainCanvas extends JPanel implements ActionListene
 
 				}
 			}
-			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { }
+			@Override public void defaultDragAction(LevelDrawingCanvas editor) { }
 		},
 		
 		DELETING_SPRITES {
-			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
+			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
 				Optional<Sprite> selected = editor.resolveSpriteAtLocation(ImmutablePoint2D.from(editor.mousePosition) );
 				if (selected.isPresent() ) {
 					editor.currentScreenEditor.removeSprite(selected.get() );
 				}
 			}
-			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { }
+			@Override public void defaultDragAction(LevelDrawingCanvas editor) { }
 		},
 		
 		SELECTING_SPRITES {
-			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { }
-			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { }
+			@Override public void defaultClickAction(LevelDrawingCanvas editor) { }
+			@Override public void defaultDragAction(LevelDrawingCanvas editor) { }
 		}, 
 		
 		PLACING_BONZO {
-			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { 
+			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
 				editor.setBonzo(editor.mousePosition.x(), editor.mousePosition.y() );
 			}
-			@Override public void defaultDragAction(LevelEditorMainCanvas editor) {
+			@Override public void defaultDragAction(LevelDrawingCanvas editor) {
 				defaultClickAction(editor);
 			}
 		}, 
 		
 		NO_WORLD_LOADED {
-			@Override public void defaultClickAction(LevelEditorMainCanvas editor) { }
-			@Override public void defaultDragAction(LevelEditorMainCanvas editor) { }
+			@Override public void defaultClickAction(LevelDrawingCanvas editor) { }
+			@Override public void defaultDragAction(LevelDrawingCanvas editor) { }
 		};
 	}
 

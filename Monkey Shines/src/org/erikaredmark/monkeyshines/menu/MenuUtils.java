@@ -1,5 +1,7 @@
 package org.erikaredmark.monkeyshines.menu;
 
+import java.awt.Insets;
+
 import javax.swing.JButton;
 
 /**
@@ -30,6 +32,19 @@ public final class MenuUtils {
 		button.setContentAreaFilled(false); 
 		button.setFocusPainted(false); 
 		button.setOpaque(false);
+	}
+	
+	/**
+	 * 
+	 * Removes all extra spacing around the button so other components are layed out right next to it.
+	 * 
+	 * @param button
+	 * 		the button to remove margins and formatting from
+	 */
+	public static void removeMargins(JButton button) {
+		button.setBorder(null);
+		button.setBorderPainted(false);
+		button.setMargin(new Insets(0,0,0,0));
 	}
 	
 	/**

@@ -1057,8 +1057,8 @@ public final class WorldResource {
 		
 		{
 			int index = 0;
-			for (int i = 0; i < sprites.getWidth(); i += width) {
-				for (int j = 0; j < sprites.getHeight(); j += height) {
+			for (int j = 0; j < sprites.getHeight(); j += height) {
+				for (int i = 0; i < sprites.getWidth(); i += width) {
 					chops[index] = new BufferedImage(width, height, sprites.getType() );
 					Graphics2D g2d = chops[index].createGraphics();
 					try {
