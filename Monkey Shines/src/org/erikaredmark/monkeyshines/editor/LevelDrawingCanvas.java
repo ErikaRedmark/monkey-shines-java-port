@@ -1,5 +1,6 @@
 package org.erikaredmark.monkeyshines.editor;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -75,8 +76,9 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 	// Unlike the other properties, current hazard MAY be null. It is 100% possible for a world to not have hazards
 	private Hazard currentHazard;
 	
-	// Current overlay graphic
-	private BufferedImage currentTileSheet;
+	// Current indicator (drawn at the cursor/tile position based on editor state). If null, a green square is drawn
+	// instead.
+	private BufferedImage indicatorImage;
 	
 	private final Function<WorldResource, Void> worldLoaded;
 	
@@ -325,8 +327,7 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 		// When person hits spacebar, bring up the sprite sheet at 0,0, and next click
 		// selected the tile depending on the position clicked vs the sprites.
 		if (keys.keyDown(KeyEvent.VK_SPACE) ) {
-			if (currentState == EditorState.PLACING_TILES) actionSelectingTiles();
-			else if (currentState == EditorState.PLACING_GOODIES) actionSelectingGoodies();
+			if (currentState == EditorState.PLACING_GOODIES) actionSelectingGoodies();
 		}
 		
 		if (currentState == EditorState.PLACING_TILES) {
@@ -432,15 +433,6 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
 		changeState(EditorState.PLACING_GOODIES);
-	}
-	
-	// Called by most menu actions that ask to paint such and such type of tile. The first action
-	// would specify 'start painting this type' and this action means 'show sprites on the screen
-	// for selection'
-	public void actionSelectingTiles() {
-		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
-		
-		changeState(EditorState.SELECTING_TILES);
 	}
 	
 	public void actionSelectingGoodies() {
@@ -677,6 +669,8 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 		default:
 			throw new RuntimeException("method not updated to handle new brush type " + type);
 		}
+		
+		updateTileIndicator();
 	}
 
 	@Override public void mouseClicked(MouseEvent e) {
@@ -714,33 +708,24 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 		} else {
 			currentWorldEditor.paint(g2d);
 
-			// Paint the mouse box
-
-			g2d.setColor(Color.green);
-			g2d.drawRect(snapMouseX(mousePosition.x() ),
-						 snapMouseY(mousePosition.y() ), 
-						 GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y);
-
+			// Paint an indicator to the current tile location. This depends on the 'paintbrush' selected.
+			drawTileIndicator(g2d);
 			// BELOW: Additional overlays that are not part of the actual world
 			
 			// Draw bonzo starting location of screen
 			final BufferedImage bonz = CoreResource.INSTANCE.getTransparentBonzo();
 			final ImmutablePoint2D start = this.currentScreenEditor.getBonzoStartingLocationPixels();
-			g2d.drawImage(bonz, start.x(), start.y(), start.x() + bonz.getWidth(), start.y() + bonz.getHeight(),
-					0, 0, bonz.getWidth(), bonz.getHeight(),
-					null);
+			g2d.drawImage(bonz, 
+						  start.x(), start.y(), 
+						  start.x() + bonz.getWidth(), start.y() + bonz.getHeight(),
+						  0, 0, 
+						  bonz.getWidth(), bonz.getHeight(),
+						  null);
 			
 			// If we are selecting a tile, draw the whole sheet to the side.
 			// Lot of repeated code, but each tile type has a slightly different way to draw the sprite
 			// sheet. TODO possible refactor to get ALL sprite sheets from world resource to bring this done to one call?
-			if (currentState == EditorState.SELECTING_TILES) {
-				// This handles one of the stateless types.
-				TileType statelessType = paintbrush2TileType(currentTileType);
-				assert statelessType instanceof CommonTile;
-				currentTileSheet = currentWorldEditor.getWorldResource().getStatelessTileTypeSheet(((CommonTile)statelessType).getUnderlyingType() );
-				g2d.drawImage(currentTileSheet, 0, 0, currentTileSheet.getWidth(), currentTileSheet.getHeight(), 
-						 						null );
-			} else if (currentState == EditorState.SELECTING_GOODIES) {
+			if (currentState == EditorState.SELECTING_GOODIES) {
 				BufferedImage goodieSheet = currentWorldEditor.getWorldResource().getGoodieSheet(); // This contains their animation, so chop it in half.
 				g2d.drawImage(goodieSheet, 0, 0, goodieSheet.getWidth(), goodieSheet.getHeight() / 2, // Destination
 										   0, 0, goodieSheet.getWidth(), goodieSheet.getHeight() / 2, // Source
@@ -763,6 +748,104 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 			}
 		}
 		
+	}
+	
+	/** Updates the image drawn by the tile indicator based on the brush type. The actual drawing takes place in drawTileIndicator. */
+	private void updateTileIndicator() {
+		assert currentState != EditorState.NO_WORLD_LOADED;
+		WorldResource rsrc = currentWorldEditor.getWorldResource();
+		switch (currentState) {
+		
+		case PLACING_TILES:
+			BufferedImage sheet = null;
+			int srcX = 0;
+			int srcY = 0;
+			switch(currentTileType) {
+			case SOLIDS:
+				sheet = rsrc.getStatelessTileTypeSheet(StatelessTileType.SOLID);
+				srcX = computeSrcX(currentTileId, sheet);
+				srcY = computeSrcY(currentTileId, sheet);
+				break;
+			case THRUS:
+				sheet = rsrc.getStatelessTileTypeSheet(StatelessTileType.THRU);
+				srcX = computeSrcX(currentTileId, sheet);
+				srcY = computeSrcY(currentTileId, sheet);
+				break;
+			case SCENES:
+				sheet = rsrc.getStatelessTileTypeSheet(StatelessTileType.SCENE);
+				srcX = computeSrcX(currentTileId, sheet);
+				srcY = computeSrcY(currentTileId, sheet);
+				break;
+			case COLLAPSIBLE:
+				sheet = rsrc.getCollapsingSheet();
+				srcX = 0;
+				srcY = currentTileId * GameConstants.TILE_SIZE_Y;
+			case CONVEYERS:
+				sheet = rsrc.getConveyerSheet();
+				srcX = 0;
+				srcY = currentTileId * (GameConstants.TILE_SIZE_Y * 2);
+			case GOODIES:
+				sheet = rsrc.getGoodieSheet();
+				srcX = currentGoodieType.getDrawX();
+				srcY = currentGoodieType.getDrawY();
+			case HAZARDS:
+				sheet = rsrc.getHazardSheet();
+				srcX = currentTileId * (GameConstants.TILE_SIZE_X);
+				srcY = 0;
+			case SPRITES:
+				throw new RuntimeException("Cannot have a paintbrush of sprite during a placing tile state");
+			default:
+				throw new RuntimeException("Unknown tile type " + currentTileType);
+			}
+			
+			indicatorImage = new BufferedImage(GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y, sheet.getType() );
+			Graphics2D g = indicatorImage.createGraphics();
+			try {
+				g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f) );
+				g.drawImage(sheet, 
+						    0, 0, 
+						    GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y, 
+						    srcX, srcY, 
+						    srcX + GameConstants.TILE_SIZE_X, srcY + GameConstants.TILE_SIZE_Y, 
+						    null);
+			} finally {
+				g.dispose();
+			}
+
+			
+			break;
+		default:
+			indicatorImage = null;
+			break;
+		}
+	}
+	
+	private void drawTileIndicator(Graphics2D g2d) {
+		int snapX = snapMouseX(mousePosition.x() );
+		int snapY = snapMouseY(mousePosition.y() );
+		if (indicatorImage == null) {
+			g2d.setColor(Color.green);
+			g2d.drawRect(snapX,
+						 snapY, 
+						 GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y);
+		} else {
+			g2d.drawImage(indicatorImage, 
+						  snapX, snapY,
+						  snapX + GameConstants.TILE_SIZE_X, snapY + GameConstants.TILE_SIZE_Y, 
+						  0, 0, 
+						  indicatorImage.getWidth(), indicatorImage.getHeight(), 
+						  null);
+		}
+	}
+	
+	// Resolves the id based on the width/height of sheet to the x location of the top-left coordinate to draw the tile.
+	private static int computeSrcX(int id, BufferedImage sheet) {
+		return (id * GameConstants.TILE_SIZE_X) % (sheet.getWidth() );
+	}
+	
+	// Resolves the id based on the width/height of sheet to the x location of the top-left coordinate to draw the tile.
+	private static int computeSrcY(int id, BufferedImage sheet) {
+		return (id / (sheet.getWidth() / GameConstants.TILE_SIZE_X) ) * (GameConstants.TILE_SIZE_Y);
 	}
 	
 	// This isn't a member of paintbrush type because only a few types are actually tiles.
@@ -859,23 +942,6 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 				defaultClickAction(editor);
 			}
 		}, 
-		
-		/* Click actions on this type will always produce a state change to PLACING_TILES */
-		SELECTING_TILES {
-			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
-				int tileId = editor.resolveObjectId(editor.currentTileSheet, editor.mousePosition.x(), editor.mousePosition.y() );
-				
-				// do nothing if click is out of bounds
-				if (tileId == -1)  return;
-				
-				editor.currentTileId = tileId;
-				editor.changeState(EditorState.PLACING_TILES);
-			}
-			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 
-				/* No Drag Action */
-			}
-		},
-		
 		/* Erases BOTH tiles and goodies from a space (although editor should enforce that goodies never occupy the
 		 * same space as tiles)
 		 */

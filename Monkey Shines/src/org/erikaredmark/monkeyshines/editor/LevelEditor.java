@@ -97,30 +97,6 @@ public class LevelEditor extends JFrame {
 	
 	// Menu: Place Stuff
 	private JMenu placeTiles = new JMenu("Place Objects");
-	/* -------------------------- MENU ITEM PLACE SOLIDS -------------------------- */
-	private JMenuItem placeSolids = new JMenuItem(new AbstractAction("Solids") { 
-		private static final long serialVersionUID = 1L;
-		@Override public void actionPerformed(ActionEvent e) {
-			currentWorld.actionPlacingSolids();
-			currentWorld.actionSelectingTiles();
-		}
-	});
-	/* --------------------------- MENU ITEM PLACE THRUS -------------------------- */
-	private JMenuItem placeThrus = new JMenuItem(new AbstractAction("Thrus") { 
-		private static final long serialVersionUID = 1L;
-		@Override public void actionPerformed(ActionEvent e) {
-			currentWorld.actionPlacingThrus();
-			currentWorld.actionSelectingTiles();
-		}
-	});
-	/* -------------------------- MENU ITEM PLACE SCENES -------------------------- */
-	private JMenuItem placeScenes = new JMenuItem(new AbstractAction("Scenes") { 
-		private static final long serialVersionUID = 1L;
-		@Override public void actionPerformed(ActionEvent e) {
-			currentWorld.actionPlacingScenes();
-			currentWorld.actionSelectingTiles();
-		}
-	});
 	/* ------------------------- MENU ITEM PLACE CONVEYERS ------------------------ */
 	private JMenuItem placeConveyers = new JMenuItem(new AbstractAction("Conveyer Belts") { 
 		private static final long serialVersionUID = 1L;
@@ -526,13 +502,15 @@ public class LevelEditor extends JFrame {
 		// Now, set up the desktop. The desktop will contain both frames
 		editorDesktop = new JDesktopPane();
 		editorDesktop.add(canvasFrame);
+		// Give space for toolbar in left corner
+		canvasFrame.setLocation(220, 0);
 		canvasFrame.setVisible(true);
 		
 		editorDesktop.add(paletteFrame);
 		// Set visible later when palette initialised
 		add(editorDesktop);
 
-		setPreferredSize(new Dimension(840, 680) );
+		setPreferredSize(new Dimension(900, 640) );
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);
@@ -547,9 +525,6 @@ public class LevelEditor extends JFrame {
 		
 		mainMenuBar.add(fileMenu);
 		
-		placeTiles.add(placeSolids);
-		placeTiles.add(placeThrus);
-		placeTiles.add(placeScenes);
 		placeTiles.add(placeConveyers);
 		placeTiles.add(placeCollapsibles);
 		placeTiles.add(placeGoodies);
