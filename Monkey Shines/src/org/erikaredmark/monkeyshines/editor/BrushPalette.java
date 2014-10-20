@@ -38,6 +38,9 @@ public class BrushPalette extends JPanel {
 
 	private final LevelDrawingCanvas mainCanvas;
 
+	private static final int GRID_MARGIN_X = 4;
+	private static final int GRID_MARGIN_Y = 4;
+	
 	/* 
 	 * To save on object creation, each type of tile has one listener for each button. Each button has a different action
 	 * command. The action command is the id of the tile. So the type of the tile goes to a type of listener, plus the id,
@@ -61,6 +64,13 @@ public class BrushPalette extends JPanel {
 		@Override public void actionPerformed(ActionEvent e) {
 			int id = Integer.parseInt(e.getActionCommand() );
 			mainCanvas.setTileBrushAndId(PaintbrushType.SCENES, id);
+		}
+	};
+	
+	private ActionListener hazardTileListener = new ActionListener() {
+		@Override public void actionPerformed(ActionEvent e) {
+			int id = Integer.parseInt(e.getActionCommand() );
+			mainCanvas.setTileBrushAndId(PaintbrushType.HAZARDS, id);
 		}
 	};
 	
@@ -97,6 +107,30 @@ public class BrushPalette extends JPanel {
 		palettePanels.add(initialiseBasicTilePanel(thrusPanel, brushTypes, StatelessTileType.THRU, thruTileListener, rsrc) );
 		palettePanels.add(initialiseBasicTilePanel(scenesPanel, brushTypes, StatelessTileType.SCENE, sceneTileListener, rsrc) );
 		
+		// Hazards
+		{
+			JPanel hazardsPanel = new JPanel();
+			hazardsPanel.setLayout(new FlowLayout(FlowLayout.LEFT) );
+			palettePanels.add(hazardsPanel);
+			BufferedImage[] tiles = 
+				WorldResource.chop(GameConstants.TILE_SIZE_X,
+								   GameConstants.TILE_SIZE_Y,
+								   rsrc.getHazardSheet() );
+			
+			JPanel hazardsPanelGrid = new JPanel();
+			int rows = tiles.length / 12; // 6 per row, but knock off half.
+			hazardsPanelGrid.setLayout(new GridLayout(rows, 6, GRID_MARGIN_X, GRID_MARGIN_Y) );
+			hazardsPanel.add(hazardsPanelGrid);
+			
+			// Only the first half are relevant
+			for (int i = 0; i < (tiles.length / 2); ++i) {
+				hazardsPanelGrid.add(createTileButton(tiles[i], i, hazardTileListener) );
+			}
+			
+			final JScrollPane typeScroller = new JScrollPane(hazardsPanel);
+			brushTypes.addTab("", new ImageIcon(tiles[0]), typeScroller);
+		}
+		
 		// Allow background colour to invert to black... this is for transparent tiles that look horrible on white (such as
 		// cobwebs or any tiles predominantly white) to be visible easily.
 		JButton invert = new JButton("Invert Background");
@@ -126,24 +160,29 @@ public class BrushPalette extends JPanel {
 		// everything at the same size.
 		panel.setLayout(new FlowLayout(FlowLayout.LEFT) );
 		JPanel actualGrid = new JPanel();
-		actualGrid.setLayout(new GridLayout(rows, 6, 4, 4) );
+		actualGrid.setLayout(new GridLayout(rows, 6, GRID_MARGIN_X, GRID_MARGIN_Y) );
 		panel.add(actualGrid);
 		final JScrollPane typeScroller = new JScrollPane(panel);
 		
 		for (int i = 0; i < tiles.length; ++i) {
-			BufferedImage tile = tiles[i];
-			JButton tileButton = new JButton(new ImageIcon(tile) );
-			MenuUtils.renderImageOnly(tileButton);
-			MenuUtils.removeMargins(tileButton);
-			tileButton.setActionCommand(String.valueOf(i) );
-			tileButton.addActionListener(listener);
-			actualGrid.add(tileButton);
+			actualGrid.add(createTileButton(tiles[i], i, listener) );
 		}
 		
 		// Add the panel to the tabbed pane. The icon for the tab will be the first tile for the sheet.
 		brushTypes.addTab("", new ImageIcon(tiles[0]), typeScroller);
 		
 		return actualGrid;
+	}
+	
+	// Creates a button that graphically represents some drawable thing in the palette, setting margins and listener properly
+	// and forwarding the click action to the appropriate listener for the appropriate tile id.
+	private JButton createTileButton(BufferedImage img, int id, ActionListener listener) {
+		JButton tileButton = new JButton(new ImageIcon(img) );
+		MenuUtils.renderImageOnly(tileButton);
+		MenuUtils.removeMargins(tileButton);
+		tileButton.setActionCommand(String.valueOf(id) );
+		tileButton.addActionListener(listener);
+		return tileButton;
 	}
 	
 	/**

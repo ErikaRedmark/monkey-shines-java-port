@@ -162,16 +162,6 @@ public class LevelEditor extends JFrame {
 	
 	// Menu: Hazards
 	private JMenu hazardMenu = new JMenu("Hazards");
-	/* -------------------------- MENU ITEM PLACE HAZARD -------------------------- */
-	private JMenuItem placeHazard = new JMenuItem(new AbstractAction("Place Hazards") {
-		private static final long serialVersionUID = 1L;
-		@Override public void actionPerformed(ActionEvent e) {
-			// Set paintbrush to hazards first
-			currentWorld.actionPlacingHazards();
-			// Allow user to select a hazard
-			currentWorld.actionSelectingHazards();
-		}
-	});
 	/* ------------------------ MENU ITEM EDITING HAZARDS ------------------------- */
 	private JMenuItem editHazards = new JMenuItem(new AbstractAction("Edit Hazards...") {
 		private static final long serialVersionUID = 1L;
@@ -537,8 +527,7 @@ public class LevelEditor extends JFrame {
 		spritesMenu.add(editOffscreenSprites);
 		spritesMenu.add(deleteSprites);
 		mainMenuBar.add(spritesMenu);
-		
-		hazardMenu.add(placeHazard);
+
 		hazardMenu.add(editHazards);
 		
 		mainMenuBar.add(hazardMenu);

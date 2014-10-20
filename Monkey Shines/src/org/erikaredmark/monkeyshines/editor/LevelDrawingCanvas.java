@@ -469,26 +469,6 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 		currentWorldEditor.setHazards(model.getHazards() );
 	}
 	
-	/*
-	 * Sets the current paintbrush for hazards, and changes state to PLACING_TILES.
-	 */
-	public void actionPlacingHazards() {
-		if (this.currentState == EditorState.NO_WORLD_LOADED)  return;
-		currentTileType = PaintbrushType.HAZARDS;
-		
-		changeState(EditorState.PLACING_TILES);
-	}
-	
-	/*
-	 * Changes state to SELECTING_HAZARDS, which will cause the hazard graphics picker to draw
-	 * and allow selection
-	 */
-	public void actionSelectingHazards() {
-		if (this.currentState == EditorState.NO_WORLD_LOADED)  return;
-		
-		changeState(EditorState.SELECTING_HAZARDS);
-	}
-	
 	/**
 	 * 
 	 * Loads up a background picker for the world. Whatever the user's selection is, the background will be set
@@ -730,11 +710,6 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 				g2d.drawImage(goodieSheet, 0, 0, goodieSheet.getWidth(), goodieSheet.getHeight() / 2, // Destination
 										   0, 0, goodieSheet.getWidth(), goodieSheet.getHeight() / 2, // Source
 										   null);
-			} else if (currentState == EditorState.SELECTING_HAZARDS) {
-				BufferedImage hazardSheet = currentWorldEditor.getWorldResource().getHazardSheet();  // Like the goodie sheet, half height becomes second row has animation
-				g2d.drawImage(hazardSheet, 0, 0, hazardSheet.getWidth(), hazardSheet.getHeight() / 2, // Destination
-										   0, 0, hazardSheet.getWidth(), hazardSheet.getHeight() / 2, // Source
-										   null);
 			} else if (currentState == EditorState.SELECTING_CONVEYERS) {
 				BufferedImage conveyerSheet = currentWorldEditor.getWorldResource().getEditorConveyerSheet();
 				g2d.drawImage(conveyerSheet, 0, 0, conveyerSheet.getWidth(), conveyerSheet.getHeight(),
@@ -754,9 +729,9 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 	private void updateTileIndicator() {
 		assert currentState != EditorState.NO_WORLD_LOADED;
 		WorldResource rsrc = currentWorldEditor.getWorldResource();
-		switch (currentState) {
-		
-		case PLACING_TILES:
+		if (   currentState == EditorState.PLACING_TILES
+			|| currentState == EditorState.PLACING_HAZARDS
+			|| currentState == EditorState.PLACING_GOODIES) {
 			BufferedImage sheet = null;
 			int srcX = 0;
 			int srcY = 0;
@@ -780,18 +755,22 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 				sheet = rsrc.getCollapsingSheet();
 				srcX = 0;
 				srcY = currentTileId * GameConstants.TILE_SIZE_Y;
+				break;
 			case CONVEYERS:
 				sheet = rsrc.getConveyerSheet();
 				srcX = 0;
 				srcY = currentTileId * (GameConstants.TILE_SIZE_Y * 2);
+				break;
 			case GOODIES:
 				sheet = rsrc.getGoodieSheet();
 				srcX = currentGoodieType.getDrawX();
 				srcY = currentGoodieType.getDrawY();
+				break;
 			case HAZARDS:
 				sheet = rsrc.getHazardSheet();
 				srcX = currentTileId * (GameConstants.TILE_SIZE_X);
 				srcY = 0;
+				break;
 			case SPRITES:
 				throw new RuntimeException("Cannot have a paintbrush of sprite during a placing tile state");
 			default:
@@ -812,11 +791,8 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 				g.dispose();
 			}
 
-			
-			break;
-		default:
+		} else {
 			indicatorImage = null;
-			break;
 		}
 	}
 	
@@ -978,33 +954,6 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 				/* No Drag Action */
 			}
 		}, 
-		
-		SELECTING_HAZARDS {
-			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
-				int hazardId = editor.resolveObjectId(editor.currentWorldEditor.getWorldResource().getHazardSheet(), 
-													  editor.mousePosition.x(), 
-													  editor.mousePosition.y() );
-				
-				// do nothing if click out of bounds
-				if (hazardId == -1)  return;
-				
-				// We may not have a defined hazard
-				List<Hazard> availableHazards = editor.currentWorldEditor.getHazards();
-				if (hazardId >= availableHazards.size() )  return;
-				
-				// We have a valid hazard reference
-				
-				editor.currentHazard = availableHazards.get(hazardId);
-				editor.currentTileId = hazardId;
-				// Hazards are considered a tile
-				editor.changeState(EditorState.PLACING_TILES);
-			}
-			
-			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 
-				defaultClickAction(editor);
-			}
-		},
-		
 		// Displays the editor sprite sheet for conveyers, setting the specialId to be indicative of the INDEX
 		// in the conveyers list of the conveyer type selected.
 		SELECTING_CONVEYERS {
