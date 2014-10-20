@@ -96,22 +96,7 @@ public class LevelEditor extends JFrame {
 	});
 	
 	// Menu: Place Stuff
-	private JMenu placeTiles = new JMenu("Place Objects");
-	/* ------------------------ MENU ITEM PALCE COLLAPSIBLES ---------------------- */
-	private JMenuItem placeCollapsibles = new JMenuItem(new AbstractAction("Collapsibles") { 
-		private static final long serialVersionUID = 1L;
-		@Override public void actionPerformed(ActionEvent e) {
-			currentWorld.actionPlacingCollapsibles();
-			currentWorld.actionSelectingCollapsibles();
-		}
-	});
-	/* -------------------------- MENU ITEM PLACE GOODIES ------------------------- */
-	private JMenuItem placeGoodies = new JMenuItem(new AbstractAction("Goodies") { 
-		private static final long serialVersionUID = 1L;
-		@Override public void actionPerformed(ActionEvent e) {
-			currentWorld.actionSelectingGoodies();
-		}
-	});
+	private JMenu placeTiles = new JMenu("Objects");
 	/* ---------------------------- MENU ITEM ERASER ------------------------------ */
 	private JMenuItem eraser = new JMenuItem(new AbstractAction("Eraser") {
 		private static final long serialVersionUID = 1L;
@@ -506,9 +491,7 @@ public class LevelEditor extends JFrame {
 		fileMenu.add(quit);
 		
 		mainMenuBar.add(fileMenu);
-		
-		placeTiles.add(placeCollapsibles);
-		placeTiles.add(placeGoodies);
+
 		placeTiles.add(eraser);
 		
 		mainMenuBar.add(placeTiles);

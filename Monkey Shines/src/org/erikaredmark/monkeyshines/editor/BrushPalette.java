@@ -49,52 +49,34 @@ public class BrushPalette extends JPanel {
 	private final BufferedImage leftArrow;
 	private final BufferedImage rightArrow;
 	
-	/* 
+	/**
 	 * To save on object creation, each type of tile has one listener for each button. Each button has a different action
 	 * command. The action command is the id of the tile. So the type of the tile goes to a type of listener, plus the id,
-	 * gives the exact tile the user chose.
+	 * gives the exact tile the user chose. They all derive the same id: Get the id from the action command, and then set
+	 * the brush to some type.
 	 */
-	private ActionListener solidTileListener = new ActionListener() {
+	private class ChangeBrushListener implements ActionListener {
+		private final PaintbrushType brush;
+		
+		private ChangeBrushListener(final PaintbrushType brush) {
+			this.brush = brush;
+		}
+		
 		@Override public void actionPerformed(ActionEvent e) {
 			int id = Integer.parseInt(e.getActionCommand() );
-			mainCanvas.setTileBrushAndId(PaintbrushType.SOLIDS, id);
+			mainCanvas.setTileBrushAndId(brush, id);
 		}
-	};
+	}
 	
-	private ActionListener thruTileListener = new ActionListener() {
-		@Override public void actionPerformed(ActionEvent e) {
-			int id = Integer.parseInt(e.getActionCommand() );
-			mainCanvas.setTileBrushAndId(PaintbrushType.THRUS, id);
-		}
-	};
-	
-	private ActionListener sceneTileListener = new ActionListener() {
-		@Override public void actionPerformed(ActionEvent e) {
-			int id = Integer.parseInt(e.getActionCommand() );
-			mainCanvas.setTileBrushAndId(PaintbrushType.SCENES, id);
-		}
-	};
-	
-	private ActionListener hazardTileListener = new ActionListener() {
-		@Override public void actionPerformed(ActionEvent e) {
-			int id = Integer.parseInt(e.getActionCommand() );
-			mainCanvas.setTileBrushAndId(PaintbrushType.HAZARDS, id);
-		}
-	};
-	
-	private ActionListener conveyerClockwiseListener = new ActionListener() {
-		@Override public void actionPerformed(ActionEvent e) {
-			int id = Integer.parseInt(e.getActionCommand() );
-			mainCanvas.setTileBrushAndId(PaintbrushType.CONVEYERS_CLOCKWISE, id);
-		}
-	};
-	
-	private ActionListener conveyerAntiClockwiseListener = new ActionListener() {
-		@Override public void actionPerformed(ActionEvent e) {
-			int id = Integer.parseInt(e.getActionCommand() );
-			mainCanvas.setTileBrushAndId(PaintbrushType.CONVEYERS_ANTI_CLOCKWISE, id);
-		}
-	};
+	private final ChangeBrushListener SOLID_TILE_LISTENER = new ChangeBrushListener(PaintbrushType.SOLIDS);
+	private final ChangeBrushListener THRU_TILE_LISTENER = new ChangeBrushListener(PaintbrushType.THRUS);
+	private final ChangeBrushListener SCENE_TILE_LISTENER = new ChangeBrushListener(PaintbrushType.SCENES);
+	private final ChangeBrushListener HAZARD_TILE_LISTENER = new ChangeBrushListener(PaintbrushType.HAZARDS);
+	private final ChangeBrushListener CONVEYER_CLOCKWISE_LISTENER = new ChangeBrushListener(PaintbrushType.CONVEYERS_CLOCKWISE);
+	private final ChangeBrushListener CONVEYER_ANTI_CLOCKWISE_LISTENER = new ChangeBrushListener(PaintbrushType.CONVEYERS_ANTI_CLOCKWISE);
+	private final ChangeBrushListener COLLAPSIBLE_TILE_LISTENER = new ChangeBrushListener(PaintbrushType.COLLAPSIBLE);
+	private final ChangeBrushListener GOODIE_LISTENER = new ChangeBrushListener(PaintbrushType.GOODIES);
+
 	
 	public BrushPalette(final LevelDrawingCanvas mainCanvas, final WorldResource rsrc) {
 		this.mainCanvas = mainCanvas;
@@ -133,9 +115,9 @@ public class BrushPalette extends JPanel {
 		// when setting the canvas brush type.
 		
 		// SOLIDS, THRUS, and SCENES
-		palettePanels.add(initialiseBasicTilePanel(solidsPanel, brushTypes, StatelessTileType.SOLID, solidTileListener, rsrc) );
-		palettePanels.add(initialiseBasicTilePanel(thrusPanel, brushTypes, StatelessTileType.THRU, thruTileListener, rsrc) );
-		palettePanels.add(initialiseBasicTilePanel(scenesPanel, brushTypes, StatelessTileType.SCENE, sceneTileListener, rsrc) );
+		palettePanels.add(initialiseBasicTilePanel(solidsPanel, brushTypes, StatelessTileType.SOLID, SOLID_TILE_LISTENER, rsrc) );
+		palettePanels.add(initialiseBasicTilePanel(thrusPanel, brushTypes, StatelessTileType.THRU, THRU_TILE_LISTENER, rsrc) );
+		palettePanels.add(initialiseBasicTilePanel(scenesPanel, brushTypes, StatelessTileType.SCENE, SCENE_TILE_LISTENER, rsrc) );
 		
 		// Hazards
 		{
@@ -156,7 +138,7 @@ public class BrushPalette extends JPanel {
 			
 			// Only the first half are relevant
 			for (int i = 0; i < (tiles.length / 2); ++i) {
-				hazardsPanelGrid.add(createTileButton(tiles[i], i, hazardTileListener) );
+				hazardsPanelGrid.add(createTileButton(tiles[i], i, HAZARD_TILE_LISTENER) );
 			}
 			
 			final JScrollPane typeScroller = new JScrollPane(hazardsPanel);
@@ -197,11 +179,64 @@ public class BrushPalette extends JPanel {
 					gAntiClockwise.dispose();
 				}
 				
-				conveyersPanelGrid.add(createTileButton(clockwise, i / 10, conveyerClockwiseListener) );
-				conveyersPanelGrid.add(createTileButton(antiClockwise, i / 10, conveyerAntiClockwiseListener) );
+				conveyersPanelGrid.add(createTileButton(clockwise, i / 10, CONVEYER_CLOCKWISE_LISTENER) );
+				conveyersPanelGrid.add(createTileButton(antiClockwise, i / 10, CONVEYER_ANTI_CLOCKWISE_LISTENER) );
 			}
 			
 			final JScrollPane typeScroller = new JScrollPane(conveyersPanel);
+			brushTypes.addTab("", new ImageIcon(tiles[0]), typeScroller);
+		}
+		
+		// Collapsibles
+		{
+			JPanel collapsiblesPanel = new JPanel();
+			collapsiblesPanel.setLayout(new FlowLayout(FlowLayout.LEFT) );
+			palettePanels.add(collapsiblesPanel);
+			
+			BufferedImage[] tiles =
+				WorldResource.chop(GameConstants.TILE_SIZE_X,
+								   GameConstants.TILE_SIZE_Y,
+								   rsrc.getCollapsingSheet() );
+			
+			JPanel collapsiblesPanelGrid = new JPanel();
+			// 10 collapsing sprites per 1 toolbar button, times 6 per row.
+			int rows = tiles.length / 60;
+			collapsiblesPanelGrid.setLayout(new GridLayout(rows, 6, GRID_MARGIN_X, GRID_MARGIN_Y) );
+			palettePanels.add(collapsiblesPanelGrid);
+			collapsiblesPanel.add(collapsiblesPanelGrid);
+			
+			for (int i = 0; i < tiles.length; i += 10) {
+				collapsiblesPanelGrid.add(createTileButton(tiles[i], i / 10, COLLAPSIBLE_TILE_LISTENER) );
+			}
+			
+			final JScrollPane typeScroller = new JScrollPane(collapsiblesPanel);
+			brushTypes.addTab("", new ImageIcon(tiles[0]), typeScroller);
+		}
+		
+		// Goodies
+		{
+			// Similar techniques to hazards as the sprite sheets are similar (one row of everything, plus row of second animation frame)
+			JPanel goodiesPanel = new JPanel();
+			goodiesPanel.setLayout(new FlowLayout(FlowLayout.LEFT) );
+			palettePanels.add(goodiesPanel);
+			
+			BufferedImage[] tiles = 
+				WorldResource.chop(GameConstants.TILE_SIZE_X,
+								   GameConstants.TILE_SIZE_Y,
+								   rsrc.getGoodieSheet() );
+			
+			JPanel goodiesPanelGrid = new JPanel();
+			palettePanels.add(goodiesPanelGrid);
+			int rows = tiles.length / 12; // 6 per row, but knock off half.
+			goodiesPanelGrid.setLayout(new GridLayout(rows, 6, GRID_MARGIN_X, GRID_MARGIN_Y) );
+			goodiesPanel.add(goodiesPanelGrid);
+			
+			// Only the first half are relevant
+			for (int i = 0; i < (tiles.length / 2); ++i) {
+				goodiesPanelGrid.add(createTileButton(tiles[i], i, GOODIE_LISTENER) );
+			}
+			
+			final JScrollPane typeScroller = new JScrollPane(goodiesPanel);
 			brushTypes.addTab("", new ImageIcon(tiles[0]), typeScroller);
 		}
 		

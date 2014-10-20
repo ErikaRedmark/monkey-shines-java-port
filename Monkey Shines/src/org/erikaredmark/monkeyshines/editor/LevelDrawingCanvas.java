@@ -7,7 +7,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -20,7 +19,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-import org.erikaredmark.monkeyshines.Conveyer;
 import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.Goodie;
 import org.erikaredmark.monkeyshines.Hazard;
@@ -318,25 +316,14 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 	}
 
 	@Override public void actionPerformed(ActionEvent e) {
-		// Poll Keyboard
+		// Poll Keyboard.
 		keys.poll();
 		
 		// Do not allow state changes if no world is loaded!
 		
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
-		// When person hits spacebar, bring up the sprite sheet at 0,0, and next click
-		// selected the tile depending on the position clicked vs the sprites.
-		if (keys.keyDown(KeyEvent.VK_SPACE) ) {
-			if (currentState == EditorState.PLACING_GOODIES) actionSelectingGoodies();
-		}
-		
-		if (currentState == EditorState.PLACING_TILES) {
-			if (keys.keyDown(KeyEvent.VK_S) ) actionPlacingSolids();
-		    else if (keys.keyDown(KeyEvent.VK_T) ) actionPlacingThrus();
-			else if (keys.keyDown(KeyEvent.VK_B) ) actionPlacingScenes();
-			else if (keys.keyDown(KeyEvent.VK_P) ) actionPlacingSprites();
-			else if (keys.keyDown(KeyEvent.VK_G) ) actionPlacingGoodies();
-		}
+
+		// TODO keyboard shortcuts removed with introduction of palette.
 		
 		repaint();
 	}
@@ -363,22 +350,10 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 		currentTileType = PaintbrushType.SCENES;
 	}
 	
-	public void actionSelectingConveyers() {
-		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
-		
-		changeState(EditorState.SELECTING_CONVEYERS);
-	}
-	
 	public void actionPlacingCollapsibles() {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
 		currentTileType = PaintbrushType.COLLAPSIBLE;
-	}
-	
-	public void actionSelectingCollapsibles() {
-		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
-		
-		changeState(EditorState.SELECTING_COLLAPSIBLE);
 	}
 	
 	public void actionPlacingSprites() {
@@ -427,12 +402,6 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
 		changeState(EditorState.PLACING_GOODIES);
-	}
-	
-	public void actionSelectingGoodies() {
-		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
-		
-		changeState(EditorState.SELECTING_GOODIES);
 	}
 
 	public void actionPlaceBonzo() {
@@ -529,52 +498,6 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 	 */
 	public void reloadCurrentScreen() {
 		currentScreenEditor.resetCurrentScreen();
-	}
-	
-	/**
-	 * 
-	 * This is for when a sprite sheet is shown on the level editor and the user selected a row/col to select a tile. 
-	 * The method takes the sprite sheet reference itself, along with the location clicked, and attempts to determine
-	 * the id of the tile/object that was clicked, based on the location clicked and the dimensions of the sprite 
-	 * sheet under the idea that the sheet starts from the top left of the screen
-	 * <p/>
-	 * Assumptions: This is used for basic sheets that handle tile entities that are of of size {@code GameConstants.TILE_SIZE_X}
-	 * by {@code GameConstants.TILE_SIZE_Y}
-	 * 
-	 * @param sheet
-	 * 		the sprite sheet currently shown on the screen to the user
-	 * 
-	 * @param x
-	 * 		x location of mouse click
-	 * 
-	 * @param y
-	 * 		y location of mouse click
-	 * 
-	 * @return
-	 * 		the id of the object the user selected. If the selection is outside the dimensions of the sheet, then 
-	 * 		{@code -1} is returned, indicating no selection (ids can only be positive)
-	 * 
-	 */
-	private int resolveObjectId(final BufferedImage sheet, final int x, final int y) {
-		final int width = sheet.getWidth();
-		final int height = sheet.getHeight();
-		// Sanity check: Is this click within the sheet bounds?
-		if ( x > width || y > height)  return -1;
-		
-		//int height = sheet.getHeight();
-		// We need to resolve the location. Find out how many rows and cols the sheet has, and from there
-		// pick out based on where the mouse clicked what tileType we selected.
-		// Precondition: click was within bounds (checked earlier)
-		int tilesPerRow = width / GameConstants.TILE_SIZE_X;
-		
-		int tileClickedX = x / GameConstants.TILE_SIZE_X;
-		int tileClickedY = y / GameConstants.TILE_SIZE_Y;
-		
-		// Calculate
-		int tileId = tileClickedX;
-		tileId += tilesPerRow * tileClickedY;
-		
-		return tileId;
 	}
 	
 	/**
@@ -696,26 +619,6 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 						  0, 0, 
 						  bonz.getWidth(), bonz.getHeight(),
 						  null);
-			
-			// If we are selecting a tile, draw the whole sheet to the side.
-			// Lot of repeated code, but each tile type has a slightly different way to draw the sprite
-			// sheet. TODO possible refactor to get ALL sprite sheets from world resource to bring this done to one call?
-			if (currentState == EditorState.SELECTING_GOODIES) {
-				BufferedImage goodieSheet = currentWorldEditor.getWorldResource().getGoodieSheet(); // This contains their animation, so chop it in half.
-				g2d.drawImage(goodieSheet, 0, 0, goodieSheet.getWidth(), goodieSheet.getHeight() / 2, // Destination
-										   0, 0, goodieSheet.getWidth(), goodieSheet.getHeight() / 2, // Source
-										   null);
-			} else if (currentState == EditorState.SELECTING_CONVEYERS) {
-				BufferedImage conveyerSheet = currentWorldEditor.getWorldResource().getEditorConveyerSheet();
-				g2d.drawImage(conveyerSheet, 0, 0, conveyerSheet.getWidth(), conveyerSheet.getHeight(),
-							  				 0, 0, conveyerSheet.getWidth(), conveyerSheet.getHeight(),
-							  				 null);
-			} else if (currentState == EditorState.SELECTING_COLLAPSIBLE) {
-				BufferedImage collapsingSheet = currentWorldEditor.getWorldResource().getEditorCollapsingSheet();
-				g2d.drawImage(collapsingSheet, 0, 0, collapsingSheet.getWidth(), collapsingSheet.getHeight(),
-							  				   0, 0, collapsingSheet.getWidth(), collapsingSheet.getHeight(),
-							  				   null);
-			}
 		}
 		
 	}
@@ -759,7 +662,7 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 			case CONVEYERS_ANTI_CLOCKWISE:
 				sheet = rsrc.getConveyerSheet();
 				srcX = 0;
-				srcY = (currentTileId * (GameConstants.TILE_SIZE_Y * 2) ) + 40;
+				srcY = (currentTileId * (GameConstants.TILE_SIZE_Y * 2) ) + 20;
 				break;
 			case GOODIES:
 				sheet = rsrc.getGoodieSheet();
@@ -939,68 +842,6 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 				defaultClickAction(editor);
 			}
 		}, 
-		
-		/* Click actions on this type will always produce a state change to PLACING_GOODIES */
-		SELECTING_GOODIES {
-			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
-				int goodieId = editor.resolveObjectId(editor.currentWorldEditor.getWorldResource().getGoodieSheet(), editor.mousePosition.x(), editor.mousePosition.y() );
-				
-				// do nothing if click is out of bounds
-				if (goodieId == -1)  return;
-				
-				editor.currentGoodieType = Goodie.Type.byValue(goodieId);
-				editor.changeState(EditorState.PLACING_GOODIES);
-			}
-			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 
-				/* No Drag Action */
-			}
-		}, 
-		// Displays the editor sprite sheet for conveyers, setting the specialId to be indicative of the INDEX
-		// in the conveyers list of the conveyer type selected.
-		SELECTING_CONVEYERS {
-			@Override public void defaultClickAction(LevelDrawingCanvas editor) {
-				int conveyerId = editor.resolveObjectId(editor.currentWorldEditor.getWorldResource().getEditorConveyerSheet(),
-														editor.mousePosition.x(), 
-														editor.mousePosition.y() );
-				
-				// Editor sprite sheet takes care of this id automatically. The sprites in the sheet, each
-				// frame, map 1:1 with the index of the conveyers array. Just need to be basic house-keeping
-				// checks
-				if (conveyerId == -1)  return;
-				
-				// Check if we even have a conveyer at that index, otherwise another out of bounds click
-				List<Conveyer> conveyers = editor.currentWorldEditor.getConveyers();
-				if (conveyerId >= conveyers.size() )  return;
-				
-				// Valid conveyer. The id alone is enough
-				editor.currentTileId = conveyerId;
-				editor.changeState(EditorState.PLACING_TILES);
-			}
-			
-			@Override public void defaultDragAction(LevelDrawingCanvas editor) {
-				defaultClickAction(editor);
-			}
-		},
-		
-		SELECTING_COLLAPSIBLE {
-			@Override public void defaultClickAction(LevelDrawingCanvas editor) {
-				// Editor sheet has layed them out in proper order for ids to match.
-				final WorldResource rsrc = editor.currentWorldEditor.getWorldResource();
-				int collapsibleId = editor.resolveObjectId(rsrc.getEditorCollapsingSheet(),
-														   editor.mousePosition.x(), 
-														   editor.mousePosition.y() );
-				
-				if (collapsibleId == -1)  return;
-				if (collapsibleId >= rsrc.getCollapsingCount() )  return;
-
-				editor.currentTileId = collapsibleId;
-				editor.changeState(EditorState.PLACING_TILES);
-			}
-			
-			@Override public void defaultDragAction(LevelDrawingCanvas editor) {
-				defaultClickAction(editor);
-			}
-		},
 		
 		PLACING_HAZARDS {
 			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
