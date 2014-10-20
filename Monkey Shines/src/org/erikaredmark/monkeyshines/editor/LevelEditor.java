@@ -97,14 +97,6 @@ public class LevelEditor extends JFrame {
 	
 	// Menu: Place Stuff
 	private JMenu placeTiles = new JMenu("Place Objects");
-	/* ------------------------- MENU ITEM PLACE CONVEYERS ------------------------ */
-	private JMenuItem placeConveyers = new JMenuItem(new AbstractAction("Conveyer Belts") { 
-		private static final long serialVersionUID = 1L;
-		@Override public void actionPerformed(ActionEvent e) {
-			currentWorld.actionPlacingConveyers();
-			currentWorld.actionSelectingConveyers();
-		}
-	});
 	/* ------------------------ MENU ITEM PALCE COLLAPSIBLES ---------------------- */
 	private JMenuItem placeCollapsibles = new JMenuItem(new AbstractAction("Collapsibles") { 
 		private static final long serialVersionUID = 1L;
@@ -515,7 +507,6 @@ public class LevelEditor extends JFrame {
 		
 		mainMenuBar.add(fileMenu);
 		
-		placeTiles.add(placeConveyers);
 		placeTiles.add(placeCollapsibles);
 		placeTiles.add(placeGoodies);
 		placeTiles.add(eraser);

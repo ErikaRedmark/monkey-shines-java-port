@@ -1,5 +1,6 @@
 package org.erikaredmark.monkeyshines.editor;
 
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -7,12 +8,14 @@ import javax.swing.JScrollPane;
 
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +43,11 @@ public class BrushPalette extends JPanel {
 
 	private static final int GRID_MARGIN_X = 4;
 	private static final int GRID_MARGIN_Y = 4;
+	
+	
+	// Overlayed on Conveyer belts to make it obvious which direction it is pointing.
+	private final BufferedImage leftArrow;
+	private final BufferedImage rightArrow;
 	
 	/* 
 	 * To save on object creation, each type of tile has one listener for each button. Each button has a different action
@@ -74,8 +82,30 @@ public class BrushPalette extends JPanel {
 		}
 	};
 	
+	private ActionListener conveyerClockwiseListener = new ActionListener() {
+		@Override public void actionPerformed(ActionEvent e) {
+			int id = Integer.parseInt(e.getActionCommand() );
+			mainCanvas.setTileBrushAndId(PaintbrushType.CONVEYERS_CLOCKWISE, id);
+		}
+	};
+	
+	private ActionListener conveyerAntiClockwiseListener = new ActionListener() {
+		@Override public void actionPerformed(ActionEvent e) {
+			int id = Integer.parseInt(e.getActionCommand() );
+			mainCanvas.setTileBrushAndId(PaintbrushType.CONVEYERS_ANTI_CLOCKWISE, id);
+		}
+	};
+	
 	public BrushPalette(final LevelDrawingCanvas mainCanvas, final WorldResource rsrc) {
 		this.mainCanvas = mainCanvas;
+		
+		try {
+			this.rightArrow = ImageIO.read(BrushPalette.class.getResourceAsStream("/resources/graphics/editor/rightArrow.png") );
+			this.leftArrow = ImageIO.read(BrushPalette.class.getResourceAsStream("/resources/graphics/editor/leftArrow.png") );
+		} catch (IOException e) {
+			throw new RuntimeException("Corrupted .jar: missing right/left arrow pngs: " + e.getMessage(), e);
+		}
+		
 		GridBagLayout gbl = new GridBagLayout();
 		setLayout(gbl);
 		
@@ -112,12 +142,14 @@ public class BrushPalette extends JPanel {
 			JPanel hazardsPanel = new JPanel();
 			hazardsPanel.setLayout(new FlowLayout(FlowLayout.LEFT) );
 			palettePanels.add(hazardsPanel);
+			
 			BufferedImage[] tiles = 
 				WorldResource.chop(GameConstants.TILE_SIZE_X,
 								   GameConstants.TILE_SIZE_Y,
 								   rsrc.getHazardSheet() );
 			
 			JPanel hazardsPanelGrid = new JPanel();
+			palettePanels.add(hazardsPanelGrid);
 			int rows = tiles.length / 12; // 6 per row, but knock off half.
 			hazardsPanelGrid.setLayout(new GridLayout(rows, 6, GRID_MARGIN_X, GRID_MARGIN_Y) );
 			hazardsPanel.add(hazardsPanelGrid);
@@ -128,6 +160,48 @@ public class BrushPalette extends JPanel {
 			}
 			
 			final JScrollPane typeScroller = new JScrollPane(hazardsPanel);
+			brushTypes.addTab("", new ImageIcon(tiles[0]), typeScroller);
+		}
+		
+		// Conveyers
+		{
+			JPanel conveyersPanel = new JPanel();
+			conveyersPanel.setLayout(new FlowLayout(FlowLayout.LEFT) );
+			palettePanels.add(conveyersPanel);
+			
+			BufferedImage[] tiles =
+				WorldResource.chop(GameConstants.TILE_SIZE_X,
+								   GameConstants.TILE_SIZE_Y,
+								   rsrc.getConveyerSheet() );
+			
+			JPanel conveyersPanelGrid = new JPanel();
+			// 5 conveyer sprites per 1 toolbar button, times 6 per row.
+			int rows = tiles.length / 30;
+			conveyersPanelGrid.setLayout(new GridLayout(rows, 6, GRID_MARGIN_X, GRID_MARGIN_Y) );
+			palettePanels.add(conveyersPanelGrid);
+			conveyersPanel.add(conveyersPanelGrid);
+			
+			for (int i = 0; i < tiles.length; i += 10) {
+				// TWO buttons per conveyer. There is the clockwise then anti-clockwise one
+				BufferedImage clockwise = tiles[i];
+				BufferedImage antiClockwise = tiles[i + 5];
+				
+				Graphics2D gClockwise = clockwise.createGraphics();
+				Graphics2D gAntiClockwise = antiClockwise.createGraphics();
+				
+				try {
+					gClockwise.drawImage(rightArrow, 0, 0, null);
+					gAntiClockwise.drawImage(leftArrow, 0, 0, null);
+				} finally {
+					gClockwise.dispose();
+					gAntiClockwise.dispose();
+				}
+				
+				conveyersPanelGrid.add(createTileButton(clockwise, i / 10, conveyerClockwiseListener) );
+				conveyersPanelGrid.add(createTileButton(antiClockwise, i / 10, conveyerAntiClockwiseListener) );
+			}
+			
+			final JScrollPane typeScroller = new JScrollPane(conveyersPanel);
 			brushTypes.addTab("", new ImageIcon(tiles[0]), typeScroller);
 		}
 		

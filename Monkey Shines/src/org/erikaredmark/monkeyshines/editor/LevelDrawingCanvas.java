@@ -363,12 +363,6 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 		currentTileType = PaintbrushType.SCENES;
 	}
 	
-	public void actionPlacingConveyers() {
-		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
-		
-		currentTileType = PaintbrushType.CONVEYERS;
-	}
-	
 	public void actionSelectingConveyers() {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
@@ -631,7 +625,8 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 		case SOLIDS: // break omitted
 		case THRUS: // break omitted
 		case SCENES: // break omitted
-		case CONVEYERS: // break omitted
+		case CONVEYERS_CLOCKWISE: // break omitted
+		case CONVEYERS_ANTI_CLOCKWISE: // break omitted
 		case COLLAPSIBLE:
 			changeState(EditorState.PLACING_TILES);
 			break;
@@ -756,10 +751,15 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 				srcX = 0;
 				srcY = currentTileId * GameConstants.TILE_SIZE_Y;
 				break;
-			case CONVEYERS:
+			case CONVEYERS_CLOCKWISE:
 				sheet = rsrc.getConveyerSheet();
 				srcX = 0;
 				srcY = currentTileId * (GameConstants.TILE_SIZE_Y * 2);
+				break;
+			case CONVEYERS_ANTI_CLOCKWISE:
+				sheet = rsrc.getConveyerSheet();
+				srcX = 0;
+				srcY = (currentTileId * (GameConstants.TILE_SIZE_Y * 2) ) + 40;
 				break;
 			case GOODIES:
 				sheet = rsrc.getGoodieSheet();
@@ -859,12 +859,13 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 			// paintbrush).
 			type = HazardTile.forHazard(currentWorldEditor.getHazards().get(currentTileId) );
 			break;
-		case CONVEYERS:
-			// Stateful type: Create new based on id. All state information is simply graphical drawing
-			// so it isn't too difficult to create.
-			// Please note: Special Id is assigned by the editor to be the INDEX in the conveyer list,
-			// which would be the actual Conveyer id times 2, plus one IF anti-clockwise.
-			type = new ConveyerTile(currentWorldEditor.getConveyers().get(currentTileId) );
+		case CONVEYERS_CLOCKWISE:
+			// Resolve the Id of the conveyer to its location in our list
+			type = new ConveyerTile(currentWorldEditor.getConveyers().get(currentTileId * 2) );
+			break;
+		case CONVEYERS_ANTI_CLOCKWISE:
+			// Same as above, but add 1 for the other direction
+			type = new ConveyerTile(currentWorldEditor.getConveyers().get((currentTileId * 2) + 1) );
 			break;
 		case COLLAPSIBLE:
 			// Stateful, but easy to create.
@@ -878,7 +879,7 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 		return type;
 	}
 	
-	public enum PaintbrushType { SOLIDS, THRUS, SCENES, HAZARDS, SPRITES, GOODIES, CONVEYERS, COLLAPSIBLE; }
+	public enum PaintbrushType { SOLIDS, THRUS, SCENES, HAZARDS, SPRITES, GOODIES, CONVEYERS_CLOCKWISE, CONVEYERS_ANTI_CLOCKWISE, COLLAPSIBLE; }
 	
 	
 	/**

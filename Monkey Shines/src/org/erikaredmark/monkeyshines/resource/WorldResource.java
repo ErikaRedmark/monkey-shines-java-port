@@ -1031,7 +1031,10 @@ public final class WorldResource {
 	 * icon.
 	 * <p/>
 	 * Because of the way the algorithm works, the index in the array has a 1:1 mapping to the id of a tile when used to
-	 * chop up a tilesheet. Do not use for specialised tilesets, such as conveyers, collapsibles.
+	 * chop up a basic tilesheet. 
+	 * <br/>For hazards, the 1:1 mapping only applies to the first half
+	 * <br/>Conveyers, there are 10 images between 'ids' but switches from clockwise to Anti-clockwise every 5.
+	 * <br/>Collapsibles, there are 10 images between ids.
 	 * 
 	 * @param width
 	 * 		width of each chop. Must be a divisor of the width of the entire image
