@@ -95,16 +95,6 @@ public class LevelEditor extends JFrame {
 		}
 	});
 	
-	// Menu: Place Stuff
-	private JMenu placeTiles = new JMenu("Objects");
-	/* ---------------------------- MENU ITEM ERASER ------------------------------ */
-	private JMenuItem eraser = new JMenuItem(new AbstractAction("Eraser") {
-		private static final long serialVersionUID = 1L;
-		@Override public void actionPerformed(ActionEvent e) {
-			currentWorld.actionEraser();
-		}
-	});
-	
 	private JMenu spritesMenu = new JMenu("Sprites");
 	/* ------------------------- MENU ITEM PLACE SPRITES -------------------------- */
 	private JMenuItem placeSprites =  new JMenuItem(new AbstractAction("Place Sprites") { 
@@ -133,7 +123,7 @@ public class LevelEditor extends JFrame {
 	private JMenuItem deleteSprites = new JMenuItem(new AbstractAction("Delete Sprites") {
 		private static final long serialVersionUID = 1L;
 		@Override public void actionPerformed(ActionEvent e) {
-			currentWorld.actionDeletingSprites();
+			currentWorld.actionEraserSprites();
 		}
 	});
 	
@@ -441,7 +431,6 @@ public class LevelEditor extends JFrame {
 	 */
 	private void manipulationFunctions(boolean enable) {
 		saveWorld.setEnabled(enable);
-		placeTiles.setEnabled(enable);
 		screenMenu.setEnabled(enable);
 		hazardMenu.setEnabled(enable);
 		specialMenu.setEnabled(enable);
@@ -491,10 +480,6 @@ public class LevelEditor extends JFrame {
 		fileMenu.add(quit);
 		
 		mainMenuBar.add(fileMenu);
-
-		placeTiles.add(eraser);
-		
-		mainMenuBar.add(placeTiles);
 		
 		spritesMenu.add(placeSprites);
 		spritesMenu.add(editSprites);

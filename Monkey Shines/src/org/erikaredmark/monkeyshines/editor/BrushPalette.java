@@ -49,6 +49,12 @@ public class BrushPalette extends JPanel {
 	private final BufferedImage leftArrow;
 	private final BufferedImage rightArrow;
 	
+	// Some standard graphics regardless of the world
+	private final BufferedImage eraserMain;
+	private final BufferedImage eraserTiles;
+	private final BufferedImage eraserSprites;
+	private final BufferedImage eraserGoodies;
+	
 	/**
 	 * To save on object creation, each type of tile has one listener for each button. Each button has a different action
 	 * command. The action command is the id of the tile. So the type of the tile goes to a type of listener, plus the id,
@@ -76,7 +82,23 @@ public class BrushPalette extends JPanel {
 	private final ChangeBrushListener CONVEYER_ANTI_CLOCKWISE_LISTENER = new ChangeBrushListener(PaintbrushType.CONVEYERS_ANTI_CLOCKWISE);
 	private final ChangeBrushListener COLLAPSIBLE_TILE_LISTENER = new ChangeBrushListener(PaintbrushType.COLLAPSIBLE);
 	private final ChangeBrushListener GOODIE_LISTENER = new ChangeBrushListener(PaintbrushType.GOODIES);
+	private final ActionListener ERASER_TILE_LISTENER = new ActionListener() {
+		@Override public void actionPerformed(ActionEvent e) {
+			mainCanvas.actionEraserTiles();
+		}
+	};
+	
+	private final ActionListener ERASER_SPRITE_LISTENER = new ActionListener() {
+		@Override public void actionPerformed(ActionEvent e) {
+			mainCanvas.actionEraserSprites();
+		}
+	};
 
+	private final ActionListener ERASER_GOODIES_LISTENER = new ActionListener() {
+		@Override public void actionPerformed(ActionEvent e) {
+			mainCanvas.actionEraserGoodies();
+		}
+	};
 	
 	public BrushPalette(final LevelDrawingCanvas mainCanvas, final WorldResource rsrc) {
 		this.mainCanvas = mainCanvas;
@@ -84,6 +106,10 @@ public class BrushPalette extends JPanel {
 		try {
 			this.rightArrow = ImageIO.read(BrushPalette.class.getResourceAsStream("/resources/graphics/editor/rightArrow.png") );
 			this.leftArrow = ImageIO.read(BrushPalette.class.getResourceAsStream("/resources/graphics/editor/leftArrow.png") );
+			this.eraserMain = ImageIO.read(BrushPalette.class.getResourceAsStream("/resources/graphics/editor/eraserMain.png") );
+			this.eraserTiles = ImageIO.read(BrushPalette.class.getResourceAsStream("/resources/graphics/editor/eraserTiles.png") );
+			this.eraserSprites = ImageIO.read(BrushPalette.class.getResourceAsStream("/resources/graphics/editor/eraserSprites.png") );
+			this.eraserGoodies = ImageIO.read(BrushPalette.class.getResourceAsStream("/resources/graphics/editor/eraserGoodies.png") );
 		} catch (IOException e) {
 			throw new RuntimeException("Corrupted .jar: missing right/left arrow pngs: " + e.getMessage(), e);
 		}
@@ -100,6 +126,8 @@ public class BrushPalette extends JPanel {
 		
 		// Create tabs for all types of tiles. Add to a list so that background modification can be done
 		// globally
+		
+		// Create tabs for all types of tiles
 		// SOLIDS + THRUS + SCENES + CONVEYERS + COLLAPSIBLES + SPRITES + HAZARDS = 7.
 		// * 2 since grid layout requires a flow layout nested to respect preferred sizes = 14
 		final List<JPanel> palettePanels = new ArrayList<>(14);
@@ -240,6 +268,25 @@ public class BrushPalette extends JPanel {
 			brushTypes.addTab("", new ImageIcon(tiles[0]), typeScroller);
 		}
 		
+		// Erasers
+		{
+			JPanel erasersPanel = new JPanel();
+			erasersPanel.setLayout(new FlowLayout(FlowLayout.LEFT) );
+			palettePanels.add(erasersPanel);
+			
+			JPanel erasersPanelGrid = new JPanel();
+			palettePanels.add(erasersPanelGrid);
+			erasersPanelGrid.setLayout(new GridLayout(1, 6, GRID_MARGIN_X, GRID_MARGIN_Y) );
+			erasersPanel.add(erasersPanelGrid);
+			
+			erasersPanelGrid.add(createTileButton(eraserTiles, 0, ERASER_TILE_LISTENER) );
+			erasersPanelGrid.add(createTileButton(eraserGoodies, 0, ERASER_GOODIES_LISTENER) );
+			erasersPanelGrid.add(createTileButton(eraserSprites, 0, ERASER_SPRITE_LISTENER) );
+			
+			final JScrollPane typeScroller = new JScrollPane(erasersPanel);
+			brushTypes.addTab("", new ImageIcon(eraserMain), typeScroller);
+		}
+		
 		// Allow background colour to invert to black... this is for transparent tiles that look horrible on white (such as
 		// cobwebs or any tiles predominantly white) to be visible easily.
 		JButton invert = new JButton("Invert Background");
@@ -249,7 +296,6 @@ public class BrushPalette extends JPanel {
 		invertGbc.gridy = 1;
 		invertGbc.weighty = 1;
 		add(invert, invertGbc);
-
 	}
 	
 	// Common code for initialising SOLIDS, THRUS, and SCENES Only

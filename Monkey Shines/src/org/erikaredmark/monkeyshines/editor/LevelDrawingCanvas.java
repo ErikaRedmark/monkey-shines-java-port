@@ -270,20 +270,22 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 	
 	
 	/**
-	 * 
-	 * Erases both tile and goodie data at the specified position
-	 * 
-	 * @param mouseX
-	 * @param mouseY
-	 * 
+	 * Erases the tile (not the goodie) at the specified position
 	 */
-	private void eraseAt(final int mouseX, final int mouseY) {
+	private void eraseTileAt(final int mouseX, final int mouseY) {
 		if (this.currentState == EditorState.NO_WORLD_LOADED)  return;
 		
 		int row = mouseX / GameConstants.TILE_SIZE_X;
 		int col = mouseY / GameConstants.TILE_SIZE_Y;
 		
 		currentScreenEditor.eraseTile(row, col);
+	}
+	
+	private void eraseGoodieAt(final int mouseX, final int mouseY) {
+		if (this.currentState == EditorState.NO_WORLD_LOADED)  return;
+		
+		int row = mouseX / GameConstants.TILE_SIZE_X;
+		int col = mouseY / GameConstants.TILE_SIZE_Y;
 		
 		currentWorldEditor.removeGoodie(currentScreenEditor.getId(), row, col);
 	}
@@ -392,12 +394,6 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 		}
 	}
 
-	public void actionDeletingSprites() {
-		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
-		
-		changeState(EditorState.DELETING_SPRITES);
-	}
-	
 	public void actionPlacingGoodies() {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
@@ -410,11 +406,24 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 		changeState(EditorState.PLACING_BONZO);
 	}
 	
-	public void actionEraser() {
+	public void actionEraserTiles() {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
 		changeState(EditorState.ERASING_TILES);
 	}
+	
+	public void actionEraserGoodies() {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		
+		changeState(EditorState.ERASING_GOODIES);
+	}
+	
+	public void actionEraserSprites() {
+		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
+		
+		changeState(EditorState.DELETING_SPRITES);
+	}
+	
 	public void actionResetScreen() {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
@@ -462,10 +471,15 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 	 * 
 	 */
 	private void changeState(EditorState newState) {
-		// Make no state changes if the state isn't actually changing.
-		if (currentState == newState)  return;
+		// Make no state changes if the state isn't actually changing, but do update the tile indicator
+		// as calls for same state change can still bring about changes to the current tile
+		if (currentState == newState) {
+			updateTileIndicator();
+			return;
+		}
 		
-		if (newState == EditorState.EDITING_SPRITES) {
+		if (   newState == EditorState.EDITING_SPRITES
+			|| newState == EditorState.DELETING_SPRITES) {
 			// Set a condition for the game timer to stop animating sprites.
 			// Stopping the timer completely would look like a freeze, so we don't do that.
 			currentScreenEditor.stopAnimatingSprites();
@@ -474,6 +488,7 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 			currentScreenEditor.startAnimatingSprites();
 		}
 		currentState = newState;
+		updateTileIndicator();
 	}
 	
 	public void actionChangeScreen(Integer screenId) {
@@ -567,8 +582,6 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 		default:
 			throw new RuntimeException("method not updated to handle new brush type " + type);
 		}
-		
-		updateTileIndicator();
 	}
 
 	@Override public void mouseClicked(MouseEvent e) {
@@ -827,7 +840,7 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 		 */
 		ERASING_TILES {
 			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
-				editor.eraseAt(editor.mousePosition.x(), editor.mousePosition.y() );
+				editor.eraseTileAt(editor.mousePosition.x(), editor.mousePosition.y() );
 			}
 			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 
 				defaultClickAction(editor);
@@ -841,7 +854,16 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 
 				defaultClickAction(editor);
 			}
-		}, 
+		},
+		
+		ERASING_GOODIES {
+			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
+				editor.eraseGoodieAt(editor.mousePosition.x(), editor.mousePosition.y() );
+			}
+			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 
+				defaultClickAction(editor);
+			}
+		},
 		
 		PLACING_HAZARDS {
 			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
@@ -885,7 +907,10 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 
 				}
 			}
-			@Override public void defaultDragAction(LevelDrawingCanvas editor) { }
+			// Still have to forward... slight drag movement would otherwise be ignored.
+			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 
+				defaultClickAction(editor);
+			}
 		},
 		
 		DELETING_SPRITES {
@@ -895,7 +920,9 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 					editor.currentScreenEditor.removeSprite(selected.get() );
 				}
 			}
-			@Override public void defaultDragAction(LevelDrawingCanvas editor) { }
+			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 
+				defaultClickAction(editor);
+			}
 		},
 		
 		SELECTING_SPRITES {
