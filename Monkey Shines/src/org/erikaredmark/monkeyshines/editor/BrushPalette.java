@@ -45,15 +45,8 @@ public class BrushPalette extends JPanel {
 	private static final int GRID_MARGIN_Y = 4;
 	
 	
-	// Overlayed on Conveyer belts to make it obvious which direction it is pointing.
-	private final BufferedImage leftArrow;
-	private final BufferedImage rightArrow;
+
 	
-	// Some standard graphics regardless of the world
-	private final BufferedImage eraserMain;
-	private final BufferedImage eraserTiles;
-	private final BufferedImage eraserSprites;
-	private final BufferedImage eraserGoodies;
 	
 	/**
 	 * To save on object creation, each type of tile has one listener for each button. Each button has a different action
@@ -82,6 +75,7 @@ public class BrushPalette extends JPanel {
 	private final ChangeBrushListener CONVEYER_ANTI_CLOCKWISE_LISTENER = new ChangeBrushListener(PaintbrushType.CONVEYERS_ANTI_CLOCKWISE);
 	private final ChangeBrushListener COLLAPSIBLE_TILE_LISTENER = new ChangeBrushListener(PaintbrushType.COLLAPSIBLE);
 	private final ChangeBrushListener GOODIE_LISTENER = new ChangeBrushListener(PaintbrushType.GOODIES);
+	private final ChangeBrushListener SPRITE_LISTENER = new ChangeBrushListener(PaintbrushType.SPRITES);
 	private final ActionListener ERASER_TILE_LISTENER = new ActionListener() {
 		@Override public void actionPerformed(ActionEvent e) {
 			mainCanvas.actionEraserTiles();
@@ -100,16 +94,36 @@ public class BrushPalette extends JPanel {
 		}
 	};
 	
+	private final ActionListener EDIT_SPRITE_LISTENER = new ActionListener() {
+		@Override public void actionPerformed(ActionEvent e) {
+			mainCanvas.actionEditingSprites();
+		}
+	};
+	
 	public BrushPalette(final LevelDrawingCanvas mainCanvas, final WorldResource rsrc) {
 		this.mainCanvas = mainCanvas;
 		
+		// Some standard graphics regardless of the world. All drawn and set in constructor to proper places...
+		// no need to save them as instance data in object.
+		final BufferedImage eraserMain;
+		final BufferedImage eraserTiles;
+		final BufferedImage eraserSprites;
+		final BufferedImage eraserGoodies;
+		final BufferedImage spriteMain;
+		final BufferedImage editSprite;
+		// Overlayed on Conveyer belts to make it obvious which direction it is pointing.
+		final BufferedImage leftArrow;
+		final BufferedImage rightArrow;
+		
 		try {
-			this.rightArrow = ImageIO.read(BrushPalette.class.getResourceAsStream("/resources/graphics/editor/rightArrow.png") );
-			this.leftArrow = ImageIO.read(BrushPalette.class.getResourceAsStream("/resources/graphics/editor/leftArrow.png") );
-			this.eraserMain = ImageIO.read(BrushPalette.class.getResourceAsStream("/resources/graphics/editor/eraserMain.png") );
-			this.eraserTiles = ImageIO.read(BrushPalette.class.getResourceAsStream("/resources/graphics/editor/eraserTiles.png") );
-			this.eraserSprites = ImageIO.read(BrushPalette.class.getResourceAsStream("/resources/graphics/editor/eraserSprites.png") );
-			this.eraserGoodies = ImageIO.read(BrushPalette.class.getResourceAsStream("/resources/graphics/editor/eraserGoodies.png") );
+			rightArrow = ImageIO.read(BrushPalette.class.getResourceAsStream("/resources/graphics/editor/rightArrow.png") );
+			leftArrow = ImageIO.read(BrushPalette.class.getResourceAsStream("/resources/graphics/editor/leftArrow.png") );
+			eraserMain = ImageIO.read(BrushPalette.class.getResourceAsStream("/resources/graphics/editor/eraserMain.png") );
+			eraserTiles = ImageIO.read(BrushPalette.class.getResourceAsStream("/resources/graphics/editor/eraserTiles.png") );
+			eraserSprites = ImageIO.read(BrushPalette.class.getResourceAsStream("/resources/graphics/editor/eraserSprites.png") );
+			eraserGoodies = ImageIO.read(BrushPalette.class.getResourceAsStream("/resources/graphics/editor/eraserGoodies.png") );
+			editSprite = ImageIO.read(BrushPalette.class.getResourceAsStream("/resources/graphics/editor/editSprite.png") );
+			spriteMain = ImageIO.read(BrushPalette.class.getResourceAsStream("/resources/graphics/editor/spriteMain.png") );
 		} catch (IOException e) {
 			throw new RuntimeException("Corrupted .jar: missing right/left arrow pngs: " + e.getMessage(), e);
 		}
@@ -127,25 +141,65 @@ public class BrushPalette extends JPanel {
 		// Create tabs for all types of tiles. Add to a list so that background modification can be done
 		// globally
 		
-		// Create tabs for all types of tiles
-		// SOLIDS + THRUS + SCENES + CONVEYERS + COLLAPSIBLES + SPRITES + HAZARDS = 7.
-		// * 2 since grid layout requires a flow layout nested to respect preferred sizes = 14
-		final List<JPanel> palettePanels = new ArrayList<>(14);
-		JPanel solidsPanel = new JPanel();
-		palettePanels.add(solidsPanel);
-		JPanel thrusPanel = new JPanel();
-		palettePanels.add(thrusPanel);
-		JPanel scenesPanel = new JPanel();
-		palettePanels.add(scenesPanel);
+		// SOLIDS + THRUS + SCENES + CONVEYERS + COLLAPSIBLES + SPRITES + HAZARDS + ERASER = 8.
+		// * 2 since grid layout requires a flow layout nested to respect preferred sizes = 16
+		final List<JPanel> palettePanels = new ArrayList<>(16);
 		
-		// Fill tabs with buttons that correspond to their type, where their index in the list (their
-		// id) matches the graphic for the button, and the id that will be used when the button is clicked
-		// when setting the canvas brush type.
+		// Sprites (creation of sprites. Removal is in ERASER tab)
+		{
+			JPanel spritesPanel = new JPanel();
+			spritesPanel.setLayout(new FlowLayout(FlowLayout.LEFT) );
+			palettePanels.add(spritesPanel);
+			
+			JPanel spritesPanelGrid = new JPanel();
+			palettePanels.add(spritesPanelGrid);
+			final int spriteCount = rsrc.getSpritesCount();
+			spritesPanelGrid.setLayout(new GridLayout(spriteCount / 3, 3, GRID_MARGIN_X, GRID_MARGIN_Y) );
+			spritesPanel.add(spritesPanelGrid);
+			
+			// First button is always the Edit Sprite button
+			spritesPanelGrid.add(createTileButton(editSprite, 0, EDIT_SPRITE_LISTENER) );
+			for (int i = 0; i < spriteCount; ++i) {
+				BufferedImage spriteSheet = rsrc.getSpritesheetFor(i);
+				BufferedImage firstFrame = new BufferedImage(GameConstants.SPRITE_SIZE_X, GameConstants.SPRITE_SIZE_Y, spriteSheet.getType() );
+				Graphics2D g2d = firstFrame.createGraphics();
+				try {
+					g2d.drawImage(spriteSheet, 
+								  0, 0, 
+								  firstFrame.getWidth(), firstFrame.getHeight(), 
+								  0, 0, 
+								  firstFrame.getWidth(), firstFrame.getHeight(), 
+								  null);
+				} finally {
+					g2d.dispose();
+				}
+				
+				spritesPanelGrid.add(createTileButton(firstFrame, i, SPRITE_LISTENER) );
+			}
+			
+			final JScrollPane typeScroller = new JScrollPane(spritesPanel);
+			brushTypes.addTab("", new ImageIcon(spriteMain), typeScroller);
+		}
 		
-		// SOLIDS, THRUS, and SCENES
-		palettePanels.add(initialiseBasicTilePanel(solidsPanel, brushTypes, StatelessTileType.SOLID, SOLID_TILE_LISTENER, rsrc) );
-		palettePanels.add(initialiseBasicTilePanel(thrusPanel, brushTypes, StatelessTileType.THRU, THRU_TILE_LISTENER, rsrc) );
-		palettePanels.add(initialiseBasicTilePanel(scenesPanel, brushTypes, StatelessTileType.SCENE, SCENE_TILE_LISTENER, rsrc) );
+
+		{
+
+			JPanel solidsPanel = new JPanel();
+			palettePanels.add(solidsPanel);
+			JPanel thrusPanel = new JPanel();
+			palettePanels.add(thrusPanel);
+			JPanel scenesPanel = new JPanel();
+			palettePanels.add(scenesPanel);
+			
+			// Fill tabs with buttons that correspond to their type, where their index in the list (their
+			// id) matches the graphic for the button, and the id that will be used when the button is clicked
+			// when setting the canvas brush type.
+			
+			// SOLIDS, THRUS, and SCENES
+			palettePanels.add(initialiseBasicTilePanel(solidsPanel, brushTypes, StatelessTileType.SOLID, SOLID_TILE_LISTENER, rsrc) );
+			palettePanels.add(initialiseBasicTilePanel(thrusPanel, brushTypes, StatelessTileType.THRU, THRU_TILE_LISTENER, rsrc) );
+			palettePanels.add(initialiseBasicTilePanel(scenesPanel, brushTypes, StatelessTileType.SCENE, SCENE_TILE_LISTENER, rsrc) );
+		}
 		
 		// Hazards
 		{

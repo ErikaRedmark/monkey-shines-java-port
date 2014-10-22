@@ -401,6 +401,9 @@ public class SpritePropertiesDialog extends JDialog {
 	 * 		for displaying the sprite graphics in the selector as well as knowing how many sprites are available and setting
 	 * 		the bounding constraints for the JSpinner
 	 * 
+	 * @param id
+	 * 		the id of the sprite that the model should initialise to showing
+	 * 
 	 * @param startingPoint
 	 * 		this is typically where the mouse click was on the editor. The starting X/Y fields will be auto-filled in.
 	 * 
@@ -408,13 +411,14 @@ public class SpritePropertiesDialog extends JDialog {
 	 * 		the model object after the user has finished with the view.
 	 * 
 	 */
-	public static SpritePropertiesModel launch(JComponent parent, WorldResource rsrc, ImmutablePoint2D startingPoint) {
+	public static SpritePropertiesModel launch(JComponent parent, WorldResource rsrc, int id, ImmutablePoint2D startingPoint) {
 		final SpritePropertiesModel model = SpritePropertiesModel.newModelWithDefaults(rsrc);
 		// Give some intelligent auto-complete based on selection
 		model.setSpriteLocationX(startingPoint.x() );
 		model.setSpriteLocationY(startingPoint.y() );
 		model.setSpriteBoundingBoxTopLeftX(startingPoint.x() );
 		model.setSpriteBoundingBoxTopLeftY(startingPoint.y() );
+		model.setSpriteId(id);
 		
 		SpritePropertiesDialog dialog = new SpritePropertiesDialog(rsrc, model);
 		dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);

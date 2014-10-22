@@ -439,8 +439,9 @@ public class LevelEditor extends JFrame {
 
 	private LevelEditor() {
 		keys = new KeyboardInput();
-		paletteFrame = new JInternalFrame("Palette");
+		paletteFrame = new JInternalFrame("Palette", true);
 		paletteFrame.setLayout(new FlowLayout(FlowLayout.LEFT) );
+		paletteFrame.setMaximumSize(new Dimension(400, 600) );
 		
 		canvasFrame = new JInternalFrame("Level");
 		canvasFrame.setLayout(new FlowLayout(FlowLayout.LEFT) );
@@ -459,14 +460,14 @@ public class LevelEditor extends JFrame {
 		editorDesktop = new JDesktopPane();
 		editorDesktop.add(canvasFrame);
 		// Give space for toolbar in left corner
-		canvasFrame.setLocation(220, 0);
+		canvasFrame.setLocation(280, 0);
 		canvasFrame.setVisible(true);
 		
 		editorDesktop.add(paletteFrame);
 		// Set visible later when palette initialised
 		add(editorDesktop);
 
-		setPreferredSize(new Dimension(900, 640) );
+		setPreferredSize(new Dimension(960, 600) );
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);

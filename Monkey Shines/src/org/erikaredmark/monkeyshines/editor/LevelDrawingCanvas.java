@@ -70,6 +70,7 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 	// a given type of tile will use.
 	private int currentTileId;
 	private Goodie.Type currentGoodieType;
+	private int currentSpriteId;
 	
 	// Unlike the other properties, current hazard MAY be null. It is 100% possible for a world to not have hazards
 	private Hazard currentHazard;
@@ -546,7 +547,7 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 	 * hazards, or goodies, based on the paintbrush type.
 	 * <p/>
 	 * Since sprites are basically the same thing (an id for initial placement) this method can also handle
-	 * the sprite brush, although TODO presently id will be ignored.
+	 * the sprite brush and will default the creation of the sprite to the id presented.
 	 * 
 	 * @param type
 	 * 		the paintbrush type
@@ -577,6 +578,7 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 			changeState(EditorState.PLACING_HAZARDS);
 			break;
 		case SPRITES:
+			currentSpriteId = id;
 			changeState(EditorState.PLACING_SPRITES);
 			break;
 		default:
@@ -877,7 +879,12 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 		
 		PLACING_SPRITES {
 			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
-				SpritePropertiesModel model = SpritePropertiesDialog.launch(editor, editor.currentWorldEditor.getWorldResource(), ImmutablePoint2D.of(editor.mousePosition.x(), editor.mousePosition.y() ) );
+				SpritePropertiesModel model = 
+					SpritePropertiesDialog.launch(
+						editor, 
+						editor.currentWorldEditor.getWorldResource(),
+						editor.currentSpriteId,
+						ImmutablePoint2D.of(editor.mousePosition.x(), editor.mousePosition.y() ) );
 				if (model.isOkay() ) {
 					editor.currentScreenEditor.addSprite(model.getSpriteId(), 
 														 model.getSpriteStartingLocation(), 
