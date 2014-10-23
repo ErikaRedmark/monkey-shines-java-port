@@ -59,8 +59,7 @@ public class LevelEditor extends JFrame {
 				paletteFrame.remove(palette);
 			}
 			palette = new BrushPalette(currentWorld, rsrc);
-			paletteFrame.add(palette);
-			paletteFrame.pack();
+			paletteFrame.add(palette, BorderLayout.CENTER);
 			paletteFrame.setVisible(true);
 			return null;
 		}
@@ -440,8 +439,9 @@ public class LevelEditor extends JFrame {
 	private LevelEditor() {
 		keys = new KeyboardInput();
 		paletteFrame = new JInternalFrame("Palette", true);
-		paletteFrame.setLayout(new FlowLayout(FlowLayout.LEFT) );
-		paletteFrame.setMaximumSize(new Dimension(400, 600) );
+		paletteFrame.setLayout(new BorderLayout() );
+		paletteFrame.setSize(new Dimension(240, 500) );
+		// Finally, install listeners to handle resizing the tabbed pane to fit the parent and re-packing it.
 		
 		canvasFrame = new JInternalFrame("Level");
 		canvasFrame.setLayout(new FlowLayout(FlowLayout.LEFT) );

@@ -6,11 +6,10 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -40,12 +39,9 @@ import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
 public class BrushPalette extends JPanel {
 
 	private final LevelDrawingCanvas mainCanvas;
-
+	
 	private static final int GRID_MARGIN_X = 4;
 	private static final int GRID_MARGIN_Y = 4;
-	
-	
-
 	
 	
 	/**
@@ -128,15 +124,10 @@ public class BrushPalette extends JPanel {
 			throw new RuntimeException("Corrupted .jar: missing right/left arrow pngs: " + e.getMessage(), e);
 		}
 		
-		GridBagLayout gbl = new GridBagLayout();
-		setLayout(gbl);
+		setLayout(new BorderLayout() );
 		
 		final JTabbedPane brushTypes = new JTabbedPane(JTabbedPane.TOP);
-		GridBagConstraints brushTypesGbc = new GridBagConstraints();
-		brushTypesGbc.gridx = 0;
-		brushTypesGbc.gridy = 0;
-		brushTypesGbc.weighty = 5;
-		add(brushTypes, brushTypesGbc);
+		add(brushTypes, BorderLayout.CENTER);
 		
 		// Create tabs for all types of tiles. Add to a list so that background modification can be done
 		// globally
@@ -345,11 +336,8 @@ public class BrushPalette extends JPanel {
 		// cobwebs or any tiles predominantly white) to be visible easily.
 		JButton invert = new JButton("Invert Background");
 		invert.addActionListener(new InversionListener(palettePanels) );
-		GridBagConstraints invertGbc = new GridBagConstraints();
-		invertGbc.gridx = 0;
-		invertGbc.gridy = 1;
-		invertGbc.weighty = 1;
-		add(invert, invertGbc);
+		add(invert, BorderLayout.SOUTH);
+
 	}
 	
 	// Common code for initialising SOLIDS, THRUS, and SCENES Only
