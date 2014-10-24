@@ -680,8 +680,12 @@ public class World {
 				if (hazard.isDead() || hazard.isExploding() )  continue;
 				
 				hazard.hazardHit(rsrc.getSoundManager() );
-				// Send a kill message to bonzo. Only invincibility will save him
-				bonzo.tryKill(hazard.getHazard().getDeathAnimation() );
+				// Last check; is this hazard harmless? Harmless hazards still play hit sounds and explode, hence why
+				// we did not check earlier.
+				if (!(hazard.getHazard().isHarmless() ) ) {
+					// Send a kill message to bonzo. Only invincibility will save him
+					bonzo.tryKill(hazard.getHazard().getDeathAnimation() );
+				}
 				return;
 			}
 		}

@@ -201,6 +201,7 @@ public final class EncodedWorld {
 		protoHazard.setId(hazard.getId() );
 		protoHazard.setExplodes(hazard.getExplodes() );
 		protoHazard.setDeathAnimation(deathAnimationToProto(hazard.getDeathAnimation() ) );
+		protoHazard.setHarmless(hazard.isHarmless() );
 		return protoHazard.build();
 	}
 	
@@ -215,7 +216,8 @@ public final class EncodedWorld {
 	static Hazard protoToHazard(WorldFormatProtos.World.Hazard protoHazard) {
 		return new Hazard(protoHazard.getId(), 
 						  protoHazard.getExplodes(), 
-						  protoToDeathAnimation(protoHazard.getDeathAnimation() ) );
+						  protoToDeathAnimation(protoHazard.getDeathAnimation() ),
+						  protoHazard.getHarmless() );
 	}
 	
 	/* ------------------------------ Death Animation -------------------------------- */

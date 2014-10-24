@@ -70,6 +70,7 @@ message World {
   	optional uint32 id = 1;
   	optional bool explodes = 2;
   	optional DeathAnimation death_animation = 3;
+  	optional bool harmless = 4;
   }
   
   // Possibly the most complicated structure, as this contains all the information on a single screen

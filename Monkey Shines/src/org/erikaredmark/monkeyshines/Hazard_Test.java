@@ -16,14 +16,14 @@ public final class Hazard_Test {
 		starterHazards = new ArrayList<>();
 		// Custom hazards will be checked that they were added properly by simply checking for the one default BURN
 		// in the collection of hazards
-		starterHazards.add(new Hazard(0, true, DeathAnimation.ELECTRIC) );
-		starterHazards.add(new Hazard(1, true, DeathAnimation.NORMAL) );
-		starterHazards.add(new Hazard(2, true, DeathAnimation.BEE) );
+		starterHazards.add(new Hazard(0, true, DeathAnimation.ELECTRIC, false) );
+		starterHazards.add(new Hazard(1, true, DeathAnimation.NORMAL, false) );
+		starterHazards.add(new Hazard(2, true, DeathAnimation.BEE, false) );
 	}
 	
 	// Test replacing hazards
 	@Test public void testReplaceStart() {
-		final Hazard toReplace = new Hazard(0, true, DeathAnimation.BURN);
+		final Hazard toReplace = new Hazard(0, true, DeathAnimation.BURN, false);
 		
 		assertEquals(DeathAnimation.ELECTRIC, starterHazards.get(0).getDeathAnimation() );
 		Hazard.replaceHazard(starterHazards, toReplace);
@@ -31,7 +31,7 @@ public final class Hazard_Test {
 	}
 	
 	@Test public void testReplaceMiddle() {
-		final Hazard toReplace = new Hazard(1, true, DeathAnimation.BURN);
+		final Hazard toReplace = new Hazard(1, true, DeathAnimation.BURN, false);
 		
 		assertEquals(DeathAnimation.NORMAL, starterHazards.get(1).getDeathAnimation() );
 		Hazard.replaceHazard(starterHazards, toReplace);
@@ -39,7 +39,7 @@ public final class Hazard_Test {
 	}
 	
 	@Test public void testReplaceEnd() {
-		final Hazard toReplace = new Hazard(2, true, DeathAnimation.BURN);
+		final Hazard toReplace = new Hazard(2, true, DeathAnimation.BURN, false);
 		
 		assertEquals(DeathAnimation.BEE, starterHazards.get(2).getDeathAnimation() );
 		Hazard.replaceHazard(starterHazards, toReplace);
@@ -47,7 +47,7 @@ public final class Hazard_Test {
 	}
 	
 	@Test(expected=IllegalArgumentException.class) public void testReplaceCant() {
-		final Hazard toReplace = new Hazard(3, true, DeathAnimation.BURN);
+		final Hazard toReplace = new Hazard(3, true, DeathAnimation.BURN, false);
 		Hazard.replaceHazard(starterHazards, toReplace);
 	}
 }

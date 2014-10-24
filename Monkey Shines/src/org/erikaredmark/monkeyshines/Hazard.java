@@ -30,6 +30,8 @@ public final class Hazard implements Comparable<Hazard> {
 	private final int id;
 	private final boolean explodes;
 	private final DeathAnimation deathAnimation;
+	// if harmless, death animation should be ignored as bonzo can't die from it.
+	private final boolean harmless;
 	
 	/**
 	 * 
@@ -46,14 +48,18 @@ public final class Hazard implements Comparable<Hazard> {
 	 * @param deathAnimation
 	 * 		the death animation that should be played when this hazard is contacted with bonzo
 	 * 
+	 * @param harmless
+	 * 		if {@code true}, this hazard cannot kill bonzo and the deathAnimation is ignored.
+	 * 
 	 * @param rsrc
 	 * 		graphics resource for the world this hazard is in so it may perform painting routines
 	 * 
 	 */
-	public Hazard(final int id, final boolean explodes, final DeathAnimation deathAnimation) {
+	public Hazard(final int id, final boolean explodes, final DeathAnimation deathAnimation, final boolean harmless) {
 		this.id = id;
 		this.explodes = explodes;
 		this.deathAnimation = deathAnimation;
+		this.harmless = harmless;
 	}
 
 	/**
@@ -65,16 +71,31 @@ public final class Hazard implements Comparable<Hazard> {
 	 * 
 	 */
 	public HazardMutable mutableCopy() {
-		return new HazardMutable(this.id, this.explodes, this.deathAnimation);
+		return new HazardMutable(this.id, this.explodes, this.deathAnimation, this.harmless);
 	}
 	
 	public DeathAnimation getDeathAnimation() { return deathAnimation; }
 	public int getId() { return id; }
 	public boolean getExplodes() { return explodes; }
+	
+	/**
+	 * 
+	 * If a hazard is harmless, it will not affect him in any way. This does NOT affect the explodes attribute. A harmless
+	 * hazard can explode. It will just be like if Bonzo had a shield.
+	 * <p/>
+	 * Note: The original game had harmless hazards that locked Bonzo's sprite animation and made it look like he was 'sliding'.
+	 * This port does NOT keep that (arguably a bug) effect.
+	 * 
+	 * @return
+	 * 		{@code true} if the hazard is harmless and should not kill Bonzo, {@code false} if otherwise
+	 * 
+	 */
+	public boolean isHarmless() { return harmless; }
+	
 	/**
 	 * 
 	 * Creates the initial hazards for the world based on the number of hazards to create. Each hazard defaults to being a
-	 * 'bomb'. It explodes and has the burn death animation.
+	 * 'bomb'. It explodes and has the burn death animation. Default created hazards are never 'harmless'
 	 * <p/>
 	 * Start indicates at what Id the hazards will be created starting at. This is typically 0 for a new set and a higher number
 	 * for adding to an existing set.
@@ -98,7 +119,7 @@ public final class Hazard implements Comparable<Hazard> {
 	public static ImmutableList<Hazard> initialise(int start, int count, WorldResource rsrc) {
 		ImmutableList.Builder<Hazard> hazards = new ImmutableList.Builder<>();
 		for (int i = 0; i < count; i++) {
-			hazards.add(new Hazard(start + i, true, DeathAnimation.BURN) );
+			hazards.add(new Hazard(start + i, true, DeathAnimation.BURN, false) );
 		}
 		
 		return hazards.build();
@@ -106,7 +127,8 @@ public final class Hazard implements Comparable<Hazard> {
 	
 	/**
 	 * 
-	 * Determines if the given hazard explodes.
+	 * Determines if the given hazard explodes. Exploding hazards always do so when touched by Bonzo, regardless of
+	 * him having a shield or being harmless (they just won't kill him in those cases)
 	 * 
 	 * @return
 	 * 		{@code true} if this hazard explodes, {@code false} if otherwise

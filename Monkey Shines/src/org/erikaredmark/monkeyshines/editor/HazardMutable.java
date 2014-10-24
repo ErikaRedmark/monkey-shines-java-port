@@ -30,10 +30,13 @@ public class HazardMutable {
 	// ID remains final: That is a function of where it is in the list.
 	private final int id;
 	
-	public HazardMutable(final int id, final boolean explodes, final DeathAnimation deathAnimation) {
+	private boolean harmless;
+	
+	public HazardMutable(final int id, final boolean explodes, final DeathAnimation deathAnimation, final Boolean harmless) {
 		this.id = id;
 		this.explodes = explodes;
 		this.deathAnimation = deathAnimation;
+		this.harmless = harmless;
 	}
 	
 	/**
@@ -45,7 +48,7 @@ public class HazardMutable {
 	 * 		an immutable copy of this object
 	 * 
 	 */
-	public Hazard immutableCopy() { return new Hazard(id, explodes, deathAnimation); }
+	public Hazard immutableCopy() { return new Hazard(id, explodes, deathAnimation, harmless); }
 
 	public boolean getExplodes() { return explodes; }
 	public void setExplodes(boolean explodes) {	this.explodes = explodes; }
@@ -53,4 +56,6 @@ public class HazardMutable {
 	public DeathAnimation getDeathAnimation() { return deathAnimation; }
 	public void setDeathAnimation(DeathAnimation deathAnimation) { this.deathAnimation = deathAnimation; }
 	
+	public boolean isHarmless() { return harmless; }
+	public void setHarmless(final boolean harmless) { this.harmless = harmless; }
 }

@@ -6,6 +6,7 @@ import java.awt.FlowLayout;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -180,6 +181,7 @@ public class EditHazardsDialog extends JDialog {
 		private Hazard originalFromCurrentEdit;
 		
 		final JCheckBox explodesBtn;
+		final JCheckBox harmlessBtn;
 		final JComboBox<DeathAnimation> deathAnimation;
 		
 		private EditSingleHazardPanel() {
@@ -205,24 +207,35 @@ public class EditHazardsDialog extends JDialog {
 				
 			});
 			
+			harmlessBtn = new JCheckBox(new AbstractAction("Harmless") {
+				private static final long serialVersionUID = 1L;
+				
+				@Override public void actionPerformed(ActionEvent evt) {
+					boolean selected = ((JCheckBox)evt.getSource()).isSelected();
+					currentlyEditingHazard.setHarmless(selected);
+					deathAnimation.setEnabled(!(selected) );
+					EditHazardsDialog.this.save();
+				}
+			});
+			
 			/* --------------- Form ---------------- */
-			setLayout(new GridBagLayout() );
+			setLayout(new FlowLayout(FlowLayout.LEFT) );
 			
-			final GridBagConstraints deathAnimationLblGbc = new GridBagConstraints();
-			deathAnimationLblGbc.gridx = 1;
-			deathAnimationLblGbc.gridy = 1;
-			add(deathAnimationLbl, deathAnimationLblGbc);
+			// Grid inside a flow; ensures grid doesn't expand too big and have too much space between
+			// components and works nicely as a simple set of controls down the left-hand side.
 			
-			final GridBagConstraints deathAnimationGbc = new GridBagConstraints();
-			deathAnimationGbc.gridx = 2;
-			deathAnimationGbc.gridy = 1;
-			add(deathAnimation, deathAnimationGbc);
+			JPanel internalPanel = new JPanel();
+			internalPanel.setLayout(new GridLayout(3, 2) );
+			add(internalPanel);
 			
-			final GridBagConstraints explodesGbc = new GridBagConstraints();
-			explodesGbc.gridx = 1;
-			explodesGbc.gridy = 2;
-			explodesGbc.gridwidth = GridBagConstraints.REMAINDER;
-			add(explodesBtn, explodesGbc);
+			internalPanel.add(deathAnimationLbl);
+			internalPanel.add(deathAnimation);
+			
+			internalPanel.add(new JLabel() ); // Placeholder for grid
+			internalPanel.add(explodesBtn);
+			
+			internalPanel.add(new JLabel() ); // Placeholder for grid
+			internalPanel.add(harmlessBtn);
 			
 			// Initially, there are no hazards being edited on construction (we have no initial selection)
 			noHazardEditing();
@@ -237,11 +250,13 @@ public class EditHazardsDialog extends JDialog {
 		public void noHazardEditing() {
 			explodesBtn.setEnabled(false);
 			deathAnimation.setEnabled(false);
+			harmlessBtn.setEnabled(false);
 		}
 		
 		/**
 		 * 
-		 * Makes a mutable copy of the given hazard and places it under editing.
+		 * Makes a mutable copy of the given hazard and places it under editing. If the panel was previously not
+		 * under editing, enables all controls.
 		 * <p/>
 		 * This also enables the view if it is disabled and updates it to the properties of the hazard
 		 * 
@@ -250,11 +265,14 @@ public class EditHazardsDialog extends JDialog {
 			this.currentlyEditingHazard = hazard.mutableCopy();
 			this.originalFromCurrentEdit = hazard;
 			
+			// enable first. Selections may disable certain conflicting controls
 			explodesBtn.setEnabled(true);
 			deathAnimation.setEnabled(true);
+			harmlessBtn.setEnabled(true);
 			
 			explodesBtn.setSelected(originalFromCurrentEdit.getExplodes() );
 			deathAnimation.setSelectedItem(originalFromCurrentEdit.getDeathAnimation() );
+			harmlessBtn.setSelected(originalFromCurrentEdit.isHarmless() );
 		}
 		
 		/**
@@ -287,7 +305,8 @@ public class EditHazardsDialog extends JDialog {
 			if (currentlyEditingHazard == null)  throw new IllegalStateException("No hazard being editing");
 			// Don't compare Id or resources. Those never change
 			return    currentlyEditingHazard.getDeathAnimation() != originalFromCurrentEdit.getDeathAnimation()
-				   || currentlyEditingHazard.getExplodes() != originalFromCurrentEdit.getExplodes();
+				   || currentlyEditingHazard.getExplodes() != originalFromCurrentEdit.getExplodes()
+				   || currentlyEditingHazard.isHarmless() != originalFromCurrentEdit.isHarmless();
 		}
 		
 		/**
@@ -322,6 +341,7 @@ public class EditHazardsDialog extends JDialog {
 		
 		private final Map<DeathAnimation, ImageIcon> deathTypeIcons = new HashMap<>();
 		private ImageIcon explodesIcon;
+		private ImageIcon harmlessIcon;
 		private final List<ImageIcon> indexToHazard = new ArrayList<>();
 		
 		private HazardCellRenderer(final WorldResource rsrc) {
@@ -332,6 +352,7 @@ public class EditHazardsDialog extends JDialog {
 				BufferedImage bee = ImageIO.read(EditHazardsDialog.class.getResourceAsStream("/resources/graphics/editor/hazard/beeSting.png") );
 				BufferedImage standardDeath = ImageIO.read(EditHazardsDialog.class.getResourceAsStream("/resources/graphics/editor/hazard/standardDeath.png") );
 				BufferedImage electricDeath = ImageIO.read(EditHazardsDialog.class.getResourceAsStream("/resources/graphics/editor/hazard/electricDeath.png") );
+				BufferedImage harmlessImage = ImageIO.read(EditHazardsDialog.class.getResourceAsStream("/resources/graphics/editor/hazard/harmless.png") );
 				
 				deathTypeIcons.put(DeathAnimation.BURN, new ImageIcon(burn) );
 				deathTypeIcons.put(DeathAnimation.BEE, new ImageIcon(bee) );
@@ -339,6 +360,8 @@ public class EditHazardsDialog extends JDialog {
 				deathTypeIcons.put(DeathAnimation.ELECTRIC, new ImageIcon(electricDeath) );
 				
 				explodesIcon = new ImageIcon(explodes);
+				
+				harmlessIcon = new ImageIcon(harmlessImage);
 				
 			} catch (IOException e) {
 				// No big deal, we just can't render the images like we wanted.
@@ -380,9 +403,17 @@ public class EditHazardsDialog extends JDialog {
 			display.add(hazardItself);
 			
 			// Null is acceptable for the next two
-			JLabel deathType = new JLabel();
-			deathType.setIcon(deathTypeIcons.get(value.getDeathAnimation() ) );
-			display.add(deathType);
+			// Special Case: Death type is not drawn (instead the Harmless icon is drawn) if the hazard is harmless, since
+			// a harmless hazard has no death type (technically it does in the code, it just isn't used)
+			if (!(value.isHarmless() ) ) {
+				JLabel deathType = new JLabel();
+				deathType.setIcon(deathTypeIcons.get(value.getDeathAnimation() ) );
+				display.add(deathType);
+			} else {
+				JLabel deathType = new JLabel();
+				deathType.setIcon(harmlessIcon);
+				display.add(deathType);
+			}
 			
 			if (value.explodes() && explodesIcon != null ) {
 				JLabel explod = new JLabel();

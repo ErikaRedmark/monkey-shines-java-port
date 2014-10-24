@@ -837,6 +837,11 @@ public final class WorldFormatProtos {
         implements com.google.protobuf.ProtocolMessageEnum {
       /**
        * <code>FORCED_NONE = 1;</code>
+       *
+       * <pre>
+       * RIGHT stands for RIGHT and UP. LEFT stands for LEFT and DOWN. TwoWayFacing decides which of the
+       * two makes sense in the context.
+       * </pre>
        */
       FORCED_NONE(0, 1),
       /**
@@ -851,6 +856,11 @@ public final class WorldFormatProtos {
 
       /**
        * <code>FORCED_NONE = 1;</code>
+       *
+       * <pre>
+       * RIGHT stands for RIGHT and UP. LEFT stands for LEFT and DOWN. TwoWayFacing decides which of the
+       * two makes sense in the context.
+       * </pre>
        */
       public static final int FORCED_NONE_VALUE = 1;
       /**
@@ -4527,6 +4537,16 @@ public final class WorldFormatProtos {
        * <code>optional .monkeyshines.World.DeathAnimation death_animation = 3;</code>
        */
       org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.DeathAnimation getDeathAnimation();
+
+      // optional bool harmless = 4;
+      /**
+       * <code>optional bool harmless = 4;</code>
+       */
+      boolean hasHarmless();
+      /**
+       * <code>optional bool harmless = 4;</code>
+       */
+      boolean getHarmless();
     }
     /**
      * Protobuf type {@code monkeyshines.World.Hazard}
@@ -4603,6 +4623,11 @@ public final class WorldFormatProtos {
                   bitField0_ |= 0x00000004;
                   deathAnimation_ = value;
                 }
+                break;
+              }
+              case 32: {
+                bitField0_ |= 0x00000008;
+                harmless_ = input.readBool();
                 break;
               }
             }
@@ -4693,10 +4718,27 @@ public final class WorldFormatProtos {
         return deathAnimation_;
       }
 
+      // optional bool harmless = 4;
+      public static final int HARMLESS_FIELD_NUMBER = 4;
+      private boolean harmless_;
+      /**
+       * <code>optional bool harmless = 4;</code>
+       */
+      public boolean hasHarmless() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional bool harmless = 4;</code>
+       */
+      public boolean getHarmless() {
+        return harmless_;
+      }
+
       private void initFields() {
         id_ = 0;
         explodes_ = false;
         deathAnimation_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.DeathAnimation.NORMAL_DEATH;
+        harmless_ = false;
       }
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
@@ -4719,6 +4761,9 @@ public final class WorldFormatProtos {
         if (((bitField0_ & 0x00000004) == 0x00000004)) {
           output.writeEnum(3, deathAnimation_.getNumber());
         }
+        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+          output.writeBool(4, harmless_);
+        }
         getUnknownFields().writeTo(output);
       }
 
@@ -4739,6 +4784,10 @@ public final class WorldFormatProtos {
         if (((bitField0_ & 0x00000004) == 0x00000004)) {
           size += com.google.protobuf.CodedOutputStream
             .computeEnumSize(3, deathAnimation_.getNumber());
+        }
+        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBoolSize(4, harmless_);
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSerializedSize = size;
@@ -4867,6 +4916,8 @@ public final class WorldFormatProtos {
           bitField0_ = (bitField0_ & ~0x00000002);
           deathAnimation_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.DeathAnimation.NORMAL_DEATH;
           bitField0_ = (bitField0_ & ~0x00000004);
+          harmless_ = false;
+          bitField0_ = (bitField0_ & ~0x00000008);
           return this;
         }
 
@@ -4907,6 +4958,10 @@ public final class WorldFormatProtos {
             to_bitField0_ |= 0x00000004;
           }
           result.deathAnimation_ = deathAnimation_;
+          if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+            to_bitField0_ |= 0x00000008;
+          }
+          result.harmless_ = harmless_;
           result.bitField0_ = to_bitField0_;
           onBuilt();
           return result;
@@ -4931,6 +4986,9 @@ public final class WorldFormatProtos {
           }
           if (other.hasDeathAnimation()) {
             setDeathAnimation(other.getDeathAnimation());
+          }
+          if (other.hasHarmless()) {
+            setHarmless(other.getHarmless());
           }
           this.mergeUnknownFields(other.getUnknownFields());
           return this;
@@ -5057,6 +5115,39 @@ public final class WorldFormatProtos {
         public Builder clearDeathAnimation() {
           bitField0_ = (bitField0_ & ~0x00000004);
           deathAnimation_ = org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.DeathAnimation.NORMAL_DEATH;
+          onChanged();
+          return this;
+        }
+
+        // optional bool harmless = 4;
+        private boolean harmless_ ;
+        /**
+         * <code>optional bool harmless = 4;</code>
+         */
+        public boolean hasHarmless() {
+          return ((bitField0_ & 0x00000008) == 0x00000008);
+        }
+        /**
+         * <code>optional bool harmless = 4;</code>
+         */
+        public boolean getHarmless() {
+          return harmless_;
+        }
+        /**
+         * <code>optional bool harmless = 4;</code>
+         */
+        public Builder setHarmless(boolean value) {
+          bitField0_ |= 0x00000008;
+          harmless_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional bool harmless = 4;</code>
+         */
+        public Builder clearHarmless() {
+          bitField0_ = (bitField0_ & ~0x00000008);
+          harmless_ = false;
           onChanged();
           return this;
         }
@@ -11645,7 +11736,7 @@ public final class WorldFormatProtos {
     java.lang.String[] descriptorData = {
       "\nCorg/erikaredmark/monkeyshines/encoder/" +
       "proto/world_file_format.proto\022\014monkeyshi" +
-      "nes\"\317\021\n\005World\022\014\n\004name\030\001 \001(\t\0228\n\007goodies\030\002" +
+      "nes\"\341\021\n\005World\022\014\n\004name\030\001 \001(\t\0228\n\007goodies\030\002" +
       " \003(\0132\'.monkeyshines.World.StringToGoodie" +
       "Tuple\0227\n\006levels\030\003 \003(\0132\'.monkeyshines.Wor" +
       "ld.IntegerToLevelTuple\022+\n\007hazards\030\004 \003(\0132" +
@@ -11660,50 +11751,50 @@ public final class WorldFormatProtos {
       "rld.Point\022\'\n\004size\030\002 \002(\0132\031.monkeyshines.W" +
       "orld.Point\032T\n\006Goodie\022\n\n\002id\030\001 \001(\r\022\021\n\tscre" +
       "en_id\030\002 \001(\r\022+\n\010location\030\003 \001(\0132\031.monkeysh" +
-      "ines.World.Point\032c\n\006Hazard\022\n\n\002id\030\001 \001(\r\022\020" +
+      "ines.World.Point\032u\n\006Hazard\022\n\n\002id\030\001 \001(\r\022\020" +
       "\n\010explodes\030\002 \001(\010\022;\n\017death_animation\030\003 \001(" +
-      "\0162\".monkeyshines.World.DeathAnimation\032\326\001",
-      "\n\013LevelScreen\022\n\n\002id\030\001 \001(\r\0222\n\nbackground\030" +
-      "\002 \001(\0132\036.monkeyshines.World.Background\0221\n" +
-      "\016bonzo_location\030\003 \001(\0132\031.monkeyshines.Wor" +
-      "ld.Point\022+\n\007sprites\030\004 \003(\0132\032.monkeyshines" +
-      ".World.Sprite\022\'\n\005tiles\030\005 \003(\0132\030.monkeyshi" +
-      "nes.World.Tile\032J\n\nBackground\022\n\n\002id\030\001 \001(\r" +
-      "\0220\n\004type\030\002 \001(\0162\".monkeyshines.World.Back" +
-      "groundType\032\306\003\n\006Sprite\022\n\n\002id\030\001 \001(\r\0221\n\016sta" +
-      "rt_location\030\002 \001(\0132\031.monkeyshines.World.P" +
-      "oint\022-\n\014bounding_box\030\003 \001(\0132\027.monkeyshine",
-      "s.World.Box\0220\n\rinitial_speed\030\004 \001(\0132\031.mon" +
-      "keyshines.World.Point\0224\n\tanimation\030\005 \001(\016" +
-      "2!.monkeyshines.World.AnimationType\022;\n\017a" +
-      "nimation_speed\030\006 \001(\0162\".monkeyshines.Worl" +
-      "d.AnimationSpeed\022,\n\004type\030\007 \001(\0162\036.monkeys" +
-      "hines.World.SpriteType\022=\n\020forced_directi" +
-      "on\030\010 \001(\0162#.monkeyshines.World.ForcedDire" +
-      "ction\022<\n\022two_sets_direction\030\t \001(\0162 .monk" +
-      "eyshines.World.TwoWayFacing\032\233\001\n\004Tile\022\n\n\002" +
-      "id\030\001 \001(\r\022+\n\010location\030\002 \001(\0132\031.monkeyshine",
-      "s.World.Point\022*\n\004type\030\003 \001(\0162\034.monkeyshin" +
-      "es.World.TileType\022.\n\010rotation\030\004 \001(\0162\034.mo" +
-      "nkeyshines.World.Rotation\"C\n\016DeathAnimat" +
-      "ion\022\020\n\014NORMAL_DEATH\020\000\022\007\n\003BEE\020\001\022\010\n\004BURN\020\002" +
-      "\022\014\n\010ELECTRIC\020\003\"8\n\016BackgroundType\022\013\n\007PATT" +
-      "ERN\020\001\022\010\n\004FULL\020\002\022\017\n\013SOLID_COLOR\020\003\":\n\rAnim" +
-      "ationType\022\025\n\021INCREASING_FRAMES\020\001\022\022\n\016CYLC" +
-      "ING_FRAMES\020\002\"\\\n\014TwoWayFacing\022\022\n\016TWO_WAY_" +
-      "UNUSED\020\001\022\n\n\006SINGLE\020\002\022\026\n\022TWO_WAY_HORIZONT" +
-      "AL\020\003\022\024\n\020TWO_WAY_VERTICAL\020\004\",\n\016AnimationS",
-      "peed\022\020\n\014NORMAL_SPEED\020\001\022\010\n\004SLOW\020\002\"E\n\017Forc" +
-      "edDirection\022\017\n\013FORCED_NONE\020\001\022\020\n\014FORCED_R" +
-      "IGHT\020\002\022\017\n\013FORCED_LEFT\020\003\"]\n\nSpriteType\022\n\n" +
-      "\006NORMAL\020\001\022\020\n\014HEALTH_DRAIN\020\002\022\r\n\tEXIT_DOOR" +
-      "\020\003\022\016\n\nBONUS_DOOR\020\004\022\022\n\016SCENERY_SPRITE\020\005\"^" +
-      "\n\010TileType\022\t\n\005SOLID\020\001\022\010\n\004THRU\020\002\022\013\n\007SCENE" +
-      "RY\020\003\022\n\n\006HAZARD\020\004\022\014\n\010CONVEYER\020\005\022\014\n\010BREAKI" +
-      "NG\020\006\022\010\n\004NONE\020\007\"-\n\010Rotation\022\r\n\tCLOCKWISE\020" +
-      "\001\022\022\n\016ANTI_CLOCKWISE\020\002B@\n+org.erikaredmar" +
-      "k.monkeyshines.encoder.protoB\021WorldForma",
-      "tProtos"
+      "\0162\".monkeyshines.World.DeathAnimation\022\020\n",
+      "\010harmless\030\004 \001(\010\032\326\001\n\013LevelScreen\022\n\n\002id\030\001 " +
+      "\001(\r\0222\n\nbackground\030\002 \001(\0132\036.monkeyshines.W" +
+      "orld.Background\0221\n\016bonzo_location\030\003 \001(\0132" +
+      "\031.monkeyshines.World.Point\022+\n\007sprites\030\004 " +
+      "\003(\0132\032.monkeyshines.World.Sprite\022\'\n\005tiles" +
+      "\030\005 \003(\0132\030.monkeyshines.World.Tile\032J\n\nBack" +
+      "ground\022\n\n\002id\030\001 \001(\r\0220\n\004type\030\002 \001(\0162\".monke" +
+      "yshines.World.BackgroundType\032\306\003\n\006Sprite\022" +
+      "\n\n\002id\030\001 \001(\r\0221\n\016start_location\030\002 \001(\0132\031.mo" +
+      "nkeyshines.World.Point\022-\n\014bounding_box\030\003",
+      " \001(\0132\027.monkeyshines.World.Box\0220\n\rinitial" +
+      "_speed\030\004 \001(\0132\031.monkeyshines.World.Point\022" +
+      "4\n\tanimation\030\005 \001(\0162!.monkeyshines.World." +
+      "AnimationType\022;\n\017animation_speed\030\006 \001(\0162\"" +
+      ".monkeyshines.World.AnimationSpeed\022,\n\004ty" +
+      "pe\030\007 \001(\0162\036.monkeyshines.World.SpriteType" +
+      "\022=\n\020forced_direction\030\010 \001(\0162#.monkeyshine" +
+      "s.World.ForcedDirection\022<\n\022two_sets_dire" +
+      "ction\030\t \001(\0162 .monkeyshines.World.TwoWayF" +
+      "acing\032\233\001\n\004Tile\022\n\n\002id\030\001 \001(\r\022+\n\010location\030\002",
+      " \001(\0132\031.monkeyshines.World.Point\022*\n\004type\030" +
+      "\003 \001(\0162\034.monkeyshines.World.TileType\022.\n\010r" +
+      "otation\030\004 \001(\0162\034.monkeyshines.World.Rotat" +
+      "ion\"C\n\016DeathAnimation\022\020\n\014NORMAL_DEATH\020\000\022" +
+      "\007\n\003BEE\020\001\022\010\n\004BURN\020\002\022\014\n\010ELECTRIC\020\003\"8\n\016Back" +
+      "groundType\022\013\n\007PATTERN\020\001\022\010\n\004FULL\020\002\022\017\n\013SOL" +
+      "ID_COLOR\020\003\":\n\rAnimationType\022\025\n\021INCREASIN" +
+      "G_FRAMES\020\001\022\022\n\016CYLCING_FRAMES\020\002\"\\\n\014TwoWay" +
+      "Facing\022\022\n\016TWO_WAY_UNUSED\020\001\022\n\n\006SINGLE\020\002\022\026" +
+      "\n\022TWO_WAY_HORIZONTAL\020\003\022\024\n\020TWO_WAY_VERTIC",
+      "AL\020\004\",\n\016AnimationSpeed\022\020\n\014NORMAL_SPEED\020\001" +
+      "\022\010\n\004SLOW\020\002\"E\n\017ForcedDirection\022\017\n\013FORCED_" +
+      "NONE\020\001\022\020\n\014FORCED_RIGHT\020\002\022\017\n\013FORCED_LEFT\020" +
+      "\003\"]\n\nSpriteType\022\n\n\006NORMAL\020\001\022\020\n\014HEALTH_DR" +
+      "AIN\020\002\022\r\n\tEXIT_DOOR\020\003\022\016\n\nBONUS_DOOR\020\004\022\022\n\016" +
+      "SCENERY_SPRITE\020\005\"^\n\010TileType\022\t\n\005SOLID\020\001\022" +
+      "\010\n\004THRU\020\002\022\013\n\007SCENERY\020\003\022\n\n\006HAZARD\020\004\022\014\n\010CO" +
+      "NVEYER\020\005\022\014\n\010BREAKING\020\006\022\010\n\004NONE\020\007\"-\n\010Rota" +
+      "tion\022\r\n\tCLOCKWISE\020\001\022\022\n\016ANTI_CLOCKWISE\020\002B" +
+      "@\n+org.erikaredmark.monkeyshines.encoder",
+      ".protoB\021WorldFormatProtos"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -11751,7 +11842,7 @@ public final class WorldFormatProtos {
           internal_static_monkeyshines_World_Hazard_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_monkeyshines_World_Hazard_descriptor,
-              new java.lang.String[] { "Id", "Explodes", "DeathAnimation", });
+              new java.lang.String[] { "Id", "Explodes", "DeathAnimation", "Harmless", });
           internal_static_monkeyshines_World_LevelScreen_descriptor =
             internal_static_monkeyshines_World_descriptor.getNestedTypes().get(6);
           internal_static_monkeyshines_World_LevelScreen_fieldAccessorTable = new
