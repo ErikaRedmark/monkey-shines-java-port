@@ -15,7 +15,7 @@ package org.erikaredmark.monkeyshines;
  *
  */
 public final class WorldCoordinate {
-
+	
 	/**
 	 * 
 	 * @param levelId
