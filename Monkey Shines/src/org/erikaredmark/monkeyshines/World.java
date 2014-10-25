@@ -670,7 +670,7 @@ public class World {
 	 */
 	private void hazardCollisionCheck(Bonzo bonzo) {
 		ImmutablePoint2D[] tilesToCheck = effectiveTilesCollision(bonzo.getCurrentBounds() );
-		for (ImmutablePoint2D tile: tilesToCheck) {
+		for (ImmutablePoint2D tile : tilesToCheck) {
 			TileType type = getCurrentScreen().getTile(tile.x(), tile.y() );
 			if (type instanceof HazardTile) {
 				// Still can get out of doing anything if the hazard is already gone.

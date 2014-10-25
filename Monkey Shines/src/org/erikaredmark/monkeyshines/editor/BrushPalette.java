@@ -10,7 +10,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Graphics2D;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -26,6 +25,7 @@ import org.erikaredmark.monkeyshines.editor.LevelDrawingCanvas.PaintbrushType;
 import org.erikaredmark.monkeyshines.menu.MenuUtils;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
+import org.erikaredmark.util.swing.layout.WrapLayout;
 
 /**
  * 
@@ -133,23 +133,17 @@ public class BrushPalette extends JPanel {
 		// globally
 		
 		// SOLIDS + THRUS + SCENES + CONVEYERS + COLLAPSIBLES + SPRITES + HAZARDS + ERASER = 8.
-		// * 2 since grid layout requires a flow layout nested to respect preferred sizes = 16
-		final List<JPanel> palettePanels = new ArrayList<>(16);
+		final List<JPanel> palettePanels = new ArrayList<>(8);
 		
 		// Sprites (creation of sprites. Removal is in ERASER tab)
 		{
 			JPanel spritesPanel = new JPanel();
-			spritesPanel.setLayout(new FlowLayout(FlowLayout.LEFT) );
+			spritesPanel.setLayout(new WrapLayout(FlowLayout.LEFT, GRID_MARGIN_X, GRID_MARGIN_Y) );
 			palettePanels.add(spritesPanel);
-			
-			JPanel spritesPanelGrid = new JPanel();
-			palettePanels.add(spritesPanelGrid);
 			final int spriteCount = rsrc.getSpritesCount();
-			spritesPanelGrid.setLayout(new GridLayout(spriteCount / 3, 3, GRID_MARGIN_X, GRID_MARGIN_Y) );
-			spritesPanel.add(spritesPanelGrid);
 			
 			// First button is always the Edit Sprite button
-			spritesPanelGrid.add(createTileButton(editSprite, 0, EDIT_SPRITE_LISTENER) );
+			spritesPanel.add(createTileButton(editSprite, 0, EDIT_SPRITE_LISTENER) );
 			for (int i = 0; i < spriteCount; ++i) {
 				BufferedImage spriteSheet = rsrc.getSpritesheetFor(i);
 				BufferedImage firstFrame = new BufferedImage(GameConstants.SPRITE_SIZE_X, GameConstants.SPRITE_SIZE_Y, spriteSheet.getType() );
@@ -165,7 +159,7 @@ public class BrushPalette extends JPanel {
 					g2d.dispose();
 				}
 				
-				spritesPanelGrid.add(createTileButton(firstFrame, i, SPRITE_LISTENER) );
+				spritesPanel.add(createTileButton(firstFrame, i, SPRITE_LISTENER) );
 			}
 			
 			final JScrollPane typeScroller = new JScrollPane(spritesPanel);
@@ -187,15 +181,15 @@ public class BrushPalette extends JPanel {
 			// when setting the canvas brush type.
 			
 			// SOLIDS, THRUS, and SCENES
-			palettePanels.add(initialiseBasicTilePanel(solidsPanel, brushTypes, StatelessTileType.SOLID, SOLID_TILE_LISTENER, rsrc) );
-			palettePanels.add(initialiseBasicTilePanel(thrusPanel, brushTypes, StatelessTileType.THRU, THRU_TILE_LISTENER, rsrc) );
-			palettePanels.add(initialiseBasicTilePanel(scenesPanel, brushTypes, StatelessTileType.SCENE, SCENE_TILE_LISTENER, rsrc) );
+			initialiseBasicTilePanel(solidsPanel, brushTypes, StatelessTileType.SOLID, SOLID_TILE_LISTENER, rsrc);
+			initialiseBasicTilePanel(thrusPanel, brushTypes, StatelessTileType.THRU, THRU_TILE_LISTENER, rsrc);
+			initialiseBasicTilePanel(scenesPanel, brushTypes, StatelessTileType.SCENE, SCENE_TILE_LISTENER, rsrc);
 		}
 		
 		// Hazards
 		{
 			JPanel hazardsPanel = new JPanel();
-			hazardsPanel.setLayout(new FlowLayout(FlowLayout.LEFT) );
+			hazardsPanel.setLayout(new WrapLayout(FlowLayout.LEFT, GRID_MARGIN_X, GRID_MARGIN_Y) );
 			palettePanels.add(hazardsPanel);
 			
 			BufferedImage[] tiles = 
@@ -203,15 +197,9 @@ public class BrushPalette extends JPanel {
 								   GameConstants.TILE_SIZE_Y,
 								   rsrc.getHazardSheet() );
 			
-			JPanel hazardsPanelGrid = new JPanel();
-			palettePanels.add(hazardsPanelGrid);
-			int rows = tiles.length / 12; // 6 per row, but knock off half.
-			hazardsPanelGrid.setLayout(new GridLayout(rows, 6, GRID_MARGIN_X, GRID_MARGIN_Y) );
-			hazardsPanel.add(hazardsPanelGrid);
-			
 			// Only the first half are relevant
 			for (int i = 0; i < (tiles.length / 2); ++i) {
-				hazardsPanelGrid.add(createTileButton(tiles[i], i, HAZARD_TILE_LISTENER) );
+				hazardsPanel.add(createTileButton(tiles[i], i, HAZARD_TILE_LISTENER) );
 			}
 			
 			final JScrollPane typeScroller = new JScrollPane(hazardsPanel);
@@ -221,21 +209,14 @@ public class BrushPalette extends JPanel {
 		// Conveyers
 		{
 			JPanel conveyersPanel = new JPanel();
-			conveyersPanel.setLayout(new FlowLayout(FlowLayout.LEFT) );
+			conveyersPanel.setLayout(new WrapLayout(FlowLayout.LEFT, GRID_MARGIN_X, GRID_MARGIN_Y) );
 			palettePanels.add(conveyersPanel);
 			
 			BufferedImage[] tiles =
 				WorldResource.chop(GameConstants.TILE_SIZE_X,
 								   GameConstants.TILE_SIZE_Y,
 								   rsrc.getConveyerSheet() );
-			
-			JPanel conveyersPanelGrid = new JPanel();
-			// 5 conveyer sprites per 1 toolbar button, times 6 per row.
-			int rows = tiles.length / 30;
-			conveyersPanelGrid.setLayout(new GridLayout(rows, 6, GRID_MARGIN_X, GRID_MARGIN_Y) );
-			palettePanels.add(conveyersPanelGrid);
-			conveyersPanel.add(conveyersPanelGrid);
-			
+
 			for (int i = 0; i < tiles.length; i += 10) {
 				// TWO buttons per conveyer. There is the clockwise then anti-clockwise one
 				BufferedImage clockwise = tiles[i];
@@ -252,8 +233,8 @@ public class BrushPalette extends JPanel {
 					gAntiClockwise.dispose();
 				}
 				
-				conveyersPanelGrid.add(createTileButton(clockwise, i / 10, CONVEYER_CLOCKWISE_LISTENER) );
-				conveyersPanelGrid.add(createTileButton(antiClockwise, i / 10, CONVEYER_ANTI_CLOCKWISE_LISTENER) );
+				conveyersPanel.add(createTileButton(clockwise, i / 10, CONVEYER_CLOCKWISE_LISTENER) );
+				conveyersPanel.add(createTileButton(antiClockwise, i / 10, CONVEYER_ANTI_CLOCKWISE_LISTENER) );
 			}
 			
 			final JScrollPane typeScroller = new JScrollPane(conveyersPanel);
@@ -263,7 +244,7 @@ public class BrushPalette extends JPanel {
 		// Collapsibles
 		{
 			JPanel collapsiblesPanel = new JPanel();
-			collapsiblesPanel.setLayout(new FlowLayout(FlowLayout.LEFT) );
+			collapsiblesPanel.setLayout(new WrapLayout(FlowLayout.LEFT, GRID_MARGIN_X, GRID_MARGIN_Y) );;
 			palettePanels.add(collapsiblesPanel);
 			
 			BufferedImage[] tiles =
@@ -271,15 +252,8 @@ public class BrushPalette extends JPanel {
 								   GameConstants.TILE_SIZE_Y,
 								   rsrc.getCollapsingSheet() );
 			
-			JPanel collapsiblesPanelGrid = new JPanel();
-			// 10 collapsing sprites per 1 toolbar button, times 6 per row.
-			int rows = tiles.length / 60;
-			collapsiblesPanelGrid.setLayout(new GridLayout(rows, 6, GRID_MARGIN_X, GRID_MARGIN_Y) );
-			palettePanels.add(collapsiblesPanelGrid);
-			collapsiblesPanel.add(collapsiblesPanelGrid);
-			
 			for (int i = 0; i < tiles.length; i += 10) {
-				collapsiblesPanelGrid.add(createTileButton(tiles[i], i / 10, COLLAPSIBLE_TILE_LISTENER) );
+				collapsiblesPanel.add(createTileButton(tiles[i], i / 10, COLLAPSIBLE_TILE_LISTENER) );
 			}
 			
 			final JScrollPane typeScroller = new JScrollPane(collapsiblesPanel);
@@ -290,7 +264,7 @@ public class BrushPalette extends JPanel {
 		{
 			// Similar techniques to hazards as the sprite sheets are similar (one row of everything, plus row of second animation frame)
 			JPanel goodiesPanel = new JPanel();
-			goodiesPanel.setLayout(new FlowLayout(FlowLayout.LEFT) );
+			goodiesPanel.setLayout(new WrapLayout(FlowLayout.LEFT, GRID_MARGIN_X, GRID_MARGIN_Y) );
 			palettePanels.add(goodiesPanel);
 			
 			BufferedImage[] tiles = 
@@ -298,15 +272,9 @@ public class BrushPalette extends JPanel {
 								   GameConstants.TILE_SIZE_Y,
 								   rsrc.getGoodieSheet() );
 			
-			JPanel goodiesPanelGrid = new JPanel();
-			palettePanels.add(goodiesPanelGrid);
-			int rows = tiles.length / 12; // 6 per row, but knock off half.
-			goodiesPanelGrid.setLayout(new GridLayout(rows, 6, GRID_MARGIN_X, GRID_MARGIN_Y) );
-			goodiesPanel.add(goodiesPanelGrid);
-			
 			// Only the first half are relevant
 			for (int i = 0; i < (tiles.length / 2); ++i) {
-				goodiesPanelGrid.add(createTileButton(tiles[i], i, GOODIE_LISTENER) );
+				goodiesPanel.add(createTileButton(tiles[i], i, GOODIE_LISTENER) );
 			}
 			
 			final JScrollPane typeScroller = new JScrollPane(goodiesPanel);
@@ -316,17 +284,12 @@ public class BrushPalette extends JPanel {
 		// Erasers
 		{
 			JPanel erasersPanel = new JPanel();
-			erasersPanel.setLayout(new FlowLayout(FlowLayout.LEFT) );
+			erasersPanel.setLayout(new WrapLayout(FlowLayout.LEFT, GRID_MARGIN_X, GRID_MARGIN_Y) );
 			palettePanels.add(erasersPanel);
 			
-			JPanel erasersPanelGrid = new JPanel();
-			palettePanels.add(erasersPanelGrid);
-			erasersPanelGrid.setLayout(new GridLayout(1, 6, GRID_MARGIN_X, GRID_MARGIN_Y) );
-			erasersPanel.add(erasersPanelGrid);
-			
-			erasersPanelGrid.add(createTileButton(eraserTiles, 0, ERASER_TILE_LISTENER) );
-			erasersPanelGrid.add(createTileButton(eraserGoodies, 0, ERASER_GOODIES_LISTENER) );
-			erasersPanelGrid.add(createTileButton(eraserSprites, 0, ERASER_SPRITE_LISTENER) );
+			erasersPanel.add(createTileButton(eraserTiles, 0, ERASER_TILE_LISTENER) );
+			erasersPanel.add(createTileButton(eraserGoodies, 0, ERASER_GOODIES_LISTENER) );
+			erasersPanel.add(createTileButton(eraserSprites, 0, ERASER_SPRITE_LISTENER) );
 			
 			final JScrollPane typeScroller = new JScrollPane(erasersPanel);
 			brushTypes.addTab("", new ImageIcon(eraserMain), typeScroller);
@@ -341,34 +304,21 @@ public class BrushPalette extends JPanel {
 	}
 	
 	// Common code for initialising SOLIDS, THRUS, and SCENES Only
-	// Returns the direct panel the buttons are in, for inversion colour routines. The panel returned is not the same as the panel passed, due to
-	// nesting requirements
-	private JPanel initialiseBasicTilePanel(JPanel panel, JTabbedPane brushTypes, StatelessTileType type, ActionListener listener, WorldResource rsrc) {
+	private void initialiseBasicTilePanel(JPanel panel, JTabbedPane brushTypes, StatelessTileType type, ActionListener listener, WorldResource rsrc) {
 		BufferedImage[] tiles =
 			WorldResource.chop(GameConstants.TILE_SIZE_X,
 							   GameConstants.TILE_SIZE_Y,
 							   rsrc.getStatelessTileTypeSheet(type) );
 		
-		// each row has 6 columns
-		int rows = tiles.length / 6;
-		
-		// Nest a grid layout inside another flow layout: force it to respect the preferred size of the
-		// buttons. otherwise, if Thrus has more tiles than solids, for example, the tabs do not display
-		// everything at the same size.
-		panel.setLayout(new FlowLayout(FlowLayout.LEFT) );
-		JPanel actualGrid = new JPanel();
-		actualGrid.setLayout(new GridLayout(rows, 6, GRID_MARGIN_X, GRID_MARGIN_Y) );
-		panel.add(actualGrid);
+		panel.setLayout(new WrapLayout(FlowLayout.LEFT, GRID_MARGIN_X, GRID_MARGIN_Y) );
 		final JScrollPane typeScroller = new JScrollPane(panel);
 		
 		for (int i = 0; i < tiles.length; ++i) {
-			actualGrid.add(createTileButton(tiles[i], i, listener) );
+			panel.add(createTileButton(tiles[i], i, listener) );
 		}
 		
 		// Add the panel to the tabbed pane. The icon for the tab will be the first tile for the sheet.
 		brushTypes.addTab("", new ImageIcon(tiles[0]), typeScroller);
-		
-		return actualGrid;
 	}
 	
 	// Creates a button that graphically represents some drawable thing in the palette, setting margins and listener properly
