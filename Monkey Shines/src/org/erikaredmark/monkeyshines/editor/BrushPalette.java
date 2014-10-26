@@ -21,7 +21,6 @@ import java.util.List;
 import javax.swing.JTabbedPane;
 
 import org.erikaredmark.monkeyshines.GameConstants;
-import org.erikaredmark.monkeyshines.editor.LevelDrawingCanvas.PaintbrushType;
 import org.erikaredmark.monkeyshines.menu.MenuUtils;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
@@ -71,7 +70,7 @@ public class BrushPalette extends JPanel {
 	private final ChangeBrushListener CONVEYER_ANTI_CLOCKWISE_LISTENER = new ChangeBrushListener(PaintbrushType.CONVEYERS_ANTI_CLOCKWISE);
 	private final ChangeBrushListener COLLAPSIBLE_TILE_LISTENER = new ChangeBrushListener(PaintbrushType.COLLAPSIBLE);
 	private final ChangeBrushListener GOODIE_LISTENER = new ChangeBrushListener(PaintbrushType.GOODIES);
-	private final ChangeBrushListener SPRITE_LISTENER = new ChangeBrushListener(PaintbrushType.SPRITES);
+	private final ChangeBrushListener SPRITE_LISTENER = new ChangeBrushListener(PaintbrushType.PLACE_SPRITES);
 	private final ActionListener ERASER_TILE_LISTENER = new ActionListener() {
 		@Override public void actionPerformed(ActionEvent e) {
 			mainCanvas.actionEraserTiles();

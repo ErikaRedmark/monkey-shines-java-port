@@ -577,7 +577,7 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 			currentHazard = currentWorldEditor.getHazards().get(id);
 			changeState(EditorState.PLACING_HAZARDS);
 			break;
-		case SPRITES:
+		case PLACE_SPRITES:
 			currentSpriteId = id;
 			changeState(EditorState.PLACING_SPRITES);
 			break;
@@ -689,7 +689,7 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 				srcX = currentTileId * (GameConstants.TILE_SIZE_X);
 				srcY = 0;
 				break;
-			case SPRITES:
+			case PLACE_SPRITES:
 				throw new RuntimeException("Cannot have a paintbrush of sprite during a placing tile state");
 			default:
 				throw new RuntimeException("Unknown tile type " + currentTileType);
@@ -796,10 +796,7 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 		assert type != null;
 		return type;
 	}
-	
-	public enum PaintbrushType { SOLIDS, THRUS, SCENES, HAZARDS, SPRITES, GOODIES, CONVEYERS_CLOCKWISE, CONVEYERS_ANTI_CLOCKWISE, COLLAPSIBLE; }
-	
-	
+
 	/**
 	 * 
 	 * Interface implemented only by EditorState. Intended to allow action information to be included in the state object itself

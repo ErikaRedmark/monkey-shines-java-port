@@ -3,7 +3,9 @@ package org.erikaredmark.monkeyshines.editor.model;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.Tile;
+import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.tiles.CommonTile;
 import org.erikaredmark.monkeyshines.tiles.TileType;
 
@@ -37,6 +39,9 @@ public final class Template {
 	 * template, will be replaced. Any empty spaces in the 2D 'rectangle' that this template takes up
 	 * are NOT part of the template. Only tiles specifically indicated as 'NO TILE' in the template will
 	 * replace their position with emptiness.
+	 * <p/>
+	 * If any template tiles would otherwise be drawn outside the map boundaries, they are simply not drawn; no
+	 * exceptions are thrown or assertions fired.
 	 * 
 	 * @param levelTiles
 	 * 		the backing array for the level tiles in the level screen being edited
@@ -55,11 +60,46 @@ public final class Template {
 	 * 
 	 */
 	public void drawTo(final Tile[][] levelTiles, int row, int col, int rowOffset, int colOffset) {
-		// TODO method stub
+		// Example of offset
+		/*
+		 * Template: 
+		 * [X] [X]
+		 * [ ] [X]
+		 * 
+		 * Click on row 1 col 1:
+		 * [ ] [ ] [ ] [ ]
+		 * [ ] [O] [X] [ ]
+		 * [ ] [ ] [X] [ ]
+		 * [ ] [ ] [ ] [ ]
+		 * 
+		 * click on row 1 col 1 with +1 on both offsets
+		 * [X] [X] [ ] [ ]
+		 * [ ] [O] [ ] [ ]
+		 * [ ] [ ] [ ] [ ]
+		 * [ ] [ ] [ ] [ ]
+		 * 
+		 */
+		final int topLeftRow = row - rowOffset; // if we move the centre inward, the top-left moves outward.
+		final int topLeftCol = col - colOffset;
+		
+		// (topLeftRow, topLeftCol) is the zero point. In the template, if a tile is at 0,0, it is at THAT location in
+		// the real world. If a tile is at 1, 0, it would be at (topLeftRow + 1, topLeftCol) and so on until it is drawn.
+		// if a tile is out of bounds, it is silently skipped.
+		for (final TemplateTile t : templateTiles) {
+			int drawRow = topLeftRow + t.row;
+			int drawCol = topLeftCol + t.col;
+			
+			if (   drawRow >= 0 && drawRow < 20
+				&& drawCol >= 0 && drawCol < 32) {
+				
+				levelTiles[drawRow][drawCol] = Tile.newTile(ImmutablePoint2D.of(drawRow, drawCol), t.tile, rsrc);
+			}
+		}
 	}
 	
-	private Template(final ImmutableList<TemplateTile> templateTiles) {
+	private Template(final WorldResource rsrc, final ImmutableList<TemplateTile> templateTiles) {
 		this.templateTiles = templateTiles;
+		this.rsrc = rsrc;
 	}
 	
 	/**
@@ -74,12 +114,13 @@ public final class Template {
 	 */
 	public final class Builder {
 
-		public Builder() { 
-			callback = NO_FUNCTION;
+		public Builder(final WorldResource rsrc) { 
+			this(rsrc, NO_FUNCTION);
 		};
 		
-		public Builder(final Function<Set<TemplateTile>, Void> callback ) {
+		public Builder(final WorldResource rsrc, final Function<Set<TemplateTile>, Void> callback ) {
 			this.callback = callback;
+			this.rsrc = rsrc;
 		}
 		/**
 		 * 
@@ -102,6 +143,7 @@ public final class Template {
 		 */
 		public Builder addTile(int row, int col, TileType tile) {
 			tiles.add(new TemplateTile(row, col, tile) );
+			callback.apply(tiles);
 			return this;
 		}
 		
@@ -137,13 +179,14 @@ public final class Template {
 		 * 
 		 */
 		public Template build() {
-			return new Template(ImmutableList.copyOf(tiles) );
+			return new Template(rsrc, ImmutableList.copyOf(tiles) );
 		}
 		
 		// A set so that duplicates (tiles in the same position) are properly removed. Replaced with basic array list when converted
 		// to a standard template since the only operation there is iteration over the list.
 		private final Set<TemplateTile> tiles = new HashSet<TemplateTile>();
 		private final Function<Set<TemplateTile>, Void> callback;
+		private final WorldResource rsrc;
 	}
 	
 	// Intended for inner builder class, but Java rules require it to be declared outside.
@@ -195,4 +238,5 @@ public final class Template {
 	// Stores list of all tiles. We don't store them in a 2D array. We just need to iterate over them, examine their row/col, and
 	// from that decide where to draw the tile in the real world. A 2D array would be wasteful
 	private ImmutableList<TemplateTile> templateTiles;
+	private WorldResource rsrc;
 }
