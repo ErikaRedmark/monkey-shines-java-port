@@ -578,6 +578,7 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 			changeState(EditorState.PLACING_HAZARDS);
 			break;
 		case PLACE_SPRITES:
+		case EDIT_SPRITES: // break omitted
 			currentSpriteId = id;
 			changeState(EditorState.PLACING_SPRITES);
 			break;
@@ -690,6 +691,7 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 				srcY = 0;
 				break;
 			case PLACE_SPRITES:
+			case EDIT_SPRITES: // break omitted
 				throw new RuntimeException("Cannot have a paintbrush of sprite during a placing tile state");
 			default:
 				throw new RuntimeException("Unknown tile type " + currentTileType);
@@ -805,7 +807,7 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 	 * Mouse location and all other editor properties must be set before calling the state methods.
 	 * 
 	 */
-	private interface EditorStateAction {
+	private interface __EditorStateAction {
 		/** Action for the editor in this state during a mouse click
 		 */
 		public void defaultClickAction(LevelDrawingCanvas editor);
@@ -825,7 +827,7 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 	 * @author Erika Redmark
 	 *
 	 */
-	public enum EditorState implements EditorStateAction { 
+	public enum EditorState implements __EditorStateAction { 
 		PLACING_TILES {
 			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
 				editor.addTile(editor.mousePosition.x(), editor.mousePosition.y() );

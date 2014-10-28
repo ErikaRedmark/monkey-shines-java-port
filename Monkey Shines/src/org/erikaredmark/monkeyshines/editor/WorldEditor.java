@@ -44,6 +44,10 @@ public final class WorldEditor {
 		return new WorldEditor(World.newWorld(name, rsrc), rsrc);
 	}
 	
+	public static WorldEditor fromExisting(final World world, WorldResource rsrc) {
+		return new WorldEditor(world, rsrc);
+	}
+	
 	/** 
 	 * 
 	 * Creates a world editor based on a world already existing, and inflates the world with the given graphics resource pack

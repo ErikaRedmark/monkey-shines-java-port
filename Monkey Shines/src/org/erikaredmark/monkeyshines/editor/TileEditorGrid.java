@@ -1,7 +1,9 @@
 package org.erikaredmark.monkeyshines.editor;
 
 import org.erikaredmark.monkeyshines.Tile;
+import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.background.Background;
+import org.erikaredmark.monkeyshines.bounds.IPoint2D;
 
 import com.google.common.base.Function;
 
@@ -30,7 +32,8 @@ interface TileEditorGrid {
 	 * Sets the brush type for drawing. Almost all brushes refer to a type and an id for the graphics resource for the level.
 	 * If a brush does not (such as erasers) then the id parameter will be ignored.
 	 * <p/>
-	 * It is up to the implementation whether to ignore brushes for sprites.
+	 * It is up to the client to not set brushes that aren't supported for some context. The tile editor implementation will
+	 * support all brushes.
 	 * 
 	 * @param type
 	 * 		type of brush to set
@@ -87,4 +90,18 @@ interface TileEditorGrid {
 	 */
 	void setBackground(Background background);
 	
+	/**
+	 * 
+	 * Adds the given tile to the world at the given location. The passed {@code PaintbrushType} must be a tile brush. This
+	 * will generate a tile from that brush possibly based on other properties of the world passed
+	 * 
+	 */
+	void addTile(int row, int col, PaintbrushType brush, World world);
+	
+	/**
+	 * 
+	 * Returns the current location of the mouse in this tile editor.
+	 * 
+	 */
+	IPoint2D getMousePosition();
 }
