@@ -11,8 +11,6 @@ import org.erikaredmark.monkeyshines.World.GoodieLocationPair;
 import org.erikaredmark.monkeyshines.background.Background;
 import org.erikaredmark.monkeyshines.background.SingleColorBackground;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
-import org.erikaredmark.monkeyshines.tiles.CommonTile;
-import org.erikaredmark.monkeyshines.tiles.TileType;
 
 /**
  * Improving the screen-by-screen architecture is NOT something I will be doing.
@@ -36,8 +34,7 @@ public final class LevelScreen {
 	private final int screenId;
 	private       Background background;
 	
-	// Not private: World needs access directly to screenTiles for some algorithms
-	        final Tile screenTiles[][]; // 20 rows, 32 cols
+	private final TileMap map;
 	// Whilst this is generally final in gameplay, it is left non-final here so it may be modified by the level editor.
 	private       ImmutablePoint2D bonzoStart;
 	private final List<Sprite> spritesOnScreen;
@@ -88,7 +85,7 @@ public final class LevelScreen {
 		
 		return new LevelScreen(screenId,
 							   defaultBackground,
-							   Tile.createBlankTileMap(),
+							   new TileMap(GameConstants.LEVEL_ROWS, GameConstants.LEVEL_COLS),
 							   ImmutablePoint2D.of(0, 0),
 							   new ArrayList<Sprite>(),
 							   rsrc);
@@ -103,14 +100,14 @@ public final class LevelScreen {
 	 */
 	public LevelScreen(final int screenId, 
 			 		   final Background background,
-					   final Tile[][] screenTiles, 
+					   final TileMap map, 
 					   final ImmutablePoint2D bonzoStart, 
 					   final List<Sprite> spritesOnScreen,
 					   final WorldResource rsrc) {
 		
 		this.screenId = screenId;
 		this.background = background;
-		this.screenTiles = screenTiles;
+		this.map = map;
 		this.bonzoStart = bonzoStart;
 		this.spritesOnScreen = spritesOnScreen;
 		this.rsrc = rsrc;
@@ -205,7 +202,7 @@ public final class LevelScreen {
 	 */
 	public void resetScreen() {
 		resetSprites();
-		resetTiles();
+		map.resetTiles();
 	}
 	
 	/**
@@ -216,64 +213,6 @@ public final class LevelScreen {
 		for (Sprite nextSprite : spritesOnScreen) {
 			nextSprite.resetSprite();
 		}
-	}
-	
-	private void resetTiles() {
-		// TODO If required, a possible optimisation may be to store tiles in separate list to iterate over.
-		for (Tile col[] : this.screenTiles) {
-			for (Tile t : col) {
-				t.getType().reset();
-			}
-		}
-	}
-	
-	
-	/**
-	 * Returns the tile type at the given coordinates. These are PIXEL coordinates in the screen
-	 * 
-	 * @param x
-	 * 		x location in terms of pixels
-	 * 
-	 * @param y
-	 * 		y location in terms of pixels
-	 *
-	 * @return
-	 * 		a tile type at the given position
-	 */
-	public TileType getTileAt(int x, int y) {
-		return getTile(x / GameConstants.TILE_SIZE_X, y / GameConstants.TILE_SIZE_Y);
-	}
-	
-	/**
-	 * 
-	 * Returns the tile type for the tile at the given GRID location; as in, the values passed to
-	 * this method should already be normalised as a grid location and not an absolute location
-	 * on the screen
-	 * <p/>
-	 * If the location is not valid for a tile, then {@code CommonTile.NONE} is returned.
-	 * 
-	 * @param x
-	 * 		x location in terms of grid index
-	 * 
-	 * @param y
-	 * 		y location in terms of grid index
-	 * 
-	 * @return
-	 * 		a tile type at the given position, or {@code StatelessTileType.NONE} if the given x/y
-	 * 		grid location is out of range
-	 * 
-	 */
-	public TileType getTile(int x, int y) {
-		// If out of bounds, allow to slip by
-		if (   x < 0 
-			|| x >= GameConstants.TILES_IN_ROW 
-			|| y < 0 
-			|| y >= GameConstants.TILES_IN_COL) {
-			
-			return CommonTile.NONE;
-		}
-		
-		return screenTiles[y][x].getType();
 	}
 	
 	// Careful! This is return by reference
@@ -360,46 +299,6 @@ public final class LevelScreen {
 		}
 		return returnList;
 	}
-	
-	/*
-	 * Editor functions. None of these effects are saved until the level is saved.
-	 * Save often!
-	 *
-	 */
-	
-	/**
-	 * Sets the tile at tileX, tileY, to the indicated tile.
-	 * 
-	 * @param tileX x location, terms of grid, not pixels.
-	 * 
-	 * @param tileY y location, terms of grid, not pixels.
-	 * 
-	 * @param tileType type of tile, determins type and rendering info
-	 * 
-	 * @throws 
-	 * 		IllegalArgumentException
-	 * 			if the given x or y coordinate is outside of the range {@code (32[x] by 20[y]) }
-	 * 		IllegalStateException
-	 * 			if the screen has not been skinned yet. Tiles can not be added until there is a graphics
-	 * 			resource ready
-	 */
-	public void setTile(int tileX, int tileY, TileType tileType) {
-		if (tileX > 31 || tileX < 0) throw new IllegalArgumentException(tileX + " outside of X range [0, 31]");
-		if (tileY > 20 || tileY < 0) throw new IllegalArgumentException(tileY + " outside of Y range [0, 19]");
-		
-		screenTiles[tileY][tileX] = Tile.newTile(ImmutablePoint2D.of(tileX, tileY), tileType, rsrc);
-	}
-	
-	/**
-	 * Removes the tile at position tileX, tileY
-	 * @param tileX x location, terms of grid, not pixels.
-	 * @param tileY y location, terms of grid, not pixels.
-	 */
-	
-	public void eraseTile(int tileX, int tileY) {
-		screenTiles[tileY][tileX] = Tile.emptyTile();
-	}
-	
 
 	/**
 	 * 
@@ -471,15 +370,7 @@ public final class LevelScreen {
 	 */
 	public void paint(Graphics2D g2d) {
 		background.draw(g2d);
-		
-		for (int i = 0; i < GameConstants.TILES_IN_COL; i++) { // for every tile in the row
-			for (int j = 0; j < GameConstants.TILES_IN_ROW; j++) {
-				if (screenTiles[i][j] != null) {
-					screenTiles[i][j].paint(g2d);
-				}
-			}
-		}
-		
+		map.paint(g2d, rsrc);
 		for (Sprite s : spritesOnScreen) {
 			s.paint(g2d);
 		}
@@ -491,13 +382,7 @@ public final class LevelScreen {
 	 * 
 	 */
 	public void update() {
-		for (int i = 0; i < GameConstants.TILES_IN_COL; i++) { // for every tile in the row
-			for (int j = 0; j < GameConstants.TILES_IN_ROW; j++) {
-				if (screenTiles[i][j] != null) {
-					screenTiles[i][j].update();
-				}
-			}
-		}
+		map.update();
 		
 		if (animateSprites) {
 			for (Sprite s : spritesOnScreen) {
@@ -511,28 +396,22 @@ public final class LevelScreen {
 	 * Paints the level screen to the graphics context with no sprites. This
 	 * is intended as the first step for making a thumbnail of a level screen.
 	 * This does not update the game at all.
+	 * <p/>
+	 * The tilemap is drawn over the background
 	 * 
 	 */
 	public void paintForThumbnail(Graphics2D g2d) {
 		background.draw(g2d);
-		for (int i = 0; i < GameConstants.TILES_IN_COL; ++i) { // for every tile in the row
-			for (int j = 0; j < GameConstants.TILES_IN_ROW; ++j) {
-				if (screenTiles[i][j] != null) {
-					screenTiles[i][j].paint(g2d);
-				}
-			}
-		}
+		map.paint(g2d, rsrc);
 	}
 
 	/**
-	 * <strong> NOT PUBLIC API</strong>
-	 * This method returns the backing 2 dimensional array of tiles in the level. This method is reserved only for
-	 * encoders that need access to internal information to save the object.
 	 * 
-	 * @return
-	 * 		2d array of tiles. Changes to the array <strong> will cause issues. Do not modify</strong>
+	 * Returns the underlying tile map backing this level. Changes to the array will affect tiles in the world, so
+	 * this is intended only for either editors, internal methods, or viewing the map.
+	 * 
 	 */
-	public Tile[][] internalGetTiles() { return this.screenTiles; }
+	public TileMap getMap() { return this.map; }
 	
 	
 	/** 
@@ -585,13 +464,7 @@ public final class LevelScreen {
 	 */
 	public static LevelScreen copyAndAddToWorld(LevelScreen levelScreen, int newId, World world) {
 		// Handle Tiles
-		Tile[][] originalTiles = levelScreen.screenTiles;
-		Tile[][] newTiles = new Tile[GameConstants.TILES_IN_COL][GameConstants.TILES_IN_ROW];
- 		for (int i = 0; i < GameConstants.TILES_IN_COL; ++i) { // for every tile in the row
-			for (int j = 0; j < GameConstants.TILES_IN_ROW; ++j) {
-				newTiles[i][j] = originalTiles[i][j].copy();
-			}
- 		}
+		TileMap newTiles = levelScreen.getMap().copy();
 
  		// Handle Sprites
  		List<Sprite> originalSprites = levelScreen.getSpritesOnScreen();

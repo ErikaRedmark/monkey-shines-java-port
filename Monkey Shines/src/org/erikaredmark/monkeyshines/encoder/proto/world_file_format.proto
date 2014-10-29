@@ -80,9 +80,7 @@ message World {
   	optional Background background = 2;
   	optional Point bonzo_location = 3;
   	repeated Sprite sprites = 4;
-  	// This is a 2D array in memory. It is cut down to a 1D array of nxm elements
-  	// and turned back into a 2D array. Since the sizes are hardcoded and fixed, this
-  	// isn't too difficult.
+  	// 1D array. Always 20 rows by 32 columns.
   	repeated Tile tiles = 5;
   }
   
@@ -158,6 +156,7 @@ message World {
   	// No matter the tile type, Id gives the graphics context to use, whether the index
   	// in the array for covneyers, the hazard id, or the solid/thru/scenery id.
   	optional uint32 id = 1;
+  	// This is UNUSED.
   	optional Point location = 2;
   	// Tile type determine which of the following fields, if any, are relevant
   	optional TileType type = 3;

@@ -24,7 +24,7 @@ import org.erikaredmark.monkeyshines.ImmutableRectangle;
 import org.erikaredmark.monkeyshines.LevelScreen;
 import org.erikaredmark.monkeyshines.Sprite;
 import org.erikaredmark.monkeyshines.Sprite.TwoWayFacing;
-import org.erikaredmark.monkeyshines.Tile;
+import org.erikaredmark.monkeyshines.TileMap;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.Conveyer.Rotation;
 import org.erikaredmark.monkeyshines.Sprite.ForcedDirection;
@@ -309,7 +309,7 @@ public final class EncodedWorld {
 		protoLevel.setBackground(backgroundToProto(level.getBackground() ) );
 		
 		protoLevel.addAllSprites(spritesToProto(level.getSpritesOnScreen() ) );
-		protoLevel.addAllTiles(tilesToProto(level.internalGetTiles() ) );
+		protoLevel.addAllTiles(tilesToProto(level.getMap() ) );
 		
 		return protoLevel.build();
 	}
@@ -545,61 +545,35 @@ public final class EncodedWorld {
 	}
 	
 	/* ------------------------------ Tiles -------------------------------- */
-	// Normalises the 2D array to 1D. Since the array's dimensions are hardcoded and known,
-	// this is easily reversable to get the correct tiles.
-	static List<WorldFormatProtos.World.Tile> tilesToProto(Tile[][] tiles) {
-		List<WorldFormatProtos.World.Tile> protoTiles = new ArrayList<>(GameConstants.TILES_IN_ROW * GameConstants.TILES_IN_COL);
-		for (int i = 0; i < GameConstants.TILES_IN_COL; i++) {
-			for (int j = 0; j < GameConstants.TILES_IN_ROW; j++) {
-				// Note that 2D array stores as y, x.
-				protoTiles.add(tileToProto(tiles[i][j], j, i) );
+	// Saves the tiles themselves as well as proper dimensions of the tilemap.
+	// NOTICE: This is intended as part of LevelScreen. Only tilemaps of 20 rows by 32 columns are supported.
+	static List<WorldFormatProtos.World.Tile> tilesToProto(TileMap map) {
+		List<WorldFormatProtos.World.Tile> protoTiles = new ArrayList<>(GameConstants.LEVEL_ROWS * GameConstants.LEVEL_COLS);
+		for (TileType t : map.internalMap() ) {
+			WorldFormatProtos.World.Tile.Builder protoTile = WorldFormatProtos.World.Tile.newBuilder();
+			protoTile.setId(t.getId() );
+			protoTile.setType(tileTypeToProto(t) );
+			if (t instanceof ConveyerTile) {
+				protoTile.setRotation(rotationToProto(((ConveyerTile) t).getConveyer().getRotation() ) );
 			}
+			
+			protoTiles.add(protoTile.build() );
 		}
 		return protoTiles;
 	}
 	
-	// x and y are locations tile exists in world. In game, that information is just in the array. On disk,
-	// that information is stored with each tile.
-	static WorldFormatProtos.World.Tile tileToProto(Tile tile, int x, int y) {
-		WorldFormatProtos.World.Tile.Builder protoTile = WorldFormatProtos.World.Tile.newBuilder();
-		// All tiles store id in their TileType class, but in proto form we keep it in the basic Tile object.
-		protoTile.setId(tile.getType().getId() );
-		protoTile.setLocation(WorldFormatProtos.World.Point.newBuilder()
-							  .setX(x)
-							  .setY(y)
-							  .build() );
-		
-		TileType tileType = tile.getType();
-		protoTile.setType(tileTypeToProto(tileType) );
-		// Depending on type:
-		// If conveyer we must set the rotation
-		if (tileType instanceof ConveyerTile) {
-			protoTile.setRotation(rotationToProto(((ConveyerTile) tileType).getConveyer().getRotation() ) );
-		}
-		
-		return protoTile.build();
-	}
-	
-	static Tile[][] protoToTiles(List<WorldFormatProtos.World.Tile> protoTiles, WorldResource rsrc, List<Hazard> hazards, List<Conveyer> conveyers) {
-		Tile[][] tiles = new Tile[GameConstants.TILES_IN_COL][GameConstants.TILES_IN_ROW];
+	// Loads the tiles themselves as well as proper dimensions of the tilemap.
+	// NOTICE: This is intended as part of LevelScreen. Only tilemaps of 20 rows by 32 columns are supported.
+	static TileMap protoToTiles(List<WorldFormatProtos.World.Tile> protoTiles, WorldResource rsrc, List<Hazard> hazards, List<Conveyer> conveyers) {
+		TileMap map = new TileMap(GameConstants.LEVEL_ROWS, GameConstants.LEVEL_COLS);
+		TileType[] internalMap = map.internalMap();
 		Iterator<WorldFormatProtos.World.Tile> it = protoTiles.iterator();
-		for (int i = 0; i < GameConstants.TILES_IN_COL; i++) {
-			for (int j = 0; j < GameConstants.TILES_IN_ROW; j++) {
-				assert it.hasNext();
-				tiles[i][j] = protoToTile(it.next(), rsrc, hazards, conveyers);
-			}
+		for (int i = 0; i < GameConstants.TOTAL_TILES; ++i) {
+			assert it.hasNext();
+			WorldFormatProtos.World.Tile encodedTile = it.next();
+			internalMap[i] = protoToTileType(encodedTile.getType(), encodedTile, rsrc, hazards, conveyers);
 		}
-		return tiles;
-	}
-	
-	// Extra params needed for some tiles.
-	static Tile protoToTile(WorldFormatProtos.World.Tile protoTile, WorldResource rsrc, List<Hazard> hazards, List<Conveyer> conveyers) {
-		TileType resultType = protoToTileType(protoTile.getType(), protoTile, rsrc, hazards, conveyers);
-		return   resultType == null
-			   ? Tile.emptyTile()
-			   : Tile.newTile(protoToPoint(protoTile.getLocation() ),
-							  resultType, 
-							  rsrc);
+		return map;
 	}
 	
 	/* ------------------------------ Tile Types -------------------------------- */
@@ -627,11 +601,9 @@ public final class EncodedWorld {
 	}
 	
 	// Extra parameters are required for setting up some more complicated tiles.
-	// VERY SPECIAL: This returns null for none tiles. Callers must convert null to the special
-	// immutable singleton Tile.NO_TILE.
 	static TileType protoToTileType(WorldFormatProtos.World.TileType type, WorldFormatProtos.World.Tile tile, WorldResource rsrc, List<Hazard> hazards, List<Conveyer> conveyers) {
 		switch (type) {
-		case NONE: return null;
+		case NONE: return CommonTile.NONE;
 		case SOLID: return CommonTile.of(tile.getId(), StatelessTileType.SOLID, rsrc);
 		case THRU: return CommonTile.of(tile.getId(), StatelessTileType.THRU, rsrc);
 		case SCENERY: return CommonTile.of(tile.getId(), StatelessTileType.SCENE, rsrc);
@@ -704,17 +676,11 @@ public final class EncodedWorld {
 		// MUST set up tiles to all empty
 		
 		List<WorldFormatProtos.World.Tile> tiles = new ArrayList<>(GameConstants.TOTAL_TILES);
-		for (int i = 0; i < GameConstants.TILES_IN_COL; i++) {
-			for (int j = 0; j < GameConstants.TILES_IN_ROW; j++) {
-			
+		for (int i = 0; i < GameConstants.TOTAL_TILES; ++i) {
 			tiles.add(WorldFormatProtos.World.Tile.newBuilder()
-					  .setId(0)
-					  .setLocation(WorldFormatProtos.World.Point.newBuilder()
-							  	   .setX(i)
-							  	   .setY(j) ) 
+					  .setId(0) 
 					  .setType(WorldFormatProtos.World.TileType.NONE)
 					  .build() );
-			}
 		}
 		
 		emptyLevel.addAllTiles(tiles);

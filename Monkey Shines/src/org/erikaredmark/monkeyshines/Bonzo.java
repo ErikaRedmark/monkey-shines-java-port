@@ -359,10 +359,12 @@ public final class Bonzo {
 		TileType[] grounds = new TileType[4];
 		int bonzoSizeXHalf = BONZO_SIZE_HALF.x();
 		
-		grounds[0] = currentScreen.getTileAt(currentLocation.x() + GameConstants.FALL_SIZE, bonzoOneBelowFeetY);
-		grounds[1] = currentScreen.getTileAt(currentLocation.x() + bonzoSizeXHalf, bonzoOneBelowFeetY);
-		grounds[2] = currentScreen.getTileAt(currentLocation.x() + bonzoSizeXHalf + 1, bonzoOneBelowFeetY);
-		grounds[3] = currentScreen.getTileAt(currentLocation.x() + (BONZO_SIZE.x() - 1 - GameConstants.FALL_SIZE), bonzoOneBelowFeetY );
+		final TileMap map = currentScreen.getMap();
+		
+		grounds[0] = map.getTileXYPixel(currentLocation.x() + GameConstants.FALL_SIZE, bonzoOneBelowFeetY);
+		grounds[1] = map.getTileXYPixel(currentLocation.x() + bonzoSizeXHalf, bonzoOneBelowFeetY);
+		grounds[2] = map.getTileXYPixel(currentLocation.x() + bonzoSizeXHalf + 1, bonzoOneBelowFeetY);
+		grounds[3] = map.getTileXYPixel(currentLocation.x() + (BONZO_SIZE.x() - 1 - GameConstants.FALL_SIZE), bonzoOneBelowFeetY );
 
 		// State variables for later in the method. We want to loop over the tile types returned only one time.
 		Rotation onConveyer = Rotation.NONE;
@@ -485,10 +487,10 @@ public final class Bonzo {
 		// We give a little 'lee way', we don't check the very top or bottom, but a little off the extremes.
 		// This allows Bonzo to fit easily into 2 space open passageways and then the ground snap algorithms
 		// can take effect.
-		LevelScreen currentScreen = worldPointer.getCurrentScreen();
-		if (   currentScreen.getTileAt(newX, currentLocation.y() + 4 ).isSolid()
-		    || currentScreen.getTileAt(newX, currentLocation.y() + BONZO_SIZE.y() - 1 - 4).isSolid()
-			|| currentScreen.getTileAt(newX, currentLocation.y() + BONZO_SIZE_HALF.y() ).isSolid() ) {
+		final TileMap map = worldPointer.getCurrentScreen().getMap();
+		if (   map.getTileXYPixel(newX, currentLocation.y() + 4 ).isSolid()
+		    || map.getTileXYPixel(newX, currentLocation.y() + BONZO_SIZE.y() - 1 - 4).isSolid()
+			|| map.getTileXYPixel(newX, currentLocation.y() + BONZO_SIZE_HALF.y() ).isSolid() ) {
 			
 			return true;
 		}
@@ -523,12 +525,13 @@ public final class Bonzo {
 		// 1,4 = exterior 'middles' intended for snapping special case
 		// 2,3 == truly middle, middles, intended to make sure there is no single solid block
 		// 		  hiding.
-		above[0] = currentScreen.getTileAt(currentLocation.x(), newY);
-		above[1] = currentScreen.getTileAt(currentLocation.x() + 2, newY );
-		above[2] = currentScreen.getTileAt(currentLocation.x() + BONZO_SIZE_HALF.x(), newY ); // prefers left tile snap
-		above[3] = currentScreen.getTileAt(currentLocation.x() + BONZO_SIZE_HALF.x() + 1, newY ); // prefers right tile snap
-		above[4] = currentScreen.getTileAt(currentLocation.x() + (BONZO_SIZE.x() - 1) - 2, newY );
-		above[5] = currentScreen.getTileAt(currentLocation.x() + (BONZO_SIZE.x() - 1), newY );
+		final TileMap map = currentScreen.getMap();
+		above[0] = map.getTileXYPixel(currentLocation.x(), newY);
+		above[1] = map.getTileXYPixel(currentLocation.x() + 2, newY );
+		above[2] = map.getTileXYPixel(currentLocation.x() + BONZO_SIZE_HALF.x(), newY ); // prefers left tile snap
+		above[3] = map.getTileXYPixel(currentLocation.x() + BONZO_SIZE_HALF.x() + 1, newY ); // prefers right tile snap
+		above[4] = map.getTileXYPixel(currentLocation.x() + (BONZO_SIZE.x() - 1) - 2, newY );
+		above[5] = map.getTileXYPixel(currentLocation.x() + (BONZO_SIZE.x() - 1), newY );
 		
 		boolean atLeastSolid = false;
 		for (TileType t : above) {

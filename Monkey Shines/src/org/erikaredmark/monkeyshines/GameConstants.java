@@ -29,9 +29,9 @@ public final class GameConstants {
 	public static final int TILE_SIZE_Y = 20;
 	public static final int TILE_SIZE_X_HALF = TILE_SIZE_X / 2; // Used for some collision calculations
 	public static final int TILE_SIZE_Y_HALF = TILE_SIZE_Y / 2;
-	public static final int TILES_IN_ROW = 32; // every row has 32 tiles
-	public static final int TILES_IN_COL = 20; // every coloum has 20 rows
-	public static final int TOTAL_TILES = TILES_IN_ROW * TILES_IN_COL;
+	public static final int LEVEL_ROWS = 20;
+	public static final int LEVEL_COLS = 32;
+	public static final int TOTAL_TILES = LEVEL_ROWS * LEVEL_COLS;
 	public static final int GOODIE_SIZE_X = 20;
 	public static final int GOODIE_SIZE_Y = 20;
 	
@@ -114,8 +114,8 @@ public final class GameConstants {
 	
 	public static final int SCREEN_DRAW_X = 0;
 	public static final int SCREEN_DRAW_Y = 0;
-	public static final int SCREEN_WIDTH = TILE_SIZE_X * TILES_IN_ROW;
-	public static final int SCREEN_HEIGHT = TILE_SIZE_Y * TILES_IN_COL;
+	public static final int SCREEN_WIDTH = TILE_SIZE_X * LEVEL_COLS;
+	public static final int SCREEN_HEIGHT = TILE_SIZE_Y * LEVEL_ROWS;
 	public static final int UI_HEIGHT = 80;
 	
 	// Directions

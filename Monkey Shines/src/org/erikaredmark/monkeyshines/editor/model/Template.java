@@ -3,8 +3,7 @@ package org.erikaredmark.monkeyshines.editor.model;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.erikaredmark.monkeyshines.ImmutablePoint2D;
-import org.erikaredmark.monkeyshines.Tile;
+import org.erikaredmark.monkeyshines.TileMap;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.tiles.CommonTile;
 import org.erikaredmark.monkeyshines.tiles.TileType;
@@ -43,8 +42,8 @@ public final class Template {
 	 * If any template tiles would otherwise be drawn outside the map boundaries, they are simply not drawn; no
 	 * exceptions are thrown or assertions fired.
 	 * 
-	 * @param levelTiles
-	 * 		the backing array for the level tiles in the level screen being edited
+	 * @param map
+	 * 		tileMap for the level tiles in either the level screen being edited, or some other template
 	 * 
 	 * @param row
 	 * 		the row of the 'start' of drawing
@@ -59,7 +58,7 @@ public final class Template {
 	 * 		col offset from the top-left of the template that this should start drawing (see docs above for example)
 	 * 
 	 */
-	public void drawTo(final Tile[][] levelTiles, int row, int col, int rowOffset, int colOffset) {
+	public void drawTo(final TileMap map, int row, int col, int rowOffset, int colOffset) {
 		// Example of offset
 		/*
 		 * Template: 
@@ -92,7 +91,7 @@ public final class Template {
 			if (   drawRow >= 0 && drawRow < 20
 				&& drawCol >= 0 && drawCol < 32) {
 				
-				levelTiles[drawRow][drawCol] = Tile.newTile(ImmutablePoint2D.of(drawRow, drawCol), t.tile, rsrc);
+				map.setTileRowCol(drawRow, drawCol, t.tile);
 			}
 		}
 	}

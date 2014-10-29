@@ -34,18 +34,12 @@ public class LevelScreenEditor {
 		this.screen = screen;
 	}
 	
-	/**
-	 *  Forwards call to the wrapped {@link LevelScreen}
-	 */
 	public void setTile(int tileX, int tileY, TileType tileType) {
-		this.screen.setTile(tileX, tileY, tileType);
+		this.screen.getMap().setTileXY(tileX, tileY, tileType);
 	}
 	
-	/**
-	 * Forwards call to the wrapped {@link LevelScreen}
-	 */
-	public void eraseTile(int i, int j) {
-		this.screen.eraseTile(i, j);
+	public void eraseTile(int tileX, int tileY) {
+		this.screen.getMap().eraseTileXY(tileX, tileY);
 	}
 	
 	public Background getBackground() {

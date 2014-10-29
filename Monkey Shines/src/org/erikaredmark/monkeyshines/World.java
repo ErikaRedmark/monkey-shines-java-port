@@ -378,10 +378,11 @@ public class World {
 			
 			// We look four tiles down, max before fall becomes damaging.
 			for (int dist = 0; dist < 4; ++dist) {
-				if (   currentScreen.getTile(t1x, ty + dist).isLandable() 
-				    || currentScreen.getTile(t2x, ty + dist).isLandable() 
+				final TileMap map = currentScreen.getMap();
+				if (   map.getTileXY(t1x, ty + dist).isLandable() 
+				    || map.getTileXY(t2x, ty + dist).isLandable() 
 				    // Special case: bonzo JUMPED into this room. Safe to respawn where he came from
-				    || ty + dist > GameConstants.TILES_IN_COL) {
+				    || ty + dist > GameConstants.LEVEL_ROWS) {
 					
 					theBonzo.restartBonzoOnScreen(currentScreen, bonzoCameFrom);
 					return;
@@ -670,8 +671,9 @@ public class World {
 	 */
 	private void hazardCollisionCheck(Bonzo bonzo) {
 		ImmutablePoint2D[] tilesToCheck = effectiveTilesCollision(bonzo.getCurrentBounds() );
+		final TileMap map = getCurrentScreen().getMap();
 		for (ImmutablePoint2D tile : tilesToCheck) {
-			TileType type = getCurrentScreen().getTile(tile.x(), tile.y() );
+			TileType type = map.getTileXY(tile.x(), tile.y() );
 			if (type instanceof HazardTile) {
 				// Still can get out of doing anything if the hazard is already gone.
 				HazardTile hazard = (HazardTile) type;
@@ -944,40 +946,42 @@ public class World {
 	 */
 	public void fixPlaceholders() throws WorldTranslationException {
 		for (LevelScreen lvl : worldScreens.values() ) {
-			Tile[][] map = lvl.screenTiles;
-			for (int i = 0; i < GameConstants.TILES_IN_COL; ++i) {
-				for (int j = 0; j < GameConstants.TILES_IN_ROW; ++j) {
-					if (map[i][j].getType() instanceof PlaceholderTile) {
-						int metadata = ((PlaceholderTile)map[i][j].getType() ).getMetaId();
-						PlaceholderTile.Type type = ((PlaceholderTile)map[i][j].getType() ).getType();
-						switch (type) {
-						case HAZARD:
-							if (metadata >= this.hazards.size() ) {
-								throw new WorldTranslationException(TranslationFailure.TRANSLATOR_SPECIFIC, "Not enough hazards defined in resource pack. Must have at least " + (metadata + 1) );
-							}
-							map[i][j] = map[i][j].copyChangeType(HazardTile.forHazard(this.hazards.get(metadata) ) );
-							break;
-						case CONVEYER_ANTI_CLOCKWISE:
-						{
-							int index = (metadata * 2) + 1;
-							if (index >= this.conveyers.size() ) {
-								throw new WorldTranslationException(TranslationFailure.TRANSLATOR_SPECIFIC, "Not enough unique conveyers defined in resource pack. Must have at least " + (metadata + 1) );
-							}
-							map[i][j] = map[i][j].copyChangeType(new ConveyerTile(this.conveyers.get(index) ) );
-							break;
+			TileMap tileMap = lvl.getMap();
+			// We iterate and assign internally because this is such a specific case that it isn't relevant to
+			// be part of TileMap API
+			TileType[] map = tileMap.internalMap();
+			final int size = tileMap.getRowCount() * tileMap.getColumnCount();
+			for (int i = 0; i < size; ++i) {
+				if (map[i] instanceof PlaceholderTile) {
+					int metadata = ((PlaceholderTile)map[i]).getMetaId();
+					PlaceholderTile.Type type = (((PlaceholderTile)map[i])).getType();
+					switch (type) {
+					case HAZARD:
+						if (metadata >= this.hazards.size() ) {
+							throw new WorldTranslationException(TranslationFailure.TRANSLATOR_SPECIFIC, "Not enough hazards defined in resource pack. Must have at least " + (metadata + 1) );
 						}
-						case CONVEYER_CLOCKWISE: 
-						{
-							int index = (metadata * 2);
-							if (index >= this.conveyers.size() ) {
-								throw new WorldTranslationException(TranslationFailure.TRANSLATOR_SPECIFIC, "Not enough unique conveyers defined in resource pack. Must have at least " + (metadata + 1) );
-							}
-							map[i][j] = map[i][j].copyChangeType(new ConveyerTile(this.conveyers.get(index) ) );
-							break;
+						map[i] = HazardTile.forHazard(this.hazards.get(metadata) );
+						break;
+					case CONVEYER_ANTI_CLOCKWISE:
+					{
+						int index = (metadata * 2) + 1;
+						if (index >= this.conveyers.size() ) {
+							throw new WorldTranslationException(TranslationFailure.TRANSLATOR_SPECIFIC, "Not enough unique conveyers defined in resource pack. Must have at least " + (metadata + 1) );
 						}
-						default:
-							throw new RuntimeException("Unknown enumeration " + type + " for fixing placeholders");
+						map[i] = new ConveyerTile(this.conveyers.get(index) );
+						break;
+					}
+					case CONVEYER_CLOCKWISE: 
+					{
+						int index = (metadata * 2);
+						if (index >= this.conveyers.size() ) {
+							throw new WorldTranslationException(TranslationFailure.TRANSLATOR_SPECIFIC, "Not enough unique conveyers defined in resource pack. Must have at least " + (metadata + 1) );
 						}
+						map[i] = new ConveyerTile(this.conveyers.get(index) );
+						break;
+					}
+					default:
+						throw new RuntimeException("Unknown enumeration " + type + " for fixing placeholders");
 					}
 				}
 			}

@@ -39,10 +39,30 @@ public class TileMap {
 	public TileMap(final int rows, final int cols) {
 		this.rows = rows;
 		this.cols = cols;
+		
 		final int totalSize = rows * cols;
+		map = new TileType[totalSize];
 		for (int i = 0; i < totalSize; ++i) {
 			map[i] = CommonTile.NONE;
 		}
+	}
+	
+	/**
+	 * 
+	 * Performs a <strong>Deep</strong> copy of the given tilemap. The generated tile map is guaranteed to be logically
+	 * distinct from the original, including all tiles which contain state. Whilst references may be shared, that will only
+	 * occur for immutable types.
+	 * 
+	 * @return
+	 * 		a deep copy of the tile map
+	 * 
+	 */
+	public TileMap copy() {
+		TileMap newMap = new TileMap(rows, cols);
+		for (int i = 0; i < rows * cols; ++i) {
+			newMap.map[i] = this.map[i].copy();
+		}
+		return newMap;
 	}
 	
 	/**
@@ -52,6 +72,8 @@ public class TileMap {
 	 * <p/>	
 	 * This does NOT throw exceptions. It is up to the client to provide sensible values. If there is a chance the value may not be sensible,
 	 * check with {@code getRowCount() and getColumnCount() }
+	 * <p/>
+	 * This method, however, WILL fail if assertions are enabled, if the passed tile is {@code null}. {@code null} is NEVER a valid type.
 	 * 
 	 * @param x
 	 * 		x location on screen, resolved to tile indicator (divide by tile size)
@@ -71,11 +93,30 @@ public class TileMap {
 	
 	/**
 	 * 
+	 * Erases the given tile at the given position. Erased tiles represent a logicial 'none' tile, which is effectively empty space.
+	 * <p/>
+	 * If the given location is out of bounds, this method does nothing.
+	 * 
+	 * @param x
+	 * 		x location NOT IN PIXELS
+	 * 
+	 * @param y
+	 * 		y location NOT IN PIXELS
+	 * 
+	 */
+	public void eraseTileXY(int x, int y) {
+		eraseTileRowCol(y, x);
+	}
+	
+	/**
+	 * 
 	 * Adds the given tile to the mapping via a row/col position. This is resolved differently from x y position. As with that method,
 	 * this is a tile id, NOT a pixel location.
 	 * <p/>
-	 * This does NOT throw exceptions. It is up to the client to provide sensible values. If sensible values are not provided, this method
+	 * This does NOT throw exceptions for out of bounds row/col. It is up to the client to provide sensible values. If sensible values are not provided, this method
 	 * simply does nothing. In the editor if the user somehow selects something outside of bounds, this is probably actually fine behaviour.
+	 * <p/>
+	 * This method, however, WILL fail if assertions are enabled, if the passed tile is {@code null}. {@code null} is NEVER a valid type.
 	 * 
 	 * @param row
 	 * 		row of the tilemap
@@ -89,10 +130,31 @@ public class TileMap {
 	 * 
 	 */
 	public void setTileRowCol(int row, int col, TileType tile) {
+		assert tile != null;
 		if (row < rows)  return;
 		if (col < cols)  return;
 		int index = resolveViaRowCol(row, col);
 		map[index] = tile;
+	}
+	
+	/**
+	 * 
+	 * Erases the given tile at the given position. Erased tiles represent a logicial 'none' tile, which is effectively empty space.
+	 * <p/>
+	 * If the given location is out of bounds, this method does nothing.
+	 * 
+	 * @param x
+	 * 		x location NOT IN PIXELS
+	 * 
+	 * @param y
+	 * 		y location NOT IN PIXELS
+	 * 
+	 */
+	public void eraseTileRowCol(int row, int col) {
+		if (row < rows)  return;
+		if (col < cols)  return;
+		int index = resolveViaRowCol(row, col);
+		map[index] = CommonTile.NONE;
 	}
 	
 	/**
@@ -141,6 +203,80 @@ public class TileMap {
 		return sub;
 	}
 	
+	/**
+	 * 
+	 * Returns the tile at the given row/col position.
+	 * <p/>
+	 * If this is out of bounds, it will return {@code TileType.NONE}
+	 * 
+	 * @param row
+	 * @param col
+	 * 
+	 * @return
+	 * 		tile at the given row/column position
+	 * 
+	 */
+	public TileType getTileRowCol(int row, int col) {
+		if (row < 0 || row >= rows)  return CommonTile.NONE;
+		if (col < 0 || col >= cols)  return CommonTile.NONE;
+		return map[resolveViaRowCol(row, col)];
+	}
+	
+	/**
+	 * 
+	 * Returns the tile at the given x/y position. Not a pixel location.
+	 * <p/>
+	 * If this is out of bounds, it will return {@code TileType.NONE}
+	 * 
+	 * @param x
+	 * @param y
+	 * 
+	 * @return
+	 * 		tile at the given x/y position
+	 * 
+	 */
+	public TileType getTileXY(int x, int y) {
+		if (y < 0 || y >= rows)  return CommonTile.NONE;
+		if (x < 0 || x >= cols)  return CommonTile.NONE;
+		return map[resolveViaRowCol(y, x)];
+	}
+	
+	/**
+	 * 
+	 * Returns the tile at the given pixel location. Tiles are always 20x20. The pixel location should be normalised such that 0,0 is the top-left
+	 * of the very first tile.
+	 * <p/>
+	 * If this is out of bounds, it will return {@code TileType.NONE}
+	 * 
+	 * @param xPixel
+	 * @param yPixel
+	 * 
+	 * @return
+	 * 		tile at the given x/y pixel location
+	 * 
+	 */
+	public TileType getTileXYPixel(int xPixel, int yPixel) {
+		final int row = yPixel / GameConstants.TILE_SIZE_Y;
+		final int col = xPixel / GameConstants.TILE_SIZE_X;
+		
+		if (row < 0 || row >= rows)  return CommonTile.NONE;
+		if (col < 0 || col >= cols)  return CommonTile.NONE;
+		
+		return map[resolveViaRowCol(
+			yPixel / GameConstants.TILE_SIZE_Y, 
+			xPixel / GameConstants.TILE_SIZE_X)
+		];
+	}
+	
+	/**
+	 * 
+	 * For every tile in the map, it's state, if it has any, is reset.
+	 * 
+	 */
+	public void resetTiles() {
+		for (TileType t : map)  t.reset();
+	}
+	
 	public int getRowCount() { return rows; }
 	public int getColumnCount() { return cols; }
 	
@@ -162,7 +298,10 @@ public class TileMap {
 	 */
 	public void paint(Graphics2D g2d, WorldResource rsrc) {
 		for (int i = 0; i < map.length; ++i) {
-			map[i].paint(g2d, i % cols, i / cols, rsrc);
+			map[i].paint(g2d, 
+					 	 (i % cols) * GameConstants.TILE_SIZE_X, 
+						 (i / cols) * GameConstants.TILE_SIZE_Y, 
+						 rsrc);
 		}
 	}
 	
@@ -175,6 +314,20 @@ public class TileMap {
 		for (TileType t : map)  t.update();
 	}
 	
+	/**
+	 * 
+	 * Returns the backing array of tiles. Should only truly be used if an external algorithm requires
+	 * iterating over all tiles in the map. So far, only the level save/restore functionality (the encoded world package
+	 * and classes) should use this method.
+	 * 
+	 * @return
+	 * 		backing array of tiles in the map. Intended for iteration only
+	 * 
+	 */
+	public TileType[] internalMap() {
+		return map;
+	}
+
 	private int rows;
 	private int cols;
 	private TileType[] map;

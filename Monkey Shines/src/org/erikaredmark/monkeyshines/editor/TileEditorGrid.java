@@ -1,6 +1,6 @@
 package org.erikaredmark.monkeyshines.editor;
 
-import org.erikaredmark.monkeyshines.Tile;
+import org.erikaredmark.monkeyshines.TileMap;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.background.Background;
 import org.erikaredmark.monkeyshines.bounds.IPoint2D;
@@ -54,7 +54,7 @@ interface TileEditorGrid {
 	
 	/**
 	 * 
-	 * Adds a function that accepts a tile 2D array as a callback for whenever a tile is edited. The function will be called with a
+	 * Adds a function that accepts a tile map as a callback for whenever a tile is edited. The function will be called with a
 	 * reference to the backing array so that other models may be updated as needed. Note that the passed array does indeed represent the 
 	 * editor array, so changes this will effect the editor and vice versa (hence this is not thread safe). Make a defensive copy if required.
 	 * 
@@ -62,7 +62,7 @@ interface TileEditorGrid {
 	 * 		the function to call
 	 * 
 	 */
-	void addTileModificationCallback(Function<Tile[][], Void> callback);
+	void addTileModificationCallback(Function<TileMap, Void> callback);
 	
 	/**
 	 * 

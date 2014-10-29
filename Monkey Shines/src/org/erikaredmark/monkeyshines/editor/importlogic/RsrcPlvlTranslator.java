@@ -13,7 +13,7 @@ import org.erikaredmark.monkeyshines.Goodie;
 import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.LevelScreen;
 import org.erikaredmark.monkeyshines.Sprite;
-import org.erikaredmark.monkeyshines.Tile;
+import org.erikaredmark.monkeyshines.TileMap;
 import org.erikaredmark.monkeyshines.background.SingleColorBackground;
 import org.erikaredmark.monkeyshines.editor.importlogic.WorldTranslationException.TranslationFailure;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
@@ -128,13 +128,14 @@ public class RsrcPlvlTranslator {
 		
 		// Level
 		LOGGER.info(CLASS_NAME + ": Reading tile data");
-		Tile[][] tiles = new Tile[20][32];
+		TileMap map = new TileMap(GameConstants.LEVEL_ROWS, GameConstants.LEVEL_COLS);
 		// This is kinda thrashing the cache, but the raw level data from the .plvl resource
-		// IS stored on a column by column basis.
+		// IS stored on a column by column basis. Given how rare this code will be called I don't see
+		// it being worth it to optimise
 		int rawLvlIndex = 0;
 		for (int j = 0; j < 32; ++j) {
 			for (int i = 0; i < 20; ++i) {
-				tiles[i][j] = translateToTile(levelData[rawLvlIndex], i, j, rsrc);
+				map.setTileRowCol(i, j, translateToTile(levelData[rawLvlIndex], i, j, rsrc) );
 				++rawLvlIndex;
 			}
 		}
@@ -162,7 +163,7 @@ public class RsrcPlvlTranslator {
 		return new LevelScreen(portId,
 							   // Temporary. Client should use translation state to later set to proper pattern
 							   new SingleColorBackground(Color.BLACK), 
-							   tiles, 
+							   map, 
 							   ImmutablePoint2D.of(bonzoStartX / GameConstants.TILE_SIZE_X, (bonzoStartY - 80) / GameConstants.TILE_SIZE_Y), 
 							   spritesOnScreen, 
 							   rsrc);
@@ -221,8 +222,8 @@ public class RsrcPlvlTranslator {
 	 * they are generated. {@code PlaceholderTile} instances may be returned, with enough metadata to eventually be changed.
 	 * 
 	 */
-	private static Tile translateToTile(int data, int row, int col, WorldResource rsrc)  throws WorldTranslationException {
-		if (data == 0)  return Tile.emptyTile();
+	private static TileType translateToTile(int data, int row, int col, WorldResource rsrc)  throws WorldTranslationException {
+		if (data == 0)  return CommonTile.NONE;
 		
 		TileType type = null;
 		if (data <= 0x0020) {
@@ -250,7 +251,7 @@ public class RsrcPlvlTranslator {
 			// We know what these values mean, we just don't care. Goodie data is stored in two different places and it
 			// matters not which one we read from.
 			LOGGER.fine(CLASS_NAME + ": skipping goodie from tile-data (should be picked up from earlier MSSpriteData array)");
-			return Tile.emptyTile();
+			return CommonTile.NONE;
 		} else if (data >= 0x00D0 && data <= 0x00EF) {
 			// Scenes are stored also at the D range. Some levels have a lot of scenery and expand into this range for it.
 			// 0 base the data, but also start it on the next round of 64 values.
@@ -264,13 +265,10 @@ public class RsrcPlvlTranslator {
 						+ Integer.toHexString(data) 
 						+ " which is not a known original game level value and maps to no known tiles. Leaving as Blank");
 						
-			return Tile.emptyTile();
+			return CommonTile.NONE;
 		}
 		
-		return Tile.newTile(ImmutablePoint2D.of(col, row), 
-				 			type, 
-				 			rsrc);
-		
+		return type;
 	}
 	
 }
