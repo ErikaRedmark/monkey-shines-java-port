@@ -1,6 +1,5 @@
 package org.erikaredmark.monkeyshines.editor;
 
-import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -13,6 +12,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 
 import javax.swing.JOptionPane;
@@ -21,12 +21,12 @@ import javax.swing.Timer;
 
 import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.Goodie;
-import org.erikaredmark.monkeyshines.Hazard;
 import org.erikaredmark.monkeyshines.ImmutablePoint2D;
-import org.erikaredmark.monkeyshines.KeyboardInput;
 import org.erikaredmark.monkeyshines.Point2D;
 import org.erikaredmark.monkeyshines.Sprite;
+import org.erikaredmark.monkeyshines.World.GoodieLocationPair;
 import org.erikaredmark.monkeyshines.background.Background;
+import org.erikaredmark.monkeyshines.editor.MapEditor.TileBrush;
 import org.erikaredmark.monkeyshines.editor.dialog.AuthorshipDialog;
 import org.erikaredmark.monkeyshines.editor.dialog.EditHazardsDialog;
 import org.erikaredmark.monkeyshines.editor.dialog.EditHazardsModel;
@@ -39,12 +39,6 @@ import org.erikaredmark.monkeyshines.encoder.WorldIO;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 import org.erikaredmark.monkeyshines.resource.CoreResource;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
-import org.erikaredmark.monkeyshines.tiles.CollapsibleTile;
-import org.erikaredmark.monkeyshines.tiles.CommonTile;
-import org.erikaredmark.monkeyshines.tiles.ConveyerTile;
-import org.erikaredmark.monkeyshines.tiles.HazardTile;
-import org.erikaredmark.monkeyshines.tiles.TileType;
-import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -60,38 +54,7 @@ import com.google.common.base.Optional;
  */
 
 @SuppressWarnings("serial")
-public final class LevelDrawingCanvas extends JPanel implements ActionListener, MouseListener, MouseMotionListener {
-
-	// Point2D of the mouse position
-	private Point2D mousePosition;
-	
-	// Information about what clicking something will do
-	// current tile is used for all types of tiles, and determines which specific graphic resource
-	// a given type of tile will use.
-	private int currentTileId;
-	private Goodie.Type currentGoodieType;
-	private int currentSpriteId;
-	
-	// Unlike the other properties, current hazard MAY be null. It is 100% possible for a world to not have hazards
-	private Hazard currentHazard;
-	
-	// Current indicator (drawn at the cursor/tile position based on editor state). If null, a green square is drawn
-	// instead.
-	private BufferedImage indicatorImage;
-	
-	private final Function<WorldResource, Void> worldLoaded;
-	
-	// THESE MAY BE NULL!
-	private LevelScreenEditor currentScreenEditor;
-	private WorldEditor currentWorldEditor;
-	
-	private Timer editorFakeGameTimer;
-	
-	private KeyboardInput keys;
-	
-	private PaintbrushType currentTileType;
-	private EditorState    currentState;
-	
+public final class LevelDrawingCanvas extends JPanel implements MouseListener, MouseMotionListener {
 	
 	/**
 	 * 
@@ -105,26 +68,23 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 	 * 		for other functions at require it in the main editor
 	 * 
 	 */
-	public LevelDrawingCanvas(final KeyboardInput keys, final Function<WorldResource, Void> worldLoaded) {
+	public LevelDrawingCanvas(final Function<WorldResource, Void> worldLoaded) {
 		super();
+		this.setLayout(null);
 		this.worldLoaded = worldLoaded;
-		currentTileId = 0;
 		currentGoodieType = Goodie.Type.BANANA; // Need to pick something for default. Bananas are good.
-		currentTileType = PaintbrushType.SOLIDS;
 		currentState = EditorState.NO_WORLD_LOADED;
 		
 		setMinimumSize(
-				new Dimension(GameConstants.SCREEN_WIDTH, 
-					          GameConstants.SCREEN_HEIGHT) );
+			new Dimension(GameConstants.SCREEN_WIDTH, 
+				          GameConstants.SCREEN_HEIGHT) );
 		
 		setPreferredSize(
-				new Dimension(GameConstants.SCREEN_WIDTH, 
-					          GameConstants.SCREEN_HEIGHT) );
-		this.keys=keys;
+			new Dimension(GameConstants.SCREEN_WIDTH, 
+				          GameConstants.SCREEN_HEIGHT) );
+		
 		setVisible(true);
 		
-		// Set the Keyboard Input
-		this.addKeyListener(keys);
 		addMouseMotionListener(this);
 		addMouseListener(this);
 		
@@ -132,8 +92,16 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 		setDoubleBuffered(true);
 		
 		mousePosition = Point2D.of(0, 0);
-		
-		editorFakeGameTimer = new Timer(GameConstants.EDITOR_SPEED, this);
+
+		editorFakeGameTimer = 
+			new Timer(
+				GameConstants.EDITOR_SPEED,
+				new ActionListener() {
+					@Override public void actionPerformed(ActionEvent arg0) {
+						if (currentState == EditorState.NO_WORLD_LOADED) return;
+						repaint();
+					}
+			});
 		editorFakeGameTimer.start();
 		
 
@@ -153,9 +121,23 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 			currentWorldEditor.getWorldResource().dispose();
 		}
 		currentWorldEditor = WorldEditor.fromEncoded(world, rsrc);
-		currentScreenEditor = currentWorldEditor.getLevelScreenEditor(1000);
-		changeState(EditorState.PLACING_TILES);
+		setCurrentScreenEditor(currentWorldEditor.getLevelScreenEditor(1000) );
+		changeState(EditorState.USE_MAP_EDITOR);
+		// Map editor initialised in setting screen editor.
+		currentMapEditor.setBrushAndId(TileBrush.SOLIDS, 0);
 		worldLoaded.apply(rsrc);
+	}
+	
+	// Sets the current screen editor, removing if needed the current map editor for the screen and adding a new one
+	// to the existing panel.
+	private void setCurrentScreenEditor(LevelScreenEditor screenEditor) {
+		currentScreenEditor = screenEditor;
+		if (currentMapEditor != null) {
+			this.remove(currentMapEditor);
+		}
+		currentMapEditor = new MapEditor(screenEditor.getLevelScreen().getMap(), screenEditor.getBackground(), currentWorldEditor.getWorld() );
+		currentMapEditor.setLocation(0, 0);
+		this.add(currentMapEditor);
 	}
 	
 	/**
@@ -223,38 +205,6 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 	}
 	
 	/**
-	 * Resolves the location the person clicked and places the currently selected tile
-	 * on the map. Does nothing if there is no screen editor loaded.
-	 * 
-	 * @param mouseX mouse click location X co-ord
-	 * @param mouseY mouse click location Y co-ord
-	 */
-	private void addTile(final int mouseX, final int mouseY) {
-		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
-		
-		currentScreenEditor.setTile(
-				mouseX / GameConstants.TILE_SIZE_X,
-				mouseY / GameConstants.TILE_SIZE_Y,
-				paintbrush2TileType(currentTileType) );
-	}
-	
-	/**
-	 * Adds the hazard to the given location. The current hazard selected in this editor is added to the given place. If 
-	 * there is no currently selected hazard (its null) this method will do nothing
-	 * <p/>
-	 * IMPORTANT: This creates a new instance of the hazard tile with the given id paired with the given hazard. if the hazard types
-	 * are rearranged and changed it won't affect any already placed. Will need to work on a solution.
-	 */
-	private void addHazard(final int mouseX, final int mouseY) {
-		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
-		if (currentHazard == null)  return;
-		
-		currentScreenEditor.setTile(mouseX / GameConstants.TILE_SIZE_X,
-									mouseY / GameConstants.TILE_SIZE_Y,
-									HazardTile.forHazard(currentHazard) );
-	}
-	
-	/**
 	 * Resolves the location the person clicked and places the selected Goodie on
 	 * the map.
 	 * @param x 
@@ -267,19 +217,6 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 									 x / GameConstants.GOODIE_SIZE_X, 
 								 	 y / GameConstants.GOODIE_SIZE_Y, 
 									 currentGoodieType );
-	}
-	
-	
-	/**
-	 * Erases the tile (not the goodie) at the specified position
-	 */
-	private void eraseTileAt(final int mouseX, final int mouseY) {
-		if (this.currentState == EditorState.NO_WORLD_LOADED)  return;
-		
-		int row = mouseX / GameConstants.TILE_SIZE_X;
-		int col = mouseY / GameConstants.TILE_SIZE_Y;
-		
-		currentScreenEditor.eraseTile(row, col);
 	}
 	
 	private void eraseGoodieAt(final int mouseX, final int mouseY) {
@@ -316,47 +253,6 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 	public int snapMouseY(final int Y) {
 		int takeAwayY = Y % GameConstants.TILE_SIZE_Y;
 		return Y - takeAwayY;
-	}
-
-	@Override public void actionPerformed(ActionEvent e) {
-		// Poll Keyboard.
-		keys.poll();
-		
-		// Do not allow state changes if no world is loaded!
-		
-		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
-
-		// TODO keyboard shortcuts removed with introduction of palette.
-		
-		repaint();
-	}
-	
-	/* These actions are called from user input.																		*/
-	
-	/** User action to set state to placing solids																		*/
-	public void actionPlacingSolids() {
-		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
-		
-		currentTileType = PaintbrushType.SOLIDS;
-	}
-	
-	/** User action to set state to placing thrus																		*/
-	public void actionPlacingThrus() {
-		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
-		
-		currentTileType = PaintbrushType.THRUS;
-	}
-	
-	public void actionPlacingScenes() {
-		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
-		
-		currentTileType = PaintbrushType.SCENES;
-	}
-	
-	public void actionPlacingCollapsibles() {
-		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
-		
-		currentTileType = PaintbrushType.COLLAPSIBLE;
 	}
 	
 	public void actionPlacingSprites() {
@@ -410,7 +306,8 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 	public void actionEraserTiles() {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
-		changeState(EditorState.ERASING_TILES);
+		changeState(EditorState.USE_MAP_EDITOR);
+		currentMapEditor.setBrushAndId(TileBrush.ERASER, 0);
 	}
 	
 	public void actionEraserGoodies() {
@@ -451,6 +348,8 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 	public void actionChangeBackground() {
 		Background newBackground = SetBackgroundDialog.launch(this.currentWorldEditor.getWorldResource(), this.currentScreenEditor.getBackground() );
 	    currentScreenEditor.setBackground(newBackground);
+	    // update map editor too, as it does not use the same reference
+	    currentMapEditor.changeBackground(newBackground);
 	}
 	
 	/**
@@ -472,12 +371,8 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 	 * 
 	 */
 	private void changeState(EditorState newState) {
-		// Make no state changes if the state isn't actually changing, but do update the tile indicator
-		// as calls for same state change can still bring about changes to the current tile
-		if (currentState == newState) {
-			updateTileIndicator();
-			return;
-		}
+		// Make no state changes if the state isn't actually changing
+		if (currentState == newState)  return;
 		
 		if (   newState == EditorState.EDITING_SPRITES
 			|| newState == EditorState.DELETING_SPRITES) {
@@ -489,20 +384,20 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 			currentScreenEditor.startAnimatingSprites();
 		}
 		currentState = newState;
-		updateTileIndicator();
 	}
 	
 	public void actionChangeScreen(Integer screenId) {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
 		boolean wasAnimating = currentScreenEditor.isAnimatingSprites();
-		currentScreenEditor = currentWorldEditor.getLevelScreenEditor(screenId);
-		currentWorldEditor.changeCurrentScreen(currentScreenEditor);
+		LevelScreenEditor screenEditor = currentWorldEditor.getLevelScreenEditor(screenId);
+		setCurrentScreenEditor(screenEditor);
+		currentWorldEditor.changeCurrentScreen(screenEditor);
 		
 		// Make sure sprites are not animating if they weren't before, and animating if they
 		// were
-		if (wasAnimating) currentScreenEditor.startAnimatingSprites();
-		else			  currentScreenEditor.stopAnimatingSprites();
+		if (wasAnimating) screenEditor.startAnimatingSprites();
+		else			  screenEditor.stopAnimatingSprites();
 	}
 	
 	/**
@@ -557,25 +452,20 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 	 * 
 	 */
 	public void setTileBrushAndId(PaintbrushType type, int id) {
-		currentTileType = type;
-		currentTileId = id;
-		
 		switch(type) {
 		case SOLIDS: // break omitted
 		case THRUS: // break omitted
 		case SCENES: // break omitted
 		case CONVEYERS_CLOCKWISE: // break omitted
 		case CONVEYERS_ANTI_CLOCKWISE: // break omitted
-		case COLLAPSIBLE:
-			changeState(EditorState.PLACING_TILES);
+		case COLLAPSIBLE: // break omitted
+		case HAZARDS:
+			changeState(EditorState.USE_MAP_EDITOR);
+			currentMapEditor.setBrushAndId(paintbrushToTilebrush(type), id);
 			break;
 		case GOODIES:
 			currentGoodieType = Goodie.Type.byValue(id);
 			changeState(EditorState.PLACING_GOODIES);
-			break;
-		case HAZARDS:
-			currentHazard = currentWorldEditor.getHazards().get(id);
-			changeState(EditorState.PLACING_HAZARDS);
 			break;
 		case PLACE_SPRITES:
 		case EDIT_SPRITES: // break omitted
@@ -584,6 +474,27 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 			break;
 		default:
 			throw new RuntimeException("method not updated to handle new brush type " + type);
+		}
+	}
+	
+	/**
+	 * 
+	 * Converts the brush type here to the brush type in the map editor. The map editor only uses a smaller
+	 * subset of tile brushes, so this method is in error if called with a paintbrush that isn't a tile brush.
+	 * 
+	 * @param t
+	 * @return
+	 */
+	private TileBrush paintbrushToTilebrush(PaintbrushType t) {
+		switch(t) {
+		case SOLIDS:  return TileBrush.SOLIDS;
+		case THRUS:  return TileBrush.THRUS;
+		case SCENES:  return TileBrush.SCENES;
+		case CONVEYERS_CLOCKWISE:  return TileBrush.CONVEYERS_CLOCKWISE;
+		case CONVEYERS_ANTI_CLOCKWISE:  return TileBrush.CONVEYERS_ANTI_CLOCKWISE;
+		case COLLAPSIBLE:  return TileBrush.COLLAPSIBLE;
+		case HAZARDS:  return TileBrush.HAZARDS;
+		default:  throw new IllegalArgumentException("Paintbrush type " + t + " not a valid tile brush");
 		}
 	}
 
@@ -606,10 +517,20 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 	}
 
 	@Override public void mouseMoved(MouseEvent e) {
+		// We update map editor and this position
 		mousePosition.setX(e.getX() );
 		mousePosition.setY(e.getY() );
+		
+		if (currentMapEditor != null) {
+			currentMapEditor.mouseMoved(mousePosition);
+		}
 	}
 	
+	/**
+	 * 
+	 * Note: Each call to paint is synced with updating game state, so this updates all relevant states before painting them.
+	 * 
+	 */
 	@Override public void paint(Graphics g) {
 		super.paint(g);
 		Graphics2D g2d = (Graphics2D) g;
@@ -620,10 +541,22 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 			g2d.fillRect(0, 0, GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_HEIGHT);
 			
 		} else {
-			currentWorldEditor.paint(g2d);
+			currentMapEditor.update();
+			currentMapEditor.paint(g2d);
 
-			// Paint an indicator to the current tile location. This depends on the 'paintbrush' selected.
-			drawTileIndicator(g2d);
+			// Map Editor has no concept of goodies or sprites, so paint them separately.
+			List<Sprite> sprites = currentScreenEditor.getSpritesOnScreen();
+			for (Sprite s : sprites) {
+				s.update();
+				s.paint(g2d);
+			}
+			
+			Collection<GoodieLocationPair> goodies = currentWorldEditor.getWorld().getGoodiesForLevel(currentScreenEditor.getId() );
+			for (GoodieLocationPair good : goodies) {
+				good.goodie.update();
+				good.goodie.paint(g2d);
+			}
+			
 			// BELOW: Additional overlays that are not part of the actual world
 			
 			// Draw bonzo starting location of screen
@@ -639,166 +572,6 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 		
 	}
 	
-	/** Updates the image drawn by the tile indicator based on the brush type. The actual drawing takes place in drawTileIndicator. */
-	private void updateTileIndicator() {
-		assert currentState != EditorState.NO_WORLD_LOADED;
-		WorldResource rsrc = currentWorldEditor.getWorldResource();
-		if (   currentState == EditorState.PLACING_TILES
-			|| currentState == EditorState.PLACING_HAZARDS
-			|| currentState == EditorState.PLACING_GOODIES) {
-			BufferedImage sheet = null;
-			int srcX = 0;
-			int srcY = 0;
-			switch(currentTileType) {
-			case SOLIDS:
-				sheet = rsrc.getStatelessTileTypeSheet(StatelessTileType.SOLID);
-				srcX = computeSrcX(currentTileId, sheet);
-				srcY = computeSrcY(currentTileId, sheet);
-				break;
-			case THRUS:
-				sheet = rsrc.getStatelessTileTypeSheet(StatelessTileType.THRU);
-				srcX = computeSrcX(currentTileId, sheet);
-				srcY = computeSrcY(currentTileId, sheet);
-				break;
-			case SCENES:
-				sheet = rsrc.getStatelessTileTypeSheet(StatelessTileType.SCENE);
-				srcX = computeSrcX(currentTileId, sheet);
-				srcY = computeSrcY(currentTileId, sheet);
-				break;
-			case COLLAPSIBLE:
-				sheet = rsrc.getCollapsingSheet();
-				srcX = 0;
-				srcY = currentTileId * GameConstants.TILE_SIZE_Y;
-				break;
-			case CONVEYERS_CLOCKWISE:
-				sheet = rsrc.getConveyerSheet();
-				srcX = 0;
-				srcY = currentTileId * (GameConstants.TILE_SIZE_Y * 2);
-				break;
-			case CONVEYERS_ANTI_CLOCKWISE:
-				sheet = rsrc.getConveyerSheet();
-				srcX = 0;
-				srcY = (currentTileId * (GameConstants.TILE_SIZE_Y * 2) ) + 20;
-				break;
-			case GOODIES:
-				sheet = rsrc.getGoodieSheet();
-				srcX = currentGoodieType.getDrawX();
-				srcY = currentGoodieType.getDrawY();
-				break;
-			case HAZARDS:
-				sheet = rsrc.getHazardSheet();
-				srcX = currentTileId * (GameConstants.TILE_SIZE_X);
-				srcY = 0;
-				break;
-			case PLACE_SPRITES:
-			case EDIT_SPRITES: // break omitted
-				throw new RuntimeException("Cannot have a paintbrush of sprite during a placing tile state");
-			default:
-				throw new RuntimeException("Unknown tile type " + currentTileType);
-			}
-			
-			indicatorImage = new BufferedImage(GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y, sheet.getType() );
-			Graphics2D g = indicatorImage.createGraphics();
-			try {
-				g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f) );
-				g.drawImage(sheet, 
-						    0, 0, 
-						    GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y, 
-						    srcX, srcY, 
-						    srcX + GameConstants.TILE_SIZE_X, srcY + GameConstants.TILE_SIZE_Y, 
-						    null);
-			} finally {
-				g.dispose();
-			}
-
-		} else {
-			indicatorImage = null;
-		}
-	}
-	
-	private void drawTileIndicator(Graphics2D g2d) {
-		int snapX = snapMouseX(mousePosition.x() );
-		int snapY = snapMouseY(mousePosition.y() );
-		if (indicatorImage == null) {
-			g2d.setColor(Color.green);
-			g2d.drawRect(snapX,
-						 snapY, 
-						 GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y);
-		} else {
-			g2d.drawImage(indicatorImage, 
-						  snapX, snapY,
-						  snapX + GameConstants.TILE_SIZE_X, snapY + GameConstants.TILE_SIZE_Y, 
-						  0, 0, 
-						  indicatorImage.getWidth(), indicatorImage.getHeight(), 
-						  null);
-		}
-	}
-	
-	// Resolves the id based on the width/height of sheet to the x location of the top-left coordinate to draw the tile.
-	private static int computeSrcX(int id, BufferedImage sheet) {
-		return (id * GameConstants.TILE_SIZE_X) % (sheet.getWidth() );
-	}
-	
-	// Resolves the id based on the width/height of sheet to the x location of the top-left coordinate to draw the tile.
-	private static int computeSrcY(int id, BufferedImage sheet) {
-		return (id / (sheet.getWidth() / GameConstants.TILE_SIZE_X) ) * (GameConstants.TILE_SIZE_Y);
-	}
-	
-	// This isn't a member of paintbrush type because only a few types are actually tiles.
-	/**
-	 * 
-	 * Converts the paintbrush type to a paintable tile type.
-	 * <p/>
-	 * Because some tile types have state, the return type from this method should be used to populate at most 1
-	 * tile in the world.
-	 * 
-	 * @param paintbrush
-	 * 
-	 * @return
-	 * 		a tile type that can be painted into the world. The return of this method should not be used to
-	 * 		populate more than 1 location in the world
-	 * 
-	 */
-	public TileType paintbrush2TileType(PaintbrushType paintbrush) {
-		TileType type = null;
-		switch (paintbrush) {
-		case SOLIDS:
-			type = CommonTile.of(currentTileId, StatelessTileType.SOLID);
-			break;
-		case THRUS:
-			type = CommonTile.of(currentTileId, StatelessTileType.THRU);;
-			break;
-		case SCENES:
-			type = CommonTile.of(currentTileId, StatelessTileType.SCENE);;
-			break;
-		case HAZARDS:
-			// Stateful type: Create new based on id. Properties of hazard will be based on World
-			// properties.
-			// This instance will NOT be added to the world itself!! It must be copied, or multiple hazards may
-			// end up sharing state (like hitting one bomb will blow up every other bomb painted with the same
-			// paintbrush).
-			type = HazardTile.forHazard(currentWorldEditor.getHazards().get(currentTileId) );
-			break;
-		case CONVEYERS_CLOCKWISE:
-			// Resolve the Id of the conveyer to its location in our list
-			type = new ConveyerTile(currentWorldEditor.getConveyers().get(currentTileId * 2) );
-			break;
-		case CONVEYERS_ANTI_CLOCKWISE:
-			// Same as above, but add 1 for the other direction
-			type = new ConveyerTile(currentWorldEditor.getConveyers().get((currentTileId * 2) + 1) );
-			break;
-		case COLLAPSIBLE:
-			// Stateful, but easy to create.
-			type = new CollapsibleTile(currentTileId);
-			break;
-		default:
-			throw new IllegalArgumentException("Paintbrush type " + currentTileType.toString() + " not a valid tile type");
-		}
-		
-		assert type != null;
-		return type;
-	}
-
 	/**
 	 * 
 	 * Interface implemented only by EditorState. Intended to allow action information to be included in the state object itself
@@ -807,7 +580,7 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 	 * Mouse location and all other editor properties must be set before calling the state methods.
 	 * 
 	 */
-	private interface __EditorStateAction {
+	private interface EditorStateAction {
 		/** Action for the editor in this state during a mouse click
 		 */
 		public void defaultClickAction(LevelDrawingCanvas editor);
@@ -827,27 +600,15 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 	 * @author Erika Redmark
 	 *
 	 */
-	public enum EditorState implements __EditorStateAction { 
-		PLACING_TILES {
+	public enum EditorState implements EditorStateAction { 
+		// The most common state; map editor is also listening to mouse clicks and taking care of updates. We delegate to the map
+		// editor here.
+		USE_MAP_EDITOR {
 			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
-				editor.addTile(editor.mousePosition.x(), editor.mousePosition.y() );
+				editor.currentMapEditor.mouseClicked(editor.mousePosition);
 			}
-			@Override public void defaultDragAction(LevelDrawingCanvas editor) {
-				defaultClickAction(editor);
-			}
-		}, 
-		/* Erases BOTH tiles and goodies from a space (although editor should enforce that goodies never occupy the
-		 * same space as tiles)
-		 */
-		ERASING_TILES {
-			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
-				editor.eraseTileAt(editor.mousePosition.x(), editor.mousePosition.y() );
-			}
-			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 
-				defaultClickAction(editor);
-			}
+			@Override public void defaultDragAction(LevelDrawingCanvas editor) { defaultClickAction(editor); }
 		},
-		
 		PLACING_GOODIES {
 			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
 				editor.addGoodie(editor.mousePosition.x(), editor.mousePosition.y() );
@@ -861,16 +622,6 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
 				editor.eraseGoodieAt(editor.mousePosition.x(), editor.mousePosition.y() );
 			}
-			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 
-				defaultClickAction(editor);
-			}
-		},
-		
-		PLACING_HAZARDS {
-			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
-				editor.addHazard(editor.mousePosition.x(), editor.mousePosition.y() );
-			}
-			
 			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 
 				defaultClickAction(editor);
 			}
@@ -994,5 +745,23 @@ public final class LevelDrawingCanvas extends JPanel implements ActionListener, 
 		currentScreenEditor.replaceSprite(sprite, newSprite);
 	}
 
+
+	// Point2D of the mouse position
+	private Point2D mousePosition;
+	
+	// Information about what clicking something will do
+	private Goodie.Type currentGoodieType;
+	private int currentSpriteId;
+	
+	private final Function<WorldResource, Void> worldLoaded;
+	
+	// THESE MAY BE NULL!
+	private LevelScreenEditor currentScreenEditor;
+	private WorldEditor currentWorldEditor;
+	private MapEditor currentMapEditor;
+	
+	private Timer editorFakeGameTimer;
+	
+	private EditorState    currentState;
 
 }

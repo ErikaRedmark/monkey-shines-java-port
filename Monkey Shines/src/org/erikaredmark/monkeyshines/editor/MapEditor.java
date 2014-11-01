@@ -2,6 +2,7 @@ package org.erikaredmark.monkeyshines.editor;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -15,6 +16,7 @@ import org.erikaredmark.monkeyshines.Point2D;
 import org.erikaredmark.monkeyshines.TileMap;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.background.Background;
+import org.erikaredmark.monkeyshines.bounds.IPoint2D;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.tiles.CollapsibleTile;
 import org.erikaredmark.monkeyshines.tiles.CommonTile;
@@ -30,6 +32,9 @@ import org.erikaredmark.monkeyshines.tiles.HazardTile;
  * The editor allows the tilemap to be edited using a basic brush based system where brushes can be
  * set from the Palette object. This also handles drawing the tilemap along with an indicator (an image showing what will
  * be drawn) to a graphics context.
+ * <p/>
+ * This panel does not handle mouse events itself. The component containing this editor must handle mouse events and forward them
+ * to the editor if it cannot handle them itself. 
  * 
  * @author Erika Redmark
  *
@@ -41,13 +46,35 @@ public final class MapEditor extends JPanel {
 	 * 
 	 * Creates an editor for the given tilemap, background and world. The world is indirectly required for certain drawing jobs, such as
 	 * hazards, where dependence on the world as a whole.
+	 * <p/>
 	 * 
 	 * @param map
+	 * 		tile map to edit
+	 * 
+	 * @param background
+	 * 		initial background for tile map
+	 * 
+	 * @param world
+	 * 		reference to the entire world
+	 * 
 	 */
 	public MapEditor(final TileMap map, final Background background, final World world) {
+		super();
 		this.map = map;
 		this.background = background;
 		this.world = world;
+		
+		setMinimumSize(
+			new Dimension(map.getColumnCount() * GameConstants.TILE_SIZE_X, 
+				          map.getRowCount() * GameConstants.TILE_SIZE_Y) );
+		
+		setPreferredSize(
+			new Dimension(map.getColumnCount() * GameConstants.TILE_SIZE_X, 
+				          map.getRowCount() * GameConstants.TILE_SIZE_Y) );
+		
+		// Optimisations
+		setDoubleBuffered(true);
+		
 		updateTileIndicator();
 	}
 	
@@ -55,7 +82,7 @@ public final class MapEditor extends JPanel {
 	 * 
 	 * Sets the current brush, and the id of the graphics resource specific to that brush.
 	 * <p/>
-	 * Valid brushtypes are {@code SOLIDS, THRUS, SCENES, HAZARDS, 
+	 * If set to 'NONE', id is not relevant.
 	 * 
 	 * @param brush
 	 * @param id
@@ -150,6 +177,16 @@ public final class MapEditor extends JPanel {
 	
 	/**
 	 * 
+	 * Updates the state of all tiles on this editor. It is up to client to decide if this should update and at
+	 * what speed.
+	 * 
+	 */
+	public void update() {
+		map.update();
+	}
+	
+	/**
+	 * 
 	 * Paints the tilemap along with editor specfic UI elements, such as the tile indicator.
 	 * 
 	 * @param g
@@ -201,55 +238,60 @@ public final class MapEditor extends JPanel {
 	
 	public enum TileBrush {
 		SOLIDS {
-			@Override public void onClick(int pixelX, int pixelY, TileBrush brush, int id, World world, TileMap map) {
+			@Override public void onClick(int pixelX, int pixelY, int id, World world, TileMap map) {
 				CommonTile tile = CommonTile.of(id, StatelessTileType.SOLID);
 				map.setTileXY(pixelX / GameConstants.TILE_SIZE_X, pixelY / GameConstants.TILE_SIZE_Y, tile);
 			}
 		}, 
 		THRUS {
-			@Override public void onClick(int pixelX, int pixelY, TileBrush brush, int id, World world, TileMap map) {
+			@Override public void onClick(int pixelX, int pixelY, int id, World world, TileMap map) {
 				CommonTile tile = CommonTile.of(id, StatelessTileType.THRU);
 				map.setTileXY(pixelX / GameConstants.TILE_SIZE_X, pixelY / GameConstants.TILE_SIZE_Y, tile);
 			}
 		},
 		SCENES {
-			@Override public void onClick(int pixelX, int pixelY, TileBrush brush, int id, World world, TileMap map) {
+			@Override public void onClick(int pixelX, int pixelY, int id, World world, TileMap map) {
 				CommonTile tile = CommonTile.of(id, StatelessTileType.SCENE);
 				map.setTileXY(pixelX / GameConstants.TILE_SIZE_X, pixelY / GameConstants.TILE_SIZE_Y, tile);
 			}
 		},
 		HAZARDS {
-			@Override public void onClick(int pixelX, int pixelY, TileBrush brush, int id, World world, TileMap map) {
+			@Override public void onClick(int pixelX, int pixelY, int id, World world, TileMap map) {
 				Hazard hazard = world.getHazards().get(id);
 				HazardTile tile = HazardTile.forHazard(hazard);
 				map.setTileXY(pixelX / GameConstants.TILE_SIZE_X, pixelY / GameConstants.TILE_SIZE_Y, tile);
 			}
 		},
 		CONVEYERS_CLOCKWISE {
-			@Override public void onClick(int pixelX, int pixelY, TileBrush brush, int id, World world, TileMap map) {
+			@Override public void onClick(int pixelX, int pixelY, int id, World world, TileMap map) {
 				Conveyer conveyer = world.getConveyers().get(id * 2);
 				ConveyerTile tile = new ConveyerTile(conveyer);
 				map.setTileXY(pixelX / GameConstants.TILE_SIZE_X, pixelY / GameConstants.TILE_SIZE_Y, tile);
 			}
 		}, 
 		CONVEYERS_ANTI_CLOCKWISE {
-			@Override public void onClick(int pixelX, int pixelY, TileBrush brush, int id, World world, TileMap map) {
+			@Override public void onClick(int pixelX, int pixelY, int id, World world, TileMap map) {
 				Conveyer conveyer = world.getConveyers().get( (id * 2) + 1);
 				ConveyerTile tile = new ConveyerTile(conveyer);
 				map.setTileXY(pixelX / GameConstants.TILE_SIZE_X, pixelY / GameConstants.TILE_SIZE_Y, tile);
 			}
 		},
 		COLLAPSIBLE {
-			@Override public void onClick(int pixelX, int pixelY, TileBrush brush, int id, World world, TileMap map) {
+			@Override public void onClick(int pixelX, int pixelY, int id, World world, TileMap map) {
 				CollapsibleTile tile = new CollapsibleTile(id);
 				map.setTileXY(pixelX / GameConstants.TILE_SIZE_X, pixelY / GameConstants.TILE_SIZE_Y, tile);
 			}
 		},
 		// ERASER is only for tiles. Goodies and Sprites are not included.
 		ERASER {
-			@Override public void onClick(int pixelX, int pixelY, TileBrush brush, int id, World world, TileMap map) {
+			@Override public void onClick(int pixelX, int pixelY, int id, World world, TileMap map) {
 				map.eraseTileXY(pixelX / GameConstants.TILE_SIZE_X, pixelY / GameConstants.TILE_SIZE_Y);
 			}
+		},
+		// Means nothing happens on click. This is useful for if a higher level editor needs to do something on click that a basic
+		// map editor cannot, such as setting sprites or goodies.
+		NONE {
+			@Override public void onClick(int pixelX, int pixelY, int id, World world, TileMap map) { }
 		};
 		
 		/**
@@ -263,9 +305,6 @@ public final class MapEditor extends JPanel {
 		 * @param pixelY
 		 * 		pixel location y
 		 * 
-		 * @param brush
-		 * 		brush type
-		 * 
 		 * @param id
 		 * 		id of the graphics resource to use for the given brush. No bounds checking is done; it is up to client to ensure value never goes
 		 * 		beyond the graphics resource indicated by the brush
@@ -277,8 +316,40 @@ public final class MapEditor extends JPanel {
 		 * 		this parameter is being modified by the function. Drawing will take place on this object
 		 * 
 		 */
-		public abstract void onClick(int pixelX, int pixelY, TileBrush brush, int id, World world, TileMap map);
+		public abstract void onClick(int pixelX, int pixelY, int id, World world, TileMap map);
 	}
+	
+	/**
+	 * 
+	 * Parent must call this method to indicate a mouse click that the editor should handle (such as when the parent
+	 * knows it has set the current brush properly and nothing non-map-editor related, like Sprites, are supposed to be
+	 * handled by the click)
+	 * <p/>
+	 * This should also be called for mouse drags.
+	 * 
+	 * @param e
+	 * 		location of mouse click
+	 * 
+	 */
+	public void mouseClicked(IPoint2D e) {
+		mousePosition.setX(e.x() );
+		mousePosition.setY(e.y() );
+		currentBrush.onClick(e.x(), e.y(), currentId, world, map);
+	}
+	
+	/**
+	 * 
+	 * Parent must call this method in their mouseListener implementation to keep the indicator image up-to-date.
+	 * 
+	 * @param e
+	 * 		location of mouseClick
+	 * 
+	 */
+	public void mouseMoved(IPoint2D e) {
+		mousePosition.setX(e.x() );
+		mousePosition.setY(e.y() );
+	}
+
 	
 	// Only tile-type brushes are valid.
 	private TileBrush currentBrush = TileBrush.SOLIDS;
@@ -291,5 +362,5 @@ public final class MapEditor extends JPanel {
 	// overlays on painting the tilemap where the brush mouse is positioned. Null is acceptable; means green square is drawn.
 	private BufferedImage indicatorImage = null;
 	// Constantly updated when mouse moves so tilemap can remember last position for overlay drawing purposes.
-	private Point2D mousePosition;
+	private Point2D mousePosition = Point2D.of(0, 0);
 }

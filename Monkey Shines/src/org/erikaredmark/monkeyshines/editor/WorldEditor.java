@@ -1,6 +1,5 @@
 package org.erikaredmark.monkeyshines.editor;
 
-import java.awt.Graphics2D;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -127,11 +126,6 @@ public final class WorldEditor {
 		if (!(couldChange) ) {
 			System.err.println("Could not change screen to " + editor.getId() );
 		}
-	}
-	
-	public void paint(Graphics2D g) {
-		world.update();
-		world.paint(g);
 	}
 	
 	/**

@@ -446,7 +446,7 @@ public class LevelEditor extends JFrame {
 		canvasFrame = new JInternalFrame("Level");
 		canvasFrame.setLayout(new FlowLayout(FlowLayout.LEFT) );
 		
-		currentWorld = new LevelDrawingCanvas(keys, paletteUpdateCallback);
+		currentWorld = new LevelDrawingCanvas(paletteUpdateCallback);
 		canvasFrame.add(currentWorld);
 		canvasFrame.pack();
 		// Must add to both.
