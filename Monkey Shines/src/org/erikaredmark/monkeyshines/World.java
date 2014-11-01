@@ -904,7 +904,8 @@ public class World {
 	}
 	
 	/**
-	 * Returns an unmodifiable version of the list of conveyers in the world
+	 * Returns an unmodifiable version of the list of conveyers in the world.
+	 * Remember that each type (id) of conveyer is represented by two distinct conveyers; one moving clockwise and the next moving anti-clockwise
 	 * 
 	 * @return
 	 */

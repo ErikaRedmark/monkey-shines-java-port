@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.erikaredmark.monkeyshines.TileMap;
-import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.tiles.CommonTile;
 import org.erikaredmark.monkeyshines.tiles.TileType;
 
@@ -96,9 +95,8 @@ public final class Template {
 		}
 	}
 	
-	private Template(final WorldResource rsrc, final ImmutableList<TemplateTile> templateTiles) {
+	private Template(final ImmutableList<TemplateTile> templateTiles) {
 		this.templateTiles = templateTiles;
-		this.rsrc = rsrc;
 	}
 	
 	/**
@@ -113,13 +111,12 @@ public final class Template {
 	 */
 	public final class Builder {
 
-		public Builder(final WorldResource rsrc) { 
-			this(rsrc, NO_FUNCTION);
+		public Builder() { 
+			this(NO_FUNCTION);
 		};
 		
-		public Builder(final WorldResource rsrc, final Function<Set<TemplateTile>, Void> callback ) {
+		public Builder(final Function<Set<TemplateTile>, Void> callback ) {
 			this.callback = callback;
-			this.rsrc = rsrc;
 		}
 		/**
 		 * 
@@ -178,14 +175,13 @@ public final class Template {
 		 * 
 		 */
 		public Template build() {
-			return new Template(rsrc, ImmutableList.copyOf(tiles) );
+			return new Template(ImmutableList.copyOf(tiles) );
 		}
 		
 		// A set so that duplicates (tiles in the same position) are properly removed. Replaced with basic array list when converted
 		// to a standard template since the only operation there is iteration over the list.
 		private final Set<TemplateTile> tiles = new HashSet<TemplateTile>();
 		private final Function<Set<TemplateTile>, Void> callback;
-		private final WorldResource rsrc;
 	}
 	
 	// Intended for inner builder class, but Java rules require it to be declared outside.
@@ -237,5 +233,4 @@ public final class Template {
 	// Stores list of all tiles. We don't store them in a 2D array. We just need to iterate over them, examine their row/col, and
 	// from that decide where to draw the tile in the real world. A 2D array would be wasteful
 	private ImmutableList<TemplateTile> templateTiles;
-	private WorldResource rsrc;
 }
