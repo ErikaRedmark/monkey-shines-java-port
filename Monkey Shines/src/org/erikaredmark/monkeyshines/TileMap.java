@@ -131,8 +131,8 @@ public class TileMap {
 	 */
 	public void setTileRowCol(int row, int col, TileType tile) {
 		assert tile != null;
-		if (row < rows)  return;
-		if (col < cols)  return;
+		if (row >= rows || row < 0)  return;
+		if (col >= cols || row < 0)  return;
 		int index = resolveViaRowCol(row, col);
 		map[index] = tile;
 	}
@@ -151,8 +151,8 @@ public class TileMap {
 	 * 
 	 */
 	public void eraseTileRowCol(int row, int col) {
-		if (row < rows)  return;
-		if (col < cols)  return;
+		if (row >= rows || row < 0)  return;
+		if (col >= cols || row < 0)  return;
 		int index = resolveViaRowCol(row, col);
 		map[index] = CommonTile.NONE;
 	}

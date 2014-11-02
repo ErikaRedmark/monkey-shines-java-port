@@ -1,5 +1,6 @@
 package org.erikaredmark.monkeyshines.editor;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -384,6 +385,39 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 			currentScreenEditor.startAnimatingSprites();
 		}
 		currentState = newState;
+		
+		// Finally, check our state. if we are ceding control to the map editor, no worries, the correct paintbrush
+		// info will be set elsewhere. otherwise, we must set the map editor to a state where it knows it is not being
+		// used, even if it doesn't get the clicks so that the tile indicator doesn't ghost.
+		if (currentState != EditorState.USE_MAP_EDITOR) {
+			currentMapEditor.setBrushAndId(TileBrush.NONE, 0);
+			updateTileIndicator();
+		}
+	}
+	
+	private void updateTileIndicator() {
+		// So far, the only possible state with an indicator that isn't generic is Goodie placement
+		if (currentState == EditorState.PLACING_GOODIES) {
+			BufferedImage goodieSheet = currentWorldEditor.getWorldResource().getGoodieSheet();
+			int srcX = currentGoodieType.getDrawX();
+			int srcY = currentGoodieType.getDrawY();
+			
+			indicatorImage = new BufferedImage(GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y, goodieSheet.getType() );
+			Graphics2D g = indicatorImage.createGraphics();
+			try {
+				g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f) );
+				g.drawImage(goodieSheet, 
+						    0, 0, 
+						    GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y, 
+						    srcX, srcY, 
+						    srcX + GameConstants.TILE_SIZE_X, srcY + GameConstants.TILE_SIZE_Y, 
+						    null);
+			} finally {
+				g.dispose();
+			}
+		} else {
+			indicatorImage = null;
+		}
 	}
 	
 	public void actionChangeScreen(Integer screenId) {
@@ -547,7 +581,7 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 			// Map Editor has no concept of goodies or sprites, so paint them separately.
 			List<Sprite> sprites = currentScreenEditor.getSpritesOnScreen();
 			for (Sprite s : sprites) {
-				s.update();
+				if (currentScreenEditor.isAnimatingSprites() )  s.update();
 				s.paint(g2d);
 			}
 			
@@ -568,8 +602,31 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 						  0, 0, 
 						  bonz.getWidth(), bonz.getHeight(),
 						  null);
+			
+			// Finally, draw indicator for mouse position only if map editor hasn't already taken care of it.
+			drawTileIndicator(g2d);
 		}
 		
+	}
+	
+	private void drawTileIndicator(Graphics2D g2d) {
+		if (currentState == EditorState.USE_MAP_EDITOR)  return;
+		
+		int snapX = EditorMouseUtils.snapMouseX(mousePosition.x() );
+		int snapY = EditorMouseUtils.snapMouseY(mousePosition.y() );
+		if (indicatorImage == null) {
+			g2d.setColor(Color.green);
+			g2d.drawRect(snapX,
+						 snapY, 
+						 GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y);
+		} else {
+			g2d.drawImage(indicatorImage, 
+				  snapX, snapY,
+				  snapX + GameConstants.TILE_SIZE_X, snapY + GameConstants.TILE_SIZE_Y, 
+				  0, 0, 
+				  indicatorImage.getWidth(), indicatorImage.getHeight(), 
+				  null);
+		}
 	}
 	
 	/**
@@ -609,6 +666,7 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 			}
 			@Override public void defaultDragAction(LevelDrawingCanvas editor) { defaultClickAction(editor); }
 		},
+		
 		PLACING_GOODIES {
 			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
 				editor.addGoodie(editor.mousePosition.x(), editor.mousePosition.y() );
@@ -761,6 +819,8 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 	private MapEditor currentMapEditor;
 	
 	private Timer editorFakeGameTimer;
+	
+	private BufferedImage indicatorImage = null;
 	
 	private EditorState    currentState;
 

@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -777,15 +778,37 @@ public class World {
 	public void addGoodie(final int screenId, final int row, final int col, final Goodie.Type type) {
 		WorldCoordinate coordinate = new WorldCoordinate(screenId, row, col);
 		// If goodie already exists, take out and replace
-		if (goodiesInWorld.get(coordinate) != null)
-			goodiesInWorld.remove(coordinate);
-		goodiesInWorld.put(coordinate, Goodie.newGoodie(type, ImmutablePoint2D.of(row, col), screenId, rsrc) );
+		removeGoodie(screenId, row, col);
+		Goodie newGoodie = Goodie.newGoodie(type, ImmutablePoint2D.of(row, col), screenId, rsrc);
+		goodiesInWorld.put(coordinate, newGoodie);
+		goodiesPerScreen.put(screenId, new GoodieLocationPair(newGoodie, coordinate) );
 	}
 	
-	public void removeGoodie(final int screenId, final int x, final int y) {
-		WorldCoordinate coordinate = new WorldCoordinate(screenId, x, y);
-		if (goodiesInWorld.get(coordinate) != null)
+	/**
+	 * 
+	 * Removes a goodie at the given position for the given screen. Goodie will be removed from all relevant structures.
+	 * If there is no goodie at the given location, this method does nothing.
+	 * 
+	 * @param screenId
+	 * @param row
+	 * @param col
+	 * 
+	 */
+	public void removeGoodie(final int screenId, final int row, final int col) {
+		WorldCoordinate coordinate = new WorldCoordinate(screenId, row, col);
+		if (goodiesInWorld.get(coordinate) != null) {
 			goodiesInWorld.remove(coordinate);
+			// We still have this goodie lurking somewhere in the other structure. Remove it there too.
+			Collection<GoodieLocationPair> screenGoodies = goodiesPerScreen.get(screenId);
+			for (Iterator<GoodieLocationPair> pairIt = screenGoodies.iterator(); pairIt.hasNext(); /* No op */ ) {
+				GoodieLocationPair pair = pairIt.next();
+				if (pair.location.getRow() == row && pair.location.getCol() == col) {
+					pairIt.remove();
+					// Only one to find. No need to keep searching there are not duplicates.
+					break;
+				}
+			}
+		}
 	}
 	
 	/**
@@ -1019,6 +1042,8 @@ public class World {
 	
 	// Holds a list of all goodies on a particlar screen Id. During screen reset, relevant goodies may
 	// need to be regenerated.
+	// Goodies removed from a world are also removed from this map in parallel. This acts only as an optimisation so that
+	// all goodies in a screen can be looked at at once (typically for drawing or updating)
 	private final Multimap<Integer, GoodieLocationPair> goodiesPerScreen;
 	
 	// When a world is initialised, hold a set of all blue and red keys. When taken, they will

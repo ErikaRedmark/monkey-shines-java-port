@@ -1,7 +1,6 @@
 package org.erikaredmark.monkeyshines.editor;
 
 import java.awt.AlphaComposite;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -135,22 +134,25 @@ public final class MapEditor extends JPanel {
 			srcX = currentId * (GameConstants.TILE_SIZE_X);
 			srcY = 0;
 			break;
-		default:
+		default :
 			indicatorImage = null;
 		}
 		
-		indicatorImage = new BufferedImage(GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y, sheet.getType() );
-		Graphics2D g = indicatorImage.createGraphics();
-		try {
-			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f) );
-			g.drawImage(sheet, 
-					    0, 0, 
-					    GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y, 
-					    srcX, srcY, 
-					    srcX + GameConstants.TILE_SIZE_X, srcY + GameConstants.TILE_SIZE_Y, 
-					    null);
-		} finally {
-			g.dispose();
+		// If sheet was null, a green square will be drawn instead.
+		if (sheet != null) {
+			indicatorImage = new BufferedImage(GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y, sheet.getType() );
+			Graphics2D g = indicatorImage.createGraphics();
+			try {
+				g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f) );
+				g.drawImage(sheet, 
+						    0, 0, 
+						    GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y, 
+						    srcX, srcY, 
+						    srcX + GameConstants.TILE_SIZE_X, srcY + GameConstants.TILE_SIZE_Y, 
+						    null);
+			} finally {
+				g.dispose();
+			}
 		}
 	}
 	
@@ -199,20 +201,21 @@ public final class MapEditor extends JPanel {
 		background.draw(g2d);
 		map.paint(g2d, world.getResource() );
 
-		// Paint an indicator to the current tile location. This depends on the 'paintbrush' selected.
+
 		drawTileIndicator(g2d);
 		// BELOW: Additional overlays that are not part of the actual world
 	}
 	
+	/**
+	 * Paint an indicator to the current tile location. This depends on the 'paintbrush' selected.
+	 * No tile indicator will be drawn if null. In that case, indicator depends on the higher-level
+	 * editor to draw.
+	 * 
+	 */
 	private void drawTileIndicator(Graphics2D g2d) {
-		int snapX = snapMouseX(mousePosition.x() );
-		int snapY = snapMouseY(mousePosition.y() );
-		if (indicatorImage == null) {
-			g2d.setColor(Color.green);
-			g2d.drawRect(snapX,
-						 snapY, 
-						 GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y);
-		} else {
+		int snapX = EditorMouseUtils.snapMouseX(mousePosition.x() );
+		int snapY = EditorMouseUtils.snapMouseY(mousePosition.y() );
+		if (indicatorImage != null) {
 			g2d.drawImage(indicatorImage, 
 						  snapX, snapY,
 						  snapX + GameConstants.TILE_SIZE_X, snapY + GameConstants.TILE_SIZE_Y, 
@@ -221,20 +224,7 @@ public final class MapEditor extends JPanel {
 						  null);
 		}
 	}
-	
-	/*
-	 * Snaps the mouse position to the top-left corner of whatever tile it is currently in. This is intended mostly for overlay drawing that needs
-	 * to start at that position.
-	 */
-	public int snapMouseX(final int X) {
-		int takeAwayX = X % GameConstants.TILE_SIZE_X;
-		return X - takeAwayX;
-	}
-	
-	public int snapMouseY(final int Y) {
-		int takeAwayY = Y % GameConstants.TILE_SIZE_Y;
-		return Y - takeAwayY;
-	}
+
 	
 	public enum TileBrush {
 		SOLIDS {
