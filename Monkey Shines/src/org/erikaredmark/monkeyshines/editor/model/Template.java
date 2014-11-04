@@ -101,6 +101,35 @@ public final class Template {
 	
 	/**
 	 * 
+	 * Creates a new tilemap that snuggly fits this template into a rectangular region. In the unlikely event this template
+	 * represents nothing, the returned tilemap is 1 tile by 1 tile and contains empty space
+	 * 
+	 * @return
+	 * 		a new tilemap that is sized to perfectly fit this template
+	 * 
+	 */
+	public TileMap fitToTilemap() {
+		// We need two passes. First pass, get the maximum row/col range to build the map. Second: actually place the tiles
+		// on the map
+		int maxRow = 0;
+		int maxCol = 0;
+		for (TemplateTile tile : this.templateTiles) {
+			if (tile.row > maxRow)  maxRow = tile.row;
+			if (tile.col > maxCol)  maxCol = tile.col;
+		}
+		
+		// Maximum row INDEX is not SIZE, hence the +1
+		TileMap fitMap = new TileMap(maxRow + 1, maxCol + 1);
+		
+		for (TemplateTile tile : this.templateTiles) {
+			fitMap.setTileRowCol(tile.row, tile.col, tile.tile);
+		}
+		
+		return fitMap;
+	}
+	
+	/**
+	 * 
 	 * Allows one to construct instances of templates. The builder allows the addition, one at a time, of tiles to the template. This fits
 	 * in with the way a template would typically be constructed by a user (one at a time)
 	 * <p/>

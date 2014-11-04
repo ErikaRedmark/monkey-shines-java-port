@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collections;
 
 import javax.swing.AbstractAction;
 import javax.swing.JDesktopPane;
@@ -26,6 +27,7 @@ import org.erikaredmark.monkeyshines.editor.dialog.CopyPasteDialog;
 import org.erikaredmark.monkeyshines.editor.dialog.CopyPasteDialog.CopyPasteConfiguration;
 import org.erikaredmark.monkeyshines.editor.dialog.GoToScreenDialog;
 import org.erikaredmark.monkeyshines.editor.dialog.NewWorldDialog;
+import org.erikaredmark.monkeyshines.editor.model.Template;
 import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.encoder.WorldIO;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
@@ -46,21 +48,34 @@ import com.google.common.base.Function;
 public class LevelEditor extends JFrame {
 	
 	private final JDesktopPane editorDesktop;
-	private final JInternalFrame paletteFrame;
+	private final JInternalFrame brushPaletteFrame;
 	private final JInternalFrame canvasFrame;
+	private final JInternalFrame templatePaletteFrame;
+
 	// Initialised each time the current world changes. Null and not added to the pane
 	// when there is no world. Callback called whenever a new world is loaded into the editor
-	private BrushPalette palette;
+	private BrushPalette brushPalette;
+	private TemplatePalette templatePalette;
 	private Function<WorldResource, Void> paletteUpdateCallback = new Function<WorldResource, Void>() {
 		@Override public Void apply(WorldResource rsrc) {
-			assert currentWorld != null : "Callback for palette activated too early!";
-			// Remove original palette if exists, create the new one, add it, and pack it.
-			if (palette != null) {
-				paletteFrame.remove(palette);
+			assert currentWorld != null : "Callback for palettes activated too early!";
+			// Remove original palettes if exists, create the new one, add it, and pack it.
+			if (brushPalette != null) {
+				brushPaletteFrame.remove(brushPalette);
 			}
-			palette = new BrushPalette(currentWorld, rsrc);
-			paletteFrame.add(palette, BorderLayout.CENTER);
-			paletteFrame.setVisible(true);
+			
+			if (templatePalette != null) {
+				templatePaletteFrame.remove(templatePalette);
+			}
+			
+			brushPalette = new BrushPalette(currentWorld, rsrc);
+			brushPaletteFrame.add(brushPalette, BorderLayout.CENTER);
+			brushPaletteFrame.setVisible(true);
+			
+			// TODO load list from somewhere else. (or debug list with hardcoded values)
+			templatePalette = new TemplatePalette(currentWorld, Collections.<Template>emptyList(), rsrc);
+			templatePaletteFrame.add(templatePalette, BorderLayout.CENTER);
+			templatePaletteFrame.setVisible(true);
 			return null;
 		}
 		
@@ -438,9 +453,15 @@ public class LevelEditor extends JFrame {
 
 	private LevelEditor() {
 		keys = new KeyboardInput();
-		paletteFrame = new JInternalFrame("Palette", true);
-		paletteFrame.setLayout(new BorderLayout() );
-		paletteFrame.setSize(new Dimension(240, 500) );
+		brushPaletteFrame = new JInternalFrame("Palette", true);
+		brushPaletteFrame.setLayout(new BorderLayout() );
+		brushPaletteFrame.setSize(new Dimension(240, 500) );
+		
+		templatePaletteFrame = new JInternalFrame("Templates", true);
+		templatePaletteFrame.setLayout(new BorderLayout() );
+		templatePaletteFrame.setSize(new Dimension(500, 240) );
+		// Default dock it to bottom of editor
+		templatePaletteFrame.setLocation(0, (GameConstants.LEVEL_ROWS * GameConstants.TILE_SIZE_Y) + 10);
 		// Finally, install listeners to handle resizing the tabbed pane to fit the parent and re-packing it.
 		
 		canvasFrame = new JInternalFrame("Level");
@@ -463,7 +484,7 @@ public class LevelEditor extends JFrame {
 		canvasFrame.setLocation(280, 0);
 		canvasFrame.setVisible(true);
 		
-		editorDesktop.add(paletteFrame);
+		editorDesktop.add(brushPaletteFrame);
 		// Set visible later when palette initialised
 		add(editorDesktop);
 

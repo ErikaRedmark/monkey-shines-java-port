@@ -36,11 +36,6 @@ import org.erikaredmark.util.swing.layout.WrapLayout;
  */
 @SuppressWarnings("serial")
 public class BrushPalette extends JPanel {
-
-	private final LevelDrawingCanvas mainCanvas;
-	
-	private static final int GRID_MARGIN_X = 4;
-	private static final int GRID_MARGIN_Y = 4;
 	
 	
 	/**
@@ -362,4 +357,10 @@ public class BrushPalette extends JPanel {
 		// Stores the color to change to on next click.
 		private Color nextColor;
 	}
+	
+
+	private final LevelDrawingCanvas mainCanvas;
+	
+	private static final int GRID_MARGIN_X = 4;
+	private static final int GRID_MARGIN_Y = 4;
 }
