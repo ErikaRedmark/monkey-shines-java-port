@@ -8,7 +8,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Collections;
+import java.util.Arrays;
 
 import javax.swing.AbstractAction;
 import javax.swing.JDesktopPane;
@@ -36,6 +36,8 @@ import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import org.erikaredmark.monkeyshines.logging.MonkeyShinesLog;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.resource.WorldResource.UseIntent;
+import org.erikaredmark.monkeyshines.tiles.CommonTile;
+import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
 import org.erikaredmark.util.BinaryLocation;
 
 import com.google.common.base.Function;
@@ -72,8 +74,22 @@ public class LevelEditor extends JFrame {
 			brushPaletteFrame.add(brushPalette, BorderLayout.CENTER);
 			brushPaletteFrame.setVisible(true);
 			
-			// TODO load list from somewhere else. (or debug list with hardcoded values)
-			templatePalette = new TemplatePalette(currentWorld, Collections.<Template>emptyList(), rsrc);
+			templatePalette = new TemplatePalette(
+				currentWorld, 
+				// DEBUG hardcoded templates to test
+				Arrays.asList(
+					new Template[] {
+						new Template.Builder().addTile(0, 0, CommonTile.of(1, StatelessTileType.SOLID) )
+											  .addTile(0, 2, CommonTile.of(2, StatelessTileType.THRU) )
+											  .addTile(2, 0, CommonTile.of(3, StatelessTileType.SCENE) )
+											  .build(),
+						new Template.Builder().addTile(0, 4, CommonTile.of(2, StatelessTileType.SOLID) )
+											  .addTile(1, 4, CommonTile.of(2, StatelessTileType.SOLID) )
+											  .addTile(2, 4, CommonTile.of(2, StatelessTileType.SOLID) )
+											  .addTile(1, 2, CommonTile.NONE)
+											  .build()
+					}), 
+				rsrc);
 			templatePaletteFrame.add(templatePalette, BorderLayout.CENTER);
 			templatePaletteFrame.setVisible(true);
 			return null;
@@ -459,9 +475,9 @@ public class LevelEditor extends JFrame {
 		
 		templatePaletteFrame = new JInternalFrame("Templates", true);
 		templatePaletteFrame.setLayout(new BorderLayout() );
-		templatePaletteFrame.setSize(new Dimension(500, 240) );
+		templatePaletteFrame.setSize(new Dimension(700, 200) );
 		// Default dock it to bottom of editor
-		templatePaletteFrame.setLocation(0, (GameConstants.LEVEL_ROWS * GameConstants.TILE_SIZE_Y) + 10);
+		templatePaletteFrame.setLocation(0, (GameConstants.LEVEL_ROWS * GameConstants.TILE_SIZE_Y) + 40);
 		// Finally, install listeners to handle resizing the tabbed pane to fit the parent and re-packing it.
 		
 		canvasFrame = new JInternalFrame("Level");
@@ -485,10 +501,11 @@ public class LevelEditor extends JFrame {
 		canvasFrame.setVisible(true);
 		
 		editorDesktop.add(brushPaletteFrame);
+		editorDesktop.add(templatePaletteFrame);
 		// Set visible later when palette initialised
 		add(editorDesktop);
 
-		setPreferredSize(new Dimension(960, 600) );
+		setPreferredSize(new Dimension(960, 700) );
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);

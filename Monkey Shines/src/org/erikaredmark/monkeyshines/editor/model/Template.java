@@ -130,6 +130,20 @@ public final class Template {
 	
 	/**
 	 * 
+	 * Returns an immutable list of the tiles that make up this template, in case special processing is required
+	 * beyond what the API offer (typically for drawing code)
+	 * 
+	 * @return
+	 * 		immutable list of tiles in this template
+	 * 
+	 */
+	public ImmutableList<TemplateTile> getTilesInTemplate() {
+		return templateTiles;
+	}
+	
+	
+	/**
+	 * 
 	 * Allows one to construct instances of templates. The builder allows the addition, one at a time, of tiles to the template. This fits
 	 * in with the way a template would typically be constructed by a user (one at a time)
 	 * <p/>
@@ -138,7 +152,7 @@ public final class Template {
 	 * @author Erika Redmark
 	 *
 	 */
-	public final class Builder {
+	public static final class Builder {
 
 		public Builder() { 
 			this(NO_FUNCTION);
@@ -229,7 +243,7 @@ public final class Template {
 	 * @author Erika Redmark
 	 *
 	 */
-	private final class TemplateTile {
+	public static final class TemplateTile {
 		
 		public final int row;
 		public final int col;

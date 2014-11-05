@@ -25,6 +25,7 @@ import org.erikaredmark.monkeyshines.Goodie;
 import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.Point2D;
 import org.erikaredmark.monkeyshines.Sprite;
+import org.erikaredmark.monkeyshines.TileMap;
 import org.erikaredmark.monkeyshines.World.GoodieLocationPair;
 import org.erikaredmark.monkeyshines.background.Background;
 import org.erikaredmark.monkeyshines.editor.MapEditor.TileBrush;
@@ -35,6 +36,8 @@ import org.erikaredmark.monkeyshines.editor.dialog.SetBackgroundDialog;
 import org.erikaredmark.monkeyshines.editor.dialog.SpriteChooserDialog;
 import org.erikaredmark.monkeyshines.editor.dialog.SpritePropertiesDialog;
 import org.erikaredmark.monkeyshines.editor.dialog.SpritePropertiesModel;
+import org.erikaredmark.monkeyshines.editor.model.Template;
+import org.erikaredmark.monkeyshines.editor.model.TemplateUtils;
 import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.encoder.WorldIO;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
@@ -372,8 +375,12 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 	 * 
 	 */
 	private void changeState(EditorState newState) {
-		// Make no state changes if the state isn't actually changing
-		if (currentState == newState)  return;
+		// Make no state changes if the state isn't actually changing. Still update the tile indicator: no state change can
+		// still mean the type of tile has changed, requiring redraw
+		if (currentState == newState) {
+			updateTileIndicator();
+			return;
+		}
 		
 		if (   newState == EditorState.EDITING_SPRITES
 			|| newState == EditorState.DELETING_SPRITES) {
@@ -396,7 +403,6 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 	}
 	
 	private void updateTileIndicator() {
-		// So far, the only possible state with an indicator that isn't generic is Goodie placement
 		if (currentState == EditorState.PLACING_GOODIES) {
 			BufferedImage goodieSheet = currentWorldEditor.getWorldResource().getGoodieSheet();
 			int srcX = currentGoodieType.getDrawX();
@@ -415,6 +421,21 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 			} finally {
 				g.dispose();
 			}
+		} else if (currentState == EditorState.PLACING_TEMPLATES) {
+			// draw the tilemap from the template onto a separate buffer with 50% transparency. This is a bit of a complicated indicator...
+			assert currentTemplate != null : "Null template during updating indicator";
+			
+			BufferedImage templateRendered = TemplateUtils.renderTemplate(currentTemplate, currentWorldEditor.getWorldResource() );
+			indicatorImage = new BufferedImage(templateRendered.getWidth(), templateRendered.getHeight(), templateRendered.getType() );
+			
+			Graphics2D g = indicatorImage.createGraphics();
+			try {
+				g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f) );
+				g.drawImage(templateRendered, 0, 0, null);
+			} finally {
+				g.dispose();
+			}
+			
 		} else {
 			indicatorImage = null;
 		}
@@ -477,6 +498,8 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 	 * <p/>
 	 * Since sprites are basically the same thing (an id for initial placement) this method can also handle
 	 * the sprite brush and will default the creation of the sprite to the id presented.
+	 * <p/>
+	 * This method can NOT handle {@code PaintbrushType.TEMPLATE}. Use {@code setTemplateBrush} instead.
 	 * 
 	 * @param type
 	 * 		the paintbrush type
@@ -506,9 +529,22 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 			currentSpriteId = id;
 			changeState(EditorState.PLACING_SPRITES);
 			break;
+		case TEMPLATE:
+			throw new RuntimeException("Templates must be set explicitly via 'setTemplateBrush'");
 		default:
 			throw new RuntimeException("method not updated to handle new brush type " + type);
 		}
+	}
+	
+	/**
+	 * 
+	 * Sets the current brush to be a template brush, using the given template as the template to be drawn.
+	 * 
+	 * @param template
+	 */
+	public void setTemplateBrush(Template template) {
+		currentTemplate = template;
+		changeState(EditorState.PLACING_TEMPLATES);
 	}
 	
 	/**
@@ -622,7 +658,7 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 		} else {
 			g2d.drawImage(indicatorImage, 
 				  snapX, snapY,
-				  snapX + GameConstants.TILE_SIZE_X, snapY + GameConstants.TILE_SIZE_Y, 
+				  snapX + indicatorImage.getWidth(), snapY + indicatorImage.getHeight(), 
 				  0, 0, 
 				  indicatorImage.getWidth(), indicatorImage.getHeight(), 
 				  null);
@@ -683,6 +719,26 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 
 				defaultClickAction(editor);
 			}
+		},
+		PLACING_TEMPLATES {
+
+			@Override
+			public void defaultClickAction(LevelDrawingCanvas editor) {
+				assert editor.currentTemplate != null : "Null template during drawing";
+				
+				TileMap map = editor.currentScreenEditor.getLevelScreen().getMap();
+				// TODO currently no support for offsets; always draws at top-left.
+				editor.currentTemplate.drawTo(map, 
+											  editor.mousePosition.y() / GameConstants.TILE_SIZE_Y, 
+											  editor.mousePosition.x() / GameConstants.TILE_SIZE_X, 
+											  0, 
+											  0);
+			}
+
+			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 
+				defaultClickAction(editor);
+			}
+			
 		},
 		
 		PLACING_SPRITES {
@@ -810,6 +866,9 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 	// Information about what clicking something will do
 	private Goodie.Type currentGoodieType;
 	private int currentSpriteId;
+	// May be null, but should never be accessed until Editor State goes to placing templates, which
+	// requires a non-null template to even get to that state.
+	private Template currentTemplate;
 	
 	private final Function<WorldResource, Void> worldLoaded;
 	

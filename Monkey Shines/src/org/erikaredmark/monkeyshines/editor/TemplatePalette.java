@@ -2,22 +2,18 @@ package org.erikaredmark.monkeyshines.editor;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-import org.erikaredmark.monkeyshines.GameConstants;
-import org.erikaredmark.monkeyshines.TileMap;
 import org.erikaredmark.monkeyshines.editor.model.Template;
+import org.erikaredmark.monkeyshines.editor.model.TemplateUtils;
 import org.erikaredmark.monkeyshines.menu.MenuUtils;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
-import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
 import org.erikaredmark.util.swing.layout.WrapLayout;
 
 /**
@@ -77,41 +73,20 @@ public final class TemplatePalette extends JPanel {
 	}
 	
 	private JButton createTemplateButton(final Template template, final LevelDrawingCanvas mainCanvas, final WorldResource rsrc) {
-		JButton templateButton = new JButton(new ImageIcon(renderTemplate(template, rsrc) ) );
+		JButton templateButton = new JButton(new ImageIcon(TemplateUtils.renderTemplate(template, rsrc) ) );
 		MenuUtils.renderImageOnly(templateButton);
 		MenuUtils.removeMargins(templateButton);
 		templateButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent event) {
 				// If we are in 'drawing' state, this sets the brush. Editing state means we want to modify the selected template.
-				// TODO modify state and set template
-				//mainCanvas.setTemplate(template);
+				// TODO modify state
+				mainCanvas.setTemplateBrush(template);
 			}
 		});
 		return templateButton;
 	}
 	
-	// Renders the given template to an image for display purposes.
-	private BufferedImage renderTemplate(final Template t, final WorldResource rsrc) {
-		// Currently, do no scaling. Just get a tilemap to fit and render that to the graphics
-		TileMap map = t.fitToTilemap();
-		BufferedImage icon = 
-			new BufferedImage(
-				map.getColumnCount() * GameConstants.TILE_SIZE_X,
-				map.getRowCount() * GameConstants.TILE_SIZE_Y,
-				// All the images should have the same time. Just grab the type from solids as a base.
-				rsrc.getStatelessTileTypeSheet(StatelessTileType.SOLID).getType() );
-		
-		Graphics2D g2d = icon.createGraphics();
-		try {
-			map.paint(g2d, rsrc);
-		} finally {
-			g2d.dispose();
-		}
-		
-		return icon;
-	}
-	
-	private static final int GRID_MARGIN_X = 4;
-	private static final int GRID_MARGIN_Y = 4;
+	private static final int GRID_MARGIN_X = 14;
+	private static final int GRID_MARGIN_Y = 14;
 	
 }
