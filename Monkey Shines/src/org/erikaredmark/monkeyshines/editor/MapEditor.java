@@ -8,20 +8,16 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.JPanel;
 
-import org.erikaredmark.monkeyshines.Conveyer;
 import org.erikaredmark.monkeyshines.GameConstants;
-import org.erikaredmark.monkeyshines.Hazard;
 import org.erikaredmark.monkeyshines.Point2D;
 import org.erikaredmark.monkeyshines.TileMap;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.background.Background;
 import org.erikaredmark.monkeyshines.bounds.IPoint2D;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
-import org.erikaredmark.monkeyshines.tiles.CollapsibleTile;
-import org.erikaredmark.monkeyshines.tiles.CommonTile;
+import org.erikaredmark.monkeyshines.tiles.TileType;
+import org.erikaredmark.monkeyshines.tiles.TileTypes;
 import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
-import org.erikaredmark.monkeyshines.tiles.ConveyerTile;
-import org.erikaredmark.monkeyshines.tiles.HazardTile;
 
 /**
  * 
@@ -229,46 +225,43 @@ public final class MapEditor extends JPanel {
 	public enum TileBrush {
 		SOLIDS {
 			@Override public void onClick(int pixelX, int pixelY, int id, World world, TileMap map) {
-				CommonTile tile = CommonTile.of(id, StatelessTileType.SOLID);
+				TileType tile = TileTypes.solidFromId(id);
 				map.setTileXY(pixelX / GameConstants.TILE_SIZE_X, pixelY / GameConstants.TILE_SIZE_Y, tile);
 			}
 		}, 
 		THRUS {
 			@Override public void onClick(int pixelX, int pixelY, int id, World world, TileMap map) {
-				CommonTile tile = CommonTile.of(id, StatelessTileType.THRU);
+				TileType tile = TileTypes.thruFromId(id);
 				map.setTileXY(pixelX / GameConstants.TILE_SIZE_X, pixelY / GameConstants.TILE_SIZE_Y, tile);
 			}
 		},
 		SCENES {
 			@Override public void onClick(int pixelX, int pixelY, int id, World world, TileMap map) {
-				CommonTile tile = CommonTile.of(id, StatelessTileType.SCENE);
+				TileType tile = TileTypes.sceneFromId(id);
 				map.setTileXY(pixelX / GameConstants.TILE_SIZE_X, pixelY / GameConstants.TILE_SIZE_Y, tile);
 			}
 		},
 		HAZARDS {
 			@Override public void onClick(int pixelX, int pixelY, int id, World world, TileMap map) {
-				Hazard hazard = world.getHazards().get(id);
-				HazardTile tile = HazardTile.forHazard(hazard);
+				TileType tile = TileTypes.hazardFromId(id, world);
 				map.setTileXY(pixelX / GameConstants.TILE_SIZE_X, pixelY / GameConstants.TILE_SIZE_Y, tile);
 			}
 		},
 		CONVEYERS_CLOCKWISE {
 			@Override public void onClick(int pixelX, int pixelY, int id, World world, TileMap map) {
-				Conveyer conveyer = world.getConveyers().get(id * 2);
-				ConveyerTile tile = new ConveyerTile(conveyer);
+				TileType tile = TileTypes.clockwiseConveyerFromId(id, world);
 				map.setTileXY(pixelX / GameConstants.TILE_SIZE_X, pixelY / GameConstants.TILE_SIZE_Y, tile);
 			}
 		}, 
 		CONVEYERS_ANTI_CLOCKWISE {
 			@Override public void onClick(int pixelX, int pixelY, int id, World world, TileMap map) {
-				Conveyer conveyer = world.getConveyers().get( (id * 2) + 1);
-				ConveyerTile tile = new ConveyerTile(conveyer);
+				TileType tile = TileTypes.anticlockwiseConveyerFromId(id, world);
 				map.setTileXY(pixelX / GameConstants.TILE_SIZE_X, pixelY / GameConstants.TILE_SIZE_Y, tile);
 			}
 		},
 		COLLAPSIBLE {
 			@Override public void onClick(int pixelX, int pixelY, int id, World world, TileMap map) {
-				CollapsibleTile tile = new CollapsibleTile(id);
+				TileType tile = TileTypes.collapsibleFromId(id);
 				map.setTileXY(pixelX / GameConstants.TILE_SIZE_X, pixelY / GameConstants.TILE_SIZE_Y, tile);
 			}
 		},
