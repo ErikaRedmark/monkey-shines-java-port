@@ -26,6 +26,7 @@ import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.Point2D;
 import org.erikaredmark.monkeyshines.Sprite;
 import org.erikaredmark.monkeyshines.TileMap;
+import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.World.GoodieLocationPair;
 import org.erikaredmark.monkeyshines.background.Background;
 import org.erikaredmark.monkeyshines.editor.MapEditor.TileBrush;
@@ -72,7 +73,7 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 	 * 		for other functions at require it in the main editor
 	 * 
 	 */
-	public LevelDrawingCanvas(final Function<WorldResource, Void> worldLoaded) {
+	public LevelDrawingCanvas(final Function<World, Void> worldLoaded) {
 		super();
 		this.setLayout(null);
 		this.worldLoaded = worldLoaded;
@@ -129,7 +130,7 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 		changeState(EditorState.USE_MAP_EDITOR);
 		// Map editor initialised in setting screen editor.
 		currentMapEditor.setBrushAndId(TileBrush.SOLIDS, 0);
-		worldLoaded.apply(rsrc);
+		worldLoaded.apply(currentWorldEditor.getWorld() );
 	}
 	
 	// Sets the current screen editor, removing if needed the current map editor for the screen and adding a new one
@@ -870,7 +871,7 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 	// requires a non-null template to even get to that state.
 	private Template currentTemplate;
 	
-	private final Function<WorldResource, Void> worldLoaded;
+	private final Function<World, Void> worldLoaded;
 	
 	// THESE MAY BE NULL!
 	private LevelScreenEditor currentScreenEditor;

@@ -72,7 +72,7 @@ public final class TemplateXmlReader {
 			
 			// We will use XPath to query for all Template nodes that are nested under the given world name
 			XPath worldTemplateQuery = XPathFactory.newInstance().newXPath();
-			XPathExpression expression = worldTemplateQuery.compile("/msleveleditor/world[@name='" + world.getWorldName() + "']/templates");
+			XPathExpression expression = worldTemplateQuery.compile("/msleveleditor/world[@name='" + world.getWorldName() + "']/templates/template");
 			
 			
 			
@@ -84,12 +84,14 @@ public final class TemplateXmlReader {
 				// This node should be a single <template> entry in the <templates> container. We can build a template from
 				// its type
 				boolean skipTemplate = false;
-				if (n.getLocalName().equals("template") ) {
+				if ("template".equals(n.getNodeName() ) ) {
 					Template.Builder templateBuilder = new Template.Builder();
 					NodeList tiles = n.getChildNodes();
 					for (int j = 0; j < tiles.getLength(); ++j) {
 						Node tile = tiles.item(j);
+						// Some nodes are just #text nodes. Skip them if they have not attributes
 						NamedNodeMap attribs = tile.getAttributes();
+						if (attribs == null) continue;
 						
 						Node rowNode = attribs.getNamedItem("row");
 						Node colNode = attribs.getNamedItem("col");
@@ -102,12 +104,12 @@ public final class TemplateXmlReader {
 							break;
 						}
 						
-						int row = Integer.parseInt(rowNode.getLocalName() );
-						int col = Integer.parseInt(colNode.getLocalName() );
-						int id = Integer.parseInt(idNode.getLocalName() );
+						int row = Integer.parseInt(rowNode.getNodeValue() );
+						int col = Integer.parseInt(colNode.getNodeValue() );
+						int id = Integer.parseInt(idNode.getNodeValue() );
 						
 						TileType tileType = null;
-						switch (typeNode.getLocalName() ) {
+						switch (typeNode.getNodeValue() ) {
 						case SOLIDS:
 							tileType = TileTypes.solidFromId(id);
 							break;
