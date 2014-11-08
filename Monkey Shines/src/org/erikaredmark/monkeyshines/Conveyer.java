@@ -110,4 +110,8 @@ public final class Conveyer {
 		 */
 		protected abstract int drawYOffset();
 	}
+	
+	@Override public String toString() {
+		return "Conveyer of id " + id + " with rotation " + rotation;
+	}
 }

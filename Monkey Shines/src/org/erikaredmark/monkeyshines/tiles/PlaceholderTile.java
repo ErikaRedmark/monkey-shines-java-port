@@ -81,5 +81,9 @@ public class PlaceholderTile implements TileType {
     	CONVEYER_ANTI_CLOCKWISE,
     	CONVEYER_CLOCKWISE;
     }
+    
+    @Override public String toString() {
+    	return "Placeholder tile of id " + id + " holding for type " + type;
+    }
 
 }

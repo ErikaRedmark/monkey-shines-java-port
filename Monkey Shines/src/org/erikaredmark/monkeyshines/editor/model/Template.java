@@ -130,6 +130,23 @@ public final class Template {
 	
 	/**
 	 * 
+	 * Returns a template builder class representing the state of this template so it can be mutated. Modifying the returned
+	 * builder does not affect this object.
+	 * 
+	 * @return
+	 * 		new builder object with the initial state of this template
+	 * 
+	 */
+	public Template.Builder mutableBuilder() {
+		Template.Builder builder = new Template.Builder();
+		for (TemplateTile t : templateTiles) {
+			builder.addTile(t.row, t.col, t.tile);
+		}
+		return builder;
+	}
+	
+	/**
+	 * 
 	 * Returns an immutable list of the tiles that make up this template, in case special processing is required
 	 * beyond what the API offer (typically for drawing code)
 	 * 

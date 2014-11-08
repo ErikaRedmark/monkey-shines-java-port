@@ -81,6 +81,7 @@ public class LevelEditor extends JFrame {
 			brushPalette = new BrushPalette(currentWorld, world.getResource() );
 			brushPaletteFrame.add(brushPalette, BorderLayout.CENTER);
 			brushPaletteFrame.setVisible(true);
+			brushPaletteFrame.repaint();
 			
 			// Load templates for the given world. TODO for now we ignore issues
 			List<Template> worldTemplates = Collections.emptyList();
@@ -102,6 +103,7 @@ public class LevelEditor extends JFrame {
 				world.getResource() );
 			templatePaletteFrame.add(templatePalette, BorderLayout.CENTER);
 			templatePaletteFrame.setVisible(true);
+			templatePaletteFrame.repaint();
 			return null;
 		}
 		

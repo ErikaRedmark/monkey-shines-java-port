@@ -95,5 +95,9 @@ public class ConveyerTile implements TileType {
 	@Override public TileType copy() {
 		return new ConveyerTile(conveyer);
 	}
+	
+	@Override public String toString() {
+		return conveyer.toString();
+	}
 
 }

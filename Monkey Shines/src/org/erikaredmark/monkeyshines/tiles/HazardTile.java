@@ -227,5 +227,8 @@ public class HazardTile implements TileType {
 		}
 	}
 
+	@Override public String toString() {
+		return hazard.toString() + ": exploding state is " + exploding + " and hazard life status is " + isDead();
+	}
 
 }

@@ -163,5 +163,11 @@ public class CommonTile implements TileType {
 		SCENE,
 		NONE;
 	}
+	
+	@Override public String toString() {
+		return   this.equals(CommonTile.NONE)
+			   ? "No Tile"
+			   : "Common Tile of id " + id + " with underlying type " + underlyingType;
+	}
 
 }

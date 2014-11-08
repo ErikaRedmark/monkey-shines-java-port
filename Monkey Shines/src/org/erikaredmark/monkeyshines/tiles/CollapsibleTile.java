@@ -90,4 +90,8 @@ public final class CollapsibleTile implements TileType {
 					  drawFromX + GameConstants.TILE_SIZE_X, drawFromY + GameConstants.TILE_SIZE_Y, // Source 2 (bottom right)
 					  null);
 	}
+	
+	@Override public String toString() {
+		return "Collapsible Tile of id " + id + " with damange " + damage;
+	}
 }

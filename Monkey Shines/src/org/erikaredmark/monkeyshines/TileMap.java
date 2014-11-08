@@ -203,6 +203,81 @@ public class TileMap {
 		return sub;
 	}
 	
+
+	/**
+	 * 
+	 * Indicates a direction in the tilemap, intended for the {@code expand} and {@code shrink} methods
+	 * 
+	 * @author Erika Redmark
+	 *
+	 */
+	public enum Direction { NORTH, SOUTH, EAST, WEST }
+	
+	/**
+	 * 
+	 * Creates a new instance of the current tilemap, but with the tilemap resized in some given direction.
+	 * The direction is basically thought of as extending or pinching the map towards that direction. It is intended to know
+	 * where the relative locations of all the current existing tiles on the current map should be in relation to
+	 * the new, bigger map.
+	 * <p/>
+	 * If the map is shrunk in some direction, it means that that amount of rows or columns will be deleted starting
+	 * from that direction. Any tiles that were placed there will be gone in the new map.
+	 * <p/>
+	 * If the map is expanded in some direction, all tiles in the new rows/cols will be empty.
+	 * <p/>
+	 * This method returns a deep copied version of the current map, as the size of a tile map is immutable. As such,
+	 * it is only intended to be used from the level editor. 
+	 * 
+	 * @param amount 
+	 * 
+	 * @param dir
+	 * 		the direction to expand into for the new map
+	 * 
+	 * @return
+	 * 		new instance of the tile map, with a deep copy of the current map and the row/col sized changed according to the
+	 * 		expansion rules.
+	 * 
+	 */
+	public TileMap resize(int amount, Direction dir) {
+		// Determine the new size of the map
+		// Direction will tell us which way to 'shift' the existing tile
+		int newRows = rows;
+		int newCols = cols;
+		
+		int rowShift = 0;
+		int colShift = 0;
+		
+		switch(dir) {
+		case NORTH:
+			rowShift = -(amount);
+			// Break omitted: SOUTH needs no shifting
+		case SOUTH:
+			newRows += amount;
+			break;
+		case WEST:
+			colShift = -(amount);
+			// break omnitted: EAST needs no shifting
+		case EAST:
+			newCols += amount;
+			break;
+		}
+		
+		// Idea: getTileRowCol returns none for tiles out of range. So, we fill in the new map only using getTileRowAndCol, applying required
+		// 'shifts' to get the old map to overlay over the new map. If we try to get a position out of range, like a negative value, due to an
+		// expansion either NORTH or WEST, we just fill the newly created row with nones. On the contrary, for a shrinking operation, we will
+		// never even call getTileRowCol for certain values, hence properly meaning they aren't copied to the new map.
+		
+		TileMap newMap = new TileMap(newRows, newCols);
+		for (int i = 0; i < newRows; ++i) {
+			for (int j = 0; j < newCols; ++j) {
+				// If out of bounds, NONE is returned. That's actually what we want, so don't worry if we shift out of reach
+				newMap.setTileRowCol(i, j, this.getTileRowCol(i + rowShift, j + colShift) );
+			}
+		}
+		
+		return newMap;
+	}
+	
 	/**
 	 * 
 	 * Returns the tile at the given row/col position.

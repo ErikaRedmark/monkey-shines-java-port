@@ -221,7 +221,6 @@ public final class MapEditor extends JPanel {
 		}
 	}
 
-	
 	public enum TileBrush {
 		SOLIDS {
 			@Override public void onClick(int pixelX, int pixelY, int id, World world, TileMap map) {
