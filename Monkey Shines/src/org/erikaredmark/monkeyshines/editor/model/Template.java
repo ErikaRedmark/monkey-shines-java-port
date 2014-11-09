@@ -189,6 +189,14 @@ public final class Template {
 		return result;
 	}
 	
+	@Override public String toString() {
+		StringBuilder builder = new StringBuilder();
+		for (TemplateTile t : templateTiles) {
+			builder.append(t.toString() ).append(System.lineSeparator() );
+		}
+		return builder.toString();
+	}
+	
 	/**
 	 * 
 	 * Allows one to construct instances of templates. The builder allows the addition, one at a time, of tiles to the template. This fits
@@ -318,6 +326,10 @@ public final class Template {
 			result += result * 31 + row;
 			result += result * 31 + col;
 			return result;
+		}
+		
+		@Override public String toString() {
+			return "Tile: " + tile + " at row [ " + row + " ] and col [ " + col + " ]";
 		}
 	}
 	

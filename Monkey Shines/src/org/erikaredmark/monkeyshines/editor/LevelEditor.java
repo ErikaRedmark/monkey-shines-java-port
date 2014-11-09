@@ -11,7 +11,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,13 +65,14 @@ public class LevelEditor extends JFrame {
 	private final JInternalFrame templatePaletteFrame;
 	// There may be many open templates at once. Stored as associative because editors should not open
 	// twice for the same template.
+	Map<Template, JInternalFrame> openTemplateEditors = new HashMap<>();
 
 	// Initialised each time the current world changes. Null and not added to the pane
 	// when there is no world. Callback called whenever a new world is loaded into the editor
 	private BrushPalette brushPalette;
 	private TemplatePalette templatePalette;
 	private Function<World, Void> paletteUpdateCallback = new Function<World, Void>() {
-		@Override public Void apply(World world) {
+		@Override public Void apply(final World world) {
 			assert currentWorld != null : "Callback for palettes activated too early!";
 			// Remove original palettes if exists, create the new one, add it, and pack it.
 			if (brushPalette != null) {
@@ -102,13 +105,61 @@ public class LevelEditor extends JFrame {
 			templatePalette = new TemplatePalette(
 				currentWorld, 
 				worldTemplates,
-				world.getResource() );
+				world.getResource(),
+				newTemplateEditorRequestFunction);
+			
 			templatePaletteFrame.add(templatePalette, BorderLayout.CENTER);
 			templatePaletteFrame.setVisible(true);
 			templatePaletteFrame.repaint();
 			return null;
 		}
 		
+	};
+	
+	private Function<Template, Void> newTemplateEditorRequestFunction = new Function<Template, Void>() {
+		@Override public Void apply(Template t) {
+			// Is the template editor already open? Set focus
+			if (openTemplateEditors.containsKey(t) ) {
+				JInternalFrame openEditor = openTemplateEditors.get(t);
+				openEditor.grabFocus();
+				openEditor.moveToFront();
+				
+			// Otherwise, open a new template editor for this template.
+			} else {
+				/*
+				TODO currently not working properly: frame is too big and screws up all other drawing
+				final JInternalFrame newEditor = new JInternalFrame("Template Editor");
+				newEditor.setLayout(new BorderLayout() );
+				Function<Template, Void> templateSaveFunction =
+					new Function<Template, Void>() {
+						@Override public Void apply(Template t) {
+							System.out.println("Save (does nothing yet) ");
+							
+							// No matter what, this function must be responsible for removing the internal
+							// frame from the editor itself
+							LevelEditor.this.remove(newEditor);
+							return null;
+						}
+					};
+					
+				final World world = currentWorld.getWorldEditor().getWorld();
+
+				TemplateEditor newTemplateEditor = 
+					t != null
+				  ? new TemplateEditor(t, world, templateSaveFunction)
+				  : new TemplateEditor(world, templateSaveFunction);
+				  
+				newEditor.add(newTemplateEditor, BorderLayout.CENTER);
+				add(newEditor);
+				newEditor.moveToFront();
+				newEditor.setVisible(true);
+				
+				openTemplateEditors.put(t, newEditor);
+				*/
+			}
+			
+			return null;
+		}
 	};
 	
 	private final LevelDrawingCanvas currentWorld;
