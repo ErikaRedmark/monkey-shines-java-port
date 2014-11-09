@@ -96,6 +96,27 @@ public class ConveyerTile implements TileType {
 		return new ConveyerTile(conveyer);
 	}
 	
+	/**
+	 * 
+	 * Equality of a conveyer tile does NOT depend on state information. All that matters is that it refers to the same underlying
+	 * type of conveyer.
+	 * 
+	 */
+	@Override public boolean equals(Object o) {
+		if (o == this)  return true;
+		if (!(o instanceof ConveyerTile) )  return false;
+		
+		ConveyerTile other = (ConveyerTile) o;
+		
+		return conveyer.equals(other.conveyer);
+	}
+	
+	@Override public int hashCode() {
+		int result = 17;
+		result += result * 31 + conveyer.hashCode();
+		return result;
+	}
+	
 	@Override public String toString() {
 		return conveyer.toString();
 	}

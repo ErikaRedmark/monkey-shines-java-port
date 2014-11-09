@@ -30,6 +30,9 @@ import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
  * <p/>
  * This panel does not handle mouse events itself. The component containing this editor must handle mouse events and forward them
  * to the editor if it cannot handle them itself. 
+ * <p/>
+ * Once created with a tilemap, the editor cannot be assigned a different tilemap. A new {@code MapEditor} instance would have
+ * to be created
  * 
  * @author Erika Redmark
  *
@@ -71,6 +74,44 @@ public final class MapEditor extends JPanel {
 		setDoubleBuffered(true);
 		
 		updateTileIndicator();
+	}
+	
+	/**
+	 * 
+	 * Returns the backing tilemap to this editor. Changes to the returned tilemap WILL be reflected in the editor; this is
+	 * not a copy.
+	 * 
+	 * @return
+	 * 		tilemap for this editor.
+	 * 
+	 */
+	public TileMap getTileMap() {
+		return map;
+	}
+	
+	/**
+	 * 
+	 * Returns the background used for the map editor. The returned object cannot be used to modify this object's background.
+	 * 
+	 * @return
+	 * 		the tilemap background.
+	 * 
+	 */
+	public Background getMapBackground() {
+		return background;
+	}
+	
+	/**
+	 * 
+	 * Returns the world that this editor was created with. Modifications to the returned world affect the same world
+	 * object that backs this tilemap.
+	 * 
+	 * @return
+	 * 		the world
+	 * 
+	 */
+	public World getWorld() {
+		return world;
 	}
 	
 	/**

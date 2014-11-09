@@ -27,7 +27,7 @@ public class TileMap {
 	 * 
 	 * Creates a new tilemap at the given number of rows and columns.
 	 * <p/>
-	 * All tiles are initialised to the empty tile (not null)
+	 * All tiles are initialised to the empty tilenot null)
 	 * 
 	 * @param rows
 	 * 		rows in the tilemap
@@ -401,6 +401,49 @@ public class TileMap {
 	 */
 	public TileType[] internalMap() {
 		return map;
+	}
+	
+	@Override public boolean equals(Object o) {
+		if (o == this) return true;
+		if ( !(o instanceof TileMap) ) return false;
+		
+		TileMap other = (TileMap) o;
+		
+		// check size
+		if (   other.rows != this.rows
+		    || other.cols != this.cols) {
+			
+			return false;
+			
+		}
+		
+		// Now check underlying tiles for iteration order
+		// Not the size check is NOT optional. Two differently sized maps could theoretically have the same tile type iteration order.
+		TileType[] myTiles = this.internalMap();
+		TileType[] otherTiles = other.internalMap();
+		
+		// If row and col check checked out the lengths MUST be the same
+		assert myTiles.length == otherTiles.length : "Lengths should be identical if row/col check succeeded";
+		
+		for (int i = 0; i < myTiles.length; ++i) {
+			if (!(myTiles[i].equals(otherTiles[i]) ) ) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	@Override public int hashCode() {
+		int result = 17;
+		result += result * 31 + rows;
+		result += result * 31 + cols;
+		
+		for (int i = 0; i < map.length; ++i) {
+			result += map[i].hashCode();
+		}
+		
+		return result;
 	}
 
 	private int rows;

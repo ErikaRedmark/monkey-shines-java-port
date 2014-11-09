@@ -61,6 +61,8 @@ public class LevelEditor extends JFrame {
 	private final JInternalFrame brushPaletteFrame;
 	private final JInternalFrame canvasFrame;
 	private final JInternalFrame templatePaletteFrame;
+	// There may be many open templates at once. Stored as associative because editors should not open
+	// twice for the same template.
 
 	// Initialised each time the current world changes. Null and not added to the pane
 	// when there is no world. Callback called whenever a new world is loaded into the editor

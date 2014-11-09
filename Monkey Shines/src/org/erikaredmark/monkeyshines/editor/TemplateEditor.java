@@ -6,14 +6,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
-import javax.swing.JDialog;
+import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicArrowButton;
 
 import org.erikaredmark.monkeyshines.TileMap;
+import org.erikaredmark.monkeyshines.TileMap.Direction;
 import org.erikaredmark.monkeyshines.World;
+import org.erikaredmark.monkeyshines.background.Background;
 import org.erikaredmark.monkeyshines.background.SingleColorBackground;
 import org.erikaredmark.monkeyshines.editor.model.Template;
+
+import com.google.common.base.Function;
 
 /**
  * 
@@ -25,7 +29,7 @@ import org.erikaredmark.monkeyshines.editor.model.Template;
  *
  */
 @SuppressWarnings("serial")
-public class TemplateEditor extends JDialog {
+public class TemplateEditor extends JPanel {
 
 	/**
 	 * 
@@ -37,18 +41,18 @@ public class TemplateEditor extends JDialog {
 	 * @param world
 	 * 		the world the template is created for
 	 * 
+	 * @param saveAction
+	 * 		called when the template is 'saved'. Passes the template that was saved. Typically
+	 * 		this saves the template somewhere for future use and 'closes' this panel.
+	 * 
 	 */
-	public TemplateEditor(Template initial, World world) {
-		
-		currentTemplate =   initial != null
-						  ? initial.mutableBuilder()
-						  : new Template.Builder();
+	public TemplateEditor(Template initial, World world, Function<Template, Void> saveAction) {
 		
 		TileMap map =   initial != null
 				      ? initial.fitToTilemap()
 				      : new TileMap(3, 3);
 			
-		final MapEditor internalEditor = new MapEditor(map, new SingleColorBackground(Color.BLACK), world);
+		internalEditor = new MapEditor(map, new SingleColorBackground(Color.BLACK), world);
 		
 		setLayout(new BorderLayout() );
 		
@@ -58,64 +62,93 @@ public class TemplateEditor extends JDialog {
 		// These do not modify the template. They modify the size of the map in the editor
 		
 		// TOP
+		JPanel topAll = new JPanel(new BorderLayout() );
 		JButton topExpand = new BasicArrowButton(SwingConstants.NORTH);
 		topExpand.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-				//internalEditor.expand(MapEditor.Direction.UP);
+				TileMap newMap = internalEditor.getTileMap().resize(1, Direction.NORTH);
+				replaceMap(newMap);
 			}
 		});
 		
 		JButton topShrink = new BasicArrowButton(SwingConstants.SOUTH);
 		topShrink.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-				//internalEditor.shrink(MapEditor.Direction.UP);
+				TileMap newMap = internalEditor.getTileMap().resize(-1, Direction.NORTH);
+				replaceMap(newMap);
 			}
 		});
 		
+		topAll.add(topExpand, BorderLayout.WEST);
+		topAll.add(topShrink, BorderLayout.EAST);
+		
 		// LEFT
+		JPanel leftAll = new JPanel(new BorderLayout() );
 		JButton leftExpand = new BasicArrowButton(SwingConstants.WEST);
 		leftExpand.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-				//internalEditor.expand(MapEditor.Direction.LEFT);
+				TileMap newMap = internalEditor.getTileMap().resize(1, Direction.WEST);
+				replaceMap(newMap);
 			}
 		});
 		
 		JButton leftShrink = new BasicArrowButton(SwingConstants.EAST);
 		leftShrink.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-				//internalEditor.shrink(MapEditor.Direction.LEFT);
+				TileMap newMap = internalEditor.getTileMap().resize(-1, Direction.WEST);
+				replaceMap(newMap);
 			}
 		});
 		
+		leftAll.add(leftExpand, BorderLayout.NORTH);
+		leftAll.add(leftShrink, BorderLayout.SOUTH);
+		
 		// BOTTOM
+		JPanel bottomAll = new JPanel(new BorderLayout() );
 		JButton bottomExpand = new BasicArrowButton(SwingConstants.SOUTH);
 		bottomExpand.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-//				internalEditor.expand(MapEditor.Direction.BOTTOM);
+				TileMap newMap = internalEditor.getTileMap().resize(1, Direction.SOUTH);
+				replaceMap(newMap);
 			}
 		});
 		
 		JButton bottomShrink = new BasicArrowButton(SwingConstants.NORTH);
 		bottomShrink.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-//				internalEditor.shrink(MapEditor.Direction.BOTTOM);
+				TileMap newMap = internalEditor.getTileMap().resize(-1, Direction.SOUTH);
+				replaceMap(newMap);
 			}
 		});
 		
+		bottomAll.add(bottomExpand, BorderLayout.WEST);
+		bottomAll.add(bottomShrink, BorderLayout.EAST);
+		
 		// RIGHT
+		JPanel rightAll = new JPanel(new BorderLayout() );
 		JButton rightExpand = new BasicArrowButton(SwingConstants.EAST);
 		rightExpand.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-//				internalEditor.expand(MapEditor.Direction.RIGHT);
+				TileMap newMap = internalEditor.getTileMap().resize(1, Direction.EAST);
+				replaceMap(newMap);
 			}
 		});
 		
-		JButton rightShrink = new BasicArrowButton(SwingConstants.EAST);
+		JButton rightShrink = new BasicArrowButton(SwingConstants.WEST);
 		rightShrink.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-//				internalEditor.shrink(MapEditor.Direction.RIGHT);
+				TileMap newMap = internalEditor.getTileMap().resize(-1, Direction.EAST);
+				replaceMap(newMap);
 			}
 		});
+		
+		rightAll.add(rightExpand, BorderLayout.NORTH);
+		rightAll.add(rightShrink, BorderLayout.SOUTH);
+		
+		add(topAll);
+		add(leftAll);
+		add(bottomAll);
+		add(rightAll);
 		
 	}
 	
@@ -126,12 +159,36 @@ public class TemplateEditor extends JDialog {
 	 * @param world
 	 * 		the world the template is created for
 	 * 
+	 * @param saveAction
+	 * 		called when the template is 'saved'. Passes the template that was saved. Typically
+	 * 		this saves the template somewhere for future use and 'closes' this panel.
+	 * 
 	 */
-	public TemplateEditor(World world) {
-		this(null, world);
+	public TemplateEditor(World world, Function<Template, Void> saveAction) {
+		this(null, world, saveAction);
 	}
 	
+	/**
+	 * 
+	 * Replaces the current map editor with an editor for the new map, automatically handling removing the component
+	 * from the view and replacing it, and then resizing all relevant components.
+	 * 
+	 * @param newMap
+	 * 		the new map to be editing. Typically a resized version of the older one
+	 * 
+	 */
+	private void replaceMap(final TileMap newMap) {
+		Background background = internalEditor.getMapBackground();
+		World world = internalEditor.getWorld();
+		
+		remove(internalEditor);
+		
+		internalEditor = new MapEditor(newMap, background, world);
+		
+		add(internalEditor, BorderLayout.CENTER);
+	}
 	
-	private Template.Builder currentTemplate;
+	// Modified whenever tilemap is resized.
+	private MapEditor internalEditor;
 	
 }

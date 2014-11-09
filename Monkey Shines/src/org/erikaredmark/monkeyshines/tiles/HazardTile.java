@@ -227,6 +227,27 @@ public class HazardTile implements TileType {
 		}
 	}
 
+	/**
+	 * 
+	 * Equality of a hazard tile depends on only the underlying hazard type, not state information. This is important: an exploded
+	 * bomb (hazard id 0) is equal to an unexploded bomb (hazard id 0).
+	 * 
+	 */
+	@Override public boolean equals(Object o) {
+		if (o == this)  return true;
+		if (!(o instanceof HazardTile) )  return false;
+		
+		HazardTile other = (HazardTile) o;
+		
+		return hazard.equals(other.hazard);
+	}
+	
+	@Override public int hashCode() {
+		int result = 17;
+		result += result * 31 + hazard.hashCode();
+		return result;
+	}
+	
 	@Override public String toString() {
 		return hazard.toString() + ": exploding state is " + exploding + " and hazard life status is " + isDead();
 	}

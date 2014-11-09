@@ -235,6 +235,14 @@ public final class Hazard implements Comparable<Hazard> {
 		       && this.deathAnimation == that.deathAnimation;
 	}
 	
+	@Override public int hashCode() {
+		int result = 17;
+		result += result * 31 + id;
+		result += result * 31 + (explodes ? 1 : 0);
+		result += result * 31 + deathAnimation.hashCode();
+		return result;
+	}
+	
 	/**
 	 * 
 	 * Returns the id of the hazard preceeded by the phrase "Hazard ". This is intended for debugging purposes only. No code should

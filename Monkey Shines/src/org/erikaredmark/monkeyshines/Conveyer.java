@@ -111,6 +111,23 @@ public final class Conveyer {
 		protected abstract int drawYOffset();
 	}
 	
+	@Override public boolean equals(Object o) {
+		if (o == this)  return true;
+		if (!(o instanceof Conveyer) )  return false;
+		
+		Conveyer other = (Conveyer) o;
+		
+		return    id == other.id
+			   && rotation.equals(other.rotation);
+	}
+	
+	@Override public int hashCode() {
+		int result = 17;
+		result += result * 31 + id;
+		result += result * 31 + rotation.hashCode();
+		return result;
+	}
+	
 	@Override public String toString() {
 		return "Conveyer of id " + id + " with rotation " + rotation;
 	}

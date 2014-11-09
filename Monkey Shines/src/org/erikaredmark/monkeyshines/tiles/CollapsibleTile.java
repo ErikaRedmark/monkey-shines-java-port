@@ -91,6 +91,21 @@ public final class CollapsibleTile implements TileType {
 					  null);
 	}
 	
+	@Override public boolean equals(Object o) {
+		if (o == this)  return true;
+		if (!(o instanceof CollapsibleTile) )  return false;
+		
+		CollapsibleTile other = (CollapsibleTile) o;
+		
+		return this.id == other.id;
+	}
+	
+	@Override public int hashCode() {
+		int result = 17;
+		result += result * 31 + id;
+		return result;
+	}
+	
 	@Override public String toString() {
 		return "Collapsible Tile of id " + id + " with damange " + damage;
 	}

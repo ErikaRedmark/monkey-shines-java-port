@@ -81,6 +81,23 @@ public class PlaceholderTile implements TileType {
     	CONVEYER_ANTI_CLOCKWISE,
     	CONVEYER_CLOCKWISE;
     }
+
+	@Override public boolean equals(Object o) {
+		if (o == this)  return true;
+		if (!(o instanceof PlaceholderTile) )  return false;
+		
+		PlaceholderTile other = (PlaceholderTile) o;
+		
+		return    id == other.id
+			   && type.equals(other.type);
+	}
+	
+	@Override public int hashCode() {
+		int result = 17;
+		result += result * 31 + id;
+		result += result * 31 + type.hashCode();
+		return result;
+	}
     
     @Override public String toString() {
     	return "Placeholder tile of id " + id + " holding for type " + type;

@@ -164,6 +164,23 @@ public class CommonTile implements TileType {
 		NONE;
 	}
 	
+	@Override public boolean equals(Object o) {
+		if (o == this)  return true;
+		if (!(o instanceof CommonTile) )  return false;
+		
+		CommonTile other = (CommonTile) o;
+		
+		return    this.id == other.id
+			   && this.underlyingType.equals(other.underlyingType);
+	}
+	
+	@Override public int hashCode() {
+		int result = 17;
+		result += result * 31 + underlyingType.hashCode();
+		result += result * 31 + id;
+		return result;
+	}
+	
 	@Override public String toString() {
 		return   this.equals(CommonTile.NONE)
 			   ? "No Tile"

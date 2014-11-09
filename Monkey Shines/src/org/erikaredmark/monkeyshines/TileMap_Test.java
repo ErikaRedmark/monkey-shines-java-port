@@ -3,6 +3,7 @@ package org.erikaredmark.monkeyshines;
 import static org.junit.Assert.*;
 
 import org.erikaredmark.monkeyshines.TileMap.Direction;
+import org.erikaredmark.monkeyshines.tiles.CollapsibleTile;
 import org.erikaredmark.monkeyshines.tiles.CommonTile;
 import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
 import org.erikaredmark.monkeyshines.tiles.TileType;
@@ -173,4 +174,59 @@ public final class TileMap_Test {
 		testTwoMaps(expectedIterationOrder, underlyingMap);
 	}
 	
+	// Equality Tests
+	@Test public void equalMaps() {
+		TileMap first = new TileMap(4, 3);
+		
+		first.setTileRowCol(0, 0, CommonTile.of(13, StatelessTileType.SOLID) );
+		first.setTileRowCol(3, 1, CommonTile.of(3, StatelessTileType.THRU) );
+		first.setTileRowCol(1, 2, new CollapsibleTile(1) );
+		first.setTileRowCol(3, 2, CommonTile.of(4, StatelessTileType.SCENE) );
+		
+		TileMap second = new TileMap(4, 3);
+		
+		second.setTileRowCol(0, 0, CommonTile.of(13, StatelessTileType.SOLID) );
+		second.setTileRowCol(3, 1, CommonTile.of(3, StatelessTileType.THRU) );
+		second.setTileRowCol(1, 2, new CollapsibleTile(1) );
+		second.setTileRowCol(3, 2, CommonTile.of(4, StatelessTileType.SCENE) );
+		
+		assertEquals(first, second);
+		assertEquals(second, first);
+		
+		assertEquals(first.hashCode(), second.hashCode() );
+	}
+	
+	@Test public void unequalMapsWrongTypes() {
+		TileMap first = new TileMap(4, 3);
+		
+		first.setTileRowCol(0, 0, CommonTile.of(13, StatelessTileType.SOLID) );
+		first.setTileRowCol(3, 1, CommonTile.of(3, StatelessTileType.THRU) );
+		first.setTileRowCol(1, 2, new CollapsibleTile(1) );
+		first.setTileRowCol(3, 2, CommonTile.of(4, StatelessTileType.SCENE) );
+		
+		TileMap second = new TileMap(4, 3);
+		
+		second.setTileRowCol(0, 0, CommonTile.of(13, StatelessTileType.SOLID) );
+		second.setTileRowCol(3, 1, CommonTile.of(3, StatelessTileType.SOLID) );
+		second.setTileRowCol(1, 2, new CollapsibleTile(1) );
+		second.setTileRowCol(3, 2, CommonTile.of(4, StatelessTileType.SCENE) );
+		
+		assertNotEquals(first, second);
+		assertNotEquals(second, first);
+	}
+	
+	@Test public void unequalMapsWrongSize() {
+		TileMap first = new TileMap(4, 4);
+		
+		first.setTileRowCol(0, 0, CommonTile.of(13, StatelessTileType.SOLID) );
+		first.setTileRowCol(1, 1, CommonTile.of(3, StatelessTileType.THRU) );
+		
+		TileMap second = new TileMap(8, 8);
+		
+		second.setTileRowCol(0, 0, CommonTile.of(13, StatelessTileType.SOLID) );
+		second.setTileRowCol(1, 1, CommonTile.of(3, StatelessTileType.THRU) );
+		
+		assertNotEquals(first, second);
+		assertNotEquals(second, first);
+	}
 }

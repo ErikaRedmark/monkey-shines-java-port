@@ -158,6 +158,36 @@ public final class Template {
 		return templateTiles;
 	}
 	
+	/**
+	 * 
+	 * Two Templates are considered equal to each other if they map to the same tilemap when drawn.
+	 * 
+	 */
+	@Override public boolean equals(Object o) {
+		if (o == this) return true;
+		if ( !(o instanceof Template) ) return false;
+		
+		Template other = (Template) o;
+		
+		// Ordering of tile in template list may be different even tiles are the same. What matters is that, when a tilemap is created,
+		// they create an identical tilemap.
+		TileMap myMap = this.fitToTilemap();
+		TileMap otherMap = other.fitToTilemap();
+		
+		return myMap.equals(otherMap);
+	}
+	
+	/**
+	 * 
+	 * Two Templates are considered equal to each other if they map to the same tilemap when drawn.
+	 * 
+	 */
+	@Override public int hashCode() {
+		int result = 17;
+		TileMap myMap = this.fitToTilemap();
+		result += result * 31 + myMap.hashCode();
+		return result;
+	}
 	
 	/**
 	 * 
@@ -256,6 +286,7 @@ public final class Template {
 	 * <p/>
 	 * Tiles cannot overlap. Hence, equality of this object is defined by the row and column ONLY, NOT the tile type! This allows
 	 * easy replacement
+	 * <p/>
 	 * 
 	 * @author Erika Redmark
 	 *
