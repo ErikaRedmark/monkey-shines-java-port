@@ -68,29 +68,29 @@ public class BrushPalette extends JPanel {
 	private final ChangeBrushListener SPRITE_LISTENER = new ChangeBrushListener(PaintbrushType.PLACE_SPRITES);
 	private final ActionListener ERASER_TILE_LISTENER = new ActionListener() {
 		@Override public void actionPerformed(ActionEvent e) {
-			mainCanvas.actionEraserTiles();
+			mainCanvas.currentWorld.actionEraserTiles();
 		}
 	};
 	
 	private final ActionListener ERASER_SPRITE_LISTENER = new ActionListener() {
 		@Override public void actionPerformed(ActionEvent e) {
-			mainCanvas.actionEraserSprites();
+			mainCanvas.currentWorld.actionEraserSprites();
 		}
 	};
 
 	private final ActionListener ERASER_GOODIES_LISTENER = new ActionListener() {
 		@Override public void actionPerformed(ActionEvent e) {
-			mainCanvas.actionEraserGoodies();
+			mainCanvas.currentWorld.actionEraserGoodies();
 		}
 	};
 	
 	private final ActionListener EDIT_SPRITE_LISTENER = new ActionListener() {
 		@Override public void actionPerformed(ActionEvent e) {
-			mainCanvas.actionEditingSprites();
+			mainCanvas.currentWorld.actionEditingSprites();
 		}
 	};
 	
-	public BrushPalette(final LevelDrawingCanvas mainCanvas, final WorldResource rsrc) {
+	public BrushPalette(final LevelEditor mainCanvas, final WorldResource rsrc) {
 		this.mainCanvas = mainCanvas;
 		
 		// Some standard graphics regardless of the world. All drawn and set in constructor to proper places...
@@ -359,7 +359,7 @@ public class BrushPalette extends JPanel {
 	}
 	
 
-	private final LevelDrawingCanvas mainCanvas;
+	private final LevelEditor mainCanvas;
 	
 	private static final int GRID_MARGIN_X = 4;
 	private static final int GRID_MARGIN_Y = 4;

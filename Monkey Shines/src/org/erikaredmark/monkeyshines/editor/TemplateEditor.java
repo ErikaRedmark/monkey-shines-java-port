@@ -5,7 +5,9 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicArrowButton;
@@ -42,11 +44,15 @@ public class TemplateEditor extends JPanel {
 	 * 		the world the template is created for
 	 * 
 	 * @param saveAction
-	 * 		called when the template is 'saved'. Passes the template that was saved. Typically
-	 * 		this saves the template somewhere for future use and 'closes' this panel.
+	 * 		called when the template is 'saved'. Passes both the original template and the template that was saved. The original
+	 * 		can be used to determine which template to 'replace' for edit operations. It is possible for base template to be null
+	 * 		if this editor was in a 'new template' state and not a 'modifying template' state.
 	 * 
 	 */
-	public TemplateEditor(Template initial, World world, Function<Template, Void> saveAction) {
+	public TemplateEditor(Template initial, World world, Function<TemplatePair, Void> saveAction) {
+		
+		// Okay to be null
+		baseTemplate = initial;
 		
 		TileMap map =   initial != null
 				      ? initial.fitToTilemap()
@@ -62,7 +68,8 @@ public class TemplateEditor extends JPanel {
 		// These do not modify the template. They modify the size of the map in the editor
 		
 		// TOP
-		JPanel topAll = new JPanel(new BorderLayout() );
+		JPanel topAll = new JPanel();
+		topAll.setLayout(new BoxLayout(topAll, BoxLayout.LINE_AXIS) );
 		JButton topExpand = new BasicArrowButton(SwingConstants.NORTH);
 		topExpand.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
@@ -79,11 +86,12 @@ public class TemplateEditor extends JPanel {
 			}
 		});
 		
-		topAll.add(topExpand, BorderLayout.WEST);
-		topAll.add(topShrink, BorderLayout.EAST);
+		topAll.add(topExpand);
+		topAll.add(topShrink);
 		
 		// LEFT
-		JPanel leftAll = new JPanel(new BorderLayout() );
+		JPanel leftAll = new JPanel();
+		leftAll.setLayout(new BoxLayout(leftAll, BoxLayout.PAGE_AXIS) );
 		JButton leftExpand = new BasicArrowButton(SwingConstants.WEST);
 		leftExpand.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
@@ -100,11 +108,12 @@ public class TemplateEditor extends JPanel {
 			}
 		});
 		
-		leftAll.add(leftExpand, BorderLayout.NORTH);
-		leftAll.add(leftShrink, BorderLayout.SOUTH);
+		leftAll.add(leftExpand);
+		leftAll.add(leftShrink);
 		
 		// BOTTOM
-		JPanel bottomAll = new JPanel(new BorderLayout() );
+		JPanel bottomAll = new JPanel();
+		bottomAll.setLayout(new BoxLayout(bottomAll, BoxLayout.LINE_AXIS) );
 		JButton bottomExpand = new BasicArrowButton(SwingConstants.SOUTH);
 		bottomExpand.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
@@ -121,11 +130,12 @@ public class TemplateEditor extends JPanel {
 			}
 		});
 		
-		bottomAll.add(bottomExpand, BorderLayout.WEST);
-		bottomAll.add(bottomShrink, BorderLayout.EAST);
+		bottomAll.add(bottomExpand);
+		bottomAll.add(bottomShrink);
 		
 		// RIGHT
-		JPanel rightAll = new JPanel(new BorderLayout() );
+		JPanel rightAll = new JPanel();
+		rightAll.setLayout(new BoxLayout(rightAll, BoxLayout.PAGE_AXIS) );
 		JButton rightExpand = new BasicArrowButton(SwingConstants.EAST);
 		rightExpand.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
@@ -142,14 +152,13 @@ public class TemplateEditor extends JPanel {
 			}
 		});
 		
-		rightAll.add(rightExpand, BorderLayout.NORTH);
-		rightAll.add(rightShrink, BorderLayout.SOUTH);
+		rightAll.add(rightExpand);
+		rightAll.add(rightShrink);
 		
-		add(topAll);
-		add(leftAll);
-		add(bottomAll);
-		add(rightAll);
-		
+		add(topAll, BorderLayout.NORTH);
+		add(leftAll, BorderLayout.WEST);
+		add(bottomAll, BorderLayout.SOUTH);
+		add(rightAll, BorderLayout.EAST);
 	}
 	
 	/**
@@ -160,13 +169,75 @@ public class TemplateEditor extends JPanel {
 	 * 		the world the template is created for
 	 * 
 	 * @param saveAction
-	 * 		called when the template is 'saved'. Passes the template that was saved. Typically
-	 * 		this saves the template somewhere for future use and 'closes' this panel.
+	 * 		called when the template is 'saved'. Passes both the original template and the template that was saved. The original
+	 * 		can be used to determine which template to 'replace' for edit operations. It is possible for base template to be null
+	 * 		if this editor was in a 'new template' state and not a 'modifying template' state.
 	 * 
 	 */
-	public TemplateEditor(World world, Function<Template, Void> saveAction) {
+	public TemplateEditor(World world, Function<TemplatePair, Void> saveAction) {
 		this(null, world, saveAction);
 	}
+	
+	/**
+	 * 
+	 * Replaces the template currently being editing with the given template. Any changes to the 
+	 * current template are discarded.
+	 * 
+	 * @param t
+	 * 		the template to now be editing.
+	 * 
+	 */
+	public void replaceTemplate(Template t) {
+		baseTemplate = t;
+		replaceMap(t.fitToTilemap() );
+	}
+	
+	/**
+	 * 
+	 * Removes the current template from the editor, replacing the editor with the standard 3x3
+	 * tilemap editor and no previous template.
+	 * 
+	 */
+	public void clearTemplate() {
+		baseTemplate = null;
+		replaceMap(new TileMap(3, 3) );
+	}
+	
+	
+	
+	/**
+	 * 
+	 * Attempts to set the brush for this editor's underlying map editor according to the paintbrush type and id. If that is not
+	 * possible, this method does nothing.
+	 * <p/>
+	 * This method is intended to sync with the level editor when new brushes are chosen.
+	 * 
+	 * @param brush
+	 */
+	public void trySetTileIdAndBrush(PaintbrushType brush, int id) {
+		if (MapEditor.isPaintbrushToTilebrush(brush) ) {
+			internalEditor.setBrushAndId(MapEditor.paintbrushToTilebrush(brush), id);
+		}
+	}
+
+	
+	/**
+	 * 
+	 * Enumerates a pairing of the original template that an editor was created with (or 
+	 * 
+	 * @author Erika Redmark
+	 *
+	 */
+	public static class TemplatePair {
+		public final Template base;
+		public final Template modified;
+		
+		public TemplatePair(final Template base, final Template modified) {
+			this.base = base;
+			this.modified = modified;
+		}
+	}
+	
 	
 	/**
 	 * 
@@ -186,9 +257,13 @@ public class TemplateEditor extends JPanel {
 		internalEditor = new MapEditor(newMap, background, world);
 		
 		add(internalEditor, BorderLayout.CENTER);
+		getParent().revalidate();
+		getParent().repaint();
+		
 	}
 	
 	// Modified whenever tilemap is resized.
 	private MapEditor internalEditor;
+	private Template baseTemplate;
 	
 }

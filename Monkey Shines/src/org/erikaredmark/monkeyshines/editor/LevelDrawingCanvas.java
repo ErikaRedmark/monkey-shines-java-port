@@ -501,6 +501,9 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 	 * the sprite brush and will default the creation of the sprite to the id presented.
 	 * <p/>
 	 * This method can NOT handle {@code PaintbrushType.TEMPLATE}. Use {@code setTemplateBrush} instead.
+	 * <p/>
+	 * If there is an open template editor, that editor will also have their brush set if the brush is a
+	 * compatible type with plain map editing (as in no sprites or goodies)
 	 * 
 	 * @param type
 	 * 		the paintbrush type
@@ -519,7 +522,7 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 		case COLLAPSIBLE: // break omitted
 		case HAZARDS:
 			changeState(EditorState.USE_MAP_EDITOR);
-			currentMapEditor.setBrushAndId(paintbrushToTilebrush(type), id);
+			currentMapEditor.setBrushAndId(MapEditor.paintbrushToTilebrush(type), id);
 			break;
 		case GOODIES:
 			currentGoodieType = Goodie.Type.byValue(id);
@@ -546,27 +549,6 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 	public void setTemplateBrush(Template template) {
 		currentTemplate = template;
 		changeState(EditorState.PLACING_TEMPLATES);
-	}
-	
-	/**
-	 * 
-	 * Converts the brush type here to the brush type in the map editor. The map editor only uses a smaller
-	 * subset of tile brushes, so this method is in error if called with a paintbrush that isn't a tile brush.
-	 * 
-	 * @param t
-	 * @return
-	 */
-	private TileBrush paintbrushToTilebrush(PaintbrushType t) {
-		switch(t) {
-		case SOLIDS:  return TileBrush.SOLIDS;
-		case THRUS:  return TileBrush.THRUS;
-		case SCENES:  return TileBrush.SCENES;
-		case CONVEYERS_CLOCKWISE:  return TileBrush.CONVEYERS_CLOCKWISE;
-		case CONVEYERS_ANTI_CLOCKWISE:  return TileBrush.CONVEYERS_ANTI_CLOCKWISE;
-		case COLLAPSIBLE:  return TileBrush.COLLAPSIBLE;
-		case HAZARDS:  return TileBrush.HAZARDS;
-		default:  throw new IllegalArgumentException("Paintbrush type " + t + " not a valid tile brush");
-		}
 	}
 
 	@Override public void mouseClicked(MouseEvent e) {

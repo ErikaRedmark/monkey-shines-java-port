@@ -83,7 +83,7 @@ public class LevelEditor extends JFrame {
 				templatePaletteFrame.remove(templatePalette);
 			}
 			
-			brushPalette = new BrushPalette(currentWorld, world.getResource() );
+			brushPalette = new BrushPalette(LevelEditor.this, world.getResource() );
 			brushPaletteFrame.add(brushPalette, BorderLayout.CENTER);
 			brushPaletteFrame.setVisible(true);
 			brushPaletteFrame.repaint();
@@ -105,8 +105,7 @@ public class LevelEditor extends JFrame {
 			templatePalette = new TemplatePalette(
 				currentWorld, 
 				worldTemplates,
-				world.getResource(),
-				newTemplateEditorRequestFunction);
+				world);
 			
 			templatePaletteFrame.add(templatePalette, BorderLayout.CENTER);
 			templatePaletteFrame.setVisible(true);
@@ -115,54 +114,8 @@ public class LevelEditor extends JFrame {
 		}
 		
 	};
-	
-	private Function<Template, Void> newTemplateEditorRequestFunction = new Function<Template, Void>() {
-		@Override public Void apply(Template t) {
-			// Is the template editor already open? Set focus
-			if (openTemplateEditors.containsKey(t) ) {
-				JInternalFrame openEditor = openTemplateEditors.get(t);
-				openEditor.grabFocus();
-				openEditor.moveToFront();
-				
-			// Otherwise, open a new template editor for this template.
-			} else {
-				/*
-				TODO currently not working properly: frame is too big and screws up all other drawing
-				final JInternalFrame newEditor = new JInternalFrame("Template Editor");
-				newEditor.setLayout(new BorderLayout() );
-				Function<Template, Void> templateSaveFunction =
-					new Function<Template, Void>() {
-						@Override public Void apply(Template t) {
-							System.out.println("Save (does nothing yet) ");
-							
-							// No matter what, this function must be responsible for removing the internal
-							// frame from the editor itself
-							LevelEditor.this.remove(newEditor);
-							return null;
-						}
-					};
-					
-				final World world = currentWorld.getWorldEditor().getWorld();
-
-				TemplateEditor newTemplateEditor = 
-					t != null
-				  ? new TemplateEditor(t, world, templateSaveFunction)
-				  : new TemplateEditor(world, templateSaveFunction);
-				  
-				newEditor.add(newTemplateEditor, BorderLayout.CENTER);
-				add(newEditor);
-				newEditor.moveToFront();
-				newEditor.setVisible(true);
-				
-				openTemplateEditors.put(t, newEditor);
-				*/
-			}
-			
-			return null;
-		}
-	};
-	
-	private final LevelDrawingCanvas currentWorld;
+	// Package access intended; Makes it easier for palettes to perform actions defined
+	final LevelDrawingCanvas currentWorld;
 	/* Only set during loading a world, and only used during saving.	*/
 	private Path defaultSaveLocation;
 	
@@ -359,6 +312,18 @@ public class LevelEditor extends JFrame {
 	
 	/**
 	 * 
+	 * Called by BrushPalette when a brush is changed. Changes are propogated to interested frames.
+	 * 
+	 * @param brush
+	 * @param id
+	 */
+	public void setTileBrushAndId(PaintbrushType brush, int id) {
+		templatePalette.trySetTileIdAndBrush(brush, id);
+		currentWorld.setTileBrushAndId(brush, id);
+	}
+	
+	/**
+	 * 
 	 * Loads a world from the given path. Worlds must conform to the standard; {@code <worldName>.world} for the
 	 * level data and {@code <worldName>.zip} for the resource pack with proper resources. 
 	 * 
@@ -534,15 +499,16 @@ public class LevelEditor extends JFrame {
 
 	private LevelEditor() {
 		keys = new KeyboardInput();
+		int downToMainCanvasEnd = (GameConstants.LEVEL_ROWS * GameConstants.TILE_SIZE_Y) + 40;
 		brushPaletteFrame = new JInternalFrame("Palette", true);
 		brushPaletteFrame.setLayout(new BorderLayout() );
-		brushPaletteFrame.setSize(new Dimension(240, 500) );
+		brushPaletteFrame.setSize(new Dimension(240, downToMainCanvasEnd) );
 		
 		templatePaletteFrame = new JInternalFrame("Templates", true);
 		templatePaletteFrame.setLayout(new BorderLayout() );
-		templatePaletteFrame.setSize(new Dimension(700, 200) );
+		templatePaletteFrame.setSize(new Dimension(700, 260) );
 		// Default dock it to bottom of editor
-		templatePaletteFrame.setLocation(0, (GameConstants.LEVEL_ROWS * GameConstants.TILE_SIZE_Y) + 40);
+		templatePaletteFrame.setLocation(0, downToMainCanvasEnd + 4);
 		// Finally, install listeners to handle resizing the tabbed pane to fit the parent and re-packing it.
 		
 		canvasFrame = new JInternalFrame("Level");
@@ -570,7 +536,7 @@ public class LevelEditor extends JFrame {
 		// Set visible later when palette initialised
 		add(editorDesktop);
 
-		setPreferredSize(new Dimension(960, 700) );
+		setPreferredSize(new Dimension(960, 800) );
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);

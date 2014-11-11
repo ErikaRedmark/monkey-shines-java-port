@@ -62,13 +62,15 @@ public final class MapEditor extends JPanel {
 		this.background = background;
 		this.world = world;
 		
-		setMinimumSize(
-			new Dimension(map.getColumnCount() * GameConstants.TILE_SIZE_X, 
-				          map.getRowCount() * GameConstants.TILE_SIZE_Y) );
+		int sizeX = map.getColumnCount() * GameConstants.TILE_SIZE_X;
+		int sizeY = map.getRowCount() * GameConstants.TILE_SIZE_Y;
 		
-		setPreferredSize(
-			new Dimension(map.getColumnCount() * GameConstants.TILE_SIZE_X, 
-				          map.getRowCount() * GameConstants.TILE_SIZE_Y) );
+		// Basically, this editor is ALWAYS a constant size based on the tilemap. Expanding and shrinking makes no sense
+		// in this context.
+		setMinimumSize(new Dimension(sizeX, sizeY) );
+		setPreferredSize(new Dimension(sizeX, sizeY) );
+//		setSize(new Dimension(sizeX, sizeY) );
+		setMaximumSize(new Dimension(sizeX, sizeY) );
 		
 		// Optimisations
 		setDoubleBuffered(true);
@@ -371,6 +373,54 @@ public final class MapEditor extends JPanel {
 	public void mouseMoved(IPoint2D e) {
 		mousePosition.setX(e.x() );
 		mousePosition.setY(e.y() );
+	}
+	
+	/**
+	 * 
+	 * Converts the brush type here to the brush type in the map editor. The map editor only uses a smaller
+	 * subset of tile brushes, so this method is in error if called with a paintbrush that isn't a tile brush.
+	 * 
+	 * @param t
+	 * @return
+	 */
+	public static TileBrush paintbrushToTilebrush(PaintbrushType t) {
+		switch(t) {
+		case SOLIDS:  return TileBrush.SOLIDS;
+		case THRUS:  return TileBrush.THRUS;
+		case SCENES:  return TileBrush.SCENES;
+		case CONVEYERS_CLOCKWISE:  return TileBrush.CONVEYERS_CLOCKWISE;
+		case CONVEYERS_ANTI_CLOCKWISE:  return TileBrush.CONVEYERS_ANTI_CLOCKWISE;
+		case COLLAPSIBLE:  return TileBrush.COLLAPSIBLE;
+		case HAZARDS:  return TileBrush.HAZARDS;
+		case ERASER_TILES:  return TileBrush.ERASER;
+		default:  throw new IllegalArgumentException("Paintbrush type " + t + " not a valid tile brush");
+		}
+	}
+	
+	/**
+	 * 
+	 * Determines if the given paintbrush can be directly converted to tile brush.
+	 * 
+	 * @param t
+	 * 
+	 * @return
+	 * 		{@code true} if the paintbrush can be a tile brush, {@code false} if otherwise
+	 * 
+	 */
+	public static boolean isPaintbrushToTilebrush(PaintbrushType t) {
+		switch(t) {
+		case SOLIDS: // break omitted
+		case THRUS: // break omitted
+		case SCENES: // break omitted
+		case CONVEYERS_CLOCKWISE: // break omitted
+		case CONVEYERS_ANTI_CLOCKWISE: // break omitted
+		case COLLAPSIBLE: // break omitted
+		case HAZARDS: // break omitted
+		case ERASER_TILES: // break omitted
+			return true;
+		default:
+			return false;
+		}
 	}
 
 	
