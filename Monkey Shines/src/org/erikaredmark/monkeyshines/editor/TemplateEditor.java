@@ -48,7 +48,7 @@ public class TemplateEditor extends JPanel {
 	 * 		if this editor was in a 'new template' state and not a 'modifying template' state.
 	 * 
 	 */
-	public TemplateEditor(Template initial, World world, Function<TemplatePair, Void> saveAction) {
+	public TemplateEditor(Template initial, World world, final Function<TemplatePair, Void> saveAction) {
 		
 		// Okay to be null
 		baseTemplate = initial;
@@ -56,12 +56,15 @@ public class TemplateEditor extends JPanel {
 		TileMap map =   initial != null
 				      ? initial.fitToTilemap()
 				      : new TileMap(3, 3);
+				      
+		// Template editor main part: top. The save will take up a special bottom part
+		setLayout(new BorderLayout() );
+		primaryEditor = new JPanel(new BorderLayout() );
+		add(primaryEditor, BorderLayout.NORTH);
 			
 		internalEditor = new MapEditor(map, new SingleColorBackground(Color.BLACK), world, true);
 		
-		setLayout(new BorderLayout() );
-		
-		add(internalEditor, BorderLayout.CENTER);
+		primaryEditor.add(internalEditor, BorderLayout.CENTER);
 		
 		// Eight buttons, two per compass direction. One expands in that direction, one contracts in that direction.
 		// These do not modify the template. They modify the size of the map in the editor
@@ -154,10 +157,38 @@ public class TemplateEditor extends JPanel {
 		rightAll.add(rightExpand);
 		rightAll.add(rightShrink);
 		
-		add(topAll, BorderLayout.NORTH);
-		add(leftAll, BorderLayout.WEST);
-		add(bottomAll, BorderLayout.SOUTH);
-		add(rightAll, BorderLayout.EAST);
+		primaryEditor.add(topAll, BorderLayout.NORTH);
+		primaryEditor.add(leftAll, BorderLayout.WEST);
+		primaryEditor.add(bottomAll, BorderLayout.SOUTH);
+		primaryEditor.add(rightAll, BorderLayout.EAST);
+
+		// Controls:
+		saveButton = new JButton("");
+		saveButton.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent arg0) {
+				saveAction.apply(new TemplatePair(baseTemplate, Template.fromTileMap(internalEditor.getTileMap() ) ) );
+			}
+		});
+		add(saveButton);
+		
+		updateSaveButtonText();
+	}
+	
+	/**
+	 * 
+	 * Updates the text of the save button to either show 'save' for new templates or 'overwrite' for existing ones.
+	 * This must be called after the button is constructed, and subsequently each time 'baseTemplate' is modified.
+	 * 
+	 */
+	private void updateSaveButtonText() {
+		saveButton.setText(   baseTemplate != null
+				            ? "Overwrite"
+				            : "Save");
+	}
+	
+	private void setBaseTemplate(Template t) {
+		baseTemplate = t;
+		updateSaveButtonText();
 	}
 	
 	/**
@@ -187,7 +218,7 @@ public class TemplateEditor extends JPanel {
 	 * 
 	 */
 	public void replaceTemplate(Template t) {
-		baseTemplate = t;
+		setBaseTemplate(t);
 		replaceMap(t.fitToTilemap() );
 	}
 	
@@ -198,7 +229,7 @@ public class TemplateEditor extends JPanel {
 	 * 
 	 */
 	public void clearTemplate() {
-		baseTemplate = null;
+		setBaseTemplate(null);
 		replaceMap(new TileMap(3, 3) );
 	}
 	
@@ -251,11 +282,11 @@ public class TemplateEditor extends JPanel {
 		Background background = internalEditor.getMapBackground();
 		World world = internalEditor.getWorld();
 		
-		remove(internalEditor);
+		primaryEditor.remove(internalEditor);
 		
 		internalEditor = new MapEditor(newMap, background, world, true);
 		
-		add(internalEditor, BorderLayout.CENTER);
+		primaryEditor.add(internalEditor, BorderLayout.CENTER);
 		getParent().revalidate();
 		getParent().repaint();
 		
@@ -265,5 +296,9 @@ public class TemplateEditor extends JPanel {
 	private MapEditor internalEditor;
 	// Sent during a save operation to the appropriate callbacks
 	private Template baseTemplate;
+	// Saved because the save button will be 'save' for new templates and 'overwrite' for editing existing ones.
+	private final JButton saveButton;
+	// When replacing a tileMap, it must be added to the primary editor only.
+	private final JPanel primaryEditor;
 	
 }

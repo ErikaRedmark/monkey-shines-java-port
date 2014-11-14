@@ -35,6 +35,10 @@ import com.google.common.base.Function;
  * <p/>
  * To the side, an editor is available that allows existing templates to be modified from the palette. it is up to client code, however,
  * to actually 'save' this palette to a file.
+ * <p/>
+ * The order that the templates are displayed in the GUI (component order) is their logical ordering, which is basically whatever
+ * comes first in the initial list. This control strives to ensure a logical ordering for the user and that editing existing templates
+ * does not change the ordering.
  * 
  * @author Erika Redmark
  *
@@ -146,7 +150,13 @@ public final class TemplatePalette extends JPanel {
 			world, 
 			new Function<TemplatePair, Void>() {
 				@Override public Void apply(TemplatePair pair) {
-					System.out.println("Save Function Not Implemented");
+					// Check if the baseTemplate is null. If so, add the new one. Otherwise, replace.
+					if (pair.base == null) {
+						addTemplate(pair.modified, true);
+					} else {
+						replaceTemplate(pair.base, pair.modified);
+					}
+					
 					return null;
 				}
 			});
@@ -237,6 +247,46 @@ public final class TemplatePalette extends JPanel {
 			templateToButton.remove(template);
 			doLayout();
 			repaint();
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	/**
+	 * 
+	 * Replaces the given template with a new one. Unlike remove/add, this preserves the location in the GUI and list.
+	 * 
+	 * @param oldTemplate
+	 * 		old template to replace
+	 * 
+	 * @param newTemplate
+	 * 		new template to add
+	 * 
+	 * @return
+	 * 		{@code true} if the template was replaced, {@code false} if otherwise.
+	 * 
+	 */
+	private boolean replaceTemplate(Template oldTemplate, Template newTemplate) {
+		if (templateToButton.containsKey(oldTemplate) ) {
+			JButton oldButton = templateToButton.get(oldTemplate);
+			// We must find the 'index' of this button so we can properly update the GUI.
+			int index = -1;
+			for (int i = 0; i < getComponentCount(); ++i) {
+				// Reference equality intended
+				if (getComponent(i) == oldButton) {
+					index = i;
+					break;
+				}
+			}
+			
+			remove(oldButton);
+			JButton templateButton = createTemplateButton(newTemplate);
+			
+			templateViewer.add(templateButton, index);
+			templateToButton.put(newTemplate, templateButton);
+			getParent().revalidate();
+			getParent().repaint();
 			return true;
 		} else {
 			return false;

@@ -392,8 +392,7 @@ public class TileMap {
 	/**
 	 * 
 	 * Returns the backing array of tiles. Should only truly be used if an external algorithm requires
-	 * iterating over all tiles in the map. So far, only the level save/restore functionality (the encoded world package
-	 * and classes) should use this method.
+	 * iterating over all tiles in the map.
 	 * 
 	 * @return
 	 * 		backing array of tiles in the map. Intended for iteration only

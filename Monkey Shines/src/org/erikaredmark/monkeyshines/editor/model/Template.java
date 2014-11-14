@@ -130,6 +130,30 @@ public final class Template {
 	
 	/**
 	 * 
+	 * Creates a template from a pre-existing tilemap. Note that any empty tiles are interpreted as 
+	 * nothing. This means the resulting template will not place empty tiles in those positions; they will
+	 * just be considered not part of the template.
+	 * 
+	 * @return
+	 * 		an instance of this object
+	 * 
+	 */
+	public static Template fromTileMap(TileMap map) {
+		Template.Builder builder = new Template.Builder();
+		TileType[] tiles = map.internalMap();
+		for (int i = 0; i < tiles.length; ++i) {
+			if (tiles[i].equals(CommonTile.NONE) )  continue;
+			
+			int row = i / map.getColumnCount();
+			int col = i % map.getColumnCount();
+			
+			builder.addTile(row, col, tiles[i]);
+		}
+		return builder.build();
+	}
+	
+	/**
+	 * 
 	 * Returns a template builder class representing the state of this template so it can be mutated. Modifying the returned
 	 * builder does not affect this object.
 	 * 
