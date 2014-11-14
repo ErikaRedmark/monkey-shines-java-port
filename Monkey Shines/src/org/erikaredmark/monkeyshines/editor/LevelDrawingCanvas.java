@@ -56,6 +56,7 @@ import com.google.common.base.Optional;
  * Brush types are set from {@code BrushPalette} window.
  * 
  * @author Erika Redmark
+ * 
  */
 
 @SuppressWarnings("serial")
@@ -140,7 +141,7 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 		if (currentMapEditor != null) {
 			this.remove(currentMapEditor);
 		}
-		currentMapEditor = new MapEditor(screenEditor.getLevelScreen().getMap(), screenEditor.getBackground(), currentWorldEditor.getWorld() );
+		currentMapEditor = new MapEditor(screenEditor.getLevelScreen().getMap(), screenEditor.getBackground(), currentWorldEditor.getWorld(), false);
 		currentMapEditor.setLocation(0, 0);
 		this.add(currentMapEditor);
 	}
@@ -260,18 +261,6 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 		return Y - takeAwayY;
 	}
 	
-	public void actionPlacingSprites() {
-		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
-		
-		changeState(EditorState.PLACING_SPRITES);
-	}
-	
-	public void actionEditingSprites() {
-		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
-		
-		changeState(EditorState.EDITING_SPRITES);
-	}
-	
 	public void actionEditOffscreenSprites() {
 		List<Sprite> sprites = currentScreenEditor.getSpritesOutOfBounds();
 		switch(sprites.size() ) {
@@ -296,35 +285,10 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 		}
 	}
 
-	public void actionPlacingGoodies() {
-		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
-		
-		changeState(EditorState.PLACING_GOODIES);
-	}
-
 	public void actionPlaceBonzo() {
 		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
 		
 		changeState(EditorState.PLACING_BONZO);
-	}
-	
-	public void actionEraserTiles() {
-		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
-		
-		changeState(EditorState.USE_MAP_EDITOR);
-		currentMapEditor.setBrushAndId(TileBrush.ERASER, 0);
-	}
-	
-	public void actionEraserGoodies() {
-		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
-		
-		changeState(EditorState.ERASING_GOODIES);
-	}
-	
-	public void actionEraserSprites() {
-		if (this.currentState == EditorState.NO_WORLD_LOADED) return;
-		
-		changeState(EditorState.DELETING_SPRITES);
 	}
 	
 	public void actionResetScreen() {
@@ -520,7 +484,8 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 		case CONVEYERS_CLOCKWISE: // break omitted
 		case CONVEYERS_ANTI_CLOCKWISE: // break omitted
 		case COLLAPSIBLE: // break omitted
-		case HAZARDS:
+		case HAZARDS: // break omitted
+		case ERASER_TILES:
 			changeState(EditorState.USE_MAP_EDITOR);
 			currentMapEditor.setBrushAndId(MapEditor.paintbrushToTilebrush(type), id);
 			break;
@@ -529,9 +494,18 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 			changeState(EditorState.PLACING_GOODIES);
 			break;
 		case PLACE_SPRITES:
-		case EDIT_SPRITES: // break omitted
 			currentSpriteId = id;
 			changeState(EditorState.PLACING_SPRITES);
+			break;
+		case EDIT_SPRITES:
+			currentSpriteId = id;
+			changeState(EditorState.EDITING_SPRITES);
+			break;
+		case ERASER_GOODIES:
+			changeState(EditorState.ERASING_GOODIES);
+			break;
+		case ERASER_SPRITES:
+			changeState(EditorState.DELETING_SPRITES);
 			break;
 		case TEMPLATE:
 			throw new RuntimeException("Templates must be set explicitly via 'setTemplateBrush'");
@@ -575,7 +549,7 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 		mousePosition.setY(e.getY() );
 		
 		if (currentMapEditor != null) {
-			currentMapEditor.mouseMoved(mousePosition);
+			currentMapEditor.mouseMoved(mousePosition.x(), mousePosition.y() );
 		}
 	}
 	
@@ -681,7 +655,7 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 		// editor here.
 		USE_MAP_EDITOR {
 			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
-				editor.currentMapEditor.mouseClicked(editor.mousePosition);
+				editor.currentMapEditor.mouseClicked(editor.mousePosition.x(), editor.mousePosition.y() );
 			}
 			@Override public void defaultDragAction(LevelDrawingCanvas editor) { defaultClickAction(editor); }
 		},

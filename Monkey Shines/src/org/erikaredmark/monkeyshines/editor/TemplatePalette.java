@@ -1,6 +1,5 @@
 package org.erikaredmark.monkeyshines.editor;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -17,6 +16,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
+import javax.swing.border.EtchedBorder;
 
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.editor.TemplateEditor.TemplatePair;
@@ -69,22 +69,24 @@ public final class TemplatePalette extends JPanel {
 		
 		templateViewer = new JPanel();
 		templateViewer.setLayout(new WrapLayout(FlowLayout.LEFT, GRID_MARGIN_X, GRID_MARGIN_Y) );
+		
+		for (Template t : initialTemplates) {
+			addTemplate(t, false);
+		}
+		
 		JScrollPane viewerScroller = new JScrollPane(templateViewer);
-		viewerScroller.add(templateViewer);
 		// template viewer will take up 60% of the left side and whatever it can top/down
 		GridBagConstraints viewerScrollerGbc = new GridBagConstraints();
 		viewerScrollerGbc.gridx = 0;
 		viewerScrollerGbc.gridy = 0;
 		viewerScrollerGbc.gridwidth = 6;
 		viewerScrollerGbc.gridheight = 1;
-		viewerScrollerGbc.weightx = 1.0;
+		viewerScrollerGbc.weightx = 2.0;
 		viewerScrollerGbc.weighty = 4.0;
+		viewerScrollerGbc.fill = GridBagConstraints.BOTH;
+		viewerScroller.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED) );
 		add(viewerScroller, viewerScrollerGbc);
-		
-		for (Template t : initialTemplates) {
-			addTemplate(t);
-		}
-		
+
 		// Control: The ability to add new templates, edit templates, and delete templates.
 		JPanel controlViewer = new JPanel();
 		controlViewer.setLayout(new FlowLayout() );
@@ -159,6 +161,7 @@ public final class TemplatePalette extends JPanel {
 		templateEditorGbc.weightx = 4.0;
 		templateEditorGbc.weighty = 1.0;
 		add(templateEditor, templateEditorGbc);
+		
 	}
 	
 	private JButton createTemplateButton(final Template template) {
@@ -193,19 +196,25 @@ public final class TemplatePalette extends JPanel {
 	 * @param template
 	 * 		new template to add to palette
 	 * 
+	 * @param repaint
+	 * 		if {@code true}, components are re-painted and layed out. Constructor will call this with false
+	 * 		and other code will use true.
+	 * 
 	 * @return
 	 * 		{@code true} if the template was added, {@code false} if a button for it already existed and it wasn't added
 	 * 
 	 */
-	private boolean addTemplate(Template template) {
+	private boolean addTemplate(Template template, boolean repaint) {
 		// Do not allow duplicate templates. if it already existed do not add a button for it.
 		if (templateToButton.containsKey(template) )  return false;
 		JButton templateButton = createTemplateButton(template);
 		
 		templateViewer.add(templateButton);
 		templateToButton.put(template, templateButton);
-		doLayout();
-		repaint();
+		if (repaint) {
+			getParent().revalidate();
+			getParent().repaint();
+		}
 		
 		return true;
 	}

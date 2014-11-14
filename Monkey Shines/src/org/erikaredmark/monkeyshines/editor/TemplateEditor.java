@@ -7,7 +7,6 @@ import java.awt.event.ActionListener;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicArrowButton;
@@ -58,7 +57,7 @@ public class TemplateEditor extends JPanel {
 				      ? initial.fitToTilemap()
 				      : new TileMap(3, 3);
 			
-		internalEditor = new MapEditor(map, new SingleColorBackground(Color.BLACK), world);
+		internalEditor = new MapEditor(map, new SingleColorBackground(Color.BLACK), world, true);
 		
 		setLayout(new BorderLayout() );
 		
@@ -254,7 +253,7 @@ public class TemplateEditor extends JPanel {
 		
 		remove(internalEditor);
 		
-		internalEditor = new MapEditor(newMap, background, world);
+		internalEditor = new MapEditor(newMap, background, world, true);
 		
 		add(internalEditor, BorderLayout.CENTER);
 		getParent().revalidate();
@@ -264,6 +263,7 @@ public class TemplateEditor extends JPanel {
 	
 	// Modified whenever tilemap is resized.
 	private MapEditor internalEditor;
+	// Sent during a save operation to the appropriate callbacks
 	private Template baseTemplate;
 	
 }

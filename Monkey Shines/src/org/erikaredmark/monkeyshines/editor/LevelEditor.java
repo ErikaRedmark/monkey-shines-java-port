@@ -148,7 +148,7 @@ public class LevelEditor extends JFrame {
 	private JMenuItem placeSprites =  new JMenuItem(new AbstractAction("Place Sprites") { 
 		private static final long serialVersionUID = 1L;
 		@Override public void actionPerformed(ActionEvent e) {
-			currentWorld.actionPlacingSprites();
+			currentWorld.setTileBrushAndId(PaintbrushType.PLACE_SPRITES, 0);
 		}
 	});
 	
@@ -156,7 +156,7 @@ public class LevelEditor extends JFrame {
 	private JMenuItem editSprites = new JMenuItem(new AbstractAction("Edit Sprites") {
 		private static final long serialVersionUID = 1L;
 		@Override public void actionPerformed(ActionEvent e) {
-			currentWorld.actionEditingSprites();
+			currentWorld.setTileBrushAndId(PaintbrushType.EDIT_SPRITES, 0);
 		}
 	});
 	
@@ -171,7 +171,7 @@ public class LevelEditor extends JFrame {
 	private JMenuItem deleteSprites = new JMenuItem(new AbstractAction("Delete Sprites") {
 		private static final long serialVersionUID = 1L;
 		@Override public void actionPerformed(ActionEvent e) {
-			currentWorld.actionEraserSprites();
+			currentWorld.setTileBrushAndId(PaintbrushType.ERASER_SPRITES, 0);
 		}
 	});
 	
@@ -313,6 +313,8 @@ public class LevelEditor extends JFrame {
 	/**
 	 * 
 	 * Called by BrushPalette when a brush is changed. Changes are propogated to interested frames.
+	 * <p/>
+	 * This should be called for every brush
 	 * 
 	 * @param brush
 	 * @param id

@@ -1,9 +1,13 @@
 package org.erikaredmark.monkeyshines.editor;
 
 import java.awt.AlphaComposite;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JPanel;
@@ -13,7 +17,6 @@ import org.erikaredmark.monkeyshines.Point2D;
 import org.erikaredmark.monkeyshines.TileMap;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.background.Background;
-import org.erikaredmark.monkeyshines.bounds.IPoint2D;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.tiles.TileType;
 import org.erikaredmark.monkeyshines.tiles.TileTypes;
@@ -28,8 +31,8 @@ import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
  * set from the Palette object. This also handles drawing the tilemap along with an indicator (an image showing what will
  * be drawn) to a graphics context.
  * <p/>
- * This panel does not handle mouse events itself. The component containing this editor must handle mouse events and forward them
- * to the editor if it cannot handle them itself. 
+ * This panel may not handle mouse events itself. The component containing this editor must handle mouse events and forward them
+ * to the editor if it cannot handle them itself. That depends on construction parameters.
  * <p/>
  * Once created with a tilemap, the editor cannot be assigned a different tilemap. A new {@code MapEditor} instance would have
  * to be created
@@ -55,8 +58,12 @@ public final class MapEditor extends JPanel {
 	 * @param world
 	 * 		reference to the entire world
 	 * 
+	 * @param autonomousMouseControl
+	 * 		{@code true} to let this component handle its own events. The primary level editor will set this to {@code false}
+	 * 		since it also must handle things beyond the basic tilemap
+	 * 
 	 */
-	public MapEditor(final TileMap map, final Background background, final World world) {
+	public MapEditor(final TileMap map, final Background background, final World world, final boolean autonomousMouseControl) {
 		super();
 		this.map = map;
 		this.background = background;
@@ -76,6 +83,30 @@ public final class MapEditor extends JPanel {
 		setDoubleBuffered(true);
 		
 		updateTileIndicator();
+		
+		if (autonomousMouseControl) {
+			// Since this is being autonomous, mouse changes cause repaints (since 
+			// the mouse clicks will change the tiles, and mouse moves will change
+			// the indicator position.
+			addMouseListener(new MouseAdapter() {
+				@Override public void mouseClicked(MouseEvent e) {
+					MapEditor.this.mouseClicked(e.getX(), e.getY() );
+					MapEditor.this.repaint();
+				}
+			});
+			
+			addMouseMotionListener(new MouseMotionListener() {
+				@Override public void mouseMoved(MouseEvent e) {
+					MapEditor.this.mouseMoved(e.getX(), e.getY() );
+					MapEditor.this.repaint();
+				}
+				
+				@Override public void mouseDragged(MouseEvent e) {
+					MapEditor.this.mouseClicked(e.getX(), e.getY() );
+					MapEditor.this.repaint();
+				}
+			});
+		}
 	}
 	
 	/**
@@ -261,6 +292,11 @@ public final class MapEditor extends JPanel {
 						  0, 0, 
 						  indicatorImage.getWidth(), indicatorImage.getHeight(), 
 						  null);
+		} else {
+			g2d.setColor(Color.green);
+			g2d.drawRect(snapX,
+						 snapY, 
+						 GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y);
 		}
 	}
 
@@ -351,28 +387,38 @@ public final class MapEditor extends JPanel {
 	 * handled by the click)
 	 * <p/>
 	 * This should also be called for mouse drags.
+	 * <p/>
+	 * If this editor was created with the ability to handle its own mouse events, this will automatically be called.
 	 * 
-	 * @param e
-	 * 		location of mouse click
+	 * @param x
+	 * 		location of mouse click, x position
+	 * 
+	 * @param y
+	 * 		location of mouse click, y position
 	 * 
 	 */
-	public void mouseClicked(IPoint2D e) {
-		mousePosition.setX(e.x() );
-		mousePosition.setY(e.y() );
-		currentBrush.onClick(e.x(), e.y(), currentId, world, map);
+	public void mouseClicked(int x, int y) {
+		mousePosition.setX(x);
+		mousePosition.setY(y);
+		currentBrush.onClick(x, y, currentId, world, map);
 	}
 	
 	/**
 	 * 
 	 * Parent must call this method in their mouseListener implementation to keep the indicator image up-to-date.
+	 * <p/>
+	 * If this editor was created with the ability to handle its own mouse events, this will automatically be called.
 	 * 
-	 * @param e
-	 * 		location of mouseClick
+	 * @param x
+	 * 		location of mouse click, x position
+	 * 
+	 * @param y
+	 * 		location of mouse click, y position
 	 * 
 	 */
-	public void mouseMoved(IPoint2D e) {
-		mousePosition.setX(e.x() );
-		mousePosition.setY(e.y() );
+	public void mouseMoved(int x, int y) {
+		mousePosition.setX(x);
+		mousePosition.setY(y);
 	}
 	
 	/**

@@ -66,29 +66,10 @@ public class BrushPalette extends JPanel {
 	private final ChangeBrushListener COLLAPSIBLE_TILE_LISTENER = new ChangeBrushListener(PaintbrushType.COLLAPSIBLE);
 	private final ChangeBrushListener GOODIE_LISTENER = new ChangeBrushListener(PaintbrushType.GOODIES);
 	private final ChangeBrushListener SPRITE_LISTENER = new ChangeBrushListener(PaintbrushType.PLACE_SPRITES);
-	private final ActionListener ERASER_TILE_LISTENER = new ActionListener() {
-		@Override public void actionPerformed(ActionEvent e) {
-			mainCanvas.currentWorld.actionEraserTiles();
-		}
-	};
-	
-	private final ActionListener ERASER_SPRITE_LISTENER = new ActionListener() {
-		@Override public void actionPerformed(ActionEvent e) {
-			mainCanvas.currentWorld.actionEraserSprites();
-		}
-	};
-
-	private final ActionListener ERASER_GOODIES_LISTENER = new ActionListener() {
-		@Override public void actionPerformed(ActionEvent e) {
-			mainCanvas.currentWorld.actionEraserGoodies();
-		}
-	};
-	
-	private final ActionListener EDIT_SPRITE_LISTENER = new ActionListener() {
-		@Override public void actionPerformed(ActionEvent e) {
-			mainCanvas.currentWorld.actionEditingSprites();
-		}
-	};
+	private final ChangeBrushListener ERASER_TILE_LISTENER = new ChangeBrushListener(PaintbrushType.ERASER_TILES);
+	private final ChangeBrushListener ERASER_SPRITE_LISTENER = new ChangeBrushListener(PaintbrushType.ERASER_SPRITES);
+	private final ChangeBrushListener ERASER_GOODIES_LISTENER = new ChangeBrushListener(PaintbrushType.ERASER_GOODIES);
+	private final ChangeBrushListener EDIT_SPRITE_LISTENER = new ChangeBrushListener(PaintbrushType.EDIT_SPRITES);
 	
 	public BrushPalette(final LevelEditor mainCanvas, final WorldResource rsrc) {
 		this.mainCanvas = mainCanvas;
