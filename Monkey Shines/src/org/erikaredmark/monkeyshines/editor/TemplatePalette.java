@@ -1,14 +1,14 @@
 package org.erikaredmark.monkeyshines.editor;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -26,6 +26,8 @@ import org.erikaredmark.monkeyshines.menu.MenuUtils;
 import org.erikaredmark.util.swing.layout.WrapLayout;
 
 import com.google.common.base.Function;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 
 /**
  * 
@@ -60,10 +62,15 @@ public final class TemplatePalette extends JPanel {
 	 * @param world
 	 * 		world for rendering and editing the templates
 	 * 
+	 * @param templateSaveAction
+	 * 		function that is called with a list of templates that the client should somehow save. Used when the palette
+	 *		is modified by the user after creation
+	 * 
 	 */
 	public TemplatePalette(final LevelDrawingCanvas mainCanvas, 
 						   final List<Template> initialTemplates, 
-						   final World world) {
+						   final World world,
+						   final Function<List<Template>, Void> templateSaveAction) {
 		
 		// We must store this info, as we can dynamically create new template buttons and should have this already available.
 		this.world = world;
@@ -121,6 +128,9 @@ public final class TemplatePalette extends JPanel {
 		final JToggleButton removeTemplate = new JToggleButton("Remove");
 		controlViewer.add(removeTemplate);
 		
+		JButton saveAll = new JButton("Save Templates");
+		controlViewer.add(saveAll);
+		
 		editTemplate.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent event) {
 				if (editTemplate.isSelected() ) {
@@ -142,6 +152,25 @@ public final class TemplatePalette extends JPanel {
 					currentState = State.PLACING;
 					editTemplate.setEnabled(true);
 				}
+			}
+		});
+		
+		saveAll.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent event) {
+				// We generate the list of templates from how they are ordered on the GUI, which is consistent
+				// with how they are ordered in XML and is kept consistent via proper ordering when replacing existing templates.
+				List<Template> templatesToSave = new ArrayList<>();
+				BiMap<JButton, Template> buttonToTemplate = templateToButton.inverse();
+				Object treeLock = templateViewer.getTreeLock();
+				synchronized (treeLock) {
+					for (int i = 0; i < templateViewer.getComponentCount(); ++i) {
+						Component button = templateViewer.getComponent(i);
+						Template t = buttonToTemplate.get(button);
+						if (t != null)  templatesToSave.add(t);
+					}
+				}
+				
+				templateSaveAction.apply(templatesToSave);
 			}
 		});
 		
@@ -245,8 +274,8 @@ public final class TemplatePalette extends JPanel {
 			JButton oldButton = templateToButton.get(template);
 			templateViewer.remove(oldButton);
 			templateToButton.remove(template);
-			doLayout();
-			repaint();
+			getParent().revalidate();
+			getParent().repaint();
 			return true;
 		} else {
 			return false;
@@ -272,15 +301,18 @@ public final class TemplatePalette extends JPanel {
 			JButton oldButton = templateToButton.get(oldTemplate);
 			// We must find the 'index' of this button so we can properly update the GUI.
 			int index = -1;
-			for (int i = 0; i < getComponentCount(); ++i) {
-				// Reference equality intended
-				if (getComponent(i) == oldButton) {
-					index = i;
-					break;
+			Object treeLock = templateViewer.getTreeLock();
+			synchronized (treeLock) {
+				for (int i = 0; i < templateViewer.getComponentCount(); ++i) {
+					// Reference equality intended
+					if (templateViewer.getComponent(i) == oldButton) {
+						index = i;
+						break;
+					}
 				}
 			}
 			
-			remove(oldButton);
+			templateViewer.remove(oldButton);
 			JButton templateButton = createTemplateButton(newTemplate);
 			
 			templateViewer.add(templateButton, index);
@@ -315,7 +347,7 @@ public final class TemplatePalette extends JPanel {
 	
 	// Maps a template to the button controlling that template. Keeps track of all template buttons so that
 	// the palette may be modified after construction with new/removed templates.
-	private final Map<Template, JButton> templateToButton = new HashMap<>();
+	private final BiMap<Template, JButton> templateToButton = HashBiMap.create();
 	
 	// Immutable state information
 	private final LevelDrawingCanvas mainCanvas;

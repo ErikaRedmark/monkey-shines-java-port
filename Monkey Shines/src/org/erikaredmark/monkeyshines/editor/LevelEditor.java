@@ -105,7 +105,14 @@ public class LevelEditor extends JFrame {
 			templatePalette = new TemplatePalette(
 				currentWorld, 
 				worldTemplates,
-				world);
+				world,
+				new Function<List<Template>, Void>() {
+					@Override public Void apply(List<Template> templates) {
+						System.out.println("Save not implemented yet");
+						System.out.println("Would have saved " + templates);
+						return null;
+					}
+				});
 			
 			templatePaletteFrame.add(templatePalette, BorderLayout.CENTER);
 			templatePaletteFrame.setVisible(true);
