@@ -10,6 +10,7 @@ import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -33,7 +34,6 @@ import org.erikaredmark.monkeyshines.tiles.TileType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
@@ -68,6 +68,7 @@ public final class TemplateXmlWriter {
 	 */
 	public static void writeOutTemplatesForWorld(Path xmlFile, String worldName, List<Template> templates) throws BadEditorPersistantFormatException {
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+		if (!(Files.exists(xmlFile) ) )  createEditorXmlFile(docFactory, xmlFile);
 		// Document is required outside of initial parse
 		Document doc = null;
 		try (InputStream in = Files.newInputStream(xmlFile) ) {
@@ -76,38 +77,33 @@ public final class TemplateXmlWriter {
 			
 			// We will use XPath to query for all Template nodes that are nested under the given world name
 			XPath worldTemplateQuery = XPathFactory.newInstance().newXPath();
-			XPathExpression expression = worldTemplateQuery.compile("/msleveleditor/world[@name='" + worldName + "']/templates/template");
 			
-			NodeList nodes = (NodeList) expression.evaluate(doc, XPathConstants.NODESET);
-		
-			for (int i = 0; i < nodes.getLength(); ++i) {
-				Node n = nodes.item(i);
-				// This node should be a single <template> entry in the <templates> container. We can build a template from
-				// its type
-				if ("template".equals(n.getNodeName() ) ) {
-					// Delete this node and recreate with template listing.
-					NodeList preExisting = n.getChildNodes();
-					for (int j = 0; j < preExisting.getLength(); ++j) {
-						n.removeChild(preExisting.item(i) );
-					}
-					
-					// Now add the template nodes.
-					for (Template t : templates) {
-						Element templateNode = doc.createElement("template");
-						for (TemplateTile tempTile : t.getTilesInTemplate() ) {
-							Element tileNode = doc.createElement("tile");
-							tileNode.setAttribute("id", String.valueOf(tempTile.tile.getId() ) );
-							tileNode.setAttribute("row", String.valueOf(tempTile.row) );
-							tileNode.setAttribute("col", String.valueOf(tempTile.col) );
-							tileNode.setAttribute("type", tileTypeToXml(tempTile.tile) );
-							templateNode.appendChild(tileNode);
-						}
-						
-						n.appendChild(templateNode);
-					}
-					
-				}
+			XPathExpression worldTemplates = worldTemplateQuery.compile("/msleveleditor/world[@name='" + worldName + "']/templates");
+			XPathExpression worldEntry = worldTemplateQuery.compile("/msleveleditor/world[@name='" + worldName + "']");
+			
+			Node templatesNode = (Node) worldTemplates.evaluate(doc, XPathConstants.NODE);
+			// <world> .... </world> will always be an element
+			Element worldNode = (Element) worldEntry.evaluate(doc, XPathConstants.NODE);
+			
+			// if worldNode doesn't exist, create it.
+			if (worldNode == null) {
+				Element root = doc.getDocumentElement();
+				worldNode = doc.createElement("world");
+				worldNode.setAttribute("name", worldName);
+				root.appendChild(worldNode);
 			}
+			
+			// If the node list is not empty, remove and replace.
+			if (templatesNode != null ) {
+				worldNode.removeChild(templatesNode);
+				templatesNode = null;
+			}
+
+			// If a templates node existed, it's gone now. Create a new one.
+			Element newTemplatesNode = doc.createElement("templates");
+			addTemplatesToNode(doc, newTemplatesNode, templates);
+			worldNode.appendChild(newTemplatesNode);
+
 
 		} catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException e) {
 			throw new BadEditorPersistantFormatException(e);
@@ -116,10 +112,17 @@ public final class TemplateXmlWriter {
 		
 		// The DOM has been properly modified. Rewrite out to the file.
 		assert (doc != null);
+		saveDocToFile(doc, xmlFile);
+
+	}
+	
+	private static void saveDocToFile(Document doc, Path xmlFile) throws BadEditorPersistantFormatException {
 		try (OutputStream os = Files.newOutputStream(xmlFile) ) {
 			Transformer transformer = TransformerFactory.newInstance().newTransformer();
 			DOMSource source = new DOMSource(doc);
 			StreamResult result = new StreamResult(os);
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
 			transformer.transform(source, result);
 			
 		} catch (IOException | TransformerException e) {
@@ -127,13 +130,24 @@ public final class TemplateXmlWriter {
 		}
 	}
 	
+	private static void createEditorXmlFile(DocumentBuilderFactory docFactory, Path xmlFile) throws BadEditorPersistantFormatException {
+		try {
+			Document doc = docFactory.newDocumentBuilder().newDocument();
+			Element root = doc.createElement("msleveleditor");
+			doc.appendChild(root);
+			saveDocToFile(doc, xmlFile);
+		} catch (ParserConfigurationException e) {
+			throw new RuntimeException("Cannot create editor xml file due to " + e.getMessage(), e);
+		}
+	}
+	
 	private static String tileTypeToXml(TileType tile) {
 		if (tile instanceof CommonTile) {
 			switch ( ((CommonTile)tile).getUnderlyingType() ) {
 			case NONE: return "empty";
-			case SCENE: return "thru";
+			case SCENE: return "scene";
 			case SOLID: return "solid";
-			case THRU: return "scene";
+			case THRU: return "thru";
 			default: throw new RuntimeException("Unknown stateless tile type " +  ((CommonTile)tile).getUnderlyingType() );
 			}
 		} else if (tile instanceof CollapsibleTile) {
@@ -149,6 +163,25 @@ public final class TemplateXmlWriter {
 		} 
 		
 		throw new RuntimeException("Xml decoding for templates cannot handle tiles of type " + tile.getClass().getName() );
+	}
+	
+	// Call on a node of name "templates"
+	private static void addTemplatesToNode(Document doc, Node node, List<Template> templates) {
+		assert "templates".equals(node.getNodeName() );
+		// Now add the template nodes.
+		for (Template t : templates) {
+			Element templateNode = doc.createElement("template");
+			for (TemplateTile tempTile : t.getTilesInTemplate() ) {
+				Element tileNode = doc.createElement("tile");
+				tileNode.setAttribute("id", String.valueOf(tempTile.tile.getId() ) );
+				tileNode.setAttribute("row", String.valueOf(tempTile.row) );
+				tileNode.setAttribute("col", String.valueOf(tempTile.col) );
+				tileNode.setAttribute("type", tileTypeToXml(tempTile.tile) );
+				templateNode.appendChild(tileNode);
+			}
+			
+			node.appendChild(templateNode);
+		}
 	}
 	
 }

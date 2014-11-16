@@ -38,6 +38,7 @@ import org.erikaredmark.monkeyshines.editor.exception.BadEditorPersistantFormatE
 import org.erikaredmark.monkeyshines.editor.model.Template;
 import org.erikaredmark.monkeyshines.editor.persist.TemplateXmlReader;
 import org.erikaredmark.monkeyshines.editor.persist.TemplateXmlReader.TemplateIssue;
+import org.erikaredmark.monkeyshines.editor.persist.TemplateXmlWriter;
 import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.encoder.WorldIO;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
@@ -90,16 +91,19 @@ public class LevelEditor extends JFrame {
 			
 			// Load templates for the given world. TODO for now we ignore issues
 			List<Template> worldTemplates = Collections.emptyList();
-			try (InputStream is = Files.newInputStream(BinaryLocation.BINARY_LOCATION.getParent().resolve("editor_prefs.xml")) ) {
-				worldTemplates = 
-					TemplateXmlReader.read(
-						is, 
-						world, 
-						new Function<TemplateIssue, Void>() { @Override public Void apply(TemplateIssue t) { return null; } });
-			} catch (IOException | BadEditorPersistantFormatException e) {
-				LOGGER.log(Level.WARNING,
-						   "Could not open editor preferences (editor will have default preferences and no templates loaded: ",
-						   e);
+			final Path editorPreferencesLocation = BinaryLocation.BINARY_LOCATION.getParent().resolve("editor_prefs.xml");
+			if (Files.exists(editorPreferencesLocation) ) {
+				try (InputStream is = Files.newInputStream(editorPreferencesLocation) ) {
+					worldTemplates = 
+						TemplateXmlReader.read(
+							is, 
+							world, 
+							new Function<TemplateIssue, Void>() { @Override public Void apply(TemplateIssue t) { return null; } });
+				} catch (IOException | BadEditorPersistantFormatException e) {
+					LOGGER.log(Level.WARNING,
+							   "Could not open editor preferences (editor will have default preferences and no templates loaded: ",
+							   e);
+			}
 			}
 			
 			templatePalette = new TemplatePalette(
@@ -107,9 +111,15 @@ public class LevelEditor extends JFrame {
 				worldTemplates,
 				world,
 				new Function<List<Template>, Void>() {
-					@Override public Void apply(List<Template> templates) {
-						System.out.println("Save not implemented yet");
-						System.out.println("Would have saved " + templates);
+					@Override public Void apply(List<Template> newTemplates) {
+						try {
+							TemplateXmlWriter.writeOutTemplatesForWorld(editorPreferencesLocation, world.getWorldName(), newTemplates);
+						} catch (BadEditorPersistantFormatException e) {
+							JOptionPane.showMessageDialog(LevelEditor.this, "Could not save template data to preferences: " + e.getMessage() );
+							LOGGER.log(Level.SEVERE,
+									   "Could not save template data to preferences: " + e.getMessage(),
+									   e);
+						}
 						return null;
 					}
 				});
