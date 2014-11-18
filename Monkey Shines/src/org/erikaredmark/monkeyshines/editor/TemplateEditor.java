@@ -83,7 +83,10 @@ public class TemplateEditor extends JPanel {
 		JButton topShrink = new BasicArrowButton(SwingConstants.SOUTH);
 		topShrink.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-				TileMap newMap = internalEditor.getTileMap().resize(-1, Direction.NORTH);
+				TileMap map = internalEditor.getTileMap();
+				if (map.getRowCount() <= 3)  return;
+				
+				TileMap newMap = map.resize(-1, Direction.NORTH);
 				replaceMap(newMap);
 			}
 		});
@@ -91,6 +94,8 @@ public class TemplateEditor extends JPanel {
 		topAll.add(topExpand);
 		topAll.add(topShrink);
 		
+		// Note: Maximum size is not enforced, but minimum size is 3x3. No worries: templates that are started at the top left,
+		// when saved, are always shrunk-to-fit to the samllest possible size removing extra rows and columns to the right and bottom.
 		// LEFT
 		JPanel leftAll = new JPanel();
 		leftAll.setLayout(new BoxLayout(leftAll, BoxLayout.PAGE_AXIS) );
@@ -105,7 +110,10 @@ public class TemplateEditor extends JPanel {
 		JButton leftShrink = new BasicArrowButton(SwingConstants.EAST);
 		leftShrink.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-				TileMap newMap = internalEditor.getTileMap().resize(-1, Direction.WEST);
+				TileMap map = internalEditor.getTileMap();
+				if (map.getColumnCount() <= 3)  return;
+				
+				TileMap newMap = map.resize(-1, Direction.WEST);
 				replaceMap(newMap);
 			}
 		});
@@ -127,7 +135,10 @@ public class TemplateEditor extends JPanel {
 		JButton bottomShrink = new BasicArrowButton(SwingConstants.NORTH);
 		bottomShrink.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-				TileMap newMap = internalEditor.getTileMap().resize(-1, Direction.SOUTH);
+				TileMap map = internalEditor.getTileMap();
+				if (map.getRowCount() <= 3)  return;
+				
+				TileMap newMap = map.resize(-1, Direction.SOUTH);
 				replaceMap(newMap);
 			}
 		});
@@ -149,7 +160,10 @@ public class TemplateEditor extends JPanel {
 		JButton rightShrink = new BasicArrowButton(SwingConstants.WEST);
 		rightShrink.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-				TileMap newMap = internalEditor.getTileMap().resize(-1, Direction.EAST);
+				TileMap map = internalEditor.getTileMap();
+				if (map.getColumnCount() <= 3)  return;
+				
+				TileMap newMap = map.resize(-1, Direction.EAST);
 				replaceMap(newMap);
 			}
 		});
