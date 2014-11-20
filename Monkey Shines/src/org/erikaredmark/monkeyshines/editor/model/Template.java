@@ -40,6 +40,8 @@ public final class Template {
 	 * <p/>
 	 * If any template tiles would otherwise be drawn outside the map boundaries, they are simply not drawn; no
 	 * exceptions are thrown or assertions fired.
+	 * <p/>
+	 * All drawn tiles are copied, so state is not shared.
 	 * 
 	 * @param map
 	 * 		tileMap for the level tiles in either the level screen being edited, or some other template
@@ -90,7 +92,7 @@ public final class Template {
 			if (   drawRow >= 0 && drawRow < 20
 				&& drawCol >= 0 && drawCol < 32) {
 				
-				map.setTileRowCol(drawRow, drawCol, t.tile);
+				map.setTileRowCol(drawRow, drawCol, t.tile.copy() );
 			}
 		}
 	}
