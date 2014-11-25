@@ -12,7 +12,6 @@ import javax.swing.JTextField;
 import javax.swing.JButton;
 
 import java.awt.Dimension;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -217,11 +216,6 @@ public class NewWorldDialog extends JPanel {
 		springLayout.putConstraint(SpringLayout.NORTH, btnBrowseResourcePack, 0, SpringLayout.NORTH, txtResourcePack);
 		springLayout.putConstraint(SpringLayout.WEST, btnBrowseResourcePack, 6, SpringLayout.EAST, txtResourcePack);
 		springLayout.putConstraint(SpringLayout.EAST, btnBrowseResourcePack, -10, SpringLayout.EAST, this);
-		btnBrowseResourcePack.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				
-			}
-		});
 		add(btnBrowseResourcePack);
 		
 		chckbxUseDefaultPack = new JCheckBox(useDefaultAction);

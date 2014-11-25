@@ -35,6 +35,11 @@ import ResourceManager.ResourceType;
  * old Monkey Shines world (PICT, ppat, clut, plvl, WrLd, MADH) only plvl and WrLd are used. Like the Basic Translator, one must
  * prepare a resource pack with all the proper graphics, sounds, and music formatted properly.
  * <p/>
+ * Note: this cannot handle the .msh files. Whilst those conform... sort of to the resource fork format, they use a special format
+ * that isn't exactly a resource fork (and hence cannot be read using the third-party library properly). The original Macintosh
+ * resource forks from the Mac levels is required. This shouldn't be too big of an issue given the level editor only ever worked
+ * on the Macintosh, so for each .msh file there should exist a Mac file with an appropriate resource fork.
+ * <p/>
  * Unlike the Basic Translator this can be run command line AND is intended to be run from the level editor.
  * 
  * @author Erika Redmark
@@ -70,22 +75,7 @@ public final class ResourceForkTranslator {
 			System.err.println("Path supplied must be a valid file");
 		}
 		
-		// Calculate name and location to save
-		String saveFileName = resourcePack.getFileName().toString();
-		saveFileName = saveFileName.substring(0, saveFileName.lastIndexOf(".") ) + ".world";
-		final Path saveTo = resourcePack.getParent().resolve(saveFileName);
-		
-		if (Files.exists(saveTo) ) {
-			System.err.println("Cannot save: .world file already exists.");
-			return;
-		}
-		
-		final World world = importWorld(resourceFork, resourcePack);
-
-		final EncodedWorld writeWorld = EncodedWorld.fromMemory(world);
-		try (OutputStream os = Files.newOutputStream(saveTo) ) {
-			writeWorld.save(os);
-		}
+		importWorldAndAutoSave(resourceFork, resourcePack);
 	}
 	
 	/**
@@ -179,5 +169,42 @@ public final class ResourceForkTranslator {
 		}
 		
 		return world;
+	}
+	
+	/**
+	 * 
+	 * Performs the same logical functionality of importWorld, but also saves the world to a file in the same directory
+	 * as the resource pack, so it is level editor ready.
+	 * 
+	 * @param resourceFork
+	 * 
+	 * @param resourcePack
+	 * 
+	 * @return
+	 * 		location of the new .world file
+	 * 
+	 */
+	public static Path importWorldAndAutoSave(final Path resourceFork, 
+									   final Path resourcePack) 
+										   throws WorldTranslationException, ResourcePackException, WorldSaveException  {		
+		// Calculate name and location to save
+		String saveFileName = resourcePack.getFileName().toString();
+		saveFileName = saveFileName.substring(0, saveFileName.lastIndexOf(".") ) + ".world";
+		final Path saveTo = resourcePack.getParent().resolve(saveFileName);
+		
+		if (Files.exists(saveTo) ) {
+			throw new WorldTranslationException(TranslationFailure.TRANSLATOR_SPECIFIC, "Cannot save: .world file already exists.");
+		}
+		
+		final World world = importWorld(resourceFork, resourcePack);
+	
+		final EncodedWorld writeWorld = EncodedWorld.fromMemory(world);
+		try (OutputStream os = Files.newOutputStream(saveTo) ) {
+			writeWorld.save(os);
+		} catch (IOException e) {
+			throw new WorldTranslationException(TranslationFailure.TRANSLATOR_SPECIFIC, "Failure writing world: " + e.getMessage() );
+		}
+		
+		return saveTo;
 	}
 }

@@ -33,6 +33,7 @@ import org.erikaredmark.monkeyshines.editor.LevelDrawingCanvas.EditorState;
 import org.erikaredmark.monkeyshines.editor.dialog.CopyPasteDialog;
 import org.erikaredmark.monkeyshines.editor.dialog.CopyPasteDialog.CopyPasteConfiguration;
 import org.erikaredmark.monkeyshines.editor.dialog.GoToScreenDialog;
+import org.erikaredmark.monkeyshines.editor.dialog.ImportWorldDialog;
 import org.erikaredmark.monkeyshines.editor.dialog.NewWorldDialog;
 import org.erikaredmark.monkeyshines.editor.exception.BadEditorPersistantFormatException;
 import org.erikaredmark.monkeyshines.editor.model.Template;
@@ -150,6 +151,9 @@ public class LevelEditor extends JFrame {
 	
 	/* -------------------------- MENU ITEM SAVE WORLD ---------------------------- */
 	private JMenuItem saveWorld = new JMenuItem("Save World...");
+	
+	/* ------------------------- MENU ITEM IMPORT WORLD --------------------------- */
+	private JMenuItem importWorld = new JMenuItem("Import World...");
 	
 	/* ----------------------------- MENU ITEM QUIT ------------------------------- */
 	private JMenuItem quit = new JMenuItem(new AbstractAction("Quit") {
@@ -493,6 +497,17 @@ public class LevelEditor extends JFrame {
 			}
 		}); 
 		
+		editor.importWorld.setAction(new AbstractAction("Import World...") {
+			private static final long serialVersionUID = 1L;
+			@Override public void actionPerformed(ActionEvent e) {
+				Path p = ImportWorldDialog.launch();
+				// If the translation was succesful and no cancel, load world into editor.
+				if (p != null) {
+					editor.loadWorldNoisy(p);
+				}
+			}
+		});
+		
 		// Disable all editor manipulation functions since no world is loaded by default
 		editor.manipulationFunctions(false);
 		
@@ -566,6 +581,7 @@ public class LevelEditor extends JFrame {
 		fileMenu.add(newWorld);
 		fileMenu.add(loadWorld);
 		fileMenu.add(saveWorld);
+		fileMenu.add(importWorld);
 		fileMenu.add(quit);
 		
 		mainMenuBar.add(fileMenu);
