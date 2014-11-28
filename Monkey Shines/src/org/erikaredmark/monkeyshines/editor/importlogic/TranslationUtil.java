@@ -124,16 +124,14 @@ public final class TranslationUtil {
 	 * Resolves the integral value of the old-style hazard specification to the port's interpretation
 	 * of a death animation. In the port, death animations include sound hardcoded. In the original this
 	 * was not the case.
+	 * <p/>
+	 * If the type is unknown, {@code DeathAnimation.NORMAL} is returned and the issue is logged.
 	 * 
 	 * @param type
 	 * 		the integral value interpretted from the binary stream
 	 * 
 	 * @return
 	 * 		the proper death animation
-	 * 
-	 * @throws IllegalArgumentException
-	 * 		if the type is not recognised as a valid death type, indicating either a corrupted world file, or the
-	 * 		translator is missing some information
 	 * 
 	 */
 	public static DeathAnimation deathType(int type) {
@@ -142,7 +140,9 @@ public final class TranslationUtil {
 		switch (type) {
 		case 1: return DeathAnimation.BURN;
 		case 2: return DeathAnimation.ELECTRIC;
-		default: throw new IllegalArgumentException("Death type " + type + " not supported");
+		case 3: return DeathAnimation.NORMAL;
+		case 4: return DeathAnimation.BEE;
+		default: return DeathAnimation.NORMAL;
 		}
 	}
 	

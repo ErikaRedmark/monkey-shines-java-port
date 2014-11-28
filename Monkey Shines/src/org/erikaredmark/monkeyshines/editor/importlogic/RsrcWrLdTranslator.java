@@ -77,9 +77,9 @@ public class RsrcWrLdTranslator {
 		// For loop has early termination if hazardTypes is zero at any point.
 		for (int i = 0; i < 16; ++i) {
 			if (hazardTypes[i] == 0)  break;
-			// TODO figure out how to interpret harmless hazards. Currently all hazards kill bonzo. Manual intervention is required
-			// to set those that don't.
-			hazards.add(new Hazard(i, hazardExplodes[i], TranslationUtil.deathType(hazardTypes[i]), false) );
+			// A death type of 0 is a harmless hazard
+			boolean harmless = (hazardTypes[i] == 0);
+			hazards.add(new Hazard(i, hazardExplodes[i], TranslationUtil.deathType(hazardTypes[i]), harmless) );
 		}
 		
 		// Nothing more can be learnt from the stream, relying on graphics resource and state info
