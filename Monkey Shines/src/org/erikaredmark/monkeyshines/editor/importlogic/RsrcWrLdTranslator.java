@@ -74,9 +74,10 @@ public class RsrcWrLdTranslator {
 		boolean[] hazardExplodes = TranslationUtil.readMacBooleanArray(is, 16, FAIL, "Could not read hazard explosion properties");
 		
 		List<Hazard> hazards = new ArrayList<>();
-		// For loop has early termination if hazardTypes is zero at any point.
-		for (int i = 0; i < 16; ++i) {
-			if (hazardTypes[i] == 0)  break;
+		
+		// Old game always had 16 hazards defined. The only way to know when to stop is to use the graphics resource,
+		// assuming that the importer has properly defined the correct number of hazards via graphics
+		for (int i = 0; i < rsrc.getHazardCount(); ++i) {
 			// A death type of 0 is a harmless hazard
 			boolean harmless = (hazardTypes[i] == 0);
 			hazards.add(new Hazard(i, hazardExplodes[i], TranslationUtil.deathType(hazardTypes[i]), harmless) );

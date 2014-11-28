@@ -128,7 +128,7 @@ public final class TranslationUtil {
 	 * If the type is unknown, {@code DeathAnimation.NORMAL} is returned and the issue is logged.
 	 * 
 	 * @param type
-	 * 		the integral value interpretted from the binary stream
+	 * 		the integral value interpreted from the binary stream
 	 * 
 	 * @return
 	 * 		the proper death animation
