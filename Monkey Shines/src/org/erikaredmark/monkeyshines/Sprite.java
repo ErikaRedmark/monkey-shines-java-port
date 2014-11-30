@@ -278,6 +278,9 @@ public final class Sprite {
 	 */
 	public void setVisible(boolean visible) { this.visible = visible; }
 
+	/** Returns if the sprite is currently visible on the screen. Mainly applies to doors. */
+	public boolean isVisible() { return visible; }
+	
 	/**
 	 * Returns the resource that this sprite draws its graphics from.
 	 */

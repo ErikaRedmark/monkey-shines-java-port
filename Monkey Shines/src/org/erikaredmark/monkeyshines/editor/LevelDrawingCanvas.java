@@ -813,6 +813,8 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 		    model.getTwoWayFacing(),
 		    currentWorldEditor.getWorldResource() );
 		
+		newSprite.setVisible(sprite.isVisible() );
+		
 		currentScreenEditor.replaceSprite(sprite, newSprite);
 	}
 
