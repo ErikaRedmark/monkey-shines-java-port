@@ -11,28 +11,6 @@ import org.erikaredmark.monkeyshines.resource.WorldResource;
  *
  */
 public class Goodie {
-	// These values indicate starting information for object construction. ONLY THESE
-	// THREE VALUES determine object equality and hashcode.
-	private final Type goodieType;
-	private final int screenID;
-	private final ImmutablePoint2D location;	
-	
-	// The sheet that contains all the goodies
-
-	
-	// These values represent game state information
-	// Taken means gone but animating the YUM. Dead means gone.
-	private boolean taken;
-	private boolean dead;
-	private int yumSprite;
-	
-	// Drawing info
-	private int drawToX;
-	private int drawToY;
-	private int drawX;
-	private int drawY;
-	
-	private WorldResource rsrc;
 	
 	/**
 	 * 
@@ -73,10 +51,12 @@ public class Goodie {
 	// Very simple animation.
 	public void update() {
 		if (!taken && !dead) {
-			if (drawY == 0)
-				drawY = GameConstants.GOODIE_SIZE_Y;
-			else
-				drawY = 0;
+			if (readyToAnimate() ) {
+				if (drawY == 0)
+					drawY = GameConstants.GOODIE_SIZE_Y;
+				else
+					drawY = 0;
+			}
 		} else if (taken && !dead) {
 			yumSprite++;
 			if (yumSprite >= 15) {
@@ -204,6 +184,16 @@ public class Goodie {
 		result += result * 31 + screenID;
 		result += result * 31 + location.hashCode();
 		return result;
+	}
+	
+	private boolean readyToAnimate() {
+		if (timeToNextFrame >= TICKS_BETWEEN_ANIMATIONS) {
+			timeToNextFrame = 0;
+			return true;
+		} else {
+			++timeToNextFrame;
+			return false;
+		}
 	}
 	
 	public enum Type {
@@ -363,5 +353,33 @@ public class Goodie {
 		 */
 		public void affectBonzo(Goodie goodie, Bonzo bonzo, World world) { /* No op by default, overriden where required */ }
 	}
+	
+	// These values indicate starting information for object construction. ONLY THESE
+	// THREE VALUES determine object equality and hashcode.
+	private final Type goodieType;
+	private final int screenID;
+	private final ImmutablePoint2D location;	
+	
+	// The sheet that contains all the goodies
+
+	
+	// These values represent game state information
+	// Taken means gone but animating the YUM. Dead means gone.
+	private boolean taken;
+	private boolean dead;
+	private int yumSprite;
+	
+	// Drawing info
+	private int drawToX;
+	private int drawToY;
+	private int drawX;
+	private int drawY;
+	
+	private WorldResource rsrc;
+	
+	// When this reaches TICKS_BETWEEN_ANIMATIONS, the y-level for drawing swaps between either the top
+	// row or the bottom row.
+	private int timeToNextFrame = 0;
+	private static final int TICKS_BETWEEN_ANIMATIONS = 5;
 	
 }
