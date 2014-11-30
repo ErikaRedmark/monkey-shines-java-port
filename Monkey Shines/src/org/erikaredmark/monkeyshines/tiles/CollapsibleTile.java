@@ -48,7 +48,7 @@ public final class CollapsibleTile implements TileType {
 	
 	@Override public boolean isLandable() { return isSolid() || isThru(); } 
 
-	@Override public void reset() { 
+	@Override public void reset(boolean oddElseEven) { 
 		damage = 0;
 	}	
 	

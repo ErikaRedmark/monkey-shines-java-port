@@ -179,12 +179,16 @@ public class World {
 		}
 		
 		// To easily enable bonus and exit doors, we add all such sprites to lists
-		// based on type.
+		// based on type. And since we are iterating over the levels anyway...
+		// Reset is important to stagger animation, so go through all screens in the level and reset them (now that all the
+		// tile data is set properly) to stagger it.
 		for (LevelScreen lvl : worldScreens.values() ) {
 			for (Sprite s : lvl.getSpritesOnScreen() ) {
 				if 		(s.getType() == SpriteType.EXIT_DOOR)   this.exitDoors.add(s);
 				else if (s.getType() == SpriteType.BONUS_DOOR)  this.bonusDoors.add(s);
 			}
+			
+			lvl.resetScreen();
 		}
 		
 		// Finally, if for some reason bonzo dies on the first screen, we set the initial safe place to be

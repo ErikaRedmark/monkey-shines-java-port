@@ -345,11 +345,24 @@ public class TileMap {
 	
 	/**
 	 * 
-	 * For every tile in the map, it's state, if it has any, is reset.
+	 * For every tile in the map, it's state, if it has any, is reset. This should be called when a tile map is
+	 * loaded with relevant data, such as loading a tile map for a level screen for the first time, and as well
+	 * when bonzo moves off the screen (or for the level editor when it decides to invalidate the current tiles).
 	 * 
 	 */
 	public void resetTiles() {
-		for (TileType t : map)  t.reset();
+		// Use array indexing as we need the odd/eveness for setting animation steps.
+		// We need a little trick here: we invert the logic on odd ROWS. This is because
+		// we need two 'adjacent in memory' tiles to animate the same, because logically the next one is 
+		// on the next 'row' and would otherwise not be staggered with the animation cell above it
+		int check = 1;
+		for (int i = 0; i < map.length; ++i) {
+			// did we hit the next row? invert the logic to stagger. This actually doesn't work for odd-sized
+			// tile maps, but this almost always used with the main level and if it doesn't stagger in templates,
+			// it really doesn't matter.
+			if ( (i % cols) == 0)  check = (check == 0) ? 1 : 0;
+			map[i].reset( (i % 2) == check);
+		}
 	}
 	
 	public int getRowCount() { return rows; }

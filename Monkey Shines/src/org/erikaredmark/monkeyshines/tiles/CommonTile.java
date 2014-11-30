@@ -106,7 +106,7 @@ public class CommonTile implements TileType {
 
 	@Override public void update() { /* No state; never updates */ }
 	
-	@Override public void reset() { /* No op */ }
+	@Override public void reset(boolean oddElseEven) { /* No op */ }
 	
 	@Override public CommonTile copy() {
 		return new CommonTile(id, underlyingType);

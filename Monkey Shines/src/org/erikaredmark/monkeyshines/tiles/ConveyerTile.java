@@ -90,7 +90,7 @@ public class ConveyerTile implements TileType {
 	
 	@Override public boolean isLandable() { return isSolid() || isThru(); } 
 	
-	@Override public void reset() { /* No op */ }
+	@Override public void reset(boolean oddElseEven) { /* No op */ }
 
 	@Override public TileType copy() {
 		return new ConveyerTile(conveyer);

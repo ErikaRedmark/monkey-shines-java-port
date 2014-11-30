@@ -81,9 +81,17 @@ public interface TileType {
 	 * 
 	 * Some tile types have a concept of reset. Resetting is done whenver a level is reloaded, such
 	 * as from death or just moving back onto the screen.
+	 * <p/>
+	 * The reset function is passed whether the tile is currently in an odd numbered tile location or an
+	 * even numbered one. The point of this checkerboarded reset is to stagger some animations so adjacent
+	 * hazards don't animate exactly the same. This helps a lot for marquee style animation. Not all tiles
+	 * even care about this parameter.
+	 * 
+	 * @param oddElseEven
+	 * 		{@code true} if the tile index is odd, {@code false} if event (or 0) 
 	 * 
 	 */
-	void reset();
+	void reset(boolean oddElseEven);
 	
 	/**
 	 * 

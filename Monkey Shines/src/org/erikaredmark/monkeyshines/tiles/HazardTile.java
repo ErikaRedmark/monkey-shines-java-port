@@ -182,12 +182,27 @@ public class HazardTile implements TileType {
 	
 	/**
 	 * 
+	 * Sets the animation step for this hazard, either 0 for the first row or 1 for the second row. Other values
+	 * will cause undefined behaviour.
+	 * <p/>
+	 * Intended to stagger animation of hazards in adjacent tiles.
+	 * 
+	 * @param step
+	 * 		0 for the first row of animation, 1 for the second.
+	 * 
+	 */
+	public void setAnimationStep(final int step) {
+
+	}
+	
+	/**
+	 * 
 	 * Resets the state of the hazard. Normally called whenever a level screen is reloaded.
 	 * 
 	 */
-	@Override public void reset() {
+	@Override public void reset(boolean oddElseEven) {
 		exploding = false;
-		animationPoint = 0;
+		animationPoint = oddElseEven ? 1 : 0;
 		timeToNextFrame = 0;
 	}
 	
