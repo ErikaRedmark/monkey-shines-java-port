@@ -141,8 +141,17 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 		if (currentMapEditor != null) {
 			this.remove(currentMapEditor);
 		}
+		// Reset the map editor to the new screen, setting the default paintbrush as well. Note that this could be the
+		// first time being set, in which case there was no previous screen. 
+		final MapEditor previous = currentMapEditor;
+		
 		currentMapEditor = new MapEditor(screenEditor.getLevelScreen().getMap(), screenEditor.getBackground(), currentWorldEditor.getWorld(), false);
 		currentMapEditor.setLocation(0, 0);
+		
+		if (previous != null) {	
+			currentMapEditor.setBrushAndId(previous.getCurrentBrush(), previous.getTileId() );
+		}
+		
 		this.add(currentMapEditor);
 	}
 	

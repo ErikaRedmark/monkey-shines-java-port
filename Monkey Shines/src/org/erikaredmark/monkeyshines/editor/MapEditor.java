@@ -162,6 +162,20 @@ public final class MapEditor extends JPanel {
 		updateTileIndicator();
 	}
 	
+	/** 
+	 * 
+	 * @return the id of the tile to be drawn by the current brush.
+	 * 
+	 */
+	public int getTileId() { return currentId; }
+	
+	/**
+	 * 
+	 * @return the brush used for current painting
+	 * 
+	 */
+	public TileBrush getCurrentBrush() { return currentBrush; }
+	
 	private void updateTileIndicator() {
 		WorldResource rsrc = world.getResource();
 		
