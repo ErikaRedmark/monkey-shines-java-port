@@ -1,6 +1,5 @@
 package org.erikaredmark.monkeyshines.screendraw;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.image.VolatileImage;
@@ -40,13 +39,11 @@ public final class StandardSurface {
 	private static final int HEALTH_DRAW_Y = 50;
 	private static final int HEALTH_DRAW_WIDTH = 151;
 	private static final int HEALTH_DRAW_HEIGHT = 14;
+	private static final int HEALTH_DRAW_Y2 = HEALTH_DRAW_Y + HEALTH_DRAW_HEIGHT;
 	
 	// Used to map the 'logical' health to the 'width' of the health bar.
 	// Bonzos health will be converted to double and extended/contracted by this multplier to get draw width.
 	private static final double HEALTH_MULTIPLIER = (double)HEALTH_DRAW_WIDTH / (double)GameConstants.HEALTH_MAX;
-	
-	// Color of health bar
-	private static final Color HEALTH_COLOR = new Color(0, 255, 0, 255);
 	
 	// Score draw x/y is the top left location of the FIRST, leftmost digit.
 	private static final int SCORE_DRAW_X = 13;
@@ -159,11 +156,15 @@ public final class StandardSurface {
 						  null);
 			
 			/* ------------------------- Health -------------------------- */
-			g2d.setColor(HEALTH_COLOR);
 			// Normalise bonzo's current health with drawing.
 			double healthWidth = ((double)universe.getBonzoHealth()) * HEALTH_MULTIPLIER;
-			//System.out.println("Drawing rect: " + HEALTH_DRAW_X + " " + HEALTH_DRAW_Y + " " + (int)healthWidth + " " + HEALTH_DRAW_HEIGHT);
-			g2d.fillRect(HEALTH_DRAW_X, HEALTH_DRAW_Y, (int)healthWidth, HEALTH_DRAW_HEIGHT);
+			
+			g2d.drawImage(rsrc.getEnergyBar(),
+						  HEALTH_DRAW_X, HEALTH_DRAW_Y,
+						  HEALTH_DRAW_X + (int)healthWidth, HEALTH_DRAW_Y2,
+						  0, 0,
+						  (int)healthWidth, 10,
+						  null);
 			
 			/* -------------------------- Score -------------------------- */
 			for (int i = 0; i < GameWorldLogic.SCORE_NUM_DIGITS; i++) {

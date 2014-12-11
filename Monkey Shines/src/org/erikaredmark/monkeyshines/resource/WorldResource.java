@@ -96,6 +96,8 @@ public final class WorldResource {
 	
 	private final BufferedImage splashScreen;
 	
+	private final BufferedImage energyBar;
+	
 	/* --------------------------- SOUNDS ----------------------------- */
 	// Whilst sounds are stored here, they should only be played via the
 	// SoundManager. null sounds are possible; in that case, that means
@@ -133,6 +135,7 @@ public final class WorldResource {
 					      final BufferedImage bonusNumbers,
 					      final BufferedImage explosionSheet,
 					      final BufferedImage splashScreen,
+					      final BufferedImage energy,
 					      final Map<GameSoundEffect, Clip> sounds,
 					      final Clip backgroundMusic) {
 		
@@ -174,6 +177,39 @@ public final class WorldResource {
 		collapsingCount =   collapsingTiles != null
 						  ? collapsingTiles.getHeight() / GameConstants.TILE_SIZE_Y
 						  : 0;
+						  
+		// Energy bar is special. We explode the 8x11 image into a full 150x11 image.
+		this.energyBar = new BufferedImage(150, 11, energy.getType() );
+		Graphics2D g2dEnergyBar = this.energyBar.createGraphics();
+		try {
+			g2dEnergyBar.drawImage(energy, 
+								   0, 0, 
+								   2, 11, 
+								   0, 0,
+								   2, 11, 
+								   null);
+			
+			// 2 pixel on each side from the 150 total gives 146 pixels to fill (41 iterations)
+			// math is kept in to make calculations a bit more obvious
+			for (int i = 0; i < 146; i += 4) {
+				int startX = 2 + i;
+				g2dEnergyBar.drawImage(energy, 
+									   startX, 0, 
+									   startX + 4, 11, 
+									   2, 0, 
+									   6, 11, 
+									   null);
+			}
+			
+			g2dEnergyBar.drawImage(energy,
+								   148, 0,
+								   150, 11,
+								   6, 0,
+								   8, 11,
+								   null);
+		} finally {
+			g2dEnergyBar.dispose();
+		}
 	}
 	
 	/**
@@ -250,6 +286,7 @@ public final class WorldResource {
 		BufferedImage bonusNumbersSheet = null;
 		BufferedImage explosionSheet = null;
 		BufferedImage splashScreen = null;
+		BufferedImage energyBar = null;
 		
 		// Sound clips
 		// Unlike graphics, some sounds may not exist, and that is okay. The game just won't play
@@ -304,6 +341,10 @@ public final class WorldResource {
 				case "uibanner.png":
 					if (bannerSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "uibanner.png");
 					bannerSheet = ImageIO.read(zipFile.getInputStream(entry) );
+					break;
+				case "energy.png":
+					if (energyBar != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "energy.png");
+					energyBar = ImageIO.read(zipFile.getInputStream(entry) );
 					break;
 				case "bonusNumbers.png":
 					if (bonusNumbersSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "bonusNumbers.png");
@@ -404,6 +445,7 @@ public final class WorldResource {
 		checkResourceNotNull(scoreNumbersSheet, "scoreNumbers.png");
 		checkResourceNotNull(bonusNumbersSheet, "bonusNumbers.png");
 		checkResourceNotNull(bannerSheet, "uibanner.png");
+		checkResourceNotNull(energyBar, "energy.png");
 		
 		// Backgrounds and Patterns may be empty, but sprites must contain at least 1
 		if (sprites[0] == null)  throw new ResourcePackException(Type.NO_DEFINITION, "There are no sprites for this world; must contain at least one");
@@ -446,6 +488,7 @@ public final class WorldResource {
 							  bonusNumbersSheet,
 							  explosionSheet,
 							  splashScreen,
+							  energyBar,
 							  gameSounds,
 							  backgroundMusic);
 		
@@ -760,6 +803,19 @@ public final class WorldResource {
 	 */
 	public BufferedImage getConveyerSheet() {
 		return conveyerTiles;
+	}
+	
+	/**
+	 * 
+	 * Returns the full 150x11 energy bar, as generated from the 8x11 image. Clients should draw as much of
+	 * the bar as represents Bonzo's health.
+	 * 
+	 * @return
+	 * 		the energy bar
+	 * 
+	 */
+	public BufferedImage getEnergyBar() {
+		return energyBar;
 	}
 	
 	/**
