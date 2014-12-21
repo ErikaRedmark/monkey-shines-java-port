@@ -4,7 +4,7 @@
 	<groupId>org.erikaredmark</groupId>
 	<artifactId>monkey_shines</artifactId>
 	<packaging>jar</packaging>
-  	<version>0.1-SNAPSHOT</version>
+  	<version>0.6.1</version>
   	<name>Monkey Shines</name>
   	<url>https://github.com/ErikaRedmark/monkey-shines-java-port/wiki</url>
   	<description>Port of Macintosh game 'Monkey Shines' to Java</description>
@@ -45,6 +45,12 @@
 			<groupId>com.javazoom</groupId>
 			<artifactId>vorbisspi</artifactId>
 			<version>1.0.3</version>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>com.brannonsmith</groupId>
+			<artifactId>MacResourceForkManager</artifactId>
+			<version>1.0.0</version>
 			<type>jar</type>
 		</dependency>
 		
