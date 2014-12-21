@@ -184,7 +184,9 @@ public final class EncodedWorld {
 		// to those tiles
 		final Map<Integer, LevelScreen> worldScreens = protoToLevels(world.getLevelsList(), rsrc, hazards, conveyers);
 		
-		return new World(worldName, goodiesInWorld, worldScreens, hazards, conveyers, bonusScreen, rsrc);	
+		World newWorld = new World(worldName, goodiesInWorld, worldScreens, hazards, conveyers, bonusScreen, rsrc);
+		newWorld.resetAllScreens();
+		return newWorld;
 	}
 	
 	/* ------------------------------ Hazards -------------------------------- */

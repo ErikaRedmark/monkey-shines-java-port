@@ -101,13 +101,18 @@ public class World {
 		// Generate # of hazards proportional to graphics context size.
 		List<Hazard> hazards = Hazard.initialise(0, rsrc.getHazardCount(), rsrc);
 		
-		return new World(name, 
-						 new HashMap<WorldCoordinate, Goodie>(), 
-						 screens, 
-						 hazards, 
-						 conveyers, 
-						 GameConstants.DEFAULT_BONUS_SCREEN,
-						 rsrc);
+		World newWorld = 
+			new World(name, 
+			   		  new HashMap<WorldCoordinate, Goodie>(), 
+					  screens, 
+					  hazards, 
+					  conveyers, 
+					  GameConstants.DEFAULT_BONUS_SCREEN,
+					  rsrc);
+		
+		newWorld.resetAllScreens();
+		
+		return newWorld;
 	}
 	
 	
@@ -179,16 +184,12 @@ public class World {
 		}
 		
 		// To easily enable bonus and exit doors, we add all such sprites to lists
-		// based on type. And since we are iterating over the levels anyway...
-		// Reset is important to stagger animation, so go through all screens in the level and reset them (now that all the
-		// tile data is set properly) to stagger it.
+		// based on type.
 		for (LevelScreen lvl : worldScreens.values() ) {
 			for (Sprite s : lvl.getSpritesOnScreen() ) {
 				if 		(s.getType() == SpriteType.EXIT_DOOR)   this.exitDoors.add(s);
 				else if (s.getType() == SpriteType.BONUS_DOOR)  this.bonusDoors.add(s);
 			}
-			
-			lvl.resetScreen();
 		}
 		
 		// Finally, if for some reason bonzo dies on the first screen, we set the initial safe place to be
@@ -196,6 +197,19 @@ public class World {
 		// will be empty.
 		final LevelScreen currentScreen = getCurrentScreen();
 		currentScreen.setBonzoLastOnGround(currentScreen.getBonzoStartingLocation() );
+	}
+	
+	/**
+	 * 
+	 * Should be called after construction to reset all screens to default; creating the initial staggering animation
+	 * effect. It is up to client to call this as otherwise an overridable method would be called from the constructor,
+	 * and in some cases this is not desired (like import logic)
+	 * 
+	 */
+	public void resetAllScreens() {
+		for (LevelScreen lvl : worldScreens.values() ) {
+			lvl.resetScreen();
+		}
 	}
 	
 	/**

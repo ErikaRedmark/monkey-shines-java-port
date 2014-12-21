@@ -107,8 +107,9 @@ public class RsrcWrLdTranslator {
 								   -8000,
 								   rsrc);
 		
-		// REQUIRED: Some level data has placeholders (see docs on PlaceholderTile)
+		// REQUIRED: Some level data has placeholders (see docs on PlaceholderTile) before resetting all screens
 		theWorld.fixPlaceholders();
+		theWorld.resetAllScreens();
 		
 		return theWorld;
 	}
