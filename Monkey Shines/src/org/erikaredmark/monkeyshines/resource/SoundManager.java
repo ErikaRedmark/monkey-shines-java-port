@@ -121,7 +121,8 @@ public final class SoundManager implements PropertyChangeListener {
 	/**
 	 * 
 	 * Plays the given background music for this world. This is typically called once the game has started.
-	 * If the world has no background music or the volume is set to 0, this method does nothing.
+	 * If the world has no background music or the volume is set to 0, this method does nothing. This method
+	 * also does nothing if music is already playing.
 	 * 
 	 */
 	public void playMusic() {

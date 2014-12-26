@@ -10,6 +10,8 @@ import javax.swing.Timer;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.util.GameEndCallback;
 
+import com.google.common.base.Function;
+
 /**
  * 
  * Separates how the game will be drawn to the screen vs the game 'world', as in the flow of time
@@ -29,12 +31,17 @@ import org.erikaredmark.monkeyshines.util.GameEndCallback;
  *
  */
 public final class GameWorldLogic {
-	
 	// The primary flow of time
 	private final Timer gameTimer;
 	
 	// Started when the last key is collected, stopped when the 'bonus score' hits zero.
 	private final Timer bonusTimer;
+	
+	// Started when the game is frozen, stopped when the game is unfrozen. Acts as a second flow of time when
+	// the game is frozen, allowing rendering, animating, pause menus, or other manner of stuff to function
+	// whilst the game itself is no longer technically running. Unlike other timers, this timer may be null
+	// and is always constructed upon starting with a new callback.
+	private Timer freezeTimer;
 	
 	// The player and the world
 	private Bonzo bonzo;
@@ -87,12 +94,19 @@ public final class GameWorldLogic {
 	 * 		the 'image' of the game will have to be updated because it no longer reflects the
 	 * 		game state
 	 * 
+	 * @param lifeLostCallback
+	 * 		a callback when bonzo loses a life but it isn't game over. Note that bonzo's life counter
+	 * 		has already decremented, and at the point of this call, bonzo has already 'restarted' on
+	 * 		the screen and all respawn rules have been applied. This is mainly for graphics renders
+	 * 		to do something special graphically to draw attention to his location.
+	 * 
 	 */
 	public GameWorldLogic(final KeyboardInput keys, 
 			  			  final KeyBindings keyBindings,
 						  final World world,
 			  			  final GameEndCallback gameEndCallback,
-						  final Runnable gameTickCallback) {
+						  final Runnable gameTickCallback,
+						  final Function<Bonzo, Void> lifeLostCallback) {
 		assert keys != null;
 
 		this.currentWorld = world;
@@ -105,6 +119,14 @@ public final class GameWorldLogic {
 				@Override public void gameOverWin(World sw) { endGame_internal(); gameEndCallback.gameOverWin(world); }
 				@Override public void gameOverFail(World w) { endGame_internal(); gameEndCallback.gameOverFail(world); }
 				@Override public void gameOverEscape(World w) { endGame_internal(); gameEndCallback.gameOverEscape(world); }
+			},
+			new Function<Bonzo, Void>() {
+				@Override public Void apply(Bonzo bonzo) {
+					currentWorld.restartBonzo(bonzo);
+					// this pointer escape, but function will not be called until gameplay proper
+					lifeLostCallback.apply(bonzo);
+					return null;
+				}
 			});
 		
 		currentWorld.setAllRedKeysCollectedCallback(
@@ -241,11 +263,48 @@ public final class GameWorldLogic {
 	 * 
 	 * Freezes time. Game will not respond to user events and will not update. Does
 	 * nothing if time has already been frozen.
+	 * <p/>
+	 * A second timer is spawned with the same rate as the one stopped, and it will
+	 * call the passed callback. This allows special things, like painting or animating,
+	 * to be done even when the actual game-clock is stopped.
+	 * 
+	 * @param freezeMusic
+	 * 		{@code true} to stop the music, {@code false} to allow it to continue playing.
+	 * 
+	 * @param tickCallback
+	 * 		a second tick callback function that will fire each tick the game is frozen.
 	 * 
 	 */
-	public void freeze() {
+	public void freeze(boolean freezeMusic, final Runnable tickCallback) {
 		gameTimer.stop();
-		this.currentWorld.getResource().getSoundManager().stopPlayingMusic();
+		if (freezeMusic) {
+			this.currentWorld.getResource().getSoundManager().stopPlayingMusic();
+		}
+		
+		freezeTimer = new Timer(GameConstants.GAME_SPEED, new ActionListener() {
+			@Override public void actionPerformed(ActionEvent e) {
+				tickCallback.run();
+			}
+		});
+		freezeTimer.start();
+	}
+	
+	/**
+	 * 
+	 * Unfreezesm time. Game will respond normally to events and update. Does nothing if the
+	 * game is already unfrozen. if the music was stopped, will resume.
+	 * 
+	 */
+	public void unfreeze() {
+		if (!(gameTimer.isRunning() ) ) {
+			assert freezeTimer != null : "No freeze timer was started during a game freeze!";
+			freezeTimer.stop();
+			freezeTimer = null;
+			
+			gameTimer.start();
+		}
+		
+		this.currentWorld.getResource().getSoundManager().playMusic();
 	}
 	
 	// Called from callback when bonzos score is updated in game. Sets digit values for
@@ -396,5 +455,9 @@ public final class GameWorldLogic {
 		currentWorld.getResource().dispose();
 		gameTimer.stop();
 		bonusTimer.stop();
+	}
+
+	public Bonzo getBonzo() {
+		return bonzo;
 	}
 }

@@ -371,6 +371,9 @@ public class World {
 	 * Up to {@code GameConstants.LEVEL_HISTORY} previous levels are checked for a non-null ground
 	 * location to safely respawn bonzo. If that fails, bonzo will respawn at the place he entered the
 	 * earliest screen in the history from, in the hopes that the level design isn't completely evil.
+	 * <p/>
+	 * After calling this method, it is advisable to call the 'respawnGrace' method, which pauses the game and points
+	 * out where bonzo is, giving a more fair reaction time. {@link GameWorldLogic#respawnGrace()}
 	 * 
 	 * @param theBonzo
 	 */

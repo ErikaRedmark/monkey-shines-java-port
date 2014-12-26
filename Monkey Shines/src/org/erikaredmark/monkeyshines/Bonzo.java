@@ -14,6 +14,8 @@ import org.erikaredmark.monkeyshines.tiles.TileType;
 import org.erikaredmark.monkeyshines.util.GameEndCallback;
 import org.erikaredmark.util.collection.RingArray;
 
+import com.google.common.base.Function;
+
 /**
  * 
  * Represents the main character. Object can draw itself and has awareness to the world capable of handling collision detection
@@ -107,6 +109,8 @@ public final class Bonzo {
 	// death animations and is only updated when bonzo is killed.
 	private DeathAnimation deathAnimation;
 	
+	private Function<Bonzo, Void> lifeLostCallback;
+	
 	/* **********************************************
 	 * 
 	 * Animation data
@@ -138,15 +142,21 @@ public final class Bonzo {
 	 * @param gameOverCallback
 	 * 		UI callback for when the game is 'over', when bonzo loses all his lives
 	 * 
+	 * @param lifeLostCallback
+	 * 		function called when bonzo loses a life, but it is NOT game over. Takes a reference
+	 * 		to bonzo. NOT called if a life lost would result in a game over.
+	 * 
 	 */ 
 	public Bonzo(final World worldPointer,
 			     final int startingLives, 
 			     final Runnable scoreCallback, 
-			     final GameEndCallback gameEndCallback) {
+			     final GameEndCallback gameEndCallback,
+			     final Function<Bonzo, Void> lifeLostCallback) {
 		
 		this.worldPointer = worldPointer;
 		this.scoreCallback = scoreCallback;
 		this.lives = startingLives;
+		this.lifeLostCallback = lifeLostCallback;
 		this.powerupState = new PowerupState();
 		this.powerupState.clear();
 		this.gameEndCallback = gameEndCallback;
@@ -875,7 +885,7 @@ public final class Bonzo {
 					if (lives == -1) {
 						gameEndCallback.gameOverFail(worldPointer);
 					} else {
-						worldPointer.restartBonzo(this);
+						lifeLostCallback.apply(this);
 					}
 				}
 				return;

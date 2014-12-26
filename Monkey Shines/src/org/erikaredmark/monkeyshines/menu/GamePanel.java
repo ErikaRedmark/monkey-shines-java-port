@@ -10,13 +10,17 @@ import java.awt.image.VolatileImage;
 
 import javax.swing.JPanel;
 
+import org.erikaredmark.monkeyshines.Bonzo;
 import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.GameWorldLogic;
 import org.erikaredmark.monkeyshines.KeyBindings;
 import org.erikaredmark.monkeyshines.KeyboardInput;
 import org.erikaredmark.monkeyshines.World;
+import org.erikaredmark.monkeyshines.animation.GracePeriodAnimation;
 import org.erikaredmark.monkeyshines.screendraw.StandardSurface;
 import org.erikaredmark.monkeyshines.util.GameEndCallback;
+
+import com.google.common.base.Function;
 
 /**
  * 
@@ -28,16 +32,13 @@ import org.erikaredmark.monkeyshines.util.GameEndCallback;
  * @author Erika Redmark
  *
  */
-public class GamePanel extends JPanel {
-	private static final long serialVersionUID = -1418470684111076474L;
-	// The actual surface that will provide drawing to this component
-	
-	private final GameWorldLogic universe;
-	private final StandardSurface surface;
+@SuppressWarnings("serial")
+public final class GamePanel extends JPanel {
+
 
 	private GamePanel(final KeyboardInput keys, 
 					  final KeyBindings keyBindings,
-					  final GameEndCallback endGame, 
+					  final GameEndCallback endGame,
 					  final World world) {
 		super();
 		this.addKeyListener(keys);
@@ -50,7 +51,7 @@ public class GamePanel extends JPanel {
 				EndGameBonusAnimation.runOn(
 					g2d, 
 					universe.getWorld(),
-					new Runnable() { @Override public void run() { repaint(); } });
+					repaintCallback);
 				endGame.gameOverWin(w);
 			}
 			
@@ -69,7 +70,8 @@ public class GamePanel extends JPanel {
 				keyBindings,
 				world,
 				endGameWrapped,
-				new Runnable() { @Override public void run() { repaint(); } } );
+				repaintCallback,
+				activateGraceAnimation);
 		
 		this.surface = new StandardSurface(universe);
 		
@@ -174,9 +176,23 @@ public class GamePanel extends JPanel {
 			VolatileImage page = null;
 			do {
 				page = surface.renderVolatile(gc, !(universe.showingSplash() ) );
+				Graphics2D pageG2d = page.createGraphics();
+				try {
+					if (graceAnimation != null)  graceAnimation.paint((Graphics2D)pageG2d);
+				} finally {
+					pageG2d.dispose();
+				}
 			} while (page.contentsLost() );
-			// TODO should drawImage be IN the loop or OUTSIDE of the loop?
+			
 			g.drawImage(page, 0, 0, null);
+			
+			if (     graceAnimation != null
+				&& !(graceAnimation.update() ) ) {
+				
+				universe.unfreeze();
+				graceAnimation = null;
+			}
+
 		}
 	}
 	
@@ -189,5 +205,27 @@ public class GamePanel extends JPanel {
 	public void dispose() {
 		universe.dispose();
 	}
-
+	
+	private final Runnable repaintCallback = new Runnable() { @Override public void run() { repaint(); } };
+	
+	/**
+	 * Creates a new grace period animation object and freezes the game (not the music). Renderer will resume gameplay when
+	 * the animation indicates it is finished.
+	 */
+	private final Function<Bonzo, Void> activateGraceAnimation = new Function<Bonzo, Void>() {
+		@Override public Void apply(Bonzo bonzo) {
+			// repainting will NOT actual run the world, just paint it to allow the animation to run.
+			universe.freeze(false, repaintCallback);
+			graceAnimation = new GracePeriodAnimation(universe.getBonzo(), GameConstants.FRAMES_PER_SECOND * 1, 0, 80);
+			return null;
+		}
+	};
+	
+	// The actual surface that will provide drawing to this component
+	private final GameWorldLogic universe;
+	private final StandardSurface surface;
+	
+	// Initially and may be null. If non-null, will be played alongside basic game rendering.
+	private GracePeriodAnimation graceAnimation;
+	
 }

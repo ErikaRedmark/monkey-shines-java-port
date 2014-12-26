@@ -112,7 +112,8 @@ public final class GameFullscreenWindow extends Frame {
 									   // started so this won't be called if surface is null.
 									   renderScene();
 								   } 
-							   });
+							   },
+							   null); // TODO !
 		
 		this.surface = new StandardSurface(universe);
 		
