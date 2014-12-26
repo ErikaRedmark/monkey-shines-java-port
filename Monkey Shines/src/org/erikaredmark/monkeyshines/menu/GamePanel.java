@@ -216,7 +216,7 @@ public final class GamePanel extends JPanel {
 		@Override public Void apply(Bonzo bonzo) {
 			// repainting will NOT actual run the world, just paint it to allow the animation to run.
 			universe.freeze(false, repaintCallback);
-			graceAnimation = new GracePeriodAnimation(universe.getBonzo(), GameConstants.FRAMES_PER_SECOND * 1, 0, 80);
+			graceAnimation = new GracePeriodAnimation(universe.getBonzo(), (int)((double)(GameConstants.FRAMES_PER_SECOND * 1.5)), 0, 80);
 			return null;
 		}
 	};

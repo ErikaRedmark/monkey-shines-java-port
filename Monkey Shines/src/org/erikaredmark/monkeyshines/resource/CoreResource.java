@@ -22,6 +22,7 @@ public enum CoreResource {
 	
 	private final BufferedImage transparentBonzo;
 	private final BufferedImage bonzoSprite;
+	private final BufferedImage getReady;
 	
 	private CoreResource() {
 		// Must initialise here, as static values cannot be references from enum initialiser.
@@ -38,6 +39,12 @@ public enum CoreResource {
 			bonzoSprite = ImageIO.read(this.getClass().getResourceAsStream("/resources/graphics/thebonz.png") );
 		} catch (IOException e) {
 			throw new RuntimeException("Missing resource: bonzo sprite sheet: " + e.getMessage(), e);
+		}
+		
+		try {
+			getReady = ImageIO.read(this.getClass().getResourceAsStream("/resources/graphics/getReady.png") );
+		} catch (IOException e) {
+			throw new RuntimeException("Missing resource: get ready image: " + e.getMessage(), e);
 		}
 
 	}
@@ -65,6 +72,18 @@ public enum CoreResource {
 	 */
 	public BufferedImage getBonzoSheet() {
 		return bonzoSprite;
+	}
+	
+	/**
+	 * 
+	 * Gets the get ready image to get get ready. Intended to be displayed in non-obstrusive location
+	 * during respawn.
+	 * 
+	 * @return
+	 * 		get ready image.
+	 */
+	public BufferedImage getGetReady() {
+		return getReady;
 	}
 	
 }

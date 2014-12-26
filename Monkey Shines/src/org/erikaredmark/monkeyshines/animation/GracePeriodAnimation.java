@@ -4,8 +4,11 @@ import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 
 import org.erikaredmark.monkeyshines.Bonzo;
+import org.erikaredmark.monkeyshines.GameConstants;
+import org.erikaredmark.monkeyshines.resource.CoreResource;
 
 /**
  * 
@@ -59,6 +62,13 @@ public final class GracePeriodAnimation {
 		opacityInitial = 1.0f;
 		opacityFinal = 0.2f;
 		opacityStep = (opacityFinal - opacityInitial) / (float)frames;
+		
+		BufferedImage getReady = CoreResource.INSTANCE.getGetReady();
+		getReadyX = (GameConstants.SCREEN_WIDTH / 2) - (getReady.getWidth() / 2);
+		getReadyY = (GameConstants.SCREEN_HEIGHT / 2) - (getReady.getHeight() / 2);
+		getReadyX2 = getReadyX + getReady.getWidth();
+		getReadyY2 = getReadyY + getReady.getHeight();
+		
 		// Mutable state data initialisation
 		currentRadius = maxRadius;
 		currentOpacity = opacityInitial;
@@ -85,6 +95,13 @@ public final class GracePeriodAnimation {
 		g2d.setStroke(new BasicStroke(4) );
 		g2d.setColor(Color.DARK_GRAY);
 		g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, currentOpacity) );
+		
+		BufferedImage getReady = CoreResource.INSTANCE.getGetReady();
+		g2d.drawImage(getReady, 
+					  getReadyX, getReadyY, 
+					  getReadyX2, getReadyY2, 
+					  0, 0, 
+					  getReady.getWidth(), getReady.getHeight(), null);
 		
 		g2d.drawOval((int)(centerX - 2), 
 					 (int)(centerY - 2), 
@@ -124,6 +141,11 @@ public final class GracePeriodAnimation {
 	final float opacityInitial;
 	final float opacityFinal;
 	final float opacityStep;
+	
+	final int getReadyX;
+	final int getReadyY;
+	final int getReadyX2;
+	final int getReadyY2;
 	
 	// State data
 	double currentRadius;

@@ -13,12 +13,17 @@ import java.awt.image.BufferedImage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.erikaredmark.monkeyshines.Bonzo;
+import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.GameWorldLogic;
 import org.erikaredmark.monkeyshines.KeyBindings;
 import org.erikaredmark.monkeyshines.KeyboardInput;
 import org.erikaredmark.monkeyshines.World;
+import org.erikaredmark.monkeyshines.animation.GracePeriodAnimation;
 import org.erikaredmark.monkeyshines.screendraw.StandardSurface;
 import org.erikaredmark.monkeyshines.util.GameEndCallback;
+
+import com.google.common.base.Function;
 
 /**
  * 
@@ -35,17 +40,6 @@ public final class GameFullscreenWindow extends Frame {
 	private static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
 	
 	private static final long serialVersionUID = 1L;
-
-	private final StandardSurface surface;
-	private final GameEndCallback gameOverCallback;
-	
-	// Configuration information
-	private final GraphicsDevice mainScreen;
-	private final GameWorldLogic universe;
-	private boolean gameOver;
-	
-	// State variables for drawing.
-	private BufferStrategy buffer;
 
 	/**
 	 * 
@@ -113,7 +107,7 @@ public final class GameFullscreenWindow extends Frame {
 									   renderScene();
 								   } 
 							   },
-							   null); // TODO !
+							   activateGraceAnimation); // TODO !
 		
 		this.surface = new StandardSurface(universe);
 		
@@ -215,6 +209,7 @@ public final class GameFullscreenWindow extends Frame {
 				Graphics2D g = (Graphics2D) buffer.getDrawGraphics();
 				try {
 					surface.renderDirect(g, !(universe.showingSplash() ) );
+					if (graceAnimation != null)  graceAnimation.paint(g);
 				} finally {
 					g.dispose();
 				}
@@ -223,6 +218,13 @@ public final class GameFullscreenWindow extends Frame {
 			buffer.show();
 			
 		} while (buffer.contentsLost() );
+		
+		if (     graceAnimation != null
+			&& !(graceAnimation.update() ) ) {
+			
+			universe.unfreeze();
+			graceAnimation = null;
+		}
 	}
 	
 	/**
@@ -256,4 +258,33 @@ public final class GameFullscreenWindow extends Frame {
 		dispose();
 	}
 	
+	/**
+	 * Creates a new grace period animation object and freezes the game (not the music). Renderer will resume gameplay when
+	 * the animation indicates it is finished.
+	 */
+	private final Function<Bonzo, Void> activateGraceAnimation = new Function<Bonzo, Void>() {
+		@Override public Void apply(Bonzo bonzo) {
+			// repainting will NOT actual run the world, just paint it to allow the animation to run.
+			universe.freeze(false, renderScenePtr);
+			graceAnimation = new GracePeriodAnimation(universe.getBonzo(), (int)((double)(GameConstants.FRAMES_PER_SECOND * 1.5)), 0, 80);
+			return null;
+		}
+	};
+	
+	private Runnable renderScenePtr = new Runnable() { @Override public void run() { renderScene(); } };
+	
+
+	private final StandardSurface surface;
+	private final GameEndCallback gameOverCallback;
+	
+	// Initially and may be null. If non-null, will be played alongside basic game rendering.
+	private GracePeriodAnimation graceAnimation;
+	
+	// Configuration information
+	private final GraphicsDevice mainScreen;
+	private final GameWorldLogic universe;
+	private boolean gameOver;
+	
+	// State variables for drawing.
+	private BufferStrategy buffer;
 }
