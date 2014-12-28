@@ -398,45 +398,86 @@ public class World {
 			int ty = bonzoCameFrom.y() / GameConstants.TILE_SIZE_Y + 2;
 			int t2x = t1x + 1;
 			
+			// Basic sprite check
+
 			// We look four tiles down, max before fall becomes damaging.
-			for (int dist = 0; dist < 4; ++dist) {
-				final TileMap map = currentScreen.getMap();
-				if (   map.getTileXY(t1x, ty + dist).isLandable() 
-				    || map.getTileXY(t2x, ty + dist).isLandable() 
-				    // Special case: bonzo JUMPED into this room. Safe to respawn where he came from
-				    || ty + dist > GameConstants.LEVEL_ROWS) {
-					
-					theBonzo.restartBonzoOnScreen(currentScreen, bonzoCameFrom);
-					return;
-				}
+			if (spriteSafetyCheck(currentScreen, bonzoCameFrom) ) {
+				for (int dist = 0; dist < 4; ++dist) {
+					final TileMap map = currentScreen.getMap();
+					if (   map.getTileXY(t1x, ty + dist).isLandable() 
+					    || map.getTileXY(t2x, ty + dist).isLandable() 
+					    // Special case: bonzo JUMPED into this room. Safe to respawn where he came from
+					    || ty + dist > GameConstants.LEVEL_ROWS) {
+						
+						theBonzo.restartBonzoOnScreen(currentScreen, bonzoCameFrom);
+						return;
+					}
+				} 
 			} // else no early return, not safe to respawn
 			
 			// Entry point into screen not safe. Go to ground. This may make certain
 			// levels easier, but easier is better than infinite death.
-			theBonzo.restartBonzoOnScreen(currentScreen, ground);
-		} else {
-			// Uh oh! We need to progress backwards through screen history and find a good ground
-			RingArray<LevelScreen> screenHistory = theBonzo.getScreenHistory();
-			for (LevelScreen s : screenHistory) {
-				ImmutablePoint2D sGround = s.getBonzoLastOnGround();
-				if (sGround == null)  continue;
-				
-				// Must change world screen as well as bonzos reference
-				changeCurrentScreen(s.getId(), theBonzo);
-				
-				// Valid ground: Restart bonzo and end the method early.
-				theBonzo.restartBonzoOnScreen(s, sGround);
+			if (spriteSafetyCheck(currentScreen, ground) ) {
+				theBonzo.restartBonzoOnScreen(currentScreen, ground);
 				return;
 			}
+		}
+		
+		// This is ONLY reached if we did not early return, which would only happen if a previous check
+		// failed.
+		// Uh oh! We need to progress backwards through screen history and find a good ground
+		RingArray<LevelScreen> screenHistory = theBonzo.getScreenHistory();
+		for (LevelScreen s : screenHistory) {
+			ImmutablePoint2D sGround = s.getBonzoLastOnGround();
+			if (sGround == null)  continue;
+			if (!(spriteSafetyCheck(s, sGround) ) )  continue;
 			
-			// Reaching the end of the for loop normally signifies no valid ground in ALL
-			// history. That must be one LONG fall; move bonzo to the last screen
-			final LevelScreen lastResort = screenHistory.back();
-			changeCurrentScreen(lastResort.getId(), theBonzo);
+			// Must change world screen as well as bonzos reference
+			changeCurrentScreen(s.getId(), theBonzo);
+			
+			// Valid ground: Restart bonzo and end the method early.
+			theBonzo.restartBonzoOnScreen(s, sGround);
+			return;
+			
+			// Note: we do NOT use starting locations defined on levels here, otherwise we may accidentally
+			// backtrack the player if a screen contains multiple paths.
+		}
+		
+		// Reaching the end of the for loop normally signifies no valid ground in ALL
+		// history. That must be one LONG fall; move bonzo to the last screen.
+		final LevelScreen lastResort = screenHistory.back();
+		changeCurrentScreen(lastResort.getId(), theBonzo);
+		if (spriteSafetyCheck(lastResort, lastResort.getBonzoCameFrom() ) ) {
 			theBonzo.restartBonzoOnScreen(lastResort, lastResort.getBonzoCameFrom() );
+		} else {
+			// Okay, unconditional respawn on the starting location defined in the level... If there is
+			// a sprite there, that is the level designers fault. We tried our best.
+			theBonzo.restartBonzoOnScreen(lastResort, lastResort.getBonzoStartingLocationPixels() );
 		}
 	}
 	
+	/**
+	 * 
+	 * Looks at bonzo and the given screen, and decides if that location is unsafe for spawn due to sprites
+	 * 
+	 */
+	private static boolean spriteSafetyCheck(final LevelScreen screen, final ImmutablePoint2D respawnLocation) {
+		ImmutableRectangle respawnBox = ImmutableRectangle.of(respawnLocation.x(), respawnLocation.y(), 40, 40);
+		// Note: In ALL cases, only Killers and Energy Drainers affect this algorithm
+		for (Sprite nextSprite : screen.getSpritesOnScreen() ) {
+			if (nextSprite.getType() != SpriteType.NORMAL && nextSprite.getType() != SpriteType.HEALTH_DRAIN)  continue;
+			
+			ImmutableRectangle spriteBounds = nextSprite.getCurrentBounds();
+			
+			if (spriteBounds.intersect(respawnBox) != null) {
+				return false;
+			}
+		}
+		
+		// else if for loop terminated normally
+		return true;
+	}
+
 	/**
 	 * 
 	 * Transfers bonzo to either the bonus room if he is not already in it, or the return room if in the bonus room.
