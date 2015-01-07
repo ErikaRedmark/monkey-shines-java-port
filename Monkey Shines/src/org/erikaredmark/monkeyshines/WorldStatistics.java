@@ -37,7 +37,7 @@ public final class WorldStatistics {
 	 */
 	WorldStatistics(final Collection<Goodie> allGoodies, final int collectedGoodies, final int score, final int bonusTimer) {
 		int totalFruit = 0;
-		for (Goodie g : allGoodies) {
+ 		for (Goodie g : allGoodies) {
 			if (g.getGoodieType().score > 0)  ++totalFruit;
 		}
 		
@@ -46,9 +46,12 @@ public final class WorldStatistics {
 		// cases.
 		
 		// Fruit Bonus
-		// Calculate percentage without conversion to double.
+		// Calculate percentage without conversion to double. This calculates how much fruit were REMAINING, not TAKEN.
 		int fruitPercent =   (100 * (totalFruit - collectedGoodies) ) 
 					       / (totalFruit);
+		
+		// Change into percent taken.
+		fruitPercent = 100 - fruitPercent;
 
 		boolean badCalculation = false;
 		if (fruitPercent > 100) {
