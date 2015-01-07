@@ -973,11 +973,11 @@ public final class Bonzo {
 				// We did hit a solid
 				// Only reverse the velocity if we are actually already going up. If we are falling and somehow still
 				// inside a solid, don't reverse again or we get bouncing through ceilings.
-				if (currentVelocity.y() < 0)  currentVelocity.reverseY();
+				if (currentVelocity.y() < 0) {
+					currentVelocity.reverseY();
+					snapBonzoY();
+				}
 				
-				// We need to snap our location at the y point, to prevent 'solidToSide' returning true looking
-				// tiles to the side in the ceiling. Do not let bonzo inside the ceiling!
-				snapBonzoY();
 			}
 		}
 		
