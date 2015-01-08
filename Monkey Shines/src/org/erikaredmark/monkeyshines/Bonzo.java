@@ -144,7 +144,9 @@ public final class Bonzo {
 	 * 
 	 * @param lifeLostCallback
 	 * 		function called when bonzo loses a life, but it is NOT game over. Takes a reference
-	 * 		to bonzo. NOT called if a life lost would result in a game over.
+	 * 		to bonzo. NOT called if a life lost would result in a game over. If bonzo has infinite lives,
+	 * 		this is still called to handle if bonzo had lost a life and had to respawn (the lives counter just
+	 * 		won't be modified)
 	 * 
 	 */ 
 	public Bonzo(final World worldPointer,
@@ -294,6 +296,8 @@ public final class Bonzo {
 	 * <p/>
 	 * If assertions are enabled, errors will be fired if negative values are passed.
 	 * External code is not allowed to decide when bonzo loses a life.
+	 * <p/>
+	 * Incrementing does not affect bonzo if he has infinite lives.
 	 * 
 	 * @param amt
 	 * 		number of lives to add. If this amount would otherwise push him over 9
@@ -301,6 +305,8 @@ public final class Bonzo {
 	 * 
 	 */
 	public void incrementLives(int amt) {
+		if (this.lives == INFINITE_LIVES)  return;
+		
 		assert amt >= 0;
 		int newLives = this.lives + amt;
 		this.lives =   newLives < 9
@@ -879,7 +885,9 @@ public final class Bonzo {
 				currentSprite++;
 				if (currentSprite >= 15) {
 					// Death animation over. If lives remain, restart bonzo. Otherwise UI callback
-					--lives;
+					if (lives != INFINITE_LIVES) {
+						--lives;
+					}
 					// Equality because -2 is infinite
 					assert lives >= -2 : "Lives can be -2 (infinite) -1 (dead) and 0-9, but never less than -2";
 					if (lives == -1) {

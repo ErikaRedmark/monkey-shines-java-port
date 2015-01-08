@@ -100,20 +100,25 @@ public final class GameWorldLogic {
 	 * 		the screen and all respawn rules have been applied. This is mainly for graphics renders
 	 * 		to do something special graphically to draw attention to his location.
 	 * 
+	 * @param playtestMode
+	 * 		{@code true} to enter playtesting, infinite lives mode, {@code false} if otherwise
+	 * 
 	 */
 	public GameWorldLogic(final KeyboardInput keys, 
 			  			  final KeyBindings keyBindings,
 						  final World world,
 			  			  final GameEndCallback gameEndCallback,
 						  final Runnable gameTickCallback,
-						  final Function<Bonzo, Void> lifeLostCallback) {
+						  final Function<Bonzo, Void> lifeLostCallback,
+						  final boolean playtestMode) {
+		
 		assert keys != null;
 
 		this.currentWorld = world;
 
 		bonzo = new Bonzo(currentWorld,
 			// DEBUG: Will eventually be based on difficulty
-			4,
+			playtestMode ? Bonzo.INFINITE_LIVES : 4,
 			new Runnable() { @Override public void run() { scoreUpdate(); } },
 			new GameEndCallback() {
 				@Override public void gameOverWin(World sw) { endGame_internal(); gameEndCallback.gameOverWin(world); }

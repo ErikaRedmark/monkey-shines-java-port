@@ -886,7 +886,12 @@ public class World {
 	 */
 	public void worldFinished(Bonzo bonzo) {
 		worldFinished = true;
-		stats = new WorldStatistics(goodiesInWorld.values(), goodiesCollected, bonzo.getScore(), bonusCountdown);
+		stats = new WorldStatistics(
+			goodiesInWorld.values(), 
+			goodiesCollected, 
+			bonzo.getScore(), 
+			bonusCountdown,
+			bonzo.getLives() == Bonzo.INFINITE_LIVES ? true : false);
 	}
 	
 	/**

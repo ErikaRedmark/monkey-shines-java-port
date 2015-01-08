@@ -34,8 +34,11 @@ public final class WorldStatistics {
 	 * @param bonusTimer
 	 * 		countdown timer state before game end
 	 * 
+	 * @param playtesting
+	 * 		if the game was played in playtesting mode or not. Scoring is inverted (negatives) in playtesting.
+	 * 
 	 */
-	WorldStatistics(final Collection<Goodie> allGoodies, final int collectedGoodies, final int score, final int bonusTimer) {
+	WorldStatistics(final Collection<Goodie> allGoodies, final int collectedGoodies, final int score, final int bonusTimer, final boolean playtesting) {
 		int totalFruit = 0;
  		for (Goodie g : allGoodies) {
 			if (g.getGoodieType().score > 0)  ++totalFruit;
@@ -98,7 +101,12 @@ public final class WorldStatistics {
 		rawScore = score;
 		
 		// Total!!!
-		totalScore = rawScore + fruitBonus + timeBonus;
+		int tempTotalScore = rawScore + fruitBonus + timeBonus;
+		
+		// Wait, are we in playtesting mode? The best solution to a problem is usually the easiest one.
+		if (playtesting)  tempTotalScore = -tempTotalScore;
+		
+		totalScore = tempTotalScore;
 	}
 	
 	public int getFuritCollectedPercent() { return fruitCollectedPercent; }

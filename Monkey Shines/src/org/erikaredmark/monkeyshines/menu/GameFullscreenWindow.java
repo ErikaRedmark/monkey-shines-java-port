@@ -20,6 +20,7 @@ import org.erikaredmark.monkeyshines.KeyBindings;
 import org.erikaredmark.monkeyshines.KeyboardInput;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.animation.GracePeriodAnimation;
+import org.erikaredmark.monkeyshines.global.SpecialSettings;
 import org.erikaredmark.monkeyshines.screendraw.StandardSurface;
 import org.erikaredmark.monkeyshines.util.GameEndCallback;
 
@@ -107,7 +108,8 @@ public final class GameFullscreenWindow extends Frame {
 									   renderScene();
 								   } 
 							   },
-							   activateGraceAnimation); // TODO !
+							   activateGraceAnimation,
+							   SpecialSettings.isThunderbird() );
 		
 		this.surface = new StandardSurface(universe);
 		

@@ -7,6 +7,7 @@ import java.awt.image.VolatileImage;
 import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.GameWorldLogic;
 import org.erikaredmark.monkeyshines.Powerup;
+import org.erikaredmark.monkeyshines.resource.CoreResource;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 
 
@@ -52,7 +53,13 @@ public final class StandardSurface {
 	private static final int SCORE_HEIGHT = 30;
 	// Precomputation of effectively a constant
 	private static final int SCORE_DRAW_Y2 = SCORE_DRAW_Y + SCORE_HEIGHT;
-
+	
+	private static final int INFINITY_DRAW_X = 582; 
+	private static final int INFINITY_DRAW_Y = 29;
+	private static final int INFINITY_DRAW_X2 = 626;
+	private static final int INFINITY_DRAW_Y2 = 65;
+	private static final int INFINITY_WIDTH = 44;
+	private static final int INFINITY_HEIGHT = 36;
 	
 	private static final int LIFE_DRAW_X = 595;
 	private static final int LIFE_DRAW_Y = 33;
@@ -207,7 +214,14 @@ public final class StandardSurface {
 								  drawFromX, 0,
 								  drawFromX + SCORE_WIDTH, SCORE_HEIGHT,
 								  null);
-				} // else draw nothing TODO perhaps draw infinity symbol?
+				} else {
+					g2d.drawImage(CoreResource.INSTANCE.getInfinity(),
+								  INFINITY_DRAW_X, INFINITY_DRAW_Y,
+								  INFINITY_DRAW_X2, INFINITY_DRAW_Y2,
+								  0, 0,
+								  INFINITY_WIDTH, INFINITY_HEIGHT,
+								  null);
+				}
 			}
 			
 			/* ------------------------ Powerup --------------------------- */

@@ -11,7 +11,6 @@ import org.erikaredmark.monkeyshines.global.PreferencePersistException;
  */
 public class VideoSettings {
 	
-	// Debug: testing fullscreen
 	private static boolean fullScreen = MonkeyShinesPreferences.defaultFullscreen();
 	
 	/**

@@ -1,5 +1,6 @@
 package org.erikaredmark.monkeyshines.resource;
 
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
@@ -23,6 +24,7 @@ public enum CoreResource {
 	private final BufferedImage transparentBonzo;
 	private final BufferedImage bonzoSprite;
 	private final BufferedImage getReady;
+	private final BufferedImage thunderbird;
 	
 	private CoreResource() {
 		// Must initialise here, as static values cannot be references from enum initialiser.
@@ -43,6 +45,12 @@ public enum CoreResource {
 		
 		try {
 			getReady = ImageIO.read(this.getClass().getResourceAsStream("/resources/graphics/getReady.png") );
+		} catch (IOException e) {
+			throw new RuntimeException("Missing resource: get ready image: " + e.getMessage(), e);
+		}
+		
+		try {
+			thunderbird = ImageIO.read(this.getClass().getResourceAsStream("/resources/graphics/thunderbird.png") );
 		} catch (IOException e) {
 			throw new RuntimeException("Missing resource: get ready image: " + e.getMessage(), e);
 		}
@@ -84,6 +92,18 @@ public enum CoreResource {
 	 */
 	public BufferedImage getGetReady() {
 		return getReady;
+	}
+
+	/**
+	 * 
+	 * Returns the infinity image. Used in playtesting. Infinity image is designed to be drawn to 'lives' counter and is 44x36.
+	 * 
+	 * @return
+	 * 		infinity image
+	 * 
+	 */
+	public Image getInfinity() {
+		return thunderbird;
 	}
 	
 }

@@ -47,6 +47,7 @@ public final class MonkeyShinesPreferences {
 	private static final String SOUND_VOLUME = "sound";
 	private static final String MUSIC_VOLUME = "music";
 	private static final String FULLSCREEN = "fullscreen";
+	private static final String PLAYTEST = "thunderbird";
 	
 	
 	static {
@@ -91,6 +92,10 @@ public final class MonkeyShinesPreferences {
 					PREF_INTERNAL.setProperty(FULLSCREEN, String.valueOf(DEFAULT_FULLSCREEN_MODE) );
 				}
 				
+				if (!(PREF_INTERNAL.containsKey(PLAYTEST) ) ) {
+					PREF_INTERNAL.setProperty(PLAYTEST, "false");
+				}
+				
 			} catch (IOException e) {
 				LOGGER.log(Level.WARNING,
 						   "Preferences cannot be saved for this game session, nor can high scores! Unable to load preferences file: possible preference corruption: " + e.getMessage(),
@@ -126,6 +131,7 @@ public final class MonkeyShinesPreferences {
 	static int defaultSoundVolume() { return Integer.valueOf(PREF_INTERNAL.getProperty(SOUND_VOLUME) ); }
 	static int defaultMusicVolume() { return Integer.valueOf(PREF_INTERNAL.getProperty(MUSIC_VOLUME) ); }
 	static boolean defaultFullscreen() { return Boolean.valueOf(PREF_INTERNAL.getProperty(FULLSCREEN) ); }
+	static boolean defaultThunderbird() { return Boolean.valueOf(PREF_INTERNAL.getProperty(PLAYTEST) ); }
 	static KeyBindings defaultKeyBindings() { 
 		return new KeyBindings(Integer.valueOf(PREF_INTERNAL.getProperty(KEY_BINDING_LEFT) ), 
 							   Integer.valueOf(PREF_INTERNAL.getProperty(KEY_BINDING_RIGHT) ), 
@@ -157,6 +163,12 @@ public final class MonkeyShinesPreferences {
 	
 	static void persistVideo() throws PreferencePersistException {
 		PREF_INTERNAL.setProperty(FULLSCREEN, String.valueOf(VideoSettings.isFullscreen() ) );
+		
+		save();
+	}
+	
+	static void persistThunderbird() throws PreferencePersistException {
+		PREF_INTERNAL.setProperty(PLAYTEST, String.valueOf(SpecialSettings.isThunderbird() ) );
 		
 		save();
 	}

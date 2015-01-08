@@ -20,6 +20,7 @@ import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.global.KeySettings;
 import org.erikaredmark.monkeyshines.global.MonkeyShinesPreferences;
 import org.erikaredmark.monkeyshines.global.PreferencePersistException;
+import org.erikaredmark.monkeyshines.global.SpecialSettings;
 import org.erikaredmark.monkeyshines.global.VideoSettings;
 import org.erikaredmark.monkeyshines.resource.SoundManager;
 import org.erikaredmark.monkeyshines.util.GameEndCallback;
@@ -69,8 +70,9 @@ public final class MainWindow extends JFrame {
 	
 	// Menu: Options
 	private JMenu options = new JMenu("Options");
-	/* --------------------------- MENU ITEM NEW WORLD ---------------------------- */
+
 	private final JMenuItem changeFullscreen = new JCheckBoxMenuItem("Fullscreen", null, VideoSettings.isFullscreen() );
+	private final JMenuItem playtestMode = new JCheckBoxMenuItem("Playtesting", null, SpecialSettings.isThunderbird() );
 	
 	// Called when 'play game' is pressed in main menu. Transition to the 'choose a world' screen.
 	private final Runnable playGameCallback = new Runnable() {
@@ -108,6 +110,21 @@ public final class MainWindow extends JFrame {
 		});
 		
 		options.add(changeFullscreen);
+		
+		playtestMode.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent arg0) {
+				SpecialSettings.setThunderbird(playtestMode.isSelected() );
+				try {
+					SpecialSettings.persist();
+				} catch (PreferencePersistException e) {
+					LOGGER.log(Level.WARNING,
+							   CLASS_NAME + ": cannot persist preferences: " + e.getMessage(),
+							   e);
+				}
+			}
+		});
+		
+		options.add(playtestMode);
 		
 		mainMenuBar.add(options);
 		
