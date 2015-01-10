@@ -2,7 +2,6 @@ package org.erikaredmark.monkeyshines.menu;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -334,7 +333,7 @@ public final class MainWindow extends JFrame {
 				mainWindow.state.transitionFrom(mainWindow);
 				mainWindow.highScores = 
 					new ViewHighScores(
-						HighScores.fromPreferences(MonkeyShinesPreferences.getPreferencesPath() ),
+						HighScores.fromFile(MonkeyShinesPreferences.getHighScoresPath() ),
 						new ViewHighScores.BackButtonCallback() {
 							@Override public void backButtonPressed() { mainWindow.setGameState(GameState.MENU); }
 						});
@@ -415,16 +414,15 @@ public final class MainWindow extends JFrame {
 		}
 		
 		final int score = w.getStatistics().getTotalScore();
-		final Path prefPath = MonkeyShinesPreferences.getPreferencesPath();
 		
-		HighScores highScores = HighScores.fromPreferences(prefPath);
+		HighScores highScores = HighScores.fromFile(MonkeyShinesPreferences.getHighScoresPath() );
 		if (highScores.isScoreHigh(score) ) {
 			SoundManager snd = w.getResource().getSoundManager();
 			
 			snd.playOnce(GameSoundEffect.YES);
 			String playerName = EnterHighScoreDialog.launch();
 			highScores.addScore(playerName, score);
-			highScores.persist(prefPath);
+			highScores.persistScores(MonkeyShinesPreferences.getHighScoresPath() );
 			// In preparation for high scores movement
 			snd.playOnceDelayed(GameSoundEffect.APPLAUSE, 1, TimeUnit.SECONDS);
 		}		

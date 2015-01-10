@@ -19,8 +19,11 @@ import org.erikaredmark.util.BinaryLocation;
  * to a file in the same folder as the binary, in addition to loading the preferences file for setting the initial
  * values for the global static *Settings objects.
  * <p/>
- * This class is automatically intiailsed when a global preference object requests it's default preferences
+ * This class is automatically initialised when a global preference object requests it's default preferences
  * on its initialisation.
+ * <p/>
+ * Preferences include all persistent data and may not be contained within the same file, but multiple files according
+ * to use.
  * 
  * @author Erika Redmark
  *
@@ -30,10 +33,10 @@ public final class MonkeyShinesPreferences {
 	private static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
 
 	private static final Path PREFERENCES_EXPECTED = BinaryLocation.BINARY_LOCATION.getParent().resolve("monkeyshines.pref");
+	private static final Path HIGH_SCORES_EXPECTED = BinaryLocation.BINARY_LOCATION.getParent().resolve("ms_high_scores.txt");
 
 	private static final Properties PREF_INTERNAL = new Properties();
 
-	
 	// Preference defaults if a new preferences file must be created.
 	private static final KeyBindings DEFAULT_BINDINGS = new KeyBindings(KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, KeyEvent.VK_UP);
 	private static final int DEFAULT_MUSIC_VOLUME = 60;
@@ -115,6 +118,15 @@ public final class MonkeyShinesPreferences {
 	 * 
 	 */
 	public static Path getPreferencesPath() { return PREFERENCES_EXPECTED; }
+	
+	/**
+	 * 
+	 * Returns the path to the expected high scores file. The file is not guaranteed to exist.
+	 * 
+	 * @return
+	 * 
+	 */
+	public static Path getHighScoresPath() { return HIGH_SCORES_EXPECTED; }
 	
 	/**
 	 * 

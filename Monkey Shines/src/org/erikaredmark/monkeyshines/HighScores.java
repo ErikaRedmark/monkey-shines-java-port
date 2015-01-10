@@ -1,21 +1,18 @@
 package org.erikaredmark.monkeyshines;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.erikaredmark.monkeyshines.global.MonkeyShinesPreferences;
-import org.erikaredmark.util.StringToNumber;
-
-import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 
 /**
  * 
@@ -42,8 +39,21 @@ public final class HighScores {
 	private int scoreSize = 0;
 	
 	private static final int MAX_SCORES = 10;
+
+	public HighScores() { }
 	
-	private static final HighScores EMPTY = new HighScores();
+	public HighScores(List<HighScore> initialScores) {
+		if (initialScores.size() > MAX_SCORES) {
+			LOGGER.warning("More scores in file than maximum (10). Only first " + MAX_SCORES + " scores from the top of the file will be used");
+			initialScores = Lists.partition(initialScores, MAX_SCORES).get(0);
+		}
+		// Do not copy or order may not be preserved.
+		// Score size will be handled automatically by addScore, do NOT set it here.
+		for (HighScore s : initialScores) {
+			addScore(s.name, s.score);
+		}
+
+	}
 	
 	/**
 	 * 
@@ -70,7 +80,7 @@ public final class HighScores {
 	 * {@code isScoreHigh(int)} first.
 	 * 
 	 * @param name
-	 * 		name of the person who got the score
+	 * 		name of the person who got the score. Commas will be removed (as they are internal delimiters)
 	 * 
 	 * @param score
 	 * 
@@ -82,6 +92,8 @@ public final class HighScores {
 		if (!(isScoreHigh(score) ) ) {
 			throw new IllegalArgumentException("Score " + score + " is too low to be entered into the high scores. Check with isScoreHigh first");
 		}
+		
+		name = name.replace(',', ' ');
 		
 		// Condition 1: Bump out the lowest score since there isn't space left. We will resort array later.
 		if (scoreSize == 10) {
@@ -116,105 +128,80 @@ public final class HighScores {
 	
 	/**
 	 * 
-	 * Persists the high scores data into the Java preferences form. Each key is the person's name prefixed with
-	 * 'high_', for example 'high_Cordelia Chase' and the value is the score as an integer.
-	 * <p/>
-	 * As long as the preferences file does not use a naming scheme for keys that will conflict with this persistence form
-	 * it is save to combine this with a more global preferences file.
-	 * <p/>
-	 * If this method fails, it will log and return false
+	 * Persists the high scores data as a basic list written out to a text file. The path should NOT be
+	 * the preferences file.
 	 * 
-	 * @param preferences
-	 * 		path to preferences file. If one does not exist it will be created
+	 * @param scoresList
+	 * 		path to high scores list. File will be created if one does not exist
 	 * 
 	 * @return
 	 * 		{@code true} if the high scores could be saved, {@code false} if otherwise
 	 * 
 	 */
-	public boolean persist(Path preferences) {
-		Properties props = new Properties();
-		if (!(Files.exists(preferences) ) ) {
-			try {
-				Files.createFile(preferences);
-			} catch (IOException e) {
-				LOGGER.log(Level.SEVERE,
-						   "Could not create high scores: " + e.getMessage(),
-						   e);
-				return false;
+	public boolean persistScores(Path highScores) {
+		try {
+			writeScores(highScores, scores, scoreSize);
+			return true;
+		} catch (IOException e) {
+			return false;
+		}
+	}
+	
+	/** Reads the high score list from a basic plain-text input. Each line is a name, delimiter, and score.
+	 * Delimiter is defined as a comma.
+	 * @param scoreFile the input file
+	 * @return list of high scores from file.
+	 * @throws IOException if the file could not be read. Ensure it exists.
+	 */
+	private static List<HighScore> readScores(Path scoreFile) throws IOException {
+		List<HighScore> highReturns = new ArrayList<>();
+		try (BufferedReader reader = Files.newBufferedReader(scoreFile, Charset.forName("UTF-8") ) ) {
+			String scoreLine = null;
+			while ( (scoreLine = reader.readLine() ) != null) {
+				String[] parts = scoreLine.split("\\,");
+				
+				// Ignore bad lines; the user can modify the file so let's try to be as liberal as possible.
+				if (parts.length != 2)  continue;
+				highReturns.add(new HighScore(parts[0], Integer.parseInt(parts[1]) ) );
 			}
 		}
 		
-		try (InputStream is = Files.newInputStream(preferences) ) {
-			props.load(is);
-		} catch (IOException e) {
-			LOGGER.log(Level.SEVERE,
-					   "Could not load high scores for saving: " + e.getMessage(),
-					   e);
-			return false;
+		return highReturns;
+	}
+	
+	private static void writeScores(Path scoreFile, HighScore[] scores, int scoreSize) throws IOException {
+		try (BufferedWriter writer = Files.newBufferedWriter(scoreFile, Charset.forName("UTF-8") ) ) {
+			for (int i = 0; i < scoreSize; ++i) {
+				String writeoutLine = scores[i].getName() + "," + scores[i].getScore() + "\n";
+				writer.write(writeoutLine);
+			}
 		}
-		
-		// We have loaded the properties file for the given preferences file, and it is valid.
-		// Generate the keys for these high scores. If they exist, update them, else create new ones.
-		for (int i = 0; i < scoreSize; ++i) {
-			HighScore s = scores[i];
-			assert s != null;
-			String key = "high_" + s.name;
-			String value = String.valueOf(s.score);
-			props.put(key, value);
-		}
-		
-		try (OutputStream os = Files.newOutputStream(preferences) ) {
-			props.store(os, MonkeyShinesPreferences.getPreferencesComments() );
-		} catch (IOException e) {
-			LOGGER.log(Level.SEVERE,
-					   "Could not save high scores: " + e.getMessage(),
-					   e);
-			
-			return false;
-		}
-		
-		return true;
-		
 	}
 	
 	/**
 	 * 
-	 * Constructs an instance of this object from a preferences file. The object will be looking for all preference
-	 * keys that are prefixed with 'high_'. Keys are assumed to be names, and more critically values are assumed to
-	 * be actual integers.
-	 * <p/>
-	 * If the file does not exist, or does not contain any keys, this method does NOT throw an exception. It simply
-	 * returns an empty high scores object.
+	 * Constructs an instance of this object from a high score .txt, If this file cannot be
+	 * read, the generated high scores will be empty. If the file does not exist, a new file
+	 * will be generated and an empty high scores object will be returned.
 	 * 
 	 * @return
 	 * 		instance of this object
 	 * 
 	 */
-	public static HighScores fromPreferences(Path preferences) {
-		Properties props = new Properties();
-		try (InputStream is = Files.newInputStream(preferences) ) {
-			props.load(is);
-		} catch (IOException e) {
-			LOGGER.log(Level.SEVERE,
-					   "Could not load high scores, returning empty object: " + e.getMessage(),
-					   e);
-			return EMPTY;
-		}
-		
-		HighScores returnScores = new HighScores();
-		for (Object o : props.keySet() ) {
-			String possibleName = (String) o;
-			// Length check ensures it is not JUST 'high_'
-			if (possibleName.contains("high_") && possibleName.length() > 5) {
-				String name = possibleName.substring(5);
-				Optional<Integer> score = StringToNumber.string2Int(props.getProperty(possibleName) );
-				if (score.isPresent() ) {
-					returnScores.addScore(name, score.get() );
-				}
+	public static HighScores fromFile(Path highScoreList) {
+		try {
+			if (!(Files.exists(highScoreList) ) ) {
+				Files.createFile(highScoreList);
 			}
+			List<HighScore> tempScores = readScores(highScoreList);
+			return new HighScores(tempScores);
+		} catch (IOException e) {
+			LOGGER.log(Level.WARNING,
+					   "Could not read high scores: " + e.getMessage(),
+					   e);
+			
+			return new HighScores();
 		}
-		
-		return returnScores;
 	}
 	
 	public static final class HighScore implements Comparable<HighScore> {
