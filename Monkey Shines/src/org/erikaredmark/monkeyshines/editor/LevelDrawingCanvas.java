@@ -605,17 +605,21 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 						  bonz.getWidth(), bonz.getHeight(),
 						  null);
 			
-			// Finally, draw indicator for mouse position only if map editor hasn't already taken care of it.
-			drawTileIndicator(g2d);
+			int snapX = EditorMouseUtils.snapMouseX(mousePosition.x() );
+			int snapY = EditorMouseUtils.snapMouseY(mousePosition.y() );
+			// Draw indicator for mouse position only if map editor hasn't already taken care of it
+			drawTileIndicator(g2d, snapX, snapY);
+			
+			// Finally, update coordinate data
+			drawCoordinateInfo(g2d, snapX, snapY);
 		}
 		
 	}
 	
-	private void drawTileIndicator(Graphics2D g2d) {
+	private void drawTileIndicator(Graphics2D g2d, int snapX, int snapY) {
 		if (currentState == EditorState.USE_MAP_EDITOR)  return;
 		
-		int snapX = EditorMouseUtils.snapMouseX(mousePosition.x() );
-		int snapY = EditorMouseUtils.snapMouseY(mousePosition.y() );
+
 		if (indicatorImage == null) {
 			g2d.setColor(Color.green);
 			g2d.drawRect(snapX,
@@ -629,6 +633,23 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 				  indicatorImage.getWidth(), indicatorImage.getHeight(), 
 				  null);
 		}
+	}
+	
+	
+	/**
+	 * 
+	 * Draws a string indicating the x/y location of the tile at the lower-left corner of the screen. 
+	 * 
+	 * @param g2d
+	 * 
+	 */
+	private void drawCoordinateInfo(Graphics2D g2d, int snapX, int snapY) {
+		int tileX = snapX / GameConstants.TILE_SIZE_X;
+		int tileY = snapY / GameConstants.TILE_SIZE_Y;
+		String location = tileX + ", " + tileY;
+		
+		g2d.setColor(Color.GREEN);
+		g2d.drawString(location, 4, GameConstants.SCREEN_HEIGHT - 12);
 	}
 	
 	/**

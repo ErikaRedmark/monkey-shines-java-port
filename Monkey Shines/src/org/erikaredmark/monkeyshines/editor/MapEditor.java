@@ -285,8 +285,10 @@ public final class MapEditor extends JPanel {
 		background.draw(g2d);
 		map.paint(g2d, world.getResource() );
 
-
-		drawTileIndicator(g2d);
+		int snapX = EditorMouseUtils.snapMouseX(mousePosition.x() );
+		int snapY = EditorMouseUtils.snapMouseY(mousePosition.y() );
+		
+		drawTileIndicator(g2d, snapX, snapY);
 		// BELOW: Additional overlays that are not part of the actual world
 	}
 	
@@ -296,9 +298,7 @@ public final class MapEditor extends JPanel {
 	 * editor to draw.
 	 * 
 	 */
-	private void drawTileIndicator(Graphics2D g2d) {
-		int snapX = EditorMouseUtils.snapMouseX(mousePosition.x() );
-		int snapY = EditorMouseUtils.snapMouseY(mousePosition.y() );
+	private void drawTileIndicator(Graphics2D g2d, int snapX, int snapY) {
 		if (indicatorImage != null) {
 			g2d.drawImage(indicatorImage, 
 						  snapX, snapY,
