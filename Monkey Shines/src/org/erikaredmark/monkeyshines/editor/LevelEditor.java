@@ -136,8 +136,6 @@ public class LevelEditor extends JFrame {
 	final LevelDrawingCanvas currentWorld;
 	/* Only set during loading a world, and only used during saving.	*/
 	private Path defaultSaveLocation;
-	
-	private KeyboardInput keys;
 	// Main menu Bar
 	private JMenuBar mainMenuBar = new JMenuBar();
 	
@@ -532,7 +530,6 @@ public class LevelEditor extends JFrame {
 	}
 
 	private LevelEditor() {
-		keys = new KeyboardInput();
 		int downToMainCanvasEnd = (GameConstants.LEVEL_ROWS * GameConstants.TILE_SIZE_Y) + 40;
 		brushPaletteFrame = new JInternalFrame("Palette", true);
 		brushPaletteFrame.setLayout(new BorderLayout() );
@@ -551,8 +548,7 @@ public class LevelEditor extends JFrame {
 		currentWorld = new LevelDrawingCanvas(paletteUpdateCallback);
 		canvasFrame.add(currentWorld);
 		canvasFrame.pack();
-		// Must add to both.
-		this.addKeyListener(keys);
+		
 		setTitle("Monkey Shines Editor");
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		

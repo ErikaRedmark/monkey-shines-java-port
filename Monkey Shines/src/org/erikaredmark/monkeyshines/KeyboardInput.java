@@ -67,21 +67,21 @@ public class KeyboardInput implements KeyListener {
 		return keys[ keyCode ] == KeyState.ONCE;
 	}
 
-	public synchronized void keyPressed( KeyEvent e ) {
+	@Override public synchronized void keyPressed( KeyEvent e ) {
 		int keyCode = e.getKeyCode();
 		if( keyCode >= 0 && keyCode < KEY_COUNT ) {
 			currentKeys[ keyCode ] = true;
 		}
 	}
 
-	public synchronized void keyReleased( KeyEvent e ) {
+	@Override public synchronized void keyReleased( KeyEvent e ) {
 		int keyCode = e.getKeyCode();
 		if( keyCode >= 0 && keyCode < KEY_COUNT ) {
 			currentKeys[ keyCode ] = false;
 		}
 	}
 
-	public void keyTyped( KeyEvent e ) {
+	@Override public void keyTyped( KeyEvent e ) {
 		// Not needed
 	}
 }

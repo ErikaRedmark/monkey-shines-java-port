@@ -7,6 +7,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -60,7 +62,7 @@ import com.google.common.base.Optional;
  */
 
 @SuppressWarnings("serial")
-public final class LevelDrawingCanvas extends JPanel implements MouseListener, MouseMotionListener {
+public final class LevelDrawingCanvas extends JPanel implements MouseListener, MouseMotionListener, KeyListener {
 	
 	/**
 	 * 
@@ -93,6 +95,9 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 		
 		addMouseMotionListener(this);
 		addMouseListener(this);
+		
+		setFocusable(true);
+		addKeyListener(this);
 		
 		// Optimisations
 		setDoubleBuffered(true);
@@ -442,6 +447,27 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 	
 	/**
 	 * 
+	 * Sets whether the coordinates displayed in the editor should be invisible (false) or visible
+	 * (true)
+	 * 
+	 * @param visible
+	 * 
+	 */
+	public void setDisplayingCoordinates(boolean visible) {
+		this.drawingCoordinates = visible;
+	}
+	
+	/**
+	 * 
+	 * Toggles display of coordinates. if displayed, they will become invisible, and vice-versa
+	 * 
+	 */
+	public void toggleDisplayingCoordinates() {
+		setDisplayingCoordinates(!drawingCoordinates);
+	}
+	
+	/**
+	 * 
 	 * Gets the sprite at the given location, bringing up a popup dialog to select between multiple if there are multiple
 	 * in the given location.
 	 * 
@@ -562,6 +588,16 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 		}
 	}
 	
+	@Override public void keyPressed(KeyEvent key) { }
+	@Override public void keyReleased(KeyEvent key) { }
+	@Override public void keyTyped(KeyEvent key) {
+		switch (key.getKeyChar() ) {
+		case 'c':	
+			toggleDisplayingCoordinates();
+			break;
+		}
+	}
+	
 	/**
 	 * 
 	 * Note: Each call to paint is synced with updating game state, so this updates all relevant states before painting them.
@@ -611,7 +647,9 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 			drawTileIndicator(g2d, snapX, snapY);
 			
 			// Finally, update coordinate data
-			drawCoordinateInfo(g2d, snapX, snapY);
+			if (drawingCoordinates) {
+				drawCoordinateInfo(g2d, snapX, snapY);
+			}
 		}
 		
 	}
@@ -648,7 +686,12 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 		int tileY = snapY / GameConstants.TILE_SIZE_Y;
 		String location = tileX + ", " + tileY;
 		
-		g2d.setColor(Color.GREEN);
+		// white box to bring visibility
+		int boxWidth = g2d.getFontMetrics().stringWidth(location) + 4;
+		g2d.setColor(Color.WHITE);
+		g2d.fillRect(2, GameConstants.SCREEN_HEIGHT - 24, boxWidth, 14);
+		
+		g2d.setColor(Color.BLACK);
 		g2d.drawString(location, 4, GameConstants.SCREEN_HEIGHT - 12);
 	}
 	
@@ -858,6 +901,9 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 	// May be null, but should never be accessed until Editor State goes to placing templates, which
 	// requires a non-null template to even get to that state.
 	private Template currentTemplate;
+	
+	// Toggled by user whilst drawing. Up to client classes to decide how to enable/disable this property
+	private boolean drawingCoordinates;
 	
 	private final Function<World, Void> worldLoaded;
 	
