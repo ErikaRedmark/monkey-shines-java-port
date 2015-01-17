@@ -1,0 +1,1 @@
+This folder contains code, scripts, etc... that are intended to make it easy to just start the game and level editor.
