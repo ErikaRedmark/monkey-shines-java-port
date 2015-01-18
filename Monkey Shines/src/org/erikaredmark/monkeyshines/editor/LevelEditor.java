@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.JDesktopPane;
 import javax.swing.JDialog;
@@ -259,6 +261,13 @@ public class LevelEditor extends JFrame {
 			actionSelectBonusScreen();
 		}
 	});
+	
+	private JMenuItem exportAsPng = new JMenuItem(new AbstractAction("Export Level Map...") {
+		private static final long serialVersionUID = 1L;
+		@Override public void actionPerformed(ActionEvent e) {
+			actionExportAsPng();
+		}
+	});
 
 	// Returns false if a world is not loaded, after letting the user know
 	// a world is not loaded.
@@ -315,6 +324,30 @@ public class LevelEditor extends JFrame {
 		}
 	}
 	
+	public void actionExportAsPng() {
+		JFileChooser exportChooser = new JFileChooser();
+		exportChooser.setDialogTitle("Save the generated map (as .png)");
+		
+		int selected = exportChooser.showSaveDialog(this);
+		if (selected == JFileChooser.APPROVE_OPTION) {
+			Path location = exportChooser.getSelectedFile().toPath();
+			
+			if (!(location.getFileName().toString().endsWith(".png") ) ) {
+				location = location.getParent().resolve(location.getFileName().toString() + ".png");
+			}
+			
+			BufferedImage map = MapGenerator.generateMap(currentWorld.getWorldEditor().getWorld(), 1000);
+			
+			try {
+				ImageIO.write(map, "PNG", location.toFile() );
+			} catch (IOException e) {
+				JOptionPane.showMessageDialog(this,
+				    "Export Failed",
+				    "Could not export world as .png: " + e.getMessage(),
+				    JOptionPane.ERROR_MESSAGE);
+			}
+		}
+	}
 	/**
 	 * 
 	 * Brings up the GUI editor for the list of hazards saved for that world.
@@ -602,6 +635,7 @@ public class LevelEditor extends JFrame {
 		specialMenu.add(placeBonzo);
 		specialMenu.add(setAuthor);
 		specialMenu.add(setBonus);
+		specialMenu.add(exportAsPng);
 		
 		mainMenuBar.add(specialMenu);
 		
