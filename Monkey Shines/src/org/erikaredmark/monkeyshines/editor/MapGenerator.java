@@ -2,10 +2,13 @@ package org.erikaredmark.monkeyshines.editor;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
 
 import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.LevelScreen;
@@ -31,7 +34,37 @@ public final class MapGenerator {
 	
 	public static BufferedImage generateMap(World world, int screenStart) { 
 		
-		// TODO incorperate screenStart to ignore level screens not connecting, like bonus screens.
+		// Take a listing of all screens. Starting at screenStart, look up, right, down, and left. We
+		// only capture all connecting screens.
+		Deque<LevelScreen> walkthrough = new ArrayDeque<>();
+		List<LevelScreen> drawThese = new ArrayList<>();
+		Set<Integer> alreadyLooked = new HashSet<>();
+		walkthrough.push(world.getScreenByID(screenStart) );
+		
+		while (!(walkthrough.isEmpty() ) ) {
+			LevelScreen next = walkthrough.pop();
+			int nextId = next.getId();
+			alreadyLooked.add(nextId);
+			drawThese.add(next);
+			
+			// Add to deque all four directions, checking the set to make sure we don't
+			// backtrack
+			int[] directions = new int[] {
+				nextId + 100, 
+				nextId + 1, 
+				nextId - 100, 
+				nextId - 1
+			};
+			
+			for (int dir : directions) {
+				if (   !(alreadyLooked.contains(dir) ) 
+				    && world.screenIdExists(dir) ) {
+					
+					LevelScreen dirScreen = world.getScreenByID(dir);
+					walkthrough.push(dirScreen);
+				}
+			}
+		}
 		
 		// First, we need to resolve the ids to logical width/height indexes. Screen ids have an ambiguity: for example,
 		// 1158 may be left of 1200 or right of 1100. We assume the last two digits of 50 as a cutaway point (similar to
@@ -41,10 +74,9 @@ public final class MapGenerator {
 		int maxHeightIndex = Integer.MIN_VALUE;
 		int minWidthIndex = Integer.MAX_VALUE;
 		int minHeightIndex = Integer.MAX_VALUE;
-		Map<Integer, LevelScreen> allLvlScreens = world.getLevelScreens();
 		
-		for (Entry<Integer, LevelScreen> lvl : allLvlScreens.entrySet() ) {
-			int id = lvl.getKey();
+		for (LevelScreen lvl : drawThese ) {
+			int id = lvl.getId();
 			// Abs important: - indexed screens will mess up the baseline 50 size usage.
 			int lastTwoDigits = Math.abs(id % 100);
 			int exceptLastTwoDigits = id / 100;
@@ -82,8 +114,10 @@ public final class MapGenerator {
 		// have calculated the min/max of these indexes and can now find the size of the image and draw onto it.
 		
 		// +1 to correct for length since these are indexes.
-		int unitWidth = (Math.abs(maxWidthIndex) + Math.abs(minWidthIndex) ) + 1;
-		int unitHeight = (Math.abs(maxHeightIndex) + Math.abs(minHeightIndex) ) + 1;
+		int unitWidth = Math.abs(maxWidthIndex - minWidthIndex) + 1;
+		int unitHeight = Math.abs(maxHeightIndex - minHeightIndex) + 1;
+		
+		Map<Integer, LevelScreen> allLvlScreens = world.getLevelScreens();
 		
 		BufferedImage map = new BufferedImage(unitWidth * GameConstants.SCREEN_WIDTH, unitHeight * GameConstants.SCREEN_HEIGHT, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g2d = map.createGraphics();

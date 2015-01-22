@@ -31,6 +31,8 @@ import org.erikaredmark.monkeyshines.resource.WorldResource;
 public final class LevelScreen {
 	
 	// Initialisation datas for a level screen
+	// Id IS repeated in the Map holding the screens. Kept here for ease of use with other algorithms
+	// that work only with screens and need an id.
 	private final int screenId;
 	private       Background background;
 	

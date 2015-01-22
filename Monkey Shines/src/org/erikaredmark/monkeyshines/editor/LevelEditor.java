@@ -265,7 +265,22 @@ public class LevelEditor extends JFrame {
 	private JMenuItem exportAsPng = new JMenuItem(new AbstractAction("Export Level Map...") {
 		private static final long serialVersionUID = 1L;
 		@Override public void actionPerformed(ActionEvent e) {
-			actionExportAsPng();
+			actionExportAsPng(1000);
+		}
+	});
+	
+	private JMenuItem exportAsPngBonus = new JMenuItem(new AbstractAction("Export Bonus Map...") {
+		private static final long serialVersionUID = 1L;
+		@Override public void actionPerformed(ActionEvent e) {
+			World world = currentWorld.getWorldEditor().getWorld();
+			if (world.screenIdExists(world.getBonusScreen() ) ) {
+				actionExportAsPng(world.getBonusScreen() );
+			} else {
+				JOptionPane.showMessageDialog(LevelEditor.this,
+				    "The bonus screen id " + world.getBonusScreen() + " does not exist.",
+				    "Cannot Export Bonus Screens",
+				    JOptionPane.ERROR_MESSAGE);
+			}
 		}
 	});
 
@@ -324,7 +339,21 @@ public class LevelEditor extends JFrame {
 		}
 	}
 	
-	public void actionExportAsPng() {
+	/**
+	 * 
+	 * Exports the level asking for a file location as a .png. This is normally either called with level
+	 * id 1000 for the main level, or the bonus level id for the bonus. There is no other physical way
+	 * for any other playable levels to exist if they are not connected to either the bonus room or 1000,
+	 * even if they are technically in the world data.
+	 * <p/>
+	 * If the given screen Id does not exist, this method will throw an exception. Check the id of the passed
+	 * screen. 1000 will always exist but the bonus may not.
+	 * 
+	 * @param levelScreen
+	 * 		id of the screen to start from (all connected screens will be exported as a .png)
+	 * 
+	 */
+	public void actionExportAsPng(int levelScreen) {
 		JFileChooser exportChooser = new JFileChooser();
 		exportChooser.setDialogTitle("Save the generated map (as .png)");
 		
@@ -336,14 +365,14 @@ public class LevelEditor extends JFrame {
 				location = location.getParent().resolve(location.getFileName().toString() + ".png");
 			}
 			
-			BufferedImage map = MapGenerator.generateMap(currentWorld.getWorldEditor().getWorld(), 1000);
+			BufferedImage map = MapGenerator.generateMap(currentWorld.getWorldEditor().getWorld(), levelScreen);
 			
 			try {
 				ImageIO.write(map, "PNG", location.toFile() );
 			} catch (IOException e) {
 				JOptionPane.showMessageDialog(this,
-				    "Export Failed",
 				    "Could not export world as .png: " + e.getMessage(),
+				    "Export Failed",
 				    JOptionPane.ERROR_MESSAGE);
 			}
 		}
@@ -635,7 +664,9 @@ public class LevelEditor extends JFrame {
 		specialMenu.add(placeBonzo);
 		specialMenu.add(setAuthor);
 		specialMenu.add(setBonus);
+		specialMenu.addSeparator();
 		specialMenu.add(exportAsPng);
+		specialMenu.add(exportAsPngBonus);
 		
 		mainMenuBar.add(specialMenu);
 		
