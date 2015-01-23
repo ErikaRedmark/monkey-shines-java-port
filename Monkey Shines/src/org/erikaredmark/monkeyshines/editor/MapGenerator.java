@@ -83,12 +83,28 @@ public final class MapGenerator {
 			
 			int widthIndex;
 			int heightIndex;
+			// Important: Negative ids invert the logic: So 1000 + 1 is 1001 to the right, but
+			// -1000 + 1 is -999... also to the right.
 			if (lastTwoDigits > 50) {
-				// Negative intended
-			    widthIndex = lastTwoDigits - 100;
-				heightIndex = exceptLastTwoDigits + 1;
+				// Negatives require inverting width logic
+				// +/- on height to correct for the fact that 999 to 1000 and -1000 to -999 are on the same 'height'
+				// even though 9 != 10
+				if (id < 0) {
+					widthIndex = 100 - lastTwoDigits;
+					heightIndex = exceptLastTwoDigits - 1;
+				} else {
+					widthIndex = lastTwoDigits - 100;
+					heightIndex = exceptLastTwoDigits + 1;
+				}
+			    
+				
 			} else {
-				widthIndex = lastTwoDigits;
+				if (id < 0) {
+					widthIndex = -lastTwoDigits;
+				} else {
+					widthIndex = lastTwoDigits;
+				}
+				
 				heightIndex = exceptLastTwoDigits;
 			}
 			
@@ -113,7 +129,7 @@ public final class MapGenerator {
 		// Postcondition: We have each level paired with a width/height index that unambigiously can be used to place it into a grid. We
 		// have calculated the min/max of these indexes and can now find the size of the image and draw onto it.
 		
-		// +1 to correct for length since these are indexes.
+		// +1 to correct for length since these are indexes. Subtract 1 to get unitIndex
 		int unitWidth = Math.abs(maxWidthIndex - minWidthIndex) + 1;
 		int unitHeight = Math.abs(maxHeightIndex - minHeightIndex) + 1;
 		
@@ -127,7 +143,7 @@ public final class MapGenerator {
 				int drawX = (nextId.widthIndex + (-minWidthIndex) ) * GameConstants.SCREEN_WIDTH;
 				// Height index needs to be inverted
 				int normalisedHeight = nextId.heightIndex + (-minHeightIndex);
-				int drawY = ( (unitHeight - normalisedHeight) * GameConstants.SCREEN_HEIGHT);
+				int drawY = ( ( (unitHeight - 1) - normalisedHeight) * GameConstants.SCREEN_HEIGHT);
 				
 				LevelScreen actualScreen = allLvlScreens.get(nextId.id);
 				g2d.translate(drawX, drawY);
