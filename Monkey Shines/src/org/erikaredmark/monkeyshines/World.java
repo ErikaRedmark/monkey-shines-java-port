@@ -684,6 +684,8 @@ public class World {
 				// Bounding box check done. Do more expensive pixel check
 				if (nextSprite.pixelCollision(theBonzo, intersection) ) {
 					nextSprite.getType().onBonzoCollision(theBonzo, this);
+					// do not do further collisions after bonzo dies
+					break;
 				}
 			}
 		}
