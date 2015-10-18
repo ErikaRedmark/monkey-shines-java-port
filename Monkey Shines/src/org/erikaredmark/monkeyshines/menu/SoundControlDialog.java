@@ -65,9 +65,9 @@ public final class SoundControlDialog extends JDialog {
 	private static final int DIALOG_SIZE_X = 328;
 	private static final int DIALOG_SIZE_Y = 180;
 	
-	// Outside of contructor so as not to clutter visual code: Simply sets the values of some constants, such as images.
-	// These are NOT static, otherwise image data would persist in memory when not needed.
-	{
+	private SoundControlDialog(final SoundType type) 
+		throws SoundControlDialogInitException {
+		// ------------------------- Ensure construction is possible
 		try {
 			// Graphics
 			SOUND_LEFT_SIDE = ImageIO.read(SoundControlDialog.class.getResourceAsStream("/resources/graphics/mainmenu/sound/soundLeftSide.png") );
@@ -79,15 +79,20 @@ public final class SoundControlDialog extends JDialog {
 			// Sound
 			SOUND_DEMO = SoundUtils.clipFromOggStream(SoundControlDialog.class.getResourceAsStream("/resources/sounds/mainmenu/soundDemo.ogg"), "soundDemo.ogg");
 		} catch (IOException e) {
-			throw new RuntimeException("Bad .jar, could not find graphics resources for sound system: " + e.getMessage(), e);
+			throw new SoundControlDialogInitException(
+				"Bad .jar, could not find graphics resources for sound system: " + e.getMessage(), e);
 		} catch (UnsupportedAudioFileException e) {
-			throw new RuntimeException("Bad .jar, demo sound not in .ogg format: " + e.getMessage(), e);
+			throw new SoundControlDialogInitException(
+				"Bad .jar, demo sound not in .ogg format: " + e.getMessage(), e);
 		} catch (LineUnavailableException e) {
-			throw new RuntimeException("No sound device available: " + e.getMessage(), e);
+			throw new SoundControlDialogInitException(
+				"No sound device available: " + e.getMessage(), e);
+		} catch (Exception e) {
+			throw new SoundControlDialogInitException(
+				"Unable to Access Sound Device: " + e.getMessage(), e);
 		}
-	}
-	
-	private SoundControlDialog(final SoundType type) {
+		
+		// ------------------------- Visuals
 		// add a JPanel containing all the components. We can custom paint the JPanel with
 		// added components easier than we can with a dialog class.
 		JPanel mainPanel = new JPanel() {
@@ -171,8 +176,14 @@ public final class SoundControlDialog extends JDialog {
 	 * to save the settings to the disk. Settings are not saved whilst the user is playing with the
 	 * sliders.
 	 * 
+	 * @throws SoundControlDialogInitException
+	 * 		creating the dialog may fail, if sound system cannot even be
+	 * 		created, in those cases, this dialog should not launch, and client
+	 * 		should display an informative error dialog.
+	 * 
 	 */
-	public static void launch(final SoundType sound) {
+	public static void launch(final SoundType sound) 
+		throws SoundControlDialogInitException {
 		SoundControlDialog dialog = new SoundControlDialog(sound);
 		dialog.setUndecorated(true);
 		dialog.setModal(true);

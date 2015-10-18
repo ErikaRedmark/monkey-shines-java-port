@@ -64,6 +64,10 @@ public final class EndGameBonusAnimation {
 			LOGGER.log(Level.WARNING,
 					   "Could not play end game tally sounds: " + e.getMessage() + ". Check .jar integrity.",
 					   e);
+		} catch (Exception e) {
+			LOGGER.log(Level.SEVERE,
+					   "Could not play end game tally sounds, unexpected exception " + e.getMessage(),
+					   e);
 		}
 		
 		assert background != null;

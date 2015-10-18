@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.erikaredmark.monkeyshines.KeyBindings;
@@ -162,13 +163,17 @@ public class MainMenuWindow extends JPanel {
 		JButton music = menuButton(
 			new Runnable() {
 				@Override public void run() { 
-					SoundControlDialog.launch(SoundType.MUSIC);
 					try {
-						SoundSettings.persist();
-					} catch (PreferencePersistException e) {
-						LOGGER.log(Level.WARNING,
-								   CLASS_NAME + ": cannot persist preferences: " + e.getMessage(),
-								   e);
+						SoundControlDialog.launch(SoundType.MUSIC);
+						try {
+							SoundSettings.persist();
+						} catch (PreferencePersistException e) {
+							LOGGER.log(Level.WARNING,
+									   CLASS_NAME + ": cannot persist preferences: " + e.getMessage(),
+									   e);
+						}
+					} catch (SoundControlDialogInitException e) {
+						displayNoSoundDialog(e);
 					}
 				}
 			},
@@ -179,13 +184,17 @@ public class MainMenuWindow extends JPanel {
 		JButton sound = menuButton(
 			new Runnable() {
 				@Override public void run() { 
-					SoundControlDialog.launch(SoundType.SOUND); 
 					try {
-						SoundSettings.persist();
-					} catch (PreferencePersistException e) {
-						LOGGER.log(Level.WARNING,
-								   CLASS_NAME + ": cannot persist preferences: " + e.getMessage(),
-								   e);
+						SoundControlDialog.launch(SoundType.SOUND); 
+						try {
+							SoundSettings.persist();
+						} catch (PreferencePersistException e) {
+							LOGGER.log(Level.WARNING,
+									   CLASS_NAME + ": cannot persist preferences: " + e.getMessage(),
+									   e);
+						}
+					} catch (SoundControlDialogInitException e) {
+						displayNoSoundDialog(e);
 					}
 				}
 			},
@@ -228,6 +237,23 @@ public class MainMenuWindow extends JPanel {
 		add(exit);
 		
 		setPreferredSize(new Dimension(640, 480) );
+	}
+	
+	private void displayNoSoundDialog(SoundControlDialogInitException e) {
+		Object[] options = { "Okay" };
+		
+		JOptionPane.showOptionDialog(
+			null,
+			"Sound Control levels are unavailable. The sound system was "
+				+ "not initialised correctly. See error logs for details: "
+				+ e.getMessage(),
+			"Sound System Failure",
+			JOptionPane.DEFAULT_OPTION,
+			JOptionPane.WARNING_MESSAGE,
+			null,
+			options,
+			options[0]
+		);
 	}
 	
 	/**

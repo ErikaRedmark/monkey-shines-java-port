@@ -1,7 +1,13 @@
 package org.erikaredmark.monkeyshines.global;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.erikaredmark.monkeyshines.global.PreferencePersistException;
+import org.erikaredmark.monkeyshines.resource.AbsentSoundManager;
+import org.erikaredmark.monkeyshines.resource.JavaDefaultSoundManager;
 import org.erikaredmark.monkeyshines.resource.SoundManager;
+import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.util.ObservableModel;
 
 /**
@@ -19,7 +25,9 @@ import org.erikaredmark.util.ObservableModel;
  *
  */
 public final class SoundSettings {
-
+	private static final String CLASS_NAME = "org.erikaredmark.monkeyshines.global.SoundSettings";
+	private static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
+	
 	private SoundSettings() { }
 	
 	// Contained obsevable object for implementing the observable effect
@@ -128,6 +136,34 @@ public final class SoundSettings {
 	 */
 	public static void persist() throws PreferencePersistException {
 		MonkeyShinesPreferences.persistSound();
+	}
+
+	/**
+	 * Factory method for creating an instance of a subtype of {@code
+	 * SoundManager}. The method will attempt to instantiate a sound system
+	 * for the current environment, and if that fails will generate a 'no
+	 * op' sound system. Failures to initialise will be logged automatically.
+	 * <p/>
+	 * If the sound system fails to initialise, it will NOT affect actual
+	 * gameplay. It will just prevent the sounds and music from working
+	 * properly.
+	 * @param worldResource
+	 * @return
+	 */
+	public static SoundManager setUpSoundManager(
+			WorldResource worldResource) {
+		try
+		{
+			SoundManager manager = new JavaDefaultSoundManager(worldResource);
+			return manager;
+		} catch (Exception e) {
+			LOGGER.log(
+				Level.SEVERE,
+				"Sound system cannot be initialised; falling back to no sound system." + e.getMessage(),
+				e
+			);
+			return new AbsentSoundManager();
+		}
 	}
 	
 }

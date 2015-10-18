@@ -21,10 +21,10 @@
   <versionInfo>
     <fileDescription>Game</fileDescription>
     <productName>MS Level Editor</productName>
-	<productVersion>1.0.0.0</productVersion>
-	<txtFileVersion>1.0 Initial Full Release</txtFileVersion>
-	<txtProductVersion>1.0 Initial Full Release</txtProductVersion>
-	<fileVersion>1.0.0.0</fileVersion>
+	<productVersion>1.0.1.0</productVersion>
+	<txtFileVersion>1.0.1/txtFileVersion>
+	<txtProductVersion>1.0.1</txtProductVersion>
+	<fileVersion>1.0.1.0</fileVersion>
 	<copyright>Port Code: Erika Redmark / Concept: Fantasoft / Original Mac Version: Mark Elliott</copyright>
     <companyName>Erika Redmark</companyName>
     <internalName>MS Level Editor</internalName>

@@ -11,6 +11,8 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipFile;
@@ -30,6 +32,8 @@ import org.erikaredmark.monkeyshines.global.SoundUtils;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException.Type;
 import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
+
+import com.google.common.base.Optional;
 
 /**
  * 
@@ -51,6 +55,8 @@ import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
  *
  */
 public final class WorldResource {
+	private static final String CLASS_NAME = "org.erikaredmark.monkeyshines.resource.WorldResource";
+	private static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
 	
 	/* ---------------------------- TILES ----------------------------- */
 	private final BufferedImage solidTiles;
@@ -102,11 +108,11 @@ public final class WorldResource {
 	// Whilst sounds are stored here, they should only be played via the
 	// SoundManager. null sounds are possible; in that case, that means
 	// that there is no sound available for a particular event.
-	private final Map<GameSoundEffect, Clip> sounds;
+	private final Map<GameSoundEffect, Optional<Clip>> sounds;
 	private final Set<GameSoundEffect> holdSounds = new HashSet<>();
 	
 	// Package-private: Only intended for SoundManager
-	final Clip backgroundMusic;
+	final Optional<Clip> backgroundMusic;
 	
 	// Generated automatically in constructor
 	private final SoundManager soundManager;
@@ -136,8 +142,8 @@ public final class WorldResource {
 					      final BufferedImage explosionSheet,
 					      final BufferedImage splashScreen,
 					      final BufferedImage energy,
-					      final Map<GameSoundEffect, Clip> sounds,
-					      final Clip backgroundMusic) {
+					      final Map<GameSoundEffect, Optional<Clip>> sounds,
+					      final Optional<Clip> backgroundMusic) {
 		
 		this.solidTiles = solidTiles;
 		this.thruTiles = thruTiles;
@@ -162,7 +168,7 @@ public final class WorldResource {
 		// Generated data
 		// this pointer escapes, but no one gets a reference to the manager until construction is over
 		// and the manager constructor itself calls no methods on this class.
-		soundManager = new SoundManager(this);
+		soundManager = SoundSettings.setUpSoundManager(this);
 		// unregistered in dispose method
 		SoundSettings.registerSoundManager(soundManager);
 		
@@ -291,10 +297,11 @@ public final class WorldResource {
 		// Sound clips
 		// Unlike graphics, some sounds may not exist, and that is okay. The game just won't play
 		// any sound when requested.
-		Map<GameSoundEffect, Clip> gameSounds = new IdentityHashMap<>();
+		// Optional is required to reduce ambigiuity in map
+		Map<GameSoundEffect, Optional<Clip>> gameSounds = new IdentityHashMap<>();
 		
 		// It is okay for this to be null. No music simply means none will be played
-		Clip backgroundMusic = null;
+		Optional<Clip> backgroundMusic = null;
 		
 		try (ZipFile zipFile = new ZipFile(packFile.toFile() ) ) {
 			// for (ZipEntry e : file.entries)
@@ -526,6 +533,9 @@ public final class WorldResource {
 	 * Treats the contents of the zip as an ogg encoded sound file and loads the Entire File into memory, returning a
 	 * {@code Clip} representing the sound. Only short sound effects are loaded completely; longer sounds like music
 	 * should be streamed.
+	 * <p/>
+	 * If the clip cannot be loaded, absent is returned. It is up to sound manager
+	 * systems to handle unwrapping Optionals.
 	 * 
 	 * @param file
 	 * 		the zip file the zip entry comes from
@@ -540,19 +550,34 @@ public final class WorldResource {
 	 * 		if the sound clip could not be loaded
 	 * 
 	 */
-	private static Clip loadSoundClip(ZipFile file, ZipEntry entry) throws ResourcePackException {
+	private static Optional<Clip> loadSoundClip(ZipFile file, ZipEntry entry) throws ResourcePackException {
 		// Load the audio stream from the entry
 		// Buffered stream to allow mark/reset
 		try (InputStream bin = new BufferedInputStream(file.getInputStream(entry) ) ) {
-			return SoundUtils.clipFromOggStream(bin, entry.getName() );
+			return Optional.of(
+				SoundUtils.clipFromOggStream(bin, entry.getName() ) );
 			
 		} catch (UnsupportedAudioFileException e) {
-			throw new ResourcePackException("Check that resources are of ogg format and that system is able to read ogg format:", e);
-		} catch (IOException e) {
-			throw new ResourcePackException(e);
-		} catch (LineUnavailableException e) {
-			throw new ResourcePackException(e);
+			LOGGER.log(
+				Level.SEVERE,
+				"Check that resources are of ogg format and that system is " +
+				    "able to read ogg format:" +
+					e.getMessage(), 
+				e);
+		} catch (IOException | LineUnavailableException e) {
+			LOGGER.log(
+				Level.SEVERE,
+				"Unable to get line to sound system; cannot initialise clip: " +
+					e.getMessage(), 
+				e);
+		} catch (Exception e) {
+			LOGGER.log(
+				Level.SEVERE,
+				"Unexpected exception initialising clip: " + e.getMessage(), 
+				e);
 		}
+		
+		return Optional.absent();
 	}
 	
 	/**
@@ -973,7 +998,7 @@ public final class WorldResource {
 	 * 		the clip itself
 	 * 
 	 */
-	Clip getSoundFor(GameSoundEffect effect) {
+	Optional<Clip> getSoundFor(GameSoundEffect effect) {
 		return sounds.get(effect);
 	}
 	
@@ -988,9 +1013,11 @@ public final class WorldResource {
 	 */
 	public void dispose() {
 		for (GameSoundEffect effect : sounds.keySet() ) {
-			Clip c = sounds.get(effect);
-			if (!(isSoundHeld(effect) ) ) {
-				c.close();
+			Optional<Clip> c = sounds.get(effect);
+			if (c.isPresent() ) {
+				if (!(isSoundHeld(effect) ) ) {
+					c.get().close();
+				}
 			}
 		}
 		
@@ -1039,8 +1066,8 @@ public final class WorldResource {
 		
 		// Are we already disposed? Clean it now.
 		if (isDisposed) {
-			Clip c = sounds.get(effect);
-			c.close();
+			Optional<Clip> c = sounds.get(effect);
+			c.get().close();
 		}
 	}
 	
