@@ -41,8 +41,9 @@ public final class LevelScreen {
 	private       ImmutablePoint2D bonzoStart;
 	private final List<Sprite> spritesOnScreen;
 	
-	// state information for the screen
-	private       ImmutablePoint2D bonzoCameFrom;
+	// state information for the screen. Bonzo can respawn where he came from at the velocity that
+	// he came into the screen
+	private       ImmutableVector bonzoCameFrom;
 	private       ImmutablePoint2D bonzoLastOnGround;
 
 	
@@ -166,7 +167,7 @@ public final class LevelScreen {
 	
 	/**
 	 * 
-	 * Returns the location bonzo came from when entering this level, or the startign location if bonzo started
+	 * Returns the location bonzo came from when entering this level, or the starting location if bonzo started
 	 * on this screen.
 	 * 
 	 * @return
@@ -174,18 +175,18 @@ public final class LevelScreen {
 	 * 		starting location on the screen but is changed as he moves through the screens. Value never {@code null}
 	 * 
 	 */
-	public ImmutablePoint2D getBonzoCameFrom() {
+	public ImmutableVector getBonzoCameFrom() {
 		return bonzoCameFrom;
 	}
 	
 	/**
 	 * Called when Bonzo enters the screen from another Screen. Sets the location he came from so if he dies on this screen, 
-	 * he can return to that position. 
+	 * he can return to that position at the given velocity.
 	 * 
 	 * @param bonzoCameFrom 
 	 * 		the location Bonzo entered the screen from
 	 */
-	public void setBonzoCameFrom(final ImmutablePoint2D bonzoCameFrom) {
+	public void setBonzoCameFrom(final ImmutableVector bonzoCameFrom) {
 		this.bonzoCameFrom = bonzoCameFrom;
 	}
 	
@@ -193,7 +194,7 @@ public final class LevelScreen {
 	 * If, for some reason, the location Bonzo Came from becomes invalid, this resets it.
 	 */
 	public void resetBonzoCameFrom() {
-		this.bonzoCameFrom = bonzoStart;
+		this.bonzoCameFrom = ImmutableVector.fromPoint(bonzoStart, 0, 0);
 	}
 	
 

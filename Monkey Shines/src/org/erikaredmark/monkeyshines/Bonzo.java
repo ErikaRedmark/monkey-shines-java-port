@@ -177,7 +177,7 @@ public final class Bonzo {
 		// Initialise starting points
 		ImmutablePoint2D start = currentScreen.getBonzoStartingLocationPixels();
 		currentLocation = Point2D.from(start);
-		currentScreen.setBonzoCameFrom(start);
+		currentScreen.setBonzoCameFrom(ImmutableVector.of(start.x(), start.y(), 0, 0) );
 		
 		currentVelocity = Point2D.of(0, 0);
 		
@@ -193,11 +193,13 @@ public final class Bonzo {
 	 * @param startingLocation
 	 * 
 	 */
-	public void restartBonzoOnScreen(final LevelScreen screen, ImmutablePoint2D startingLocation) {
+	public void restartBonzoOnScreen(final LevelScreen screen, ImmutableVector startingLocation) {
 		// The World events take care of moving Bonzo around, and Bonzo has methods to swap his position
 		// on screen when moving between them.
-		Point2D newLocation = Point2D.from(startingLocation);
+		Point2D newLocation = Point2D.of(startingLocation.x, startingLocation.y);
 		currentLocation = newLocation;
+		currentVelocity.setX(startingLocation.velX);
+		currentVelocity.setY(startingLocation.velY);
 		// Not adding the current screen to history is deliberate. 
 		currentScreenID = screen.getId();
 		
@@ -1082,6 +1084,15 @@ public final class Bonzo {
 	 */
 	public ImmutablePoint2D getCurrentLocation() {
 		return ImmutablePoint2D.from(currentLocation);
+	}
+	
+	/**
+	 * Returns a point representing bonzos current velocity. The returned point is immutable and
+	 * represents a snapshot of his velocity when the method was called
+	 * @return
+	 */
+	public ImmutablePoint2D getCurrentVelocity() {
+		return ImmutablePoint2D.from(currentVelocity);
 	}
 	
 	/**
