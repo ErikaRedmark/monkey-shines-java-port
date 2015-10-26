@@ -187,9 +187,11 @@ public final class JavaDefaultSoundManager implements SoundManager {
 		System.out.println("Decibel offset for sound: " + decibelLevelOffset);
 		for (GameSoundEffect effect : GameSoundEffect.values() ) {
 			Optional<Clip> clip = rsrc.getSoundFor(effect);
-			FloatControl gainControl = (FloatControl)
-				clip.get().getControl(FloatControl.Type.MASTER_GAIN);
-			gainControl.setValue(decibelLevelOffset);
+			if (clip.isPresent() ) {
+				FloatControl gainControl = (FloatControl)
+					clip.get().getControl(FloatControl.Type.MASTER_GAIN);
+				gainControl.setValue(decibelLevelOffset);
+			}
 		}
 	}
 
