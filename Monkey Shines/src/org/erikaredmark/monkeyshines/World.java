@@ -393,7 +393,7 @@ public class World {
 			// Snap bonzo's come from position, and look TWO tiles below (bonzo takes up 2, so top left + 2 gets bottom)
 			// on both left and right. Lack of solid ground indicates that the ground state, that the come-from state,
 			// should be used.
-			ImmutableVector bonzoCameFrom = currentScreen.getBonzoCameFrom();
+			BonzoSaveState bonzoCameFrom = currentScreen.getBonzoCameFrom();
 			ImmutablePoint2D bonzoCameFromPoint = ImmutablePoint2D.of(bonzoCameFrom.x, bonzoCameFrom.y);
 			int t1x = bonzoCameFrom.x / GameConstants.TILE_SIZE_X;
 			int ty = bonzoCameFrom.y / GameConstants.TILE_SIZE_Y + 2;
@@ -419,7 +419,7 @@ public class World {
 			// Entry point into screen not safe. Go to ground. This may make certain
 			// levels easier, but easier is better than infinite death.
 			if (spriteSafetyCheck(currentScreen, ground) ) {
-				theBonzo.restartBonzoOnScreen(currentScreen, ImmutableVector.of(ground.x(), ground.y(), 0, 0) );
+				theBonzo.restartBonzoOnScreen(currentScreen, BonzoSaveState.fromPoint(ground) );
 				return;
 			}
 		}
@@ -437,7 +437,7 @@ public class World {
 			changeCurrentScreen(s.getId(), theBonzo);
 			
 			// Valid ground: Restart bonzo and end the method early.
-			theBonzo.restartBonzoOnScreen(s, ImmutableVector.of(sGround.x(), sGround.y(), 0, 0) );
+			theBonzo.restartBonzoOnScreen(s, BonzoSaveState.fromPoint(sGround) );
 			return;
 			
 			// Note: we do NOT use starting locations defined on levels here, otherwise we may accidentally
@@ -448,14 +448,14 @@ public class World {
 		// history. That must be one LONG fall; move bonzo to the last screen.
 		final LevelScreen lastResort = screenHistory.back();
 		changeCurrentScreen(lastResort.getId(), theBonzo);
-		ImmutableVector lastResortCameFrom = lastResort.getBonzoCameFrom();
-		if (spriteSafetyCheck(lastResort, ImmutablePoint2D.of(lastResortCameFrom.x(), lastResortCameFrom.y() ) ) ) {
+		BonzoSaveState lastResortCameFrom = lastResort.getBonzoCameFrom();
+		if (spriteSafetyCheck(lastResort, ImmutablePoint2D.of(lastResortCameFrom.x, lastResortCameFrom.y ) ) ) {
 			theBonzo.restartBonzoOnScreen(lastResort, lastResort.getBonzoCameFrom() );
 		} else {
 			// Okay, unconditional respawn on the starting location defined in the level... If there is
 			// a sprite there, that is the level designers fault. We tried our best.
 			ImmutablePoint2D lastResortPoint = lastResort.getBonzoStartingLocationPixels();
-			theBonzo.restartBonzoOnScreen(lastResort, ImmutableVector.of(lastResortPoint.x(), lastResortPoint.y(), 0, 0) );
+			theBonzo.restartBonzoOnScreen(lastResort, BonzoSaveState.fromPoint(lastResortPoint) );
 		}
 	}
 	
@@ -530,7 +530,9 @@ public class World {
 		bonzo.setCurrentLocation(transferScreen.getBonzoStartingLocationPixels() );
 		
 		// Momentuem is always recent on bonus transfers
-		transferScreen.setBonzoCameFrom(ImmutableVector.fromPoint(transferScreen.getBonzoStartingLocationPixels(), 0, 0) );
+		transferScreen.setBonzoCameFrom(
+			BonzoSaveState.fromPoint(transferScreen.getBonzoStartingLocationPixels() ) 
+		);
 		
 		return true;
 	}
@@ -673,7 +675,17 @@ public class World {
 			final LevelScreen theNewScreen = getCurrentScreen();
 			// Update the new screen with data about where we came from so deaths bring us to the same place
 			ImmutablePoint2D bonzoVelocity = theBonzo.getCurrentVelocity();
-			theNewScreen.setBonzoCameFrom(ImmutableVector.fromPoint(theBonzo.getCurrentLocation(), bonzoVelocity.x(), bonzoVelocity.y() ) );
+			ImmutablePoint2D bonzoCurrentLocation = theBonzo.getCurrentLocation();
+			theNewScreen.setBonzoCameFrom(
+				BonzoSaveState.of(
+					bonzoCurrentLocation.x(),
+					bonzoCurrentLocation.y(),
+					bonzoVelocity.x(), 
+					bonzoVelocity.y(),
+					theBonzo.isJumping(),
+					theBonzo.getCurrentConveyerEffect()
+				) 
+			);
 			// If the current screen has a 'bonzo last on ground' state, reset it. Otherwise dying may bring him
 			// to the wrong screen in the wrong part.
 			theNewScreen.resetBonzoOnGround();

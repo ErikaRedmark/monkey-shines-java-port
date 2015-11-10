@@ -177,7 +177,7 @@ public final class Bonzo {
 		// Initialise starting points
 		ImmutablePoint2D start = currentScreen.getBonzoStartingLocationPixels();
 		currentLocation = Point2D.from(start);
-		currentScreen.setBonzoCameFrom(ImmutableVector.of(start.x(), start.y(), 0, 0) );
+		currentScreen.setBonzoCameFrom(BonzoSaveState.fromPoint(start) );
 		
 		currentVelocity = Point2D.of(0, 0);
 		
@@ -193,7 +193,7 @@ public final class Bonzo {
 	 * @param startingLocation
 	 * 
 	 */
-	public void restartBonzoOnScreen(final LevelScreen screen, ImmutableVector startingLocation) {
+	public void restartBonzoOnScreen(final LevelScreen screen, BonzoSaveState startingLocation) {
 		// The World events take care of moving Bonzo around, and Bonzo has methods to swap his position
 		// on screen when moving between them.
 		Point2D newLocation = Point2D.of(startingLocation.x, startingLocation.y);
@@ -202,10 +202,12 @@ public final class Bonzo {
 		currentVelocity.setY(startingLocation.velY);
 		// Not adding the current screen to history is deliberate. 
 		currentScreenID = screen.getId();
+		setJumping(startingLocation.jumping);
+		if (startingLocation.rotation != Rotation.NONE)
+			{ setAffectedByConveyer(startingLocation.rotation); }
 		
-		// When bonzo is restarted, he is not dead or jumping
+		// When bonzo is restarted, he is not dead and the unjumping animation should not play
 		setDying(false, this.deathAnimation);
-		setJumping(false);
 		setUnjumping(false);
 		
 		// Bring health back
@@ -1095,6 +1097,11 @@ public final class Bonzo {
 		return ImmutablePoint2D.from(currentVelocity);
 	}
 	
+	/** Returns if bonzo is currently in a jump state. */
+	public boolean isJumping() { return isJumping; }
+	
+	/** Returns any current conveyer effects bonzo is under */
+	public Rotation getCurrentConveyerEffect() { return affectedConveyer; }
 	/**
 	 * 
 	 * Returns the actual mutable point representing Bonzo's position. This method should be used with care in the smallest
