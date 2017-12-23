@@ -9,7 +9,10 @@ import java.util.ListIterator;
 
 import org.erikaredmark.monkeyshines.World.GoodieLocationPair;
 import org.erikaredmark.monkeyshines.background.Background;
+import org.erikaredmark.monkeyshines.background.FullBackground;
 import org.erikaredmark.monkeyshines.background.SingleColorBackground;
+import org.erikaredmark.monkeyshines.resource.AwtRenderer;
+import org.erikaredmark.monkeyshines.resource.AwtWorldGraphics;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 
 /**
@@ -81,9 +84,9 @@ public final class LevelScreen {
 	public static final LevelScreen newScreen(int screenId, WorldResource rsrc) {
 		
 		Background defaultBackground =   rsrc.getBackgroundCount() > 0
-									   ? rsrc.getBackground(0)
+									   ? new FullBackground(0, false)
 									   :    rsrc.getPatternCount() > 0
-									   	  ? rsrc.getPattern(0)
+									   	  ? new FullBackground(0, true)
 									   	  : new SingleColorBackground(Color.BLACK);
 		
 		return new LevelScreen(screenId,
@@ -385,12 +388,21 @@ public final class LevelScreen {
 	 * is intended as the first step for making a thumbnail of a level screen.
 	 * This does not update the game at all.
 	 * <p/>
+	 * This is used for the level editor only and assumes the existence of 
+	 * awt graphics.
+	 * <p/>
 	 * The tilemap is drawn over the background
-	 * 
+	 * @IllegalArgumentException
+	 * 		if called with a resource container non-awt graphics.
 	 */
 	public void paintForThumbnail(Graphics2D g2d) {
-		background.draw(g2d);
-		map.paint(g2d, rsrc);
+		if (rsrc.isSlickGraphics())
+			{ throw new IllegalArgumentException("Expecting AWT graphics for function"); }
+		
+		AwtWorldGraphics awtGraphics = rsrc.getAwtGraphics();
+		
+		AwtRenderer.paintBackground(g2d, background, awtGraphics);
+		AwtRenderer.paintTileMap(g2d, map, awtGraphics);
 	}
 
 	/**

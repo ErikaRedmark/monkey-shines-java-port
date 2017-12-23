@@ -1,9 +1,5 @@
 package org.erikaredmark.monkeyshines;
 
-import java.awt.Graphics2D;
-
-import org.erikaredmark.monkeyshines.resource.WorldResource;
-
 
 /**
  * 
@@ -29,44 +25,7 @@ public final class Conveyer {
 	/** Intended for test methods and encoder/decoders*/
 	public Rotation getRotation() { return rotation; }
 	
-	private static final int CONVEYER_SET_SIZE = GameConstants.TILE_SIZE_Y * 2;
-	/**
-	 * 
-	 * Paints this conveyer belt to the given graphics context at the given cordinates. This is used by {@code ConveyerTile}, which 
-	 * will compute and provide the position data/graphics context that this needs to draw on.
-	 * 
-	 * @param g2
-	 * 
-	 * @param drawToX
-	 * 		x location to draw (in pixels)
-	 * 
-	 * @param drawToY
-	 * 		y location to draw (in pixels)
-	 * 
-	 * @param animationStep
-	 * 		A value between {@code 0 - 4}, as there are no other animation steps in a conveyer belt. If
-	 * 		assertions are enabled, other values will fail. Otherwise, undefined behaviour.
-	 * 
-	 */
-	public void paint(Graphics2D g2d, int drawToX, int drawToY, int animationStep, WorldResource rsrc) {
-		assert animationStep >= 0 && animationStep < 5;
-		
-		// X position depends 100% on animation step
-		int drawFromX = animationStep * GameConstants.TILE_SIZE_X;
-		
-		// ySet indicates the set of conveyer belts an id
-		// is specified for.
-		int ySet = CONVEYER_SET_SIZE * id;
-		
-		// Y position is either the same as ySet for clockwise, or ySet + TILE_SIZE_Y for anti-clockwise
-		int drawFromY = ySet + rotation.drawYOffset();
-		
-		g2d.drawImage(rsrc.getConveyerSheet(), drawToX , drawToY, 									// Destination 1 (top left)
-					  drawToX + GameConstants.TILE_SIZE_X, drawToY + GameConstants.TILE_SIZE_Y,     // Destination 2 (bottom right)
-					  drawFromX, drawFromY, 													    // Source 1 (top Left)
-					  drawFromX + GameConstants.TILE_SIZE_X, drawFromY + GameConstants.TILE_SIZE_Y, // Source 2 (bottom right)
-					  null);
-	}
+	public static final int CONVEYER_SET_SIZE = GameConstants.TILE_SIZE_Y * 2;
 	
 	public enum Rotation {
 		CLOCKWISE {
@@ -108,7 +67,7 @@ public final class Conveyer {
 		 * for anti-clockwise. Makes it easier to draw the right conveyer belt.
 		 * 
 		 */
-		protected abstract int drawYOffset();
+		public abstract int drawYOffset();
 	}
 	
 	@Override public boolean equals(Object o) {

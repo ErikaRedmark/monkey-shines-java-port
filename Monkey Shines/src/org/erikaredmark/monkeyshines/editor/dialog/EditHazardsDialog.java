@@ -371,7 +371,7 @@ public class EditHazardsDialog extends JDialog {
 			}
 			
 			// indexToHazard ALWAYS works.
-			BufferedImage source = rsrc.getHazardSheet();
+			BufferedImage source = rsrc.getAwtGraphics().hazardTiles;
 			for (int srcX = 0; srcX < source.getWidth(); srcX += 20) {
 				BufferedImage destination = new BufferedImage(20, 20, source.getType() );
 				Graphics2D g2d = destination.createGraphics();

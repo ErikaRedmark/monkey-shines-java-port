@@ -13,6 +13,7 @@ import java.util.Map;
 
 import org.erikaredmark.monkeyshines.LevelScreen;
 import org.erikaredmark.monkeyshines.World;
+import org.erikaredmark.monkeyshines.background.FullBackground;
 import org.erikaredmark.monkeyshines.editor.importlogic.WorldTranslationException.TranslationFailure;
 import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
@@ -165,7 +166,7 @@ public final class ResourceForkTranslator {
 		
 		for (LevelScreen level : levels) {
 			Integer ppat = levelIdToPpat.get(level.getId() );
-			level.setBackground(rsrc.getPattern(ppatToResourceId.get(ppat) ) );
+			level.setBackground(new FullBackground(ppatToResourceId.get(ppat), true) );
 		}
 		
 		return world;

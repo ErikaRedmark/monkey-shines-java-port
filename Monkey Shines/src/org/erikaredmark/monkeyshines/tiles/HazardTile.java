@@ -1,12 +1,8 @@
 package org.erikaredmark.monkeyshines.tiles;
 
-import java.awt.Graphics2D;
-
-import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.GameSoundEffect;
 import org.erikaredmark.monkeyshines.Hazard;
 import org.erikaredmark.monkeyshines.resource.SoundManager;
-import org.erikaredmark.monkeyshines.resource.WorldResource;
 
 /**
  * 
@@ -126,24 +122,6 @@ public class HazardTile implements TileType {
 	
 	@Override public boolean isLandable() { return isSolid() || isThru(); } 
 	
-	@Override public void paint(Graphics2D g2d, int drawToX, int drawToY, WorldResource rsrc) {
-		// Nothing to paint if dead.
-		if (isDead() )  return;
-		
-		// If exploding, paint the explosions instead:
-		if (!(isExploding() ) ) {
-			hazard.paint(g2d, drawToX, drawToY, rsrc, getAnimationStep() );
-		} else {
-			int animation = getAnimationStep();
-			g2d.drawImage(rsrc.getExplosionSheet(),
-						  drawToX, drawToY, 
-						  drawToX + GameConstants.TILE_SIZE_X, drawToY + GameConstants.TILE_SIZE_Y, 
-						  animation * GameConstants.TILE_SIZE_X, 0, 
-						  (animation + 1) * GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y, 
-						  null);
-		}
-		
-	}
 	/**
 	 * 
 	 * Checks if the hazard is ready to switch to the next frame of animation. Calling this

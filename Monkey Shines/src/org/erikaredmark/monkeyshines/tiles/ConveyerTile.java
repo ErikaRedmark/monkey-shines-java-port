@@ -1,9 +1,6 @@
 package org.erikaredmark.monkeyshines.tiles;
 
-import java.awt.Graphics2D;
-
 import org.erikaredmark.monkeyshines.Conveyer;
-import org.erikaredmark.monkeyshines.resource.WorldResource;
 
 /**
  * 
@@ -42,23 +39,6 @@ public class ConveyerTile implements TileType {
 	
 	public Conveyer getConveyer() {	return conveyer; }
 	
-	/**
-	 * 
-	 * Draws the given conveyer belt to the given location in pixels
-	 * 
-	 * @param g2d
-	 * 
-	 * @param drawToX
-	 * 		x location to draw (pixels)
-	 * 
-	 * @param drawToY
-	 * 		y location to draw (pixels)
-	 * 
-	 */
-	@Override public void paint(Graphics2D g2d, int drawToX, int drawToY, WorldResource rsrc) {
-		conveyer.paint(g2d, drawToX, drawToY, animationStep, rsrc);
-	}
-	
 	@Override public int getId() { return conveyer.getId(); }
 	
 	/**
@@ -72,6 +52,9 @@ public class ConveyerTile implements TileType {
 			else					++animationStep;
 		}
 	}
+	
+	/** Returns the current animation step in the conveyer animation for rendering */
+	public int getAnimationStep() { return animationStep; }
 	
 	// See docs in HazardTile for this method; uses the same principles
 	private boolean readyToAnimate() {

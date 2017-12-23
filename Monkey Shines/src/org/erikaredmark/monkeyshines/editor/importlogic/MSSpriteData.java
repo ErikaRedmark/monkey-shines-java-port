@@ -1,6 +1,5 @@
 package org.erikaredmark.monkeyshines.editor.importlogic;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -84,8 +83,8 @@ final class MSSpriteData {
 				break;
 			}
 			
-			BufferedImage img = rsrc.getSpritesheetFor(i);
-			idCounter += img.getHeight() / 40;
+			int spriteHeight = rsrc.getSpritesheetHeight(id);
+			idCounter += spriteHeight / 40;
 			
 			// need to check if we skipped the id, indicating a right way facing sprite.
 			if (idCounter == id + 1) {

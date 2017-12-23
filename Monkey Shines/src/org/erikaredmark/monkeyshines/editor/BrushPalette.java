@@ -74,6 +74,8 @@ public class BrushPalette extends JPanel {
 	
 	public BrushPalette(final LevelEditor mainCanvas, final WorldResource rsrc) {
 		this.mainCanvas = mainCanvas;
+		assert !rsrc.isSlickGraphics() : "AWT Graphics must be used in level editor!";
+		AwtWorldGraphics awtGraphics = rsrc.getAwtGraphics();
 		
 		// Some standard graphics regardless of the world. All drawn and set in constructor to proper places...
 		// no need to save them as instance data in object.
@@ -121,7 +123,7 @@ public class BrushPalette extends JPanel {
 			// First button is always the Edit Sprite button
 			spritesPanel.add(createTileButton(editSprite, 0, EDIT_SPRITE_LISTENER) );
 			for (int i = 0; i < spriteCount; ++i) {
-				BufferedImage spriteSheet = rsrc.getSpritesheetFor(i);
+				BufferedImage spriteSheet = awtGraphics.sprites[i];
 				BufferedImage firstFrame = new BufferedImage(GameConstants.SPRITE_SIZE_X, GameConstants.SPRITE_SIZE_Y, spriteSheet.getType() );
 				Graphics2D g2d = firstFrame.createGraphics();
 				try {
@@ -168,10 +170,8 @@ public class BrushPalette extends JPanel {
 			hazardsPanel.setLayout(new WrapLayout(FlowLayout.LEFT, GRID_MARGIN_X, GRID_MARGIN_Y) );
 			palettePanels.add(hazardsPanel);
 			
-			BufferedImage[] tiles = 
-				WorldResource.chop(GameConstants.TILE_SIZE_X,
-								   GameConstants.TILE_SIZE_Y,
-								   rsrc.getHazardSheet() );
+			BufferedImage[] tiles = AwtWorldGraphics.chop(
+				GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y,  awtGraphics.hazardTiles);
 			
 			// Only the first half are relevant
 			for (int i = 0; i < (tiles.length / 2); ++i) {
@@ -188,10 +188,8 @@ public class BrushPalette extends JPanel {
 			conveyersPanel.setLayout(new WrapLayout(FlowLayout.LEFT, GRID_MARGIN_X, GRID_MARGIN_Y) );
 			palettePanels.add(conveyersPanel);
 			
-			BufferedImage[] tiles =
-				WorldResource.chop(GameConstants.TILE_SIZE_X,
-								   GameConstants.TILE_SIZE_Y,
-								   rsrc.getConveyerSheet() );
+			BufferedImage[] tiles = AwtWorldGraphics.chop(
+				GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y, awtGraphics.conveyerTiles);
 
 			for (int i = 0; i < tiles.length; i += 10) {
 				// TWO buttons per conveyer. There is the clockwise then anti-clockwise one
@@ -223,10 +221,8 @@ public class BrushPalette extends JPanel {
 			collapsiblesPanel.setLayout(new WrapLayout(FlowLayout.LEFT, GRID_MARGIN_X, GRID_MARGIN_Y) );;
 			palettePanels.add(collapsiblesPanel);
 			
-			BufferedImage[] tiles =
-				WorldResource.chop(GameConstants.TILE_SIZE_X,
-								   GameConstants.TILE_SIZE_Y,
-								   rsrc.getCollapsingSheet() );
+			BufferedImage[] tiles = AwtWorldGraphics.chop(
+				GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y, awtGraphics.collapsingTiles);
 			
 			for (int i = 0; i < tiles.length; i += 10) {
 				collapsiblesPanel.add(createTileButton(tiles[i], i / 10, COLLAPSIBLE_TILE_LISTENER) );
@@ -243,10 +239,8 @@ public class BrushPalette extends JPanel {
 			goodiesPanel.setLayout(new WrapLayout(FlowLayout.LEFT, GRID_MARGIN_X, GRID_MARGIN_Y) );
 			palettePanels.add(goodiesPanel);
 			
-			BufferedImage[] tiles = 
-				WorldResource.chop(GameConstants.TILE_SIZE_X,
-								   GameConstants.TILE_SIZE_Y,
-								   rsrc.getGoodieSheet() );
+			BufferedImage[] tiles = AwtWorldGraphics.chop(
+				GameConstants.TILE_SIZE_X, GameConstants.TILE_SIZE_Y, awtGraphics.goodieSheet);
 			
 			// Only the first half are relevant
 			for (int i = 0; i < (tiles.length / 2); ++i) {
@@ -284,7 +278,7 @@ public class BrushPalette extends JPanel {
 		BufferedImage[] tiles = AwtWorldGraphics.chop(
 			GameConstants.TILE_SIZE_X,
 			GameConstants.TILE_SIZE_Y,
-			rsrc.getStatelessTileTypeSheet(type));
+			rsrc.getAwtGraphics().getStatelessTileTypeSheet(type));
 		
 		panel.setLayout(new WrapLayout(FlowLayout.LEFT, GRID_MARGIN_X, GRID_MARGIN_Y) );
 		final JScrollPane typeScroller = new JScrollPane(panel);

@@ -7,7 +7,8 @@ import java.awt.image.BufferedImage;
 import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.TileMap;
 import org.erikaredmark.monkeyshines.editor.model.Template.TemplateTile;
-import org.erikaredmark.monkeyshines.resource.WorldResource;
+import org.erikaredmark.monkeyshines.resource.AwtRenderer;
+import org.erikaredmark.monkeyshines.resource.AwtWorldGraphics;
 import org.erikaredmark.monkeyshines.tiles.CommonTile;
 import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
 
@@ -28,13 +29,13 @@ public final class TemplateUtils {
 	 * 		template to render
 	 * 
 	 * @param rsrc
-	 * 		world resource for drawing
+	 * 		world awt graphics for drawing
 	 * 
 	 * @return
 	 * 		an image representing the template
 	 * 
 	 */
-	public static BufferedImage renderTemplate(final Template t, final WorldResource rsrc) {
+	public static BufferedImage renderTemplate(final Template t, final AwtWorldGraphics awtGraphics) {
 		// Currently, do no scaling. Just get a tilemap to fit and render that to the graphics
 		TileMap map = t.fitToTilemap();
 		BufferedImage icon = 
@@ -43,11 +44,11 @@ public final class TemplateUtils {
 				(map.getColumnCount() * GameConstants.TILE_SIZE_X) + 1,
 				(map.getRowCount() * GameConstants.TILE_SIZE_Y) + 1,
 				// All the images should have the same time. Just grab the type from solids as a base.
-				rsrc.getStatelessTileTypeSheet(StatelessTileType.SOLID).getType() );
+				awtGraphics.getStatelessTileTypeSheet(StatelessTileType.SOLID).getType() );
 		
 		Graphics2D g2d = icon.createGraphics();
 		try {
-			map.paint(g2d, rsrc);
+			AwtRenderer.paintTileMap(g2d, map, awtGraphics);
 			// Special: Render template tiles that represent No tile. We need to graphically differentiate between
 			// emptiness in the template vs. explicitly no tile.
 			g2d.setColor(Color.PINK);

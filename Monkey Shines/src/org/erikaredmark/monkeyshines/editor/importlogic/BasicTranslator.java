@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 
 import org.erikaredmark.monkeyshines.LevelScreen;
 import org.erikaredmark.monkeyshines.World;
+import org.erikaredmark.monkeyshines.background.FullBackground;
 import org.erikaredmark.monkeyshines.editor.importlogic.WorldTranslationException.TranslationFailure;
 import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
@@ -243,7 +244,7 @@ public final class BasicTranslator {
 			// All original MS levels used patterned backgrounds. Spooked is so far the only
 			// exception where it can be represented as a solid colour.
 			Integer ppat = levelIdToPpat.get(level.getId() );
-			level.setBackground(rsrc.getPattern(ppatToResourceId.get(ppat) ) );
+			level.setBackground(new FullBackground(ppatToResourceId.get(ppat), true) );
 		}
 		
 		// World data has been set, all levels have been set, it's ready.

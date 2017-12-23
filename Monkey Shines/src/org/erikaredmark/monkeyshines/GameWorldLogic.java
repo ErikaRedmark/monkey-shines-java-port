@@ -1,6 +1,5 @@
 package org.erikaredmark.monkeyshines;
 
-import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -196,7 +195,7 @@ public final class GameWorldLogic {
 	}
 	
 	/**
-	 * 
+	 * Intended only for drawing utilities.
 	 * Sets the splash display to 'splash'. If true, resets the splash counter.
 	 * <p/>
 	 * Do not set the variable directly or the counter will not be reset.
@@ -205,34 +204,15 @@ public final class GameWorldLogic {
 	 * 		{@code true} to show splash screen, {@code false} to shut it off
 	 * 
 	 */
-	private void setSplash(boolean showSplash) {
+	public void setSplash(boolean showSplash) {
 		splash = showSplash;
 		splashCounter =   showSplash 
 						? GameConstants.SPLASH_TICKS
 						: 0;
 	}
 	
-	/**
-	 * 
-	 * Paints the world to the given graphics context. If the splash screen is being drawn, each call
-	 * decrements a tick the splash screen should be visible.
-	 * TODO this is temporary. Eventually I want to segregate this even further so elements
-	 * aren't responsible for painting themselves, making it possible to support hi-def graphics
-	 * or any other interesting transformations.
-	 * 
-	 * @param g
-	 * 
-	 */
-	public void paintTo(Graphics2D g) {
-		if (!(splash) ) {
-			currentWorld.paint(g);
-			bonzo.paint(g);
-		} else {
-			g.drawImage(getResource().getSplashScreen(), 0, 0, null);
-			--splashCounter;
-			if (splashCounter < 0)  setSplash(false);
-		}
-	}
+	/** Intended only for drawing utilities */
+	public int getSplashCounter() { return splashCounter; }
 	
 	/**
 	 * 
@@ -460,5 +440,10 @@ public final class GameWorldLogic {
 
 	public Bonzo getBonzo() {
 		return bonzo;
+	}
+
+	/** Private to rendering methods that are rendering the splash screen first. */
+	public void decrementSplashCounter() {
+		--splashCounter;
 	}
 }

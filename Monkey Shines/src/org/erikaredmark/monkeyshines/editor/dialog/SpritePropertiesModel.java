@@ -82,7 +82,7 @@ public final class SpritePropertiesModel extends ObservableModel {
 	}
 	
 	private void computeTwoWayFacingInstructions() {
-		this.canBeTwoWayFacing = (this.rsrc.getSpritesheetFor(this.spriteId).getHeight() > GameConstants.SPRITE_SIZE_Y);
+		this.canBeTwoWayFacing = (this.rsrc.getSpritesheetHeight(this.spriteId) > GameConstants.SPRITE_SIZE_Y);
 		
 		// Two way direction is ALWAYS single (and should be grayed out in dialog) regardless of input if the graphics
 		// can't take it. Otherwise, set to passed value

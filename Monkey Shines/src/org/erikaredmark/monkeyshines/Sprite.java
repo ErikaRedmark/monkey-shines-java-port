@@ -1,6 +1,5 @@
 package org.erikaredmark.monkeyshines;
 
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
 import org.erikaredmark.monkeyshines.bounds.Boundable;
@@ -81,7 +80,7 @@ public final class Sprite {
 	 * 		a new instance of this class
 	 */
 	public static Sprite newUnmovingSprite(int id, AnimationType type, AnimationSpeed speed, SpriteType spriteType, WorldResource rsrc) {
-		boolean canBeTwoWayFacing = (rsrc.getSpritesheetFor(id).getHeight() > GameConstants.SPRITE_SIZE_Y);
+		boolean canBeTwoWayFacing = (rsrc.getSpritesheetHeight(id) > GameConstants.SPRITE_SIZE_Y);
 		return new Sprite(id, 
 						  ImmutablePoint2D.of(0, 0), 
 						  ImmutableRectangle.of(0, 0, 0, 0), 
@@ -206,7 +205,7 @@ public final class Sprite {
 		this.animationSpeed = speed;
 		this.type = spriteType;
 		this.rsrc = rsrc;
-		boolean canBeTwoWayFacing = (rsrc.getSpritesheetFor(this.id).getHeight() > GameConstants.SPRITE_SIZE_Y);
+		boolean canBeTwoWayFacing = (rsrc.getSpritesheetHeight(id) > GameConstants.SPRITE_SIZE_Y);
 		this.forcedDirection = forcedDirection;
 		this.twoWayDirection =   canBeTwoWayFacing 
 							   ? twoWayDirection
@@ -375,7 +374,7 @@ public final class Sprite {
 		if (updateTick >= animationSpeed.getTicksToUpdate() ) {
 			int multiplier = cycleDirection ? 1 : -1;
 			currentClip.translateX(multiplier * GameConstants.SPRITE_SIZE_X);
-			if (currentClip.x() >= rsrc.getSpritesheetFor(this.id).getWidth() ) {
+			if (currentClip.x() >= rsrc.getSpritesheetWidth(id) ) {
 				if (getAnimationType() == AnimationType.INCREASING_FRAMES) {
 					cycleDirection = !cycleDirection;
 					// Set last sprite
@@ -491,7 +490,6 @@ public final class Sprite {
 	}
 	
 	/**
-	 * 
 	 * One of the few methods whose function depends on the graphics; checks if the passed
 	 * Bonzo is colliding with this sprite, not with bounding box collision but on a pixel
 	 * basis. If any part of Bonzo's sprite has a non-full alpha transparency, and it touches
@@ -499,6 +497,10 @@ public final class Sprite {
 	 * <p/>
 	 * This method is <strong> expensive</strong> and should only be used after doing a rough
 	 * bounding box determination.
+	 * <p/>
+	 * TODO this method currently only handles AWT, but that must change in the future
+	 * because the game itself will use Slick whereas the level editor, not needing
+	 * collisions, will use AWT.
 	 * 
 	 * @param theBonzo
 	 * 
@@ -510,14 +512,15 @@ public final class Sprite {
 	 * 		{@code true} if there was a pixel based collision, {@code false} if otherwise
 	 *
 	 */
-	public boolean pixelCollision(Bonzo theBonzo, Boundable intersection) {
+	public boolean pixelCollisionAwt(Bonzo theBonzo, Boundable intersection) {
 		if (!(visible) )  return false;
+		
 		// Got the images in memory. Get a bounding box representing which frame is being drawn at
 		// this time. those 40x40 regions will be used for pixel collision
 		BufferedImage bonzoSpriteSheet = CoreResource.INSTANCE.getBonzoSheet();
 		ImmutablePoint2D bonzoSpriteLocation = theBonzo.getDrawLocationInSprite();
 		
-		BufferedImage mySpriteSheet = rsrc.getSpritesheetFor(this.id);
+		BufferedImage mySpriteSheet = rsrc.getAwtGraphics().sprites[this.id];
 		
 		// Basically, with the intersection, we will rip pixel data of the same size
 		// as the intersection from the appropriate parts of the image. Together with'
@@ -569,6 +572,12 @@ public final class Sprite {
 		
 		return false;
 		
+	}
+
+	// TODO 
+	public boolean pixelCollisionSlick(Bonzo theBonzo, Boundable intersection) {
+		// TODO no collision detection yet for slick!
+		return false;
 	}
 
 	public int getId() { return id; }

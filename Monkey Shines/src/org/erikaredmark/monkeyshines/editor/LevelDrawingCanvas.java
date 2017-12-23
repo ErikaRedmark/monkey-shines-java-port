@@ -403,7 +403,8 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 			// draw the tilemap from the template onto a separate buffer with 50% transparency. This is a bit of a complicated indicator...
 			assert currentTemplate != null : "Null template during updating indicator";
 			
-			BufferedImage templateRendered = TemplateUtils.renderTemplate(currentTemplate, currentWorldEditor.getWorldResource() );
+			BufferedImage templateRendered = TemplateUtils.renderTemplate(
+				currentTemplate, currentWorldEditor.getWorldResource().getAwtGraphics());
 			indicatorImage = new BufferedImage(templateRendered.getWidth(), templateRendered.getHeight(), templateRendered.getType() );
 			
 			Graphics2D g = indicatorImage.createGraphics();

@@ -1,6 +1,5 @@
 package org.erikaredmark.monkeyshines.resource;
 
-import java.awt.image.BufferedImage;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -10,7 +9,6 @@ import javax.sound.sampled.Clip;
 
 import org.erikaredmark.monkeyshines.GameSoundEffect;
 import org.erikaredmark.monkeyshines.global.SoundSettings;
-import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
 
 /**
  * Unlike {@code World}, this contains all the graphics for a world, and only that. There is no level information. All worlds
@@ -113,36 +111,6 @@ public final class WorldResource {
 	public boolean isSlickGraphics()
 	{
 		return slickGraphics != null;
-	}
-	
-	/**
-	 * 
-	 * Returns the graphics sheet for the tiles that exist for the given tile type.
-	 * <p/>
-	 * For use only with editor; this will fail if used with regular game (assumes AWT
-	 * style images.
-	 * 
-	 * @param type
-	 * 		the type of the tile
-	 * 
-	 * @return
-	 * 		a reference to the sprite sheet for the tiles
-	 * 
-	 * @throws IllegalStateException
-	 * 		if Slick style graphics are loaded.
-	 * 
-	 */
-	public BufferedImage getStatelessTileTypeSheet(final StatelessTileType type) {
-		if (isSlickGraphics())
-			{ throw new IllegalArgumentException("Tilesheets unavailable outside of level editor/slick graphics loaded"); }
-		
-		switch (type) {
-			case SOLID: return awtGraphics.solidTiles;
-			case THRU : return awtGraphics.thruTiles;
-			case SCENE: return awtGraphics.sceneTiles;
-			case NONE: throw new IllegalArgumentException("No tilesheet for NONE tiles");
-			default: throw new IllegalArgumentException("Unknown tile type " + type);
-		}
 	}
 	
 	/**
@@ -264,6 +232,10 @@ public final class WorldResource {
 		return holdSounds.contains(effect);
 	}
 
+	// -----------------------------------------------------------------------
+	// These methods provide numerical data based on dimensions or other properties of 
+	// graphical resources that are common between Slick and AWT.
+	
 	public int getConveyerCount() {
 		if (isSlickGraphics())
 			{ return slickGraphics.conveyerCount; }
@@ -276,5 +248,40 @@ public final class WorldResource {
 			{ return slickGraphics.getHazardCount(); }
 		else
 			{ return awtGraphics.getHazardCount(); }
+	}
+
+	public int getBackgroundCount() {
+		if (isSlickGraphics())
+			{ return slickGraphics.backgrounds.length; }
+		else
+			{ return awtGraphics.backgrounds.length; }
+	}
+
+	public int getPatternCount() {
+		if (isSlickGraphics())
+			{ return slickGraphics.patterns.length; }
+		else
+			{ return awtGraphics.patterns.length; }
+	}
+
+	public int getSpritesCount() {
+		if (isSlickGraphics())
+			{ return slickGraphics.sprites.length; }
+		else
+			{ return awtGraphics.sprites.length; }
+	}
+
+	public int getSpritesheetHeight(int id) {
+		if (isSlickGraphics())
+			{ return slickGraphics.sprites[id].getHeight(); }
+		else
+			{ return awtGraphics.sprites[id].getHeight(); }
+	}
+	
+	public int getSpritesheetWidth(int id) {
+		if (isSlickGraphics())
+			{ return slickGraphics.sprites[id].getWidth(); }
+		else
+			{ return awtGraphics.sprites[id].getWidth(); }
 	}
 }

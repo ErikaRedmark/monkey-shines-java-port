@@ -1,7 +1,6 @@
 package org.erikaredmark.monkeyshines.background;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
 
 /**
  * 
@@ -19,14 +18,6 @@ public class SingleColorBackground extends Background {
 	
 	public SingleColorBackground(final Color color) {
 		this.color = color;
-	}
-
-	@Override public void draw(Graphics2D g2d) {
-		// Don't modify the state of the graphics object after we exit this method.
-		final Color original = g2d.getColor();
-		g2d.setColor(color);
-		g2d.fillRect(0, 0, 640, 400);
-		g2d.setColor(original);
 	}
 	
 	/**

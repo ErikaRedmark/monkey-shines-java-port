@@ -699,7 +699,8 @@ public class World {
 			Boundable intersection = nextSprite.getCurrentBounds().intersect(bonzoBounding);
 			if (intersection != null) {
 				// Bounding box check done. Do more expensive pixel check
-				if (nextSprite.pixelCollision(theBonzo, intersection) ) {
+				// TODO move to Slick based
+				if (nextSprite.pixelCollisionAwt(theBonzo, intersection) ) {
 					nextSprite.getType().onBonzoCollision(theBonzo, this);
 					// do not do further collisions after bonzo dies
 					break;

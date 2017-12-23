@@ -362,10 +362,10 @@ public final class EncodedWorld {
 		switch (protoBackground.getType() ) {
 		case FULL:
 			if (id >= rsrc.getBackgroundCount() )  throw new RuntimeException("Requested full background id " + id + " does not exist in resource pack");
-			return rsrc.getBackground(id);
+			return new FullBackground(id, false);
 		case PATTERN:
 			if (id >= rsrc.getPatternCount() )  throw new RuntimeException("Requested pattern id " + id + " does not exist in resource pack");
-			return rsrc.getPattern(id);
+			return new FullBackground(id, true);
 		case SOLID_COLOR:
 			// Id is an ARGB encoded Color object.
 			

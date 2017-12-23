@@ -28,6 +28,8 @@ import org.erikaredmark.monkeyshines.background.Background;
 import org.erikaredmark.monkeyshines.background.FullBackground;
 import org.erikaredmark.monkeyshines.background.SingleColorBackground;
 import org.erikaredmark.monkeyshines.editor.resource.EditorResource;
+import org.erikaredmark.monkeyshines.resource.AwtRenderer;
+import org.erikaredmark.monkeyshines.resource.AwtWorldGraphics;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.util.swing.layout.WrapLayout;
 
@@ -41,6 +43,7 @@ public class SetBackgroundDialog extends JDialog {
 	
 	public SetBackgroundDialog(final WorldResource rsrc, final Background currentBackground) {
 		this.selectedBackground = currentBackground;
+		AwtWorldGraphics awtGraphics = rsrc.getAwtGraphics();
 		// Three tabs: One for full backgrounds, one for patterns, and finally one for
 		// a colour picker.
 		// Show a 'selected background' to the right so they know which of the three tabs
@@ -91,13 +94,14 @@ public class SetBackgroundDialog extends JDialog {
 
 			@Override public void paint(Graphics g) {
 				if (selectedBackground instanceof FullBackground) {
-					BufferedImage thumbnail = EditorResource.generateThumbnailForBackground((FullBackground)selectedBackground);
+					BufferedImage thumbnail = EditorResource.generateThumbnailForBackground(
+						(FullBackground)selectedBackground, awtGraphics);
 					Graphics2D g2d = (Graphics2D) g;
 					
 					g2d.drawImage(thumbnail, 0, 0, 160, 100, 0, 0, 160, 100, null);
 				} else {
 					// Solid colour; technically this only draws a portion of it, but that doesn't matter.
-					selectedBackground.draw((Graphics2D)g);
+					AwtRenderer.paintBackground(g, selectedBackground, rsrc.getAwtGraphics());
 				}
 			}
 		};
@@ -144,22 +148,21 @@ public class SetBackgroundDialog extends JDialog {
 	 * list of backgrounds, along with having each one set the background to
 	 * the chosen one.
 	 * 
-	 * @param fullOrPattern
+	 * @param fullBg
 	 * 		{@code true} to create a span for full backgrounds, {@code false} for patterns
 	 * 
 	 */
-	private void createThumbnailSpan(JPanel panel, WorldResource rsrc, boolean fullOrPattern) {
+	private void createThumbnailSpan(JPanel panel, WorldResource rsrc, boolean fullBg) {
 		panel.setLayout(new WrapLayout(FlowLayout.LEFT, 0, 0) );
-		int count =   fullOrPattern
+		int count =   fullBg
 					? rsrc.getBackgroundCount()
 				    : rsrc.getPatternCount();
 					
 		for (int i = 0; i < count; i++) {
-			final Background next =   fullOrPattern 
-									? rsrc.getBackground(i)
-									: rsrc.getPattern(i);
+			final Background next =  new FullBackground(i, !fullBg); 
 									
-			BufferedImage image = EditorResource.generateThumbnailForBackground((FullBackground)next);
+			BufferedImage image = EditorResource.generateThumbnailForBackground(
+				(FullBackground)next, rsrc.getAwtGraphics());
 			JButton button = new JButton(new ImageIcon(image) );
 			button.setMargin(new Insets(2, 2, 2, 2) );
 			button.addActionListener(new ActionListener() {

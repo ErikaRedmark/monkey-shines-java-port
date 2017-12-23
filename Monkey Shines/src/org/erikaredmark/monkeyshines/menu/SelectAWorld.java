@@ -205,7 +205,10 @@ public final class SelectAWorld extends JPanel {
 			Path tempRsrc = tempRsrcDir.resolve("rsrc.zip");
 			Files.copy(rsrcIs, tempRsrc);
 			
-			WorldResource rsrc = PackReader.fromPackSlick(tempRsrc);
+			// TODO use Slick based graphics. However, for time being, AWT is standin
+			// until Slick infrastructure is ready.
+//			WorldResource rsrc = PackReader.fromPackSlick(tempRsrc);
+			WorldResource rsrc = PackReader.fromPackAwt(tempRsrc);
 			
 			// Clean up temporary files
 			try {

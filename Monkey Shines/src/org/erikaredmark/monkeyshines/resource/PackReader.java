@@ -22,8 +22,6 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 import org.erikaredmark.monkeyshines.GameSoundEffect;
-import org.erikaredmark.monkeyshines.background.Background;
-import org.erikaredmark.monkeyshines.background.FullBackground;
 import org.erikaredmark.monkeyshines.global.SoundUtils;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException.Type;
@@ -192,6 +190,15 @@ public class PackReader {
 					if (explosionSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "explosion.png");
 					explosionSheet = ImageIO.read(zipFile.getInputStream(entry) );
 					break;
+				// TODO the next cases can be removed (until default) once switchover to Slick completely is made.
+				case "splash.png":
+					if (splashScreen != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "splash.png");
+					splashScreen = ImageIO.read(zipFile.getInputStream(entry));
+					break;
+				case "music.ogg":
+					if (backgroundMusic != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "music.ogg");
+					backgroundMusic = loadSoundClip(zipFile, entry);
+					break;
 				// All other types are handled in default, as many different names may belong to one 'class' of things.
 				default:
 					// TODO repeated code here: consider refactoring?
@@ -272,18 +279,6 @@ public class PackReader {
 		// Sounds may be null
 		// No null checks
 		
-		// We must convert backgrounds and patterns into proper background objects
-		Background[] fullBackgrounds = new Background[maxBackgroundIndex + 1];
-		Background[] patternBackgrounds = new Background[maxPatternIndex + 1];
-		
-		for (int i = 0; i <= maxBackgroundIndex ; i++) {
-			fullBackgrounds[i] = FullBackground.of(backgrounds[i], i);
-		}
-		
-		for (int i = 0; i <= maxPatternIndex ; i++) {
-			patternBackgrounds[i] = FullBackground.fromPattern(patterns[i], i);
-		}
-		
 		// We need to construct an array of sprites that has identical references save for being a lot smaller
 		BufferedImage cutSprites[] = new BufferedImage[maxSpriteIndex + 1];
 		for (int i = 0; i <= maxSpriteIndex; i++) {
@@ -297,8 +292,8 @@ public class PackReader {
 			hazardTiles,
 			conveyerTiles,
 			collapsingTiles,
-			fullBackgrounds,
-			patternBackgrounds,
+			backgrounds,
+			patterns,
 			cutSprites,
 			goodieSheet, 
 			yumSheet,

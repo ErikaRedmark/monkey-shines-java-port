@@ -6,9 +6,8 @@ import java.awt.image.VolatileImage;
 
 import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.GameWorldLogic;
-import org.erikaredmark.monkeyshines.Powerup;
-import org.erikaredmark.monkeyshines.resource.CoreResource;
-import org.erikaredmark.monkeyshines.resource.WorldResource;
+import org.erikaredmark.monkeyshines.resource.AwtRenderer;
+import org.erikaredmark.monkeyshines.resource.AwtWorldGraphics;
 
 import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.*;
 
@@ -106,103 +105,20 @@ public final class StandardSurface {
 	private void renderToGraphics(Graphics2D g2d, boolean showUI) {
 		// Clear
 		g2d.clearRect(0, 0, GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT + GameConstants.UI_HEIGHT);
+		AwtWorldGraphics awtGraphics = universe.getWorld().getResource().getAwtGraphics();
 		
 		if (showUI) {
-			/* --------------------- Initial Banner ---------------------- */
-			WorldResource rsrc = universe.getResource();
-			g2d.drawImage(rsrc.getBanner(), 
-						  0, 0,
-						  GameConstants.SCREEN_WIDTH, GameConstants.UI_HEIGHT,
-						  0, 0,
-						  GameConstants.SCREEN_WIDTH, GameConstants.UI_HEIGHT,
-						  null);
-			
-			/* ------------------------- Health -------------------------- */
-			// Normalise bonzo's current health with drawing.
-			double healthWidth = ((double)universe.getBonzoHealth()) * HEALTH_MULTIPLIER;
-			
-			g2d.drawImage(rsrc.getEnergyBar(),
-						  HEALTH_DRAW_X, HEALTH_DRAW_Y,
-						  HEALTH_DRAW_X + (int)healthWidth, HEALTH_DRAW_Y2,
-						  0, 0,
-						  (int)healthWidth, 10,
-						  null);
-			
-			/* -------------------------- Score -------------------------- */
-			for (int i = 0; i < GameWorldLogic.SCORE_NUM_DIGITS; i++) {
-				int drawToX = SCORE_DRAW_X + (SCORE_WIDTH * i);
-				// draw to Y is always the same
-				int drawFromX = SCORE_WIDTH * universe.getScoreDigits()[i];
-				// draw from Y is always the same, 0
-				g2d.drawImage(rsrc.getScoreNumbersSheet(), 
-							  drawToX, SCORE_DRAW_Y,
-							  drawToX + SCORE_WIDTH, SCORE_DRAW_Y2, 
-							  drawFromX, 0, 
-							  drawFromX + SCORE_WIDTH, SCORE_HEIGHT, 
-							  null);
-			}
-			
-			/* -------------------- Bonus Countdown ---------------------- */
-			for (int i = 0; i < GameWorldLogic.BONUS_NUM_DIGITS; i++) {
-				int drawToX = BONUS_DRAW_X + (SCORE_WIDTH * i);
-				// draw to Y is always the same
-				int drawFromX = SCORE_WIDTH * universe.getBonusDigits()[i];
-				// draw from Y is always the same, 0
-				g2d.drawImage(rsrc.getBonusNumbersSheet(),
-							  drawToX, SCORE_DRAW_Y,
-							  drawToX + SCORE_WIDTH, SCORE_DRAW_Y2,
-							  drawFromX, 0,
-							  drawFromX + SCORE_WIDTH, SCORE_HEIGHT,
-							  null);
-			}
-			
-			/* ------------------------- Lives --------------------------- */
-			{
-				int lifeDigit = universe.getLifeDigit();
-				if (lifeDigit >= 0) {
-					assert lifeDigit < 10;
-					int drawFromX = SCORE_WIDTH * lifeDigit;
-					
-					g2d.drawImage(rsrc.getScoreNumbersSheet(),
-								  LIFE_DRAW_X, LIFE_DRAW_Y,
-								  LIFE_DRAW_X2, LIFE_DRAW_Y2,
-								  drawFromX, 0,
-								  drawFromX + SCORE_WIDTH, SCORE_HEIGHT,
-								  null);
-				} else {
-					g2d.drawImage(CoreResource.INSTANCE.getInfinity(),
-								  INFINITY_DRAW_X, INFINITY_DRAW_Y,
-								  INFINITY_DRAW_X2, INFINITY_DRAW_Y2,
-								  0, 0,
-								  INFINITY_WIDTH, INFINITY_HEIGHT,
-								  null);
-				}
-			}
-			
-			/* ------------------------ Powerup --------------------------- */
-			{
-				if (universe.isPowerupVisible() ) {
-					Powerup powerup = universe.getCurrentPowerup();
-					assert powerup != null : "Powerup should be invisible if null";
-					
-					g2d.drawImage(rsrc.getGoodieSheet(),
-							      POWERUP_DRAW_X, POWERUP_DRAW_Y,
-							      POWERUP_DRAW_X2, POWERUP_DRAW_Y2,
-							      powerup.drawFromX(), Powerup.POWERUP_DRAW_FROM_Y,
-							      powerup.drawFromX2(), Powerup.POWERUP_DRAW_FROM_Y2,
-							      null);
-				}
-			}
+			AwtRenderer.paintUI(g2d, universe, awtGraphics);
 		}
 		
 		/* ----------------------- Actual Game -------------------------- */
 		// game is drawn at 80 pixels down if UI was drawn
 		if (showUI) {
 			g2d.translate(0, 80);
-			universe.paintTo(g2d);
+			AwtRenderer.paintUniverse(g2d, universe, awtGraphics);
 			g2d.translate(0, -80);
 		} else {
-			universe.paintTo(g2d);
+			AwtRenderer.paintUniverse(g2d, universe, awtGraphics);
 		}
 		
 	}

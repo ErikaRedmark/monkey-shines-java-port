@@ -1,10 +1,8 @@
 package org.erikaredmark.monkeyshines;
 
-import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.tiles.CommonTile;
 import org.erikaredmark.monkeyshines.tiles.TileType;
 

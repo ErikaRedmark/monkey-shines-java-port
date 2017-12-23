@@ -1,13 +1,11 @@
 package org.erikaredmark.monkeyshines;
 
-import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
 import org.erikaredmark.monkeyshines.Conveyer.Rotation;
-import org.erikaredmark.monkeyshines.resource.CoreResource;
 import org.erikaredmark.monkeyshines.resource.SoundManager;
 import org.erikaredmark.monkeyshines.tiles.CollapsibleTile;
 import org.erikaredmark.monkeyshines.tiles.ConveyerTile;
@@ -1047,33 +1045,6 @@ public final class Bonzo {
 		else										   ++ticksToNextFrame;
 	}
 	
-	public void paint(Graphics2D g2d) {
-		// If dying, that overrides everything.
-		if (isDying) {
-			ImmutablePoint2D deathStart = deathAnimation.deathStart();
-			ImmutablePoint2D deathSize = deathAnimation.deathSize();
-			ImmutablePoint2D offset = deathAnimation.offset();
-			int drawToX = currentLocation.x() + offset.x();
-			int drawToY = currentLocation.y() + offset.y();
-			int yOffset = deathStart.y() + (deathSize.y() * (currentSprite / deathAnimation.framesPerRow() ) );
-			int xOffset = deathSize.x() * (currentSprite % deathAnimation.framesPerRow() );
-			g2d.drawImage(CoreResource.INSTANCE.getBonzoSheet(), drawToX, drawToY,  //DEST
-					      drawToX + deathSize.x(), drawToY + deathSize.y(), // DEST2
-						  xOffset, yOffset, xOffset + deathSize.x(), yOffset + deathSize.y(),
-						  null);
-			return;
-		} else {
-			// We can just get the draw location and assume 40x40
-			ImmutablePoint2D sourceLocation = getDrawLocationInSprite();
-			g2d.drawImage(CoreResource.INSTANCE.getBonzoSheet(), 
-						  currentLocation.x(), currentLocation.y(),
-						  currentLocation.x() + BONZO_SIZE.x(), currentLocation.y() + BONZO_SIZE.y(), 
-						  sourceLocation.x(), sourceLocation.y(),
-						  sourceLocation.x() + BONZO_SIZE.x(), sourceLocation.y() + BONZO_SIZE.y(),
-						  null);
-		}
-	}
-
 	/**
 	 * 
 	 * Returns a point representing where bonzo is currently on the screen. The returned point is immutable and
@@ -1238,7 +1209,15 @@ public final class Bonzo {
 			done = true;
 		}
 	}
-	
+
+
+	/** Intended for drawing routines. Returns if bonzo is currently going through the dying
+	 * animation but has not yet died. */
+	public boolean isDying() { return isDying; }
+	public DeathAnimation getDeathAnimation() { return deathAnimation; }
+	/** Id of the current sprite in Bonzo's animation sprite sheet. 
+	 *  The semantics of what this means depends on the current animation bonzo is in. */
+	public int getCurrentSprite() { return currentSprite; }
 	// Intialises immutable singleton to be used as inital state (when there is no powerup)
 	// so calling update does nothing. After bonzo collects his first powerup, this won't be
 	// used anymore (all powerup states naturally decay to this state)

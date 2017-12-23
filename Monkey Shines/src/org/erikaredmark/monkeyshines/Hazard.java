@@ -1,6 +1,5 @@
 package org.erikaredmark.monkeyshines;
 
-import java.awt.Graphics2D;
 import java.util.List;
 
 import org.erikaredmark.monkeyshines.editor.HazardMutable;
@@ -136,37 +135,6 @@ public final class Hazard implements Comparable<Hazard> {
 	 */
 	public boolean explodes() {
 		return this.explodes;
-	}
-	
-	/**
-	 * 
-	 * Paints this hazard to the given graphics context at the given cordinates. This is used by {@code HazardTile}, which 
-	 * will compute and provide the position data/graphics context that this needs to draw on. The hazard object itself merely
-	 * provides the reference to the graphics pointer for the world hazards.
-	 * 
-	 * @param g2
-	 * 
-	 * @param drawToX
-	 * 		x location to draw (in pixels)
-	 * 
-	 * @param drawToY
-	 * 		y location to draw (in pixels)
-	 * 
-	 * @param animationStep
-	 * 		{@code 0} for first frame of hazard, {@code 1} for second. Other values will produce incorrect behaviour
-	 * 
-	 */
-	public void paint(Graphics2D g2d, int drawToX, int drawToY, WorldResource rsrc, int animationStep) {
-		assert animationStep == 0 || animationStep == 1;
-		
-		int drawFromX = id * GameConstants.TILE_SIZE_X;
-		int drawFromY = animationStep * GameConstants.TILE_SIZE_Y;
-		
-		g2d.drawImage(rsrc.getHazardSheet(), drawToX , drawToY, 								    // Destination 1 (top left)
-					  drawToX + GameConstants.TILE_SIZE_X, drawToY + GameConstants.TILE_SIZE_Y,     // Destination 2 (bottom right)
-					  drawFromX, drawFromY, 													    // Source 1 (top Left)
-					  drawFromX + GameConstants.TILE_SIZE_X, drawFromY + GameConstants.TILE_SIZE_Y, // Source 2 (bottom right)
-					  null);
 	}
 	
 	/**

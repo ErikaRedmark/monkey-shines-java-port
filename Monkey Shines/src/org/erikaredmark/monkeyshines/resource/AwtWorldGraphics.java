@@ -4,7 +4,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
 import org.erikaredmark.monkeyshines.GameConstants;
-import org.erikaredmark.monkeyshines.background.Background;
+import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
 
 public class AwtWorldGraphics {
 	/* ---------------------------- TILES ----------------------------- */
@@ -29,8 +29,10 @@ public class AwtWorldGraphics {
 	public final int collapsingCount;
 	
 	/* -------------------------- BACKGROUND -------------------------- */
-	public final Background backgrounds[];
-	public final Background patterns[];
+	public final BufferedImage backgrounds[];
+	public final BufferedImage patterns[];
+	// generated dynamically
+	public final BufferedImage patternedBackgrounds[];
 	
 	/* --------------------------- SPRITES ---------------------------- */
 	public final BufferedImage sprites[];
@@ -62,8 +64,8 @@ public class AwtWorldGraphics {
 	    final BufferedImage hazardTiles,
 	    final BufferedImage conveyerTiles,
 	    final BufferedImage collapsingTiles,
-	    final Background[] backgrounds,
-	    final Background[] patterns,
+	    final BufferedImage[] backgrounds,
+	    final BufferedImage[] patterns,
 	    final BufferedImage[] sprites,
 	    final BufferedImage goodieSheet,
 	    final BufferedImage yumSheet,
@@ -106,6 +108,14 @@ public class AwtWorldGraphics {
 		
 		// Energy bar is special. We explode the 8x11 image into a full 150x11 image.
 		this.energyBar = explodeEnergyBar(energy);
+		
+		patternedBackgrounds = new BufferedImage[patterns.length];
+		for (int i = 0; i < patterns.length; ++i) {
+			BufferedImage ppat = patterns[i];
+			if (ppat == null) 
+				{ break; }
+			patternedBackgrounds[i] = fromPattern(ppat);
+		}
 	}
 	
 	/**
@@ -338,5 +348,81 @@ public class AwtWorldGraphics {
 		}
 		
 		return chops;
+	}
+	
+	
+	/**
+	 * Returns the graphics sheet for the tiles that exist for the given tile type.
+	 */
+	public BufferedImage getStatelessTileTypeSheet(final StatelessTileType type) {
+		switch (type) {
+			case SOLID: return solidTiles;
+			case THRU : return thruTiles;
+			case SCENE: return sceneTiles;
+			case NONE: throw new IllegalArgumentException("No tilesheet for NONE tiles");
+			default: throw new IllegalArgumentException("Unknown tile type " + type);
+		}
+	}
+	
+	
+	/**
+	 * This classic background type (ppat resource) from the original Monkey Shines. Creates a
+	 * background dynamically from a pattern that will fit the size of the playable area.
+	 * 
+	 * @param ppat
+	 * 		the pattern to use
+	 * 
+	 * @param id
+	 * 		the id of this background from the graphics resource. Required for encoding
+	 * 		algorithms to properly save instances
+	 * 
+	 * @return
+	 * 		instance of this object
+	 * 
+	 * @throws IllegalArgumentException
+	 * 		if the background is bigger than 640x400
+	 * 
+	 */
+	public static BufferedImage fromPattern(final BufferedImage ppat) {
+		// We tile 640 / width. If there is any remainder, then we did NOT hit the edge
+		// properly and must tile once more (albeit the last tile will only tile partway)
+		int width = ppat.getWidth();
+		int height = ppat.getHeight();
+		
+		int tileX = 640 / width + (   640 % width != 0
+									? 1
+								    : 0);
+		
+		if (tileX == 0)  throw new IllegalArgumentException("Width " + width + " too large for pattern: must be less than 640");
+		
+		int tileY = 400 / height + (   400 % height != 0
+									 ? 1
+									 : 0);
+		
+		if (tileY == 0)  throw new IllegalArgumentException("Height " + height + " too large for pattern: must be less than 400");
+		
+		BufferedImage background = new BufferedImage(640, 400, ppat.getType() );
+		
+		
+		Graphics2D graphics = background.createGraphics();
+		try {
+			// Start with Y: for each ROW
+			for (int j = 0; j < tileY; j++) {
+				// For each COLUMN
+				for (int i = 0; i < tileX; i++) {
+					int dx = i * width, dy = j * height;
+					graphics.drawImage(
+						ppat, 
+						dx, dy, 
+						dx + width, dy + height, 
+						0, 0, 
+						width, height, null);
+				}
+			}
+		} finally {
+			graphics.dispose();
+		}
+		
+		return background;
 	}
 }

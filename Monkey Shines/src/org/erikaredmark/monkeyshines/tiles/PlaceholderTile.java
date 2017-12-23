@@ -1,9 +1,6 @@
 package org.erikaredmark.monkeyshines.tiles;
 
-import java.awt.Graphics2D;
-
 import org.erikaredmark.monkeyshines.Conveyer;
-import org.erikaredmark.monkeyshines.resource.WorldResource;
 
 /**
  * 
@@ -35,7 +32,6 @@ public class PlaceholderTile implements TileType {
 	@Override public void update() { throw new UnsupportedOperationException(ERROR); }
     @Override public void reset(boolean oddElseEven) { throw new UnsupportedOperationException(ERROR); }
     @Override public PlaceholderTile copy() { throw new UnsupportedOperationException(ERROR); }
-    @Override public void paint(Graphics2D g2d, int drawToX, int drawToY, WorldResource rsrc) { throw new UnsupportedOperationException(ERROR); }
     
     // Not from getId(). Technically this placeholder doesn't have a true id.
     private final int id;

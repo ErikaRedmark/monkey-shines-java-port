@@ -1,9 +1,10 @@
 package org.erikaredmark.monkeyshines.tiles;
 
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
 import org.erikaredmark.monkeyshines.GameConstants;
+import org.erikaredmark.monkeyshines.resource.AwtWorldGraphics;
+import org.erikaredmark.monkeyshines.resource.SlickWorldGraphics;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 
 /**
@@ -44,6 +45,13 @@ public class CommonTile implements TileType {
 		this.id = id;
 		this.underlyingType = type;
 	}
+	
+	/** source Tile drawing row for rendering operations */
+	public int getTileDrawRow() { return tileDrawRow; }
+	/** source tile drawing column for rendering operations */
+	public int getTileDrawCol() { return tileDrawCol; }
+	/** the last resource used to pain this tile */
+	public WorldResource getLastPaintedRsrc() { return lastPaintedRsrc; }
 	
 	/**
 	 * 
@@ -112,35 +120,40 @@ public class CommonTile implements TileType {
 		return new CommonTile(id, underlyingType);
 	}
 	
-	@Override public void paint(Graphics2D g2d, int drawToX, int drawToY, WorldResource rsrc) {
-		if (this.underlyingType == StatelessTileType.NONE)  return;
-		
-		if (rsrc != lastPaintedRsrc)  recomputeDrawState(rsrc);
-		
-		g2d.drawImage(rsrc.getStatelessTileTypeSheet(this.underlyingType), 
-					  drawToX, drawToY, 																// Dest 1
-					  drawToX + GameConstants.TILE_SIZE_X, drawToY + GameConstants.TILE_SIZE_Y,			// Dest 2
-					  tileDrawCol, tileDrawRow, 														// Src 1
-					  tileDrawCol + GameConstants.TILE_SIZE_X, tileDrawRow + GameConstants.TILE_SIZE_Y, // Src 2
-					  null);
-	}
-	
 	/**
-	 * 
 	 * Recomputes the location in the sprite sheet that this particular tile should draw from. This depends
 	 * on two factors: the id of the tile, and the dimensions of the sprite sheet. To prevent slowdown, this
-	 * is only recomputed when the world is painted with a different resource.
+	 * is only recomputed when the world is painted with a different resource. This should only be called from
+	 * painting routines
 	 * <p/>
 	 * It is an error to call this with a NONE tile.
+	 * <p/>
+	 * This computation functions regardless of the underlying rendering type of the resource (AWT or Slick)
 	 * 
 	 * @param rsrc
 	 * 		the new resource to recompute values for
-	 * 
 	 */
-	private void recomputeDrawState(WorldResource rsrc) {
-		BufferedImage tileSpriteSheet = rsrc.getStatelessTileTypeSheet(this.underlyingType);
+	public void recomputeDrawState(WorldResource rsrc) {
+		if (rsrc.isSlickGraphics()) {
+			recomputeDrawStateSlick(rsrc.getSlickGraphics());
+		} else {
+			recomputeDrawStateAwt(rsrc.getAwtGraphics());
+		}
+	}
+	
+	public void recomputeDrawStateAwt(AwtWorldGraphics awtGraphics) {
+		BufferedImage tileSpriteSheet = awtGraphics.getStatelessTileTypeSheet(this.underlyingType);
 		int sheetCols = tileSpriteSheet.getWidth() / GameConstants.TILE_SIZE_X;
-		
+		int sheetRows = tileSpriteSheet.getHeight() / GameConstants.TILE_SIZE_Y;
+		recomputeDrawState_internal(sheetCols, sheetRows);
+	}
+	
+	public void recomputeDrawStateSlick(SlickWorldGraphics slickGraphics) {
+		// TODO
+		throw new UnsupportedOperationException("Method not yet written");
+	}
+	
+	private void recomputeDrawState_internal(int sheetCols, int sheetRows) {
 		// Assume Integer division.
 		// No need to store id after we computed the bounds for the graphics.
 		tileDrawCol = (id % sheetCols) * GameConstants.TILE_SIZE_X;
@@ -151,7 +164,6 @@ public class CommonTile implements TileType {
 		// TODO Note: Document somehow that this DOESN'T prevent invisible tiles from accidentally being inserted by the
 		// editor. If the sheet has a fully transparent tile within the rectangle, that is technically valid. Perhaps
 		// have tilesheets fully pink everywhere else to communicate a bad-tile so this check always works?
-		int sheetRows = tileSpriteSheet.getHeight() / GameConstants.TILE_SIZE_Y;
 		if (id > sheetCols * sheetRows) {
 			System.err.println("" + this + ": Out of graphics range (Given sprite sheet only permits ids up to " + sheetCols * sheetRows);
 		}

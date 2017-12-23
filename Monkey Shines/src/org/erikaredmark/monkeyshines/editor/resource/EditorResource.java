@@ -9,6 +9,7 @@ import javax.imageio.ImageIO;
 import org.erikaredmark.monkeyshines.LevelScreen;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.background.FullBackground;
+import org.erikaredmark.monkeyshines.resource.AwtWorldGraphics;
 
 /**
  * 
@@ -122,9 +123,10 @@ public final class EditorResource {
 	 * @return
 	 * 		160x100 thumbnail
 	 */
-	public static BufferedImage generateThumbnailForBackground(FullBackground b) {
+	public static BufferedImage generateThumbnailForBackground(FullBackground b, AwtWorldGraphics awtGraphics) {
 		BufferedImage thumbnail = new BufferedImage(160, 100, BufferedImage.TYPE_INT_ARGB);
-		BufferedImage rawImage = b.getRawImage();
+		BufferedImage rawImage = 
+			b.isPattern() ? awtGraphics.patternedBackgrounds[b.getId()] : awtGraphics.backgrounds[b.getId()];
 		
 		for (int i = 0; i < 160; i++) {
 			for (int j = 0; j < 100; j++) {

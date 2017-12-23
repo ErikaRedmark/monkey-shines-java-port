@@ -17,6 +17,8 @@ import org.erikaredmark.monkeyshines.Point2D;
 import org.erikaredmark.monkeyshines.TileMap;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.background.Background;
+import org.erikaredmark.monkeyshines.resource.AwtRenderer;
+import org.erikaredmark.monkeyshines.resource.AwtWorldGraphics;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.tiles.TileType;
 import org.erikaredmark.monkeyshines.tiles.TileTypes;
@@ -178,43 +180,44 @@ public final class MapEditor extends JPanel {
 	
 	private void updateTileIndicator() {
 		WorldResource rsrc = world.getResource();
+		AwtWorldGraphics awtGraphics = rsrc.getAwtGraphics();
 		
 		BufferedImage sheet = null;
 		int srcX = 0;
 		int srcY = 0;
 		switch(currentBrush) {
 		case SOLIDS:
-			sheet = rsrc.getStatelessTileTypeSheet(StatelessTileType.SOLID);
+			sheet = awtGraphics.getStatelessTileTypeSheet(StatelessTileType.SOLID);
 			srcX = computeSrcX(currentId, sheet);
 			srcY = computeSrcY(currentId, sheet);
 			break;
 		case THRUS:
-			sheet = rsrc.getStatelessTileTypeSheet(StatelessTileType.THRU);
+			sheet = awtGraphics.getStatelessTileTypeSheet(StatelessTileType.THRU);
 			srcX = computeSrcX(currentId, sheet);
 			srcY = computeSrcY(currentId, sheet);
 			break;
 		case SCENES:
-			sheet = rsrc.getStatelessTileTypeSheet(StatelessTileType.SCENE);
+			sheet = awtGraphics.getStatelessTileTypeSheet(StatelessTileType.SCENE);
 			srcX = computeSrcX(currentId, sheet);
 			srcY = computeSrcY(currentId, sheet);
 			break;
 		case COLLAPSIBLE:
-			sheet = rsrc.getCollapsingSheet();
+			sheet = awtGraphics.collapsingTiles;
 			srcX = 0;
 			srcY = currentId * GameConstants.TILE_SIZE_Y;
 			break;
 		case CONVEYERS_CLOCKWISE:
-			sheet = rsrc.getConveyerSheet();
+			sheet = awtGraphics.conveyerTiles;
 			srcX = 0;
 			srcY = currentId * (GameConstants.TILE_SIZE_Y * 2);
 			break;
 		case CONVEYERS_ANTI_CLOCKWISE:
-			sheet = rsrc.getConveyerSheet();
+			sheet = awtGraphics.conveyerTiles;
 			srcX = 0;
 			srcY = (currentId * (GameConstants.TILE_SIZE_Y * 2) ) + 20;
 			break;
 		case HAZARDS:
-			sheet = rsrc.getHazardSheet();
+			sheet = awtGraphics.hazardTiles;
 			srcX = currentId * (GameConstants.TILE_SIZE_X);
 			srcY = 0;
 			break;
@@ -281,9 +284,12 @@ public final class MapEditor extends JPanel {
 	@Override public void paint(Graphics g) {
 		super.paint(g);
 		Graphics2D g2d = (Graphics2D) g;
+		AwtWorldGraphics awtGraphics = world.getResource().getAwtGraphics();
 		
-		background.draw(g2d);
-		map.paint(g2d, world.getResource() );
+		assert awtGraphics != null : "Level editor should be using AWT Graphics";
+		
+		AwtRenderer.paintBackground(g2d, background, awtGraphics);
+		AwtRenderer.paintTileMap(g2d, map, awtGraphics);
 
 		int snapX = EditorMouseUtils.snapMouseX(mousePosition.x() );
 		int snapY = EditorMouseUtils.snapMouseY(mousePosition.y() );
