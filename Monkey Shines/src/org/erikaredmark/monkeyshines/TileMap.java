@@ -83,6 +83,9 @@ public class TileMap {
 	 * 		This does NOT throw exceptions. It is up to the client to provide sensible values. If sensible values are not provided, this method
 	 * 		simply does nothing. In the editor if the user somehow selects something outside of bounds, this is probably actually fine behaviour.
 	 * 
+	 * @param rsrc
+	 * 		world resource for computing draw data when applicable. This may be {@code null} but only
+	 * 		in special, like testing, circumstances. Rendering may be messed up if it is.
 	 */
 	public void setTileXY(int x, int y, TileType tile) {
 		// Yah, it's a simple inversion of the parameters. But it gets confusing sometimes.
@@ -115,6 +118,8 @@ public class TileMap {
 	 * simply does nothing. In the editor if the user somehow selects something outside of bounds, this is probably actually fine behaviour.
 	 * <p/>
 	 * This method, however, WILL fail if assertions are enabled, if the passed tile is {@code null}. {@code null} is NEVER a valid type.
+	 * <p/>
+	 * If the tile type requires recomputation for proper rendering, that will take place now.
 	 * 
 	 * @param row
 	 * 		row of the tilemap
@@ -125,7 +130,6 @@ public class TileMap {
 	 * @param tile
 	 * 	    the actual tile to place. This will be placed AS IS with NO COPYING, so it is up to the client to ensure that tiles with
 	 * 		their own state are not added to multiple locations.
-	 * 
 	 */
 	public void setTileRowCol(int row, int col, TileType tile) {
 		assert tile != null;
@@ -269,7 +273,7 @@ public class TileMap {
 		for (int i = 0; i < newRows; ++i) {
 			for (int j = 0; j < newCols; ++j) {
 				// If out of bounds, NONE is returned. That's actually what we want, so don't worry if we shift out of reach
-				newMap.setTileRowCol(i, j, this.getTileRowCol(i + rowShift, j + colShift) );
+				newMap.setTileRowCol(i, j, this.getTileRowCol(i + rowShift, j + colShift));
 			}
 		}
 		

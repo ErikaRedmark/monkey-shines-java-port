@@ -22,7 +22,7 @@ public final class TileTypes {
 	 * @return
 	 * 
 	 */
-	public static TileType solidFromId(int id) {
+	public static CommonTile solidFromId(int id) {
 		return CommonTile.of(id, StatelessTileType.SOLID);
 	}
 	
@@ -34,7 +34,7 @@ public final class TileTypes {
 	 * @return
 	 * 
 	 */
-	public static TileType thruFromId(int id) {
+	public static CommonTile thruFromId(int id) {
 		return CommonTile.of(id, StatelessTileType.THRU);
 	}
 	
@@ -46,7 +46,7 @@ public final class TileTypes {
 	 * @return
 	 * 
 	 */
-	public static TileType sceneFromId(int id) {
+	public static CommonTile sceneFromId(int id) {
 		return CommonTile.of(id, StatelessTileType.SCENE);
 	}
 	

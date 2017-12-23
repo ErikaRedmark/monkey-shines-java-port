@@ -135,7 +135,7 @@ public class RsrcPlvlTranslator {
 		int rawLvlIndex = 0;
 		for (int j = 0; j < 32; ++j) {
 			for (int i = 0; i < 20; ++i) {
-				map.setTileRowCol(i, j, translateToTile(levelData[rawLvlIndex], i, j, rsrc) );
+				map.setTileRowCol(i, j, translateToTile(levelData[rawLvlIndex], i, j, rsrc));
 				++rawLvlIndex;
 			}
 		}

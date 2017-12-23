@@ -68,6 +68,7 @@ public class TemplateEditor extends JPanel {
 		// Eight buttons, two per compass direction. One expands in that direction, one contracts in that direction.
 		// These do not modify the template. They modify the size of the map in the editor
 		
+		
 		// TOP
 		JPanel topAll = new JPanel();
 		topAll.setLayout(new BoxLayout(topAll, BoxLayout.LINE_AXIS) );
@@ -285,6 +286,7 @@ public class TemplateEditor extends JPanel {
 	 * 
 	 * Replaces the current map editor with an editor for the new map, automatically handling removing the component
 	 * from the view and replacing it, and then resizing all relevant components.
+	 * <p/>
 	 * 
 	 * @param newMap
 	 * 		the new map to be editing. Typically a resized version of the older one

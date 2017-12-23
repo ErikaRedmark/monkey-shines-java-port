@@ -37,7 +37,6 @@ public class CommonTile implements TileType {
 	// which is very rare.
 	private int tileDrawRow;
 	private int tileDrawCol;
-	private WorldResource lastPaintedRsrc;
 	
 	public static final CommonTile NONE = new CommonTile(0, StatelessTileType.NONE);
 	
@@ -50,8 +49,6 @@ public class CommonTile implements TileType {
 	public int getTileDrawRow() { return tileDrawRow; }
 	/** source tile drawing column for rendering operations */
 	public int getTileDrawCol() { return tileDrawCol; }
-	/** the last resource used to pain this tile */
-	public WorldResource getLastPaintedRsrc() { return lastPaintedRsrc; }
 	
 	/**
 	 * 
@@ -123,8 +120,8 @@ public class CommonTile implements TileType {
 	/**
 	 * Recomputes the location in the sprite sheet that this particular tile should draw from. This depends
 	 * on two factors: the id of the tile, and the dimensions of the sprite sheet. To prevent slowdown, this
-	 * is only recomputed when the world is painted with a different resource. This should only be called from
-	 * painting routines
+	 * is only recomputed when the world is painted with a different resource. This should only be called, in
+	 * game, once per game, and for the level editor once during load, and any time a new tile is created.
 	 * <p/>
 	 * It is an error to call this with a NONE tile.
 	 * <p/>
@@ -149,7 +146,7 @@ public class CommonTile implements TileType {
 	}
 	
 	public void recomputeDrawStateSlick(SlickWorldGraphics slickGraphics) {
-		// TODO
+		// TODO... although since only the editor does this it may not be needed...
 		throw new UnsupportedOperationException("Method not yet written");
 	}
 	

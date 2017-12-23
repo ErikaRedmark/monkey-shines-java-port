@@ -315,12 +315,6 @@ public class AwtRenderer
 			StatelessTileType underlyingType = common.getUnderlyingType();
 			if (underlyingType == StatelessTileType.NONE)  return;
 			
-			
-			WorldResource lastPaintedRsrc = common.getLastPaintedRsrc();
-			if (lastPaintedRsrc != null && lastPaintedRsrc.getAwtGraphics() != awtGraphics)  
-				{ common.recomputeDrawStateAwt(awtGraphics); }
-			
-			
 			int tileDrawCol = common.getTileDrawCol();
 			int tileDrawRow = common.getTileDrawRow();
 			g2d.drawImage(awtGraphics.getStatelessTileTypeSheet(underlyingType), 

@@ -22,6 +22,7 @@ import org.erikaredmark.monkeyshines.resource.AwtWorldGraphics;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.tiles.TileType;
 import org.erikaredmark.monkeyshines.tiles.TileTypes;
+import org.erikaredmark.monkeyshines.tiles.CommonTile;
 import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
 
 /**
@@ -323,20 +324,23 @@ public final class MapEditor extends JPanel {
 	public enum TileBrush {
 		SOLIDS {
 			@Override public void onClick(int pixelX, int pixelY, int id, World world, TileMap map) {
-				TileType tile = TileTypes.solidFromId(id);
+				CommonTile tile = TileTypes.solidFromId(id);
 				map.setTileXY(pixelX / GameConstants.TILE_SIZE_X, pixelY / GameConstants.TILE_SIZE_Y, tile);
+				tile.recomputeDrawStateAwt(world.getResource().getAwtGraphics());
 			}
 		}, 
 		THRUS {
 			@Override public void onClick(int pixelX, int pixelY, int id, World world, TileMap map) {
-				TileType tile = TileTypes.thruFromId(id);
+				CommonTile tile = TileTypes.thruFromId(id);
 				map.setTileXY(pixelX / GameConstants.TILE_SIZE_X, pixelY / GameConstants.TILE_SIZE_Y, tile);
+				tile.recomputeDrawStateAwt(world.getResource().getAwtGraphics());
 			}
 		},
 		SCENES {
 			@Override public void onClick(int pixelX, int pixelY, int id, World world, TileMap map) {
-				TileType tile = TileTypes.sceneFromId(id);
+				CommonTile tile = TileTypes.sceneFromId(id);
 				map.setTileXY(pixelX / GameConstants.TILE_SIZE_X, pixelY / GameConstants.TILE_SIZE_Y, tile);
+				tile.recomputeDrawStateAwt(world.getResource().getAwtGraphics());
 			}
 		},
 		HAZARDS {
