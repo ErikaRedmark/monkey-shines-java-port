@@ -22,6 +22,7 @@ import javax.swing.JTabbedPane;
 
 import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.menu.MenuUtils;
+import org.erikaredmark.monkeyshines.resource.AwtWorldGraphics;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
 import org.erikaredmark.util.swing.layout.WrapLayout;
@@ -280,10 +281,10 @@ public class BrushPalette extends JPanel {
 	
 	// Common code for initialising SOLIDS, THRUS, and SCENES Only
 	private void initialiseBasicTilePanel(JPanel panel, JTabbedPane brushTypes, StatelessTileType type, ActionListener listener, WorldResource rsrc) {
-		BufferedImage[] tiles =
-			WorldResource.chop(GameConstants.TILE_SIZE_X,
-							   GameConstants.TILE_SIZE_Y,
-							   rsrc.getStatelessTileTypeSheet(type) );
+		BufferedImage[] tiles = AwtWorldGraphics.chop(
+			GameConstants.TILE_SIZE_X,
+			GameConstants.TILE_SIZE_Y,
+			rsrc.getStatelessTileTypeSheet(type));
 		
 		panel.setLayout(new WrapLayout(FlowLayout.LEFT, GRID_MARGIN_X, GRID_MARGIN_Y) );
 		final JScrollPane typeScroller = new JScrollPane(panel);

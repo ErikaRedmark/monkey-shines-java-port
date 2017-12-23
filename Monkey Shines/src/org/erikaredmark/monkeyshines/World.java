@@ -1,6 +1,5 @@
 package org.erikaredmark.monkeyshines;
 
-import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -947,26 +946,6 @@ public class World {
 		if (stats == null)  throw new IllegalStateException("World should be finished before calling this method");
 		
 		return stats;
-	}
-
-	/**
-	 * 
-	 * Paints the world as it currently is to the given graphics context. This should be called on each update or
-	 * faster for a smooth experience.
-	 * 
-	 * @param g2d
-	 * 
-	 */
-	public void paint(Graphics2D g2d) {
-		getCurrentScreen().paint(g2d);
-		
-		// TODO group goodies into a better collection based on screen
-		Collection<Goodie> goodiesVector = (Collection<Goodie>)goodiesInWorld.values();
-		for (Goodie nextGoodie : goodiesVector) {
-			if (nextGoodie.getScreenID() == currentScreen) {
-				nextGoodie.paint(g2d);
-			}
-		}
 	}
 	
 	/**

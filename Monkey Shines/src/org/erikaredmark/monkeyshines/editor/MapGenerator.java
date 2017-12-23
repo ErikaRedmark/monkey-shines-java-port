@@ -13,6 +13,7 @@ import java.util.Set;
 import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.LevelScreen;
 import org.erikaredmark.monkeyshines.World;
+import org.erikaredmark.monkeyshines.resource.AwtRenderer;
 
 /**
  * 
@@ -147,7 +148,7 @@ public final class MapGenerator {
 				
 				LevelScreen actualScreen = allLvlScreens.get(nextId.id);
 				g2d.translate(drawX, drawY);
-				actualScreen.paint(g2d);
+				AwtRenderer.paintLevelScreen(g2d, actualScreen, world.getResource().getAwtGraphics());
 				g2d.translate(-drawX, -drawY);
 			}
 		} finally {

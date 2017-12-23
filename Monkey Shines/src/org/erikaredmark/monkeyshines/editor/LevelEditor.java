@@ -47,8 +47,8 @@ import org.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import org.erikaredmark.monkeyshines.logging.MonkeyShinesLog;
+import org.erikaredmark.monkeyshines.resource.PackReader;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
-import org.erikaredmark.monkeyshines.resource.WorldResource.UseIntent;
 import org.erikaredmark.util.BinaryLocation;
 
 /*
@@ -423,7 +423,7 @@ public class LevelEditor extends JFrame {
 		String fileName = worldFile.getFileName().toString();
 		String worldName = fileName.substring(0, fileName.lastIndexOf('.') );
 		Path packFile = worldFile.getParent().resolve(worldName + ".zip");
-		WorldResource rsrc = WorldResource.fromPack(packFile, UseIntent.EDITOR);
+		WorldResource rsrc = PackReader.fromPackAwt(packFile);
 		this.currentWorld.loadWorld(world, rsrc);
 		this.defaultSaveLocation = worldFile;
 		this.manipulationFunctions(true);

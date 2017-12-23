@@ -356,23 +356,7 @@ public final class Sprite {
 	public ImmutableRectangle getCurrentBounds() {
 		return ImmutableRectangle.of(this.currentLocation.x(), this.currentLocation.y(), GameConstants.SPRITE_SIZE_X, GameConstants.SPRITE_SIZE_Y);
 	}
-	
-	/**
-	 * 
-	 * Draws the sprite to the given graphics context. The sprite will draw itself to the right location at the right frame of
-	 * animation as long as each 'paint' is accompanied by an 'update'
-	 * 
-	 * @param g2d
-	 * 
-	 */
-	public void paint(Graphics2D g2d) {
-		if (!(visible) )  return;
-		g2d.drawImage(rsrc.getSpritesheetFor(this.id), currentLocation.x(), currentLocation.y(), 
-				currentLocation.x() + GameConstants.SPRITE_SIZE_X, 
-				currentLocation.y() + GameConstants.SPRITE_SIZE_Y,
-				currentClip.x(), currentClip.y(), currentClip.width() + currentClip.x(),
-				currentClip.height() + currentClip.y(),  null  );
-	}
+
 	
 	/**
 	 * 
@@ -675,6 +659,17 @@ public final class Sprite {
 		public abstract void onBonzoCollision(Bonzo bonzo, World world);
 		
 		@Override public String toString() { return name; }
+	}
+	
+	// Intended for drawing routines only
+	/** Intended for fast drawing routines only; returns the mutable current location instead of
+	 	snapshotting it.*/
+	public Point2D internalCurrentLocation() {
+		return currentLocation;
+	}
+	
+	public ClippingRectangle internalCurrentClip() {
+		return currentClip;
 	}
 
 }

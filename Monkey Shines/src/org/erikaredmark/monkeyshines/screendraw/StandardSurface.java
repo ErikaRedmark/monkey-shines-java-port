@@ -10,12 +10,16 @@ import org.erikaredmark.monkeyshines.Powerup;
 import org.erikaredmark.monkeyshines.resource.CoreResource;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 
+import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.*;
 
 /**
  * 
  * Assumes a drawing size of 640x480 and draws the universe represented by the {@code GameWorldLogic} into that
  * size constraint. This only handles rendering the entire scene to an image, not how that image is then actually
  * painted to the screen.
+ * <p/>
+ * This is only intended for use with the Level Editor. It uses {@code AwtWorldGraphics} from the {@code WorldResource}
+ * and cannot operate properly in normal game context.
  * <p/>
  * This surface has a 1:1 analog to the logical world. This means that a 20x20 unit tile is drawn at 20x20 pixels, no
  * graphics substitutions. Screen drawers that then draw the final graphics context on the screen may at their discretion
@@ -24,59 +28,10 @@ import org.erikaredmark.monkeyshines.resource.WorldResource;
  * The object itself is not drawn to anything, it merely provides the ability to render new images
  * that will be drawn to something.
  * 
- * TODO eventual goal is to have a HiDefSurface as well that uses larger graphics for a nicer looking game at a larger
- * size without compromising the gameplay (since the game logic assumes a 640x480 world).
- * 
  * @author Erika Redmark
  *
  */
 public final class StandardSurface {
-	
-	private static final int SURFACE_SIZE_X = 640;
-	private static final int SURFACE_SIZE_Y = 480;
-	
-	// Drawing location to start drawing the health bar.
-	private static final int HEALTH_DRAW_X = 241;
-	private static final int HEALTH_DRAW_Y = 50;
-	private static final int HEALTH_DRAW_WIDTH = 151;
-	private static final int HEALTH_DRAW_HEIGHT = 14;
-	private static final int HEALTH_DRAW_Y2 = HEALTH_DRAW_Y + HEALTH_DRAW_HEIGHT;
-	
-	// Used to map the 'logical' health to the 'width' of the health bar.
-	// Bonzos health will be converted to double and extended/contracted by this multplier to get draw width.
-	private static final double HEALTH_MULTIPLIER = (double)HEALTH_DRAW_WIDTH / (double)GameConstants.HEALTH_MAX;
-	
-	// Score draw x/y is the top left location of the FIRST, leftmost digit.
-	private static final int SCORE_DRAW_X = 13;
-	private static final int SCORE_DRAW_Y = 32;
-	private static final int SCORE_WIDTH = 16;
-	private static final int SCORE_HEIGHT = 30;
-	// Precomputation of effectively a constant
-	private static final int SCORE_DRAW_Y2 = SCORE_DRAW_Y + SCORE_HEIGHT;
-	
-	private static final int INFINITY_DRAW_X = 582; 
-	private static final int INFINITY_DRAW_Y = 29;
-	private static final int INFINITY_DRAW_X2 = 626;
-	private static final int INFINITY_DRAW_Y2 = 65;
-	private static final int INFINITY_WIDTH = 44;
-	private static final int INFINITY_HEIGHT = 36;
-	
-	private static final int LIFE_DRAW_X = 595;
-	private static final int LIFE_DRAW_Y = 33;
-	// Width and height are same as score width/height, as numerals are same
-	// size.
-	private static final int LIFE_DRAW_X2 = LIFE_DRAW_X + SCORE_WIDTH;
-	private static final int LIFE_DRAW_Y2 = LIFE_DRAW_Y + SCORE_HEIGHT;
-
-	private static int BONUS_DRAW_X = 152;
-	// Bonus draw Y is same as score; same y level
-	// widths and height same as score
-	
-	// POWERUPS
-	private static final int POWERUP_DRAW_X = 418;
-	private static final int POWERUP_DRAW_Y = 37;
-	private static final int POWERUP_DRAW_X2 = POWERUP_DRAW_X + GameConstants.GOODIE_SIZE_X;
-	private static final int POWERUP_DRAW_Y2 = POWERUP_DRAW_Y + GameConstants.GOODIE_SIZE_Y;
 	
 	private final GameWorldLogic universe;
 	

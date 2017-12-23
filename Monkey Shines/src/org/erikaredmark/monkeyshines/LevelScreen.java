@@ -366,21 +366,6 @@ public final class LevelScreen {
 	
 	/**
 	 * 
-	 * Draw background, tiles, and sprites in one swoop.
-	 * 
-	 * @param g2d
-	 * 
-	 */
-	public void paint(Graphics2D g2d) {
-		background.draw(g2d);
-		map.paint(g2d, rsrc);
-		for (Sprite s : spritesOnScreen) {
-			s.paint(g2d);
-		}
-	}
-	
-	/**
-	 * 
 	 * Runs one tick of time for the given game screen.
 	 * 
 	 */

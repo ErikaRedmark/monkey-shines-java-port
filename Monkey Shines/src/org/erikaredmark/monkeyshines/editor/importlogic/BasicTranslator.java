@@ -20,8 +20,8 @@ import org.erikaredmark.monkeyshines.editor.importlogic.WorldTranslationExceptio
 import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
+import org.erikaredmark.monkeyshines.resource.PackReader;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
-import org.erikaredmark.monkeyshines.resource.WorldResource.UseIntent;
 
 /**
  * 
@@ -200,7 +200,7 @@ public final class BasicTranslator {
 		LOGGER.info("Data files ready: Beginning translation");
 		// We first need the resource pack, since certain level data can only be determined to be valid 
 		// by looking at how many graphics resources are defined.
-		WorldResource rsrc = WorldResource.fromPack(resourcePackFile, UseIntent.GAME);
+		WorldResource rsrc = PackReader.fromPackAwt(resourcePackFile);
 		LOGGER.info(CLASS_NAME + ": Resource pack loaded");
 		
 		final TranslationState translationState = new TranslationState();

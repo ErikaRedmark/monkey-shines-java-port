@@ -25,8 +25,8 @@ import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.encoder.WorldIO;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
+import org.erikaredmark.monkeyshines.resource.PackReader;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
-import org.erikaredmark.monkeyshines.resource.WorldResource.UseIntent;
 import org.erikaredmark.util.BinaryLocation;
 
 /**
@@ -205,7 +205,7 @@ public final class SelectAWorld extends JPanel {
 			Path tempRsrc = tempRsrcDir.resolve("rsrc.zip");
 			Files.copy(rsrcIs, tempRsrc);
 			
-			WorldResource rsrc = WorldResource.fromPack(tempRsrc, UseIntent.GAME);
+			WorldResource rsrc = PackReader.fromPackSlick(tempRsrc);
 			
 			// Clean up temporary files
 			try {
@@ -256,7 +256,7 @@ public final class SelectAWorld extends JPanel {
 				// Remove .world extension so we can substitute with .zip.
 				String worldName = fileName.substring(0, fileName.lastIndexOf('.') );
 				Path packFile = worldFile.getParent().resolve(worldName + ".zip");
-				WorldResource rsrc = WorldResource.fromPack(packFile, UseIntent.GAME);
+				WorldResource rsrc = PackReader.fromPackSlick(packFile);
 				return world.newWorldInstance(rsrc);
 			} catch (Exception e) {
 				// See method. Instances in if/else are the exception we expect to catch.

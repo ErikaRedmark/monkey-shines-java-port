@@ -14,6 +14,7 @@ import org.erikaredmark.monkeyshines.AnimationType;
 import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.Sprite;
 import org.erikaredmark.monkeyshines.Sprite.SpriteType;
+import org.erikaredmark.monkeyshines.resource.AwtRenderer;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 
 /**
@@ -71,7 +72,7 @@ public class SpriteAnimationCanvas extends Canvas {
 	@Override public void paint(Graphics g) {
 		super.paint(g);
 		Graphics2D g2d = (Graphics2D) g;
-		animatingSprite.paint(g2d);
+		AwtRenderer.paintSprite(g2d, animatingSprite, rsrc.getAwtGraphics());
 	}
 	
 }

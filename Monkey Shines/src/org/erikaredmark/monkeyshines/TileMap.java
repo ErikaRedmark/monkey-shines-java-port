@@ -374,27 +374,6 @@ public class TileMap {
 	
 	/**
 	 * 
-	 * Paints the entire tilemap to the graphics context starting at the 0, 0 point (use affinity transforms before passing to change), and
-	 * draws each tile at the given row/column dimensions this map was created with.
-	 * 
-	 * @param g2d
-	 * 		graphics context to draw to
-	 * 
-	 * @param rsrc
-	 * 		the world resource for drawing the tiles. Tile graphics are based on internal id synced with the given graphics object
-	 * 
-	 */
-	public void paint(Graphics2D g2d, WorldResource rsrc) {
-		for (int i = 0; i < map.length; ++i) {
-			map[i].paint(g2d, 
-					 	 (i % cols) * GameConstants.TILE_SIZE_X, 
-						 (i / cols) * GameConstants.TILE_SIZE_Y, 
-						 rsrc);
-		}
-	}
-	
-	/**
-	 * 
 	 * Updates all tiles in the map.
 	 * 
 	 */
@@ -403,13 +382,10 @@ public class TileMap {
 	}
 	
 	/**
-	 * 
 	 * Returns the backing array of tiles. Should only truly be used if an external algorithm requires
 	 * iterating over all tiles in the map.
-	 * 
 	 * @return
 	 * 		backing array of tiles in the map. Intended for iteration only
-	 * 
 	 */
 	public TileType[] internalMap() {
 		return map;
@@ -461,5 +437,4 @@ public class TileMap {
 	private int rows;
 	private int cols;
 	private TileType[] map;
-	
 }

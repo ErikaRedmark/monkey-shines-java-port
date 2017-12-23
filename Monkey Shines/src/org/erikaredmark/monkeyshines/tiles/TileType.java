@@ -2,7 +2,10 @@ package org.erikaredmark.monkeyshines.tiles;
 
 import java.awt.Graphics2D;
 
+import org.erikaredmark.monkeyshines.resource.AwtWorldGraphics;
+import org.erikaredmark.monkeyshines.resource.SlickWorldGraphics;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
+import org.newdawn.slick.Graphics;
 
 /**
  * 
@@ -105,28 +108,21 @@ public interface TileType {
 	TileType copy();
 	
 	/**
-	 * 
-	 * Paints the given tile on the world. Container classes store location, and supply it to paint
+	 * Paints the given tile on the world for the level editor. 
+	 * Container classes store location, and supply it to paint
 	 * method in pixel position. The tile will draw according to its internal id, its state, and
 	 * the current world resource.
 	 * <p/>
 	 * If the tile cannot draw, due to the passed resource not containing the appropriate graphics,
 	 * this method will should NOT throw an exception. implementations should supply a placeholder graphic 
 	 * or not draw at all (placeholder preferred)
-	 * 
-	 * @param g2d
-	 * 		graphics context to draw to
-	 * 
-	 * @param drawToX
-	 * 		x position in pixels to draw to
-	 * 
-	 * @param drawToY
-	 * 		y position in pixels to draw to
-	 * 
-	 * @param rsrc
-	 * 		graphics resources where the source graphics will be taken from
-	 * 
 	 */
-	void paint(Graphics2D g2d, int drawToX, int drawToY, WorldResource rsrc);
+	void paintAwt(Graphics2D g2d, int drawToX, int drawToY, AwtWorldGraphics awtGraphics);
+	
+	/**
+	 * Paints the given tile onto the world using Slick-style graphics. Otherwise has same semantics
+	 * as {@link #paintAwt}
+	 */
+	void paintSlick(Graphics g, int drawToX, int drawToY, SlickWorldGraphics slickGraphics);
 	
 }

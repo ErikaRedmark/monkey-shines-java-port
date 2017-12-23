@@ -1,7 +1,5 @@
 package org.erikaredmark.monkeyshines;
 
-import java.awt.Graphics;
-
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 /**
  * 
@@ -120,29 +118,6 @@ public class Goodie {
 	
 	public int getScreenID() {
 		return screenID;
-	}
-	
-	/**
-	 * 
-	 * Paints the goodie based on state. If the goodie has not been taken yet, it just animates there. Once it is taken,
-	 * it will display the "yum" (taken && !dead) until that animation completes and it is dead, in which from there
-	 * it will not logner be painted.
-	 * 
-	 * @param g2d
-	 */
-	public void paint(Graphics g2d) {
-		if (!taken && !dead)
-			g2d.drawImage(rsrc.getGoodieSheet(), drawToX , drawToY, // Destination 1
-					drawToX + GameConstants.GOODIE_SIZE_X, drawToY + GameConstants.GOODIE_SIZE_Y, // Destination 2
-					drawX, drawY, drawX + GameConstants.GOODIE_SIZE_X, drawY + GameConstants.GOODIE_SIZE_Y,
-					null);
-		else if (taken && !dead) {
-			g2d.drawImage(rsrc.getYumSheet(), drawToX , drawToY, // Destination 1
-					drawToX + GameConstants.GOODIE_SIZE_X, drawToY + GameConstants.GOODIE_SIZE_Y, // Destination 2
-					yumSprite * GameConstants.GOODIE_SIZE_X, 0, // Source 1
-					yumSprite * GameConstants.GOODIE_SIZE_X + GameConstants.GOODIE_SIZE_X, GameConstants.GOODIE_SIZE_Y, // Source 2
-					null);
-		}
 	}
 
 	/**
@@ -374,6 +349,18 @@ public class Goodie {
 	private int drawToY;
 	private int drawX;
 	private int drawY;
+	
+	public int getDrawToX() { return drawToX; }
+	public int getDrawToY() { return drawToY; }
+	public int getDrawX() { return drawX; }
+	public int getDrawY() { return drawY; }
+	/** Goodie was taken and is now animating yum */
+	public boolean isTaken() { return taken; }
+	/** Goodie was taken, yum animation over, it's gone */
+	public boolean isDead() { return dead; }
+	/** If goodie is taken, but not dead, returns the current phase in yum animation. */
+	public int getYumSprite() { return yumSprite; }
+	
 	
 	private WorldResource rsrc;
 	

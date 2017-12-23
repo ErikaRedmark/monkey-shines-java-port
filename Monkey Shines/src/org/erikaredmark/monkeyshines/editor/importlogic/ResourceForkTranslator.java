@@ -17,8 +17,8 @@ import org.erikaredmark.monkeyshines.editor.importlogic.WorldTranslationExceptio
 import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
+import org.erikaredmark.monkeyshines.resource.PackReader;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
-import org.erikaredmark.monkeyshines.resource.WorldResource.UseIntent;
 
 import ResourceManager.Resource;
 import ResourceManager.ResourceModel;
@@ -120,7 +120,7 @@ public final class ResourceForkTranslator {
 			throw new WorldTranslationException(TranslationFailure.TRANSLATOR_SPECIFIC, "Unable to open resource fork for random access due to " + e.getMessage() );
 		}
 		
-		final WorldResource rsrc = WorldResource.fromPack(resourcePack, UseIntent.GAME);
+		final WorldResource rsrc = PackReader.fromPackAwt(resourcePack);
 		
 		// Postcondition: ResourceModel contains an in-memory representation of the resource fork. Let's start translating the levels first,
 		// then with that context the world. Translators accept streams so we use memory streams to re-use the API

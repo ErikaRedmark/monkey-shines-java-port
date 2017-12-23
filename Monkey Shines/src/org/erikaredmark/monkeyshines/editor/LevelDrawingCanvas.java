@@ -46,6 +46,7 @@ import org.erikaredmark.monkeyshines.editor.model.TemplateUtils;
 import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.encoder.WorldIO;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
+import org.erikaredmark.monkeyshines.resource.AwtRenderer;
 import org.erikaredmark.monkeyshines.resource.CoreResource;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 
@@ -381,7 +382,7 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 	
 	private void updateTileIndicator() {
 		if (currentState == EditorState.PLACING_GOODIES) {
-			BufferedImage goodieSheet = currentWorldEditor.getWorldResource().getGoodieSheet();
+			BufferedImage goodieSheet = currentWorldEditor.getWorldResource().getAwtGraphics().goodieSheet;
 			int srcX = currentGoodieType.getDrawX();
 			int srcY = currentGoodieType.getDrawY();
 			
@@ -618,13 +619,13 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 			List<Sprite> sprites = currentScreenEditor.getSpritesOnScreen();
 			for (Sprite s : sprites) {
 				if (currentScreenEditor.isAnimatingSprites() )  s.update();
-				s.paint(g2d);
+				AwtRenderer.paintSprite(g2d, s, this.currentWorldEditor.getWorldResource().getAwtGraphics());
 			}
 			
 			Collection<GoodieLocationPair> goodies = currentWorldEditor.getWorld().getGoodiesForLevel(currentScreenEditor.getId() );
 			for (GoodieLocationPair good : goodies) {
 				good.goodie.update();
-				good.goodie.paint(g2d);
+				AwtRenderer.paintGoodie(g2d, good.goodie, currentWorldEditor.getWorldResource().getAwtGraphics());
 			}
 			
 			// BELOW: Additional overlays that are not part of the actual world
