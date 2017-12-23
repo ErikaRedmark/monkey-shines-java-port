@@ -4,13 +4,12 @@ import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.util.function.Consumer;
 
 import javax.swing.Timer;
 
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.util.GameEndCallback;
-
-import com.google.common.base.Function;
 
 /**
  * 
@@ -109,7 +108,7 @@ public final class GameWorldLogic {
 						  final World world,
 			  			  final GameEndCallback gameEndCallback,
 						  final Runnable gameTickCallback,
-						  final Function<Bonzo, Void> lifeLostCallback,
+						  final Consumer<Bonzo> lifeLostCallback,
 						  final boolean playtestMode) {
 		
 		assert keys != null;
@@ -125,13 +124,10 @@ public final class GameWorldLogic {
 				@Override public void gameOverFail(World w) { endGame_internal(); gameEndCallback.gameOverFail(world); }
 				@Override public void gameOverEscape(World w) { endGame_internal(); gameEndCallback.gameOverEscape(world); }
 			},
-			new Function<Bonzo, Void>() {
-				@Override public Void apply(Bonzo bonzo) {
-					currentWorld.restartBonzo(bonzo);
-					// this pointer escape, but function will not be called until gameplay proper
-					lifeLostCallback.apply(bonzo);
-					return null;
-				}
+			bonzo -> {
+				currentWorld.restartBonzo(bonzo);
+				// this pointer escape, but function will not be called until gameplay proper
+				lifeLostCallback.accept(bonzo);
 			});
 		
 		currentWorld.setAllRedKeysCollectedCallback(

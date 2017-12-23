@@ -40,7 +40,6 @@ import org.erikaredmark.monkeyshines.editor.dialog.NewWorldDialog;
 import org.erikaredmark.monkeyshines.editor.exception.BadEditorPersistantFormatException;
 import org.erikaredmark.monkeyshines.editor.model.Template;
 import org.erikaredmark.monkeyshines.editor.persist.TemplateXmlReader;
-import org.erikaredmark.monkeyshines.editor.persist.TemplateXmlReader.TemplateIssue;
 import org.erikaredmark.monkeyshines.editor.persist.TemplateXmlWriter;
 import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.encoder.WorldIO;
@@ -51,9 +50,6 @@ import org.erikaredmark.monkeyshines.logging.MonkeyShinesLog;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.resource.WorldResource.UseIntent;
 import org.erikaredmark.util.BinaryLocation;
-
-import com.google.common.base.Function;
-
 
 /*
  * The main GUI for the level editor. Contains in it a JPanel just like the game that contains the current screen
@@ -70,72 +66,68 @@ public class LevelEditor extends JFrame {
 	// There may be many open templates at once. Stored as associative because editors should not open
 	// twice for the same template.
 	Map<Template, JInternalFrame> openTemplateEditors = new HashMap<>();
+	
+	// Package access intended; Makes it easier for palettes to perform actions defined
+	final LevelDrawingCanvas currentWorld;
 
 	// Initialised each time the current world changes. Null and not added to the pane
 	// when there is no world. Callback called whenever a new world is loaded into the editor
 	private BrushPalette brushPalette;
 	private TemplatePalette templatePalette;
-	private Function<World, Void> paletteUpdateCallback = new Function<World, Void>() {
-		@Override public Void apply(final World world) {
-			assert currentWorld != null : "Callback for palettes activated too early!";
-			// Remove original palettes if exists, create the new one, add it, and pack it.
-			if (brushPalette != null) {
-				brushPaletteFrame.remove(brushPalette);
-			}
-			
-			if (templatePalette != null) {
-				templatePaletteFrame.remove(templatePalette);
-			}
-			
-			brushPalette = new BrushPalette(LevelEditor.this, world.getResource() );
-			brushPaletteFrame.add(brushPalette, BorderLayout.CENTER);
-			brushPaletteFrame.setVisible(true);
-			brushPaletteFrame.repaint();
-			
-			// Load templates for the given world. TODO for now we ignore issues
-			List<Template> worldTemplates = Collections.emptyList();
-			final Path editorPreferencesLocation = BinaryLocation.BINARY_LOCATION.getParent().resolve("editor_prefs.xml");
-			if (Files.exists(editorPreferencesLocation) ) {
-				try (InputStream is = Files.newInputStream(editorPreferencesLocation) ) {
-					worldTemplates = 
-						TemplateXmlReader.read(
-							is, 
-							world, 
-							new Function<TemplateIssue, Void>() { @Override public Void apply(TemplateIssue t) { return null; } });
-				} catch (IOException | BadEditorPersistantFormatException e) {
-					LOGGER.log(Level.WARNING,
-							   "Could not open editor preferences (editor will have default preferences and no templates loaded: ",
-							   e);
-			}
-			}
-			
-			templatePalette = new TemplatePalette(
-				currentWorld, 
-				worldTemplates,
-				world,
-				new Function<List<Template>, Void>() {
-					@Override public Void apply(List<Template> newTemplates) {
-						try {
-							TemplateXmlWriter.writeOutTemplatesForWorld(editorPreferencesLocation, world.getWorldName(), newTemplates);
-						} catch (BadEditorPersistantFormatException e) {
-							JOptionPane.showMessageDialog(LevelEditor.this, "Could not save template data to preferences: " + e.getMessage() );
-							LOGGER.log(Level.SEVERE,
-									   "Could not save template data to preferences: " + e.getMessage(),
-									   e);
-						}
-						return null;
-					}
-				});
-			
-			templatePaletteFrame.add(templatePalette, BorderLayout.CENTER);
-			templatePaletteFrame.setVisible(true);
-			templatePaletteFrame.repaint();
-			return null;
+	
+	private void paletteUpdateCallback(World world) {
+		assert currentWorld != null : "Callback for palettes activated too early!";
+		// Remove original palettes if exists, create the new one, add it, and pack it.
+		if (brushPalette != null) {
+			brushPaletteFrame.remove(brushPalette);
 		}
 		
-	};
-	// Package access intended; Makes it easier for palettes to perform actions defined
-	final LevelDrawingCanvas currentWorld;
+		if (templatePalette != null) {
+			templatePaletteFrame.remove(templatePalette);
+		}
+		
+		brushPalette = new BrushPalette(LevelEditor.this, world.getResource() );
+		brushPaletteFrame.add(brushPalette, BorderLayout.CENTER);
+		brushPaletteFrame.setVisible(true);
+		brushPaletteFrame.repaint();
+		
+		// Load templates for the given world. TODO for now we ignore issues
+		List<Template> worldTemplates = Collections.emptyList();
+		final Path editorPreferencesLocation = BinaryLocation.BINARY_LOCATION.getParent().resolve("editor_prefs.xml");
+		if (Files.exists(editorPreferencesLocation) ) {
+			try (InputStream is = Files.newInputStream(editorPreferencesLocation) ) {
+				worldTemplates = 
+					TemplateXmlReader.read(
+						is, 
+						world, 
+						t -> {});
+			} catch (IOException | BadEditorPersistantFormatException e) {
+				LOGGER.log(Level.WARNING,
+						   "Could not open editor preferences (editor will have default preferences and no templates loaded: ",
+						   e);
+		}
+		}
+		
+		templatePalette = new TemplatePalette(
+			currentWorld, 
+			worldTemplates,
+			world,
+			newTemplates -> {
+				try {
+					TemplateXmlWriter.writeOutTemplatesForWorld(editorPreferencesLocation, world.getWorldName(), newTemplates);
+				} catch (BadEditorPersistantFormatException e) {
+					JOptionPane.showMessageDialog(LevelEditor.this, "Could not save template data to preferences: " + e.getMessage() );
+					LOGGER.log(Level.SEVERE,
+							   "Could not save template data to preferences: " + e.getMessage(),
+							   e);
+				}
+			});
+		
+		templatePaletteFrame.add(templatePalette, BorderLayout.CENTER);
+		templatePaletteFrame.setVisible(true);
+		templatePaletteFrame.repaint();
+	}
+
 	/* Only set during loading a world, and only used during saving.	*/
 	private Path defaultSaveLocation;
 	// Main menu Bar
@@ -607,7 +599,7 @@ public class LevelEditor extends JFrame {
 		canvasFrame = new JInternalFrame("Level");
 		canvasFrame.setLayout(new FlowLayout(FlowLayout.LEFT) );
 		
-		currentWorld = new LevelDrawingCanvas(paletteUpdateCallback);
+		currentWorld = new LevelDrawingCanvas(this::paletteUpdateCallback);
 		canvasFrame.add(currentWorld);
 		canvasFrame.pack();
 		

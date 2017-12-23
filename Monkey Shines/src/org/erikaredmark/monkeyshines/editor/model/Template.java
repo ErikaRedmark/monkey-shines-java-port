@@ -2,12 +2,12 @@ package org.erikaredmark.monkeyshines.editor.model;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.erikaredmark.monkeyshines.TileMap;
 import org.erikaredmark.monkeyshines.tiles.CommonTile;
 import org.erikaredmark.monkeyshines.tiles.TileType;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -239,7 +239,7 @@ public final class Template {
 			this(NO_FUNCTION);
 		};
 		
-		public Builder(final Function<Set<TemplateTile>, Void> callback ) {
+		public Builder(final Consumer<Set<TemplateTile>> callback ) {
 			this.callback = callback;
 		}
 		/**
@@ -263,7 +263,7 @@ public final class Template {
 		 */
 		public Builder addTile(int row, int col, TileType tile) {
 			tiles.add(new TemplateTile(row, col, tile) );
-			callback.apply(tiles);
+			callback.accept(tiles);
 			return this;
 		}
 		
@@ -305,13 +305,11 @@ public final class Template {
 		// A set so that duplicates (tiles in the same position) are properly removed. Replaced with basic array list when converted
 		// to a standard template since the only operation there is iteration over the list.
 		private final Set<TemplateTile> tiles = new HashSet<TemplateTile>();
-		private final Function<Set<TemplateTile>, Void> callback;
+		private final Consumer<Set<TemplateTile>> callback;
 	}
 	
 	// Intended for inner builder class, but Java rules require it to be declared outside.
-	private static final Function<Set<TemplateTile>, Void> NO_FUNCTION = new Function<Set<TemplateTile>, Void>() {
-		@Override public Void apply(Set<TemplateTile> arg0) { return null; }
-	};
+	private static final Consumer<Set<TemplateTile>> NO_FUNCTION = set -> {};
 	
 	/**
 	 * 

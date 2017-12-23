@@ -5,6 +5,7 @@ import java.awt.FlowLayout;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.List;
+import java.util.Optional;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -15,12 +16,10 @@ import org.erikaredmark.monkeyshines.Sprite;
 import org.erikaredmark.monkeyshines.bounds.IPoint2D;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 
-import com.google.common.base.Optional;
-
 public final class SpriteChooserDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
 	
-	private Optional<Sprite> selectedSprite = Optional.absent();
+	private Optional<Sprite> selectedSprite = Optional.empty();
 	
 	public SpriteChooserDialog(List<Sprite> sprites, WorldResource rsrc) {
 		getContentPane().setLayout(new FlowLayout(FlowLayout.LEFT) );

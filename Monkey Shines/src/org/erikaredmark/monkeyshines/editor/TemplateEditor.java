@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.function.Consumer;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -17,8 +18,6 @@ import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.background.Background;
 import org.erikaredmark.monkeyshines.background.SingleColorBackground;
 import org.erikaredmark.monkeyshines.editor.model.Template;
-
-import com.google.common.base.Function;
 
 /**
  * 
@@ -48,7 +47,7 @@ public class TemplateEditor extends JPanel {
 	 * 		if this editor was in a 'new template' state and not a 'modifying template' state.
 	 * 
 	 */
-	public TemplateEditor(Template initial, World world, final Function<TemplatePair, Void> saveAction) {
+	public TemplateEditor(Template initial, World world, final Consumer<TemplatePair> saveAction) {
 		
 		// Okay to be null
 		baseTemplate = initial;
@@ -178,11 +177,10 @@ public class TemplateEditor extends JPanel {
 
 		// Controls:
 		saveButton = new JButton("");
-		saveButton.addActionListener(new ActionListener() {
-			@Override public void actionPerformed(ActionEvent arg0) {
-				saveAction.apply(new TemplatePair(baseTemplate, Template.fromTileMap(internalEditor.getTileMap() ) ) );
-			}
+		saveButton.addActionListener(actionEvent -> {
+			saveAction.accept(new TemplatePair(baseTemplate, Template.fromTileMap(internalEditor.getTileMap() ) ) );
 		});
+		
 		add(saveButton);
 		
 		updateSaveButtonText();
@@ -218,7 +216,7 @@ public class TemplateEditor extends JPanel {
 	 * 		if this editor was in a 'new template' state and not a 'modifying template' state.
 	 * 
 	 */
-	public TemplateEditor(World world, Function<TemplatePair, Void> saveAction) {
+	public TemplateEditor(World world, Consumer<TemplatePair> saveAction) {
 		this(null, world, saveAction);
 	}
 	

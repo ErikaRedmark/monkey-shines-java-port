@@ -24,8 +24,6 @@ import org.erikaredmark.monkeyshines.global.SpecialSettings;
 import org.erikaredmark.monkeyshines.screendraw.StandardSurface;
 import org.erikaredmark.monkeyshines.util.GameEndCallback;
 
-import com.google.common.base.Function;
-
 /**
  * 
  * Represents the game running in full-screen mode.
@@ -78,38 +76,38 @@ public final class GameFullscreenWindow extends Frame {
 		
 		this.mainScreen = env.getDefaultScreenDevice();
 		
-		this.universe = 
-			new GameWorldLogic(keys,
-							   keyBindings,
-							   w,
-							   // Game over: set variable to stop loop
-							   new GameEndCallback() { 
-									@Override public void gameOverWin(World w) { 
-										// Allow tally screen
-										gameOverPreparations(false);
-										gameOverCallback.gameOverWin(w);
-									}
-									
-									@Override public void gameOverFail(World w) {
-										gameOverPreparations(true);
-										gameOverCallback.gameOverFail(w);
-									}
-									
-									@Override public void gameOverEscape(World w) {
-										gameOverPreparations(true);
-										gameOverCallback.gameOverEscape(w);
-									}
-							   },
-							   // Each game tick, rerender volatile
-							   new Runnable() { 
-								   @Override public void run() {
-									   // Whilst surface isn't initialised yet, the timer hasn't
-									   // started so this won't be called if surface is null.
-									   renderScene();
-								   } 
-							   },
-							   activateGraceAnimation,
-							   SpecialSettings.isThunderbird() );
+		this.universe = new GameWorldLogic(
+		    keys,
+		    keyBindings,
+		    w,
+		    // Game over: set variable to stop loop
+		    new GameEndCallback() { 
+		 		@Override public void gameOverWin(World w) { 
+		 			// Allow tally screen
+		 			gameOverPreparations(false);
+		 			gameOverCallback.gameOverWin(w);
+		 		}
+		 		
+		 		@Override public void gameOverFail(World w) {
+		 			gameOverPreparations(true);
+		 			gameOverCallback.gameOverFail(w);
+		 		}
+		 		
+		 		@Override public void gameOverEscape(World w) {
+		 			gameOverPreparations(true);
+		 			gameOverCallback.gameOverEscape(w);
+		 		}
+		    },
+		    // Each game tick, rerender volatile
+		    new Runnable() { 
+		 	   @Override public void run() {
+		 		   // Whilst surface isn't initialised yet, the timer hasn't
+		 	   // started so this won't be called if surface is null.
+		 		   renderScene();
+		 	   } 
+		    },
+		    this::activateGraceAnimation,
+		    SpecialSettings.isThunderbird() );
 		
 		this.surface = new StandardSurface(universe);
 		
@@ -120,7 +118,6 @@ public final class GameFullscreenWindow extends Frame {
 		// and window decoration.
 		setSize(640, 480);
 		setAlwaysOnTop(true);
-
 	}
 
 	/**
@@ -259,20 +256,7 @@ public final class GameFullscreenWindow extends Frame {
 		setVisible(false);
 		dispose();
 	}
-	
-	/**
-	 * Creates a new grace period animation object and freezes the game (not the music). Renderer will resume gameplay when
-	 * the animation indicates it is finished.
-	 */
-	private final Function<Bonzo, Void> activateGraceAnimation = new Function<Bonzo, Void>() {
-		@Override public Void apply(Bonzo bonzo) {
-			// repainting will NOT actual run the world, just paint it to allow the animation to run.
-			universe.freeze(false, renderScenePtr);
-			graceAnimation = new GracePeriodAnimation(universe.getBonzo(), (int)((double)(GameConstants.FRAMES_PER_SECOND * 1.5)), 0, 80);
-			return null;
-		}
-	};
-	
+
 	private Runnable renderScenePtr = new Runnable() { @Override public void run() { renderScene(); } };
 	
 
@@ -289,4 +273,16 @@ public final class GameFullscreenWindow extends Frame {
 	
 	// State variables for drawing.
 	private BufferStrategy buffer;
+	
+	
+	/**
+	 * Creates a new grace period animation object and freezes the game (not the music). Renderer will resume gameplay when
+	 * the animation indicates it is finished.
+	 */
+	private void activateGraceAnimation(Bonzo bonzo) {
+		// repainting will NOT actual run the world, just paint it to allow the animation to run.
+		universe.freeze(false, renderScenePtr);
+		graceAnimation = new GracePeriodAnimation(universe.getBonzo(), (int)((double)(GameConstants.FRAMES_PER_SECOND * 1.5)), 0, 80);
+	};
+	
 }

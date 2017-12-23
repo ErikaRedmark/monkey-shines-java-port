@@ -4,6 +4,7 @@ import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.erikaredmark.monkeyshines.Conveyer.Rotation;
 import org.erikaredmark.monkeyshines.resource.CoreResource;
@@ -13,8 +14,6 @@ import org.erikaredmark.monkeyshines.tiles.ConveyerTile;
 import org.erikaredmark.monkeyshines.tiles.TileType;
 import org.erikaredmark.monkeyshines.util.GameEndCallback;
 import org.erikaredmark.util.collection.RingArray;
-
-import com.google.common.base.Function;
 
 /**
  * 
@@ -109,7 +108,7 @@ public final class Bonzo {
 	// death animations and is only updated when bonzo is killed.
 	private DeathAnimation deathAnimation;
 	
-	private Function<Bonzo, Void> lifeLostCallback;
+	private Consumer<Bonzo> lifeLostCallback;
 	
 	/* **********************************************
 	 * 
@@ -153,7 +152,7 @@ public final class Bonzo {
 			     final int startingLives, 
 			     final Runnable scoreCallback, 
 			     final GameEndCallback gameEndCallback,
-			     final Function<Bonzo, Void> lifeLostCallback) {
+			     final Consumer<Bonzo> lifeLostCallback) {
 		
 		this.worldPointer = worldPointer;
 		this.scoreCallback = scoreCallback;
@@ -897,7 +896,7 @@ public final class Bonzo {
 					if (lives == -1) {
 						gameEndCallback.gameOverFail(worldPointer);
 					} else {
-						lifeLostCallback.apply(this);
+						lifeLostCallback.accept(this);
 					}
 				}
 				return;

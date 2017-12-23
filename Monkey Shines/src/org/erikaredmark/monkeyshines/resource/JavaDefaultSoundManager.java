@@ -1,6 +1,7 @@
 package org.erikaredmark.monkeyshines.resource;
 
 import java.beans.PropertyChangeEvent;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -14,8 +15,6 @@ import javax.sound.sampled.LineListener;
 import org.erikaredmark.monkeyshines.GameSoundEffect;
 import org.erikaredmark.monkeyshines.global.SoundSettings;
 import org.erikaredmark.monkeyshines.global.SoundUtils;
-
-import com.google.common.base.Optional;
 
 /**
  * 

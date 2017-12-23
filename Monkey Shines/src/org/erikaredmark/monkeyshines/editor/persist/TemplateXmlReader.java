@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -25,8 +26,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-
-import com.google.common.base.Function;
 
 /**
  * 
@@ -64,7 +63,7 @@ public final class TemplateXmlReader {
 	 * 		if the given stream is not a valid editor persistant format
 	 * 
 	 */
-	public static List<Template> read(InputStream s, World world, Function<TemplateIssue, Void> badTemplateCallback) throws BadEditorPersistantFormatException {
+	public static List<Template> read(InputStream s, World world, Consumer<TemplateIssue> badTemplateCallback) throws BadEditorPersistantFormatException {
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		try {
 			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
@@ -99,7 +98,7 @@ public final class TemplateXmlReader {
 						Node typeNode = attribs.getNamedItem("type");
 						
 						if (rowNode == null || colNode == null || idNode == null || typeNode == null) {
-							badTemplateCallback.apply(new TemplateIssue(tile, IssueType.TILE_MISSING_REQUIRED_ATTRIBUTES) );
+							badTemplateCallback.accept(new TemplateIssue(tile, IssueType.TILE_MISSING_REQUIRED_ATTRIBUTES) );
 							skipTemplate = true;
 							break;
 						}
@@ -121,7 +120,7 @@ public final class TemplateXmlReader {
 							break;
 						case HAZARDS:
 							if (!(TileTypes.canHazardFromId(id, world) ) ) {
-								badTemplateCallback.apply(new TemplateIssue(tile, IssueType.TILE_ID_NOT_AVAILABLE) );
+								badTemplateCallback.accept(new TemplateIssue(tile, IssueType.TILE_ID_NOT_AVAILABLE) );
 								skipTemplate = true;
 							} else {
 								tileType = TileTypes.hazardFromId(id, world);
@@ -129,7 +128,7 @@ public final class TemplateXmlReader {
 							break;
 						case CONVEYER_CLOCKWISE:
 							if (!(TileTypes.canConveyerFromId(id, world) ) ) {
-								badTemplateCallback.apply(new TemplateIssue(tile, IssueType.TILE_ID_NOT_AVAILABLE) );
+								badTemplateCallback.accept(new TemplateIssue(tile, IssueType.TILE_ID_NOT_AVAILABLE) );
 								skipTemplate = true;
 							} else {
 								tileType = TileTypes.clockwiseConveyerFromId(id, world);
@@ -137,7 +136,7 @@ public final class TemplateXmlReader {
 							break;
 						case CONVEYER_ANTI_CLOCKWISE:
 							if (!(TileTypes.canConveyerFromId(id, world) ) ) {
-								badTemplateCallback.apply(new TemplateIssue(tile, IssueType.TILE_ID_NOT_AVAILABLE) );
+								badTemplateCallback.accept(new TemplateIssue(tile, IssueType.TILE_ID_NOT_AVAILABLE) );
 								skipTemplate = true;
 							} else {
 								tileType = TileTypes.anticlockwiseConveyerFromId(id, world);
@@ -150,7 +149,7 @@ public final class TemplateXmlReader {
 							tileType = CommonTile.NONE;
 							break;
 						default:
-							badTemplateCallback.apply(new TemplateIssue(tile, IssueType.TILE_TYPE_UNKNOWN) );
+							badTemplateCallback.accept(new TemplateIssue(tile, IssueType.TILE_TYPE_UNKNOWN) );
 							skipTemplate = true;
 							break;
 						}

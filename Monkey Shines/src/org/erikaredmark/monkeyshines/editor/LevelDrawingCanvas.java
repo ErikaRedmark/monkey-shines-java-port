@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -47,10 +49,6 @@ import org.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 import org.erikaredmark.monkeyshines.resource.CoreResource;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
-
-
 /**
  * 
  * This window runs the same game engine that the game runs, and allows the user to edit the world. 
@@ -76,7 +74,7 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 	 * 		for other functions at require it in the main editor
 	 * 
 	 */
-	public LevelDrawingCanvas(final Function<World, Void> worldLoaded) {
+	public LevelDrawingCanvas(final Consumer<World> worldLoaded) {
 		super();
 		this.setLayout(null);
 		this.worldLoaded = worldLoaded;
@@ -136,7 +134,7 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 		changeState(EditorState.USE_MAP_EDITOR);
 		// Map editor initialised in setting screen editor.
 		currentMapEditor.setBrushAndId(TileBrush.SOLIDS, 0);
-		worldLoaded.apply(currentWorldEditor.getWorld() );
+		worldLoaded.accept(currentWorldEditor.getWorld() );
 	}
 	
 	// Sets the current screen editor, removing if needed the current map editor for the screen and adding a new one
@@ -481,7 +479,7 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 	public Optional<Sprite> resolveSpriteAtLocation(ImmutablePoint2D location) {
 		List<Sprite> sprites = currentScreenEditor.getSpritesWithin(location, 3);
 		switch(sprites.size() ) {
-		case 0: return Optional.absent();
+		case 0: return Optional.empty();
 		case 1: return Optional.of(sprites.get(0) );
 		// Most complex, requires dialog.
 		default: return SpriteChooserDialog.launch(this, sprites, this.currentWorldEditor.getWorldResource() );
@@ -905,7 +903,7 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 	// Toggled by user whilst drawing. Up to client classes to decide how to enable/disable this property
 	private boolean drawingCoordinates;
 	
-	private final Function<World, Void> worldLoaded;
+	private final Consumer<World> worldLoaded;
 	
 	// THESE MAY BE NULL!
 	private LevelScreenEditor currentScreenEditor;

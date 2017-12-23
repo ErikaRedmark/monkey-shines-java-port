@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,8 +33,6 @@ import org.erikaredmark.monkeyshines.global.SoundUtils;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException.Type;
 import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
-
-import com.google.common.base.Optional;
 
 /**
  * 
@@ -577,7 +576,7 @@ public final class WorldResource {
 				e);
 		}
 		
-		return Optional.absent();
+		return Optional.empty();
 	}
 	
 	/**

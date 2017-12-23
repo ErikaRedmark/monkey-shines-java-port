@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -19,13 +20,11 @@ import javax.swing.JToggleButton;
 import javax.swing.border.EtchedBorder;
 
 import org.erikaredmark.monkeyshines.World;
-import org.erikaredmark.monkeyshines.editor.TemplateEditor.TemplatePair;
 import org.erikaredmark.monkeyshines.editor.model.Template;
 import org.erikaredmark.monkeyshines.editor.model.TemplateUtils;
 import org.erikaredmark.monkeyshines.menu.MenuUtils;
 import org.erikaredmark.util.swing.layout.WrapLayout;
 
-import com.google.common.base.Function;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
@@ -70,7 +69,7 @@ public final class TemplatePalette extends JPanel {
 	public TemplatePalette(final LevelDrawingCanvas mainCanvas, 
 						   final List<Template> initialTemplates, 
 						   final World world,
-						   final Function<List<Template>, Void> templateSaveAction) {
+						   final Consumer<List<Template>> templateSaveAction) {
 		
 		// We must store this info, as we can dynamically create new template buttons and should have this already available.
 		this.world = world;
@@ -170,23 +169,19 @@ public final class TemplatePalette extends JPanel {
 					}
 				}
 				
-				templateSaveAction.apply(templatesToSave);
+				templateSaveAction.accept(templatesToSave);
 			}
 		});
 		
 		// Finally, on the far right side of the palette is the editor for modifying templates.
 		templateEditor = new TemplateEditor(
 			world, 
-			new Function<TemplatePair, Void>() {
-				@Override public Void apply(TemplatePair pair) {
-					// Check if the baseTemplate is null. If so, add the new one. Otherwise, replace.
-					if (pair.base == null) {
-						addTemplate(pair.modified, true);
-					} else {
-						replaceTemplate(pair.base, pair.modified);
-					}
-					
-					return null;
+			pair -> {
+				// Check if the baseTemplate is null. If so, add the new one. Otherwise, replace.
+				if (pair.base == null) {
+					addTemplate(pair.modified, true);
+				} else {
+					replaceTemplate(pair.base, pair.modified);
 				}
 			});
 		

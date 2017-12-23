@@ -1,6 +1,6 @@
 package org.erikaredmark.util;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * Static utility methods for converting Strings to numbers. Goal is to remove need for client code to use exceptions
@@ -22,7 +22,7 @@ public class StringToNumber {
 			Integer i = Integer.parseInt(value);
 			return Optional.of(i);
 		} catch (NumberFormatException e) {
-			return Optional.absent();
+			return Optional.empty();
 		}
 	}
 	

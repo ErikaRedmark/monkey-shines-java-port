@@ -21,8 +21,6 @@ import org.erikaredmark.monkeyshines.global.SpecialSettings;
 import org.erikaredmark.monkeyshines.screendraw.StandardSurface;
 import org.erikaredmark.monkeyshines.util.GameEndCallback;
 
-import com.google.common.base.Function;
-
 /**
  * 
  * Initialises a JPanel that holds the game window. This window is where all the action and
@@ -72,7 +70,7 @@ public final class GamePanel extends JPanel {
 				world,
 				endGameWrapped,
 				repaintCallback,
-				activateGraceAnimation,
+				this::activateGraceAnimation,
 				SpecialSettings.isThunderbird() );
 		
 		this.surface = new StandardSurface(universe);
@@ -210,24 +208,22 @@ public final class GamePanel extends JPanel {
 	
 	private final Runnable repaintCallback = new Runnable() { @Override public void run() { repaint(); } };
 	
-	/**
-	 * Creates a new grace period animation object and freezes the game (not the music). Renderer will resume gameplay when
-	 * the animation indicates it is finished.
-	 */
-	private final Function<Bonzo, Void> activateGraceAnimation = new Function<Bonzo, Void>() {
-		@Override public Void apply(Bonzo bonzo) {
-			// repainting will NOT actual run the world, just paint it to allow the animation to run.
-			universe.freeze(false, repaintCallback);
-			graceAnimation = new GracePeriodAnimation(universe.getBonzo(), (int)((double)(GameConstants.FRAMES_PER_SECOND * 1.5)), 0, 80);
-			return null;
-		}
-	};
-	
 	// The actual surface that will provide drawing to this component
 	private final GameWorldLogic universe;
 	private final StandardSurface surface;
 	
 	// Initially and may be null. If non-null, will be played alongside basic game rendering.
 	private GracePeriodAnimation graceAnimation;
+	
+	
+	/**
+	 * Creates a new grace period animation object and freezes the game (not the music). Renderer will resume gameplay when
+	 * the animation indicates it is finished.
+	 */
+	private void activateGraceAnimation(Bonzo bonzo) {
+		// repainting will NOT actual run the world, just paint it to allow the animation to run.
+		universe.freeze(false, repaintCallback);
+		graceAnimation = new GracePeriodAnimation(universe.getBonzo(), (int)((double)(GameConstants.FRAMES_PER_SECOND * 1.5)), 0, 80);
+	};
 	
 }

@@ -12,6 +12,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
+import java.util.Optional;
 
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -20,8 +21,6 @@ import javax.swing.plaf.basic.BasicArrowButton;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.editor.resource.EditorResource;
 import org.erikaredmark.util.StringToNumber;
-
-import com.google.common.base.Optional;
 
 /**
  * 
