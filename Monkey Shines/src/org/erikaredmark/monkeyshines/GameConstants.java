@@ -125,6 +125,9 @@ public final class GameConstants {
 	public static final int DOWN = 4;
 	public static final int CENTRE = -1;
 	
+	// Grace Period (when bonzo dies and world stops to show where bonzo is, it stops for this many frames)
+	public static final int GRACE_PERIOD_FRAMES = (int)((double)(GameConstants.FRAMES_PER_SECOND * 1.5));
+	
 	// Speed
 	// Number of milliseconds that make up a 'tick' of gameplay. Lower numbers mean faster gameplay and animation,
 	// and bigger numbers mean slower. This is automatically calculated from frames per second

@@ -6,6 +6,7 @@ import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.resource.AwtWorldGraphics;
 import org.erikaredmark.monkeyshines.resource.SlickWorldGraphics;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
+import org.newdawn.slick.Image;
 
 /**
  * 
@@ -146,8 +147,10 @@ public class CommonTile implements TileType {
 	}
 	
 	public void recomputeDrawStateSlick(SlickWorldGraphics slickGraphics) {
-		// TODO... although since only the editor does this it may not be needed...
-		throw new UnsupportedOperationException("Method not yet written");
+		Image tileSpriteSheet = slickGraphics.getStatelessTileTypeSheet(this.underlyingType);
+		int sheetCols = tileSpriteSheet.getWidth() / GameConstants.TILE_SIZE_X;
+		int sheetRows = tileSpriteSheet.getHeight() / GameConstants.TILE_SIZE_Y;
+		recomputeDrawState_internal(sheetCols, sheetRows);
 	}
 	
 	private void recomputeDrawState_internal(int sheetCols, int sheetRows) {

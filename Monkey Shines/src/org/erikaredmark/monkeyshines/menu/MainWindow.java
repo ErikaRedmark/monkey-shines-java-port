@@ -15,6 +15,8 @@ import javax.swing.JMenuItem;
 import org.erikaredmark.monkeyshines.GameSoundEffect;
 import org.erikaredmark.monkeyshines.HighScores;
 import org.erikaredmark.monkeyshines.KeyboardInput;
+import org.erikaredmark.monkeyshines.SlickMonkeyShines;
+import org.erikaredmark.monkeyshines.SlickMonkeyShines.UnloadedWorld;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.global.KeySettings;
 import org.erikaredmark.monkeyshines.global.MonkeyShinesPreferences;
@@ -23,6 +25,7 @@ import org.erikaredmark.monkeyshines.global.SpecialSettings;
 import org.erikaredmark.monkeyshines.global.VideoSettings;
 import org.erikaredmark.monkeyshines.resource.SoundManager;
 import org.erikaredmark.monkeyshines.util.GameEndCallback;
+import org.newdawn.slick.SlickException;
 import org.erikaredmark.monkeyshines.menu.SelectAWorld.WorldSelectionCallback;
 
 /**
@@ -41,16 +44,11 @@ public final class MainWindow extends JFrame {
 	private static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
 	
 	// The currently running game. May be null if no game is running or if game is running in fullscreen.
-	private GamePanel runningGameWindowed;
+//	private GamePanel runningGameWindowed;
 	
 	// The play game panel. This is always initialised as part of the playgame and leaves when that
 	// state is transitioned away. this is shown when the play game button is pressed
 	private SelectAWorld selectWorldPanel;
-	
-	// Carries the selected world state from the select world panel to the start game state transitions.
-	// Is nulled out after use. This isn't exactly happy code, but the alternative is add an optional
-	// parameter to all the state transition methods.
-	private World tempWorld;
 	
 	// Main menu displayed. May be null if the main menu is no longer displayed
 	private MainMenuWindow menu;
@@ -59,10 +57,6 @@ public final class MainWindow extends JFrame {
 	private ViewHighScores highScores;
 	
 	private GameState state = GameState.NONE;
-	
-	// current key setup is stored so it can be removed as an observer from the main window during state
-	// transitions
-	private KeyboardInput currentKeyListener;
 	
 	// Main menu Bar
 	private JMenuBar mainMenuBar = new JMenuBar();
@@ -148,27 +142,27 @@ public final class MainWindow extends JFrame {
 	 * 		{@code true} if state change is successful, {@code false} if otherwise
 	 * 
 	 */
-	private boolean playGame() {
-		boolean gameStarted = false;
-		if (VideoSettings.isFullscreen() ) {
-			// Try to run fullscreen, but fallback to windowed if unable to
-			if (!(setGameState(GameState.PLAYING_FULLSCREEN) ) ) {
-				gameStarted = setGameState(GameState.PLAYING_WINDOWED);
-			} else {
-				// Else if setting the game state to playing fullscreen succeeded.
-				gameStarted = true;
-			}
-		} else {
-			gameStarted = setGameState(GameState.PLAYING_WINDOWED);
-		}
-		
-		if (gameStarted) {
-			// Gave the world object to the game, no need to keep ref here anymore
-			tempWorld = null;
-		}
-		
-		return gameStarted;
-	}
+//	private boolean playGame() {
+//		boolean gameStarted = false;
+//		if (VideoSettings.isFullscreen() ) {
+//			// Try to run fullscreen, but fallback to windowed if unable to
+//			if (!(setGameState(GameState.PLAYING_FULLSCREEN) ) ) {
+//				gameStarted = setGameState(GameState.PLAYING_WINDOWED);
+//			} else {
+//				// Else if setting the game state to playing fullscreen succeeded.
+//				gameStarted = true;
+//			}
+//		} else {
+//			gameStarted = setGameState(GameState.PLAYING_WINDOWED);
+//		}
+//		
+//		if (gameStarted) {
+//			// Gave the world object to the game, no need to keep ref here anymore
+//			tempWorld = null;
+//		}
+//		
+//		return gameStarted;
+//	}
 	
 	// Sets the new game state and calls transition methods to modify the proper
 	// state information for this object
@@ -177,24 +171,6 @@ public final class MainWindow extends JFrame {
 		// This method will actually modify the state variable stored in this object automatically.
 		return state.transitionTo(this);
 	}
-	
-	// Called both ending a standard and a fullscreen game.
-	private final GameEndCallback gameEndCallback = new GameEndCallback() {
-		@Override public void gameOverFail(World w) {
-			setGameState(GameState.MENU);
-		}
-
-		@Override public void gameOverEscape(World w) {
-			setGameState(GameState.MENU);
-		}
-
-		@Override public void gameOverWin(World w) {
-			checkHighScore(w);
-			setGameState(GameState.HIGH_SCORES);
-		}
-
-	};
-
 	
 	private enum GameState {
 		// Note: always change state at END of method. Perform any possible actions that could prevent
@@ -207,16 +183,16 @@ public final class MainWindow extends JFrame {
 			@Override public boolean transitionTo(final MainWindow mainWindow) {
 				mainWindow.state.transitionFrom(mainWindow);
 				mainWindow.selectWorldPanel = new SelectAWorld(new WorldSelectionCallback() {
-					@Override public void worldSelected(final World world) {
-						// Consider this a state transition. Whilst appearing in transitionTo, remember
-						// this isn't actually called until after the transition since that must occur
-						// before the user can do anything.
-						mainWindow.tempWorld = world;
-						if (!(mainWindow.playGame() ) ) {
-							// This really shouldn't happen.
-							LOGGER.warning("Expected to start game but could not: preconditions for state transition not satisfied");
+					@Override public void worldSelected(final UnloadedWorld world) {
+						// Blocks intentionally until the game context is over.
+						try {
+							SlickMonkeyShines.startMonkeyShines(
+								world, 
+								KeySettings.getBindings(),
+								VideoSettings.isFullscreen());
+						} catch (SlickException e) {
+							LOGGER.log(Level.SEVERE, "Expected to start game but could not: " + e.getMessage(), e);
 						}
-						
 					}
 				});
 				
@@ -237,78 +213,78 @@ public final class MainWindow extends JFrame {
 				mainWindow.selectWorldPanel = null;
 			}
 		},
-		// Before changing to this state, tempWorld must be set.
-		PLAYING_WINDOWED {
-			@Override public boolean transitionTo(final MainWindow mainWindow) {
-				if (mainWindow.tempWorld == null)  return false;
-
-				
-				mainWindow.state.transitionFrom(mainWindow);
-				
-				mainWindow.currentKeyListener = new KeyboardInput();
-				mainWindow.runningGameWindowed = 
-					GamePanel.newGamePanel(mainWindow.currentKeyListener, 
-										   KeySettings.getBindings(),
-										   mainWindow.gameEndCallback, 
-										   mainWindow.tempWorld);
-				
-				// Ensure that keyboard events get focus for the listener
-				mainWindow.requestFocusInWindow();
-				
-				// Must add to both.
-				mainWindow.addKeyListener(mainWindow.currentKeyListener);
-				mainWindow.add(mainWindow.runningGameWindowed);
-				mainWindow.pack();
-				
-				mainWindow.state = this;
-				return true;
-			}
-
-			@Override protected void transitionFrom(MainWindow mainWindow) {
-				if (mainWindow.runningGameWindowed != null) {
-					
-					mainWindow.remove(mainWindow.runningGameWindowed);
-					mainWindow.runningGameWindowed.dispose();
-					// Nulling reference is important; running game state should be GC'ed as it will no longer be
-					// transitioned back to.
-					mainWindow.runningGameWindowed = null;
-					assert mainWindow.currentKeyListener != null : "Keyboard based game played without a keyboard listener?";
-					
-					mainWindow.removeKeyListener(mainWindow.currentKeyListener);
-				}
-			}
-		},
-		PLAYING_FULLSCREEN {
-			@Override public boolean transitionTo(MainWindow mainWindow) {
-				if (mainWindow.tempWorld == null)  return false;
-				
-				GameFullscreenWindow fullscreen = new GameFullscreenWindow(new KeyboardInput(), 
-																		   KeySettings.getBindings(),
-																		   mainWindow.gameEndCallback,
-																		   mainWindow.tempWorld);
-				
-				if (fullscreen.start() ) {
-					// Fullscreen should only have one active window
-					mainWindow.state.transitionFrom(mainWindow);
-					mainWindow.setVisible(false);
-					mainWindow.setIgnoreRepaint(true);
-					// Ensure that keyboard events get focus for the listener
-					mainWindow.requestFocusInWindow();
-					
-					mainWindow.state = this;
-					return true;
-				} else {
-					return false;
-				}
-			}
-
-			@Override protected void transitionFrom(MainWindow mainWindow) {
-				// bring back window
-				mainWindow.setVisible(true);
-				mainWindow.setIgnoreRepaint(false);
-			}
-			
-		},
+//		// Before changing to this state, tempWorld must be set.
+//		PLAYING_WINDOWED {
+//			@Override public boolean transitionTo(final MainWindow mainWindow) {
+//				if (mainWindow.tempWorld == null)  return false;
+//
+//				// This state transition 
+////				mainWindow.state.transitionFrom(mainWindow);
+////				
+////				mainWindow.currentKeyListener = new KeyboardInput();
+////				mainWindow.runningGameWindowed = 
+////					GamePanel.newGamePanel(mainWindow.currentKeyListener, 
+////										   KeySettings.getBindings(),
+////										   mainWindow.gameEndCallback, 
+////										   mainWindow.tempWorld);
+////				
+////				// Ensure that keyboard events get focus for the listener
+////				mainWindow.requestFocusInWindow();
+////				
+////				// Must add to both.
+////				mainWindow.addKeyListener(mainWindow.currentKeyListener);
+////				mainWindow.add(mainWindow.runningGameWindowed);
+////				mainWindow.pack();
+////				
+////				mainWindow.state = this;
+//				return true;
+//			}
+//
+//			@Override protected void transitionFrom(MainWindow mainWindow) {
+//				if (mainWindow.runningGameWindowed != null) {
+//					
+//					mainWindow.remove(mainWindow.runningGameWindowed);
+//					mainWindow.runningGameWindowed.dispose();
+//					// Nulling reference is important; running game state should be GC'ed as it will no longer be
+//					// transitioned back to.
+//					mainWindow.runningGameWindowed = null;
+//					assert mainWindow.currentKeyListener != null : "Keyboard based game played without a keyboard listener?";
+//					
+//					mainWindow.removeKeyListener(mainWindow.currentKeyListener);
+//				}
+//			}
+//		},
+//		PLAYING_FULLSCREEN {
+//			@Override public boolean transitionTo(MainWindow mainWindow) {
+//				if (mainWindow.tempWorld == null)  return false;
+//				
+//				GameFullscreenWindow fullscreen = new GameFullscreenWindow(new KeyboardInput(), 
+//																		   KeySettings.getBindings(),
+//																		   mainWindow.gameEndCallback,
+//																		   mainWindow.tempWorld);
+//				
+//				if (fullscreen.start() ) {
+//					// Fullscreen should only have one active window
+//					mainWindow.state.transitionFrom(mainWindow);
+//					mainWindow.setVisible(false);
+//					mainWindow.setIgnoreRepaint(true);
+//					// Ensure that keyboard events get focus for the listener
+//					mainWindow.requestFocusInWindow();
+//					
+//					mainWindow.state = this;
+//					return true;
+//				} else {
+//					return false;
+//				}
+//			}
+//
+//			@Override protected void transitionFrom(MainWindow mainWindow) {
+//				// bring back window
+//				mainWindow.setVisible(true);
+//				mainWindow.setIgnoreRepaint(false);
+//			}
+//			
+//		},
 		MENU {
 			@Override public boolean transitionTo(MainWindow mainWindow) {
 				mainWindow.state.transitionFrom(mainWindow);
@@ -392,7 +368,6 @@ public final class MainWindow extends JFrame {
 	}
 	
 	/**
-	 * 
 	 * Determines if the level score is sufficient enough for the high scores (read from a file when this method
 	 * is called), and if so fires up the dialog and prompts the user to enter their name. No further state change
 	 * continues until they do so making this a blocking call.
@@ -406,7 +381,6 @@ public final class MainWindow extends JFrame {
 	 * 
 	 * @param w
 	 * 		the world that was completed.
-	 * 
 	 */
 	private void checkHighScore(World w) {
 		if (!(w.isWorldFinished() ) ) {

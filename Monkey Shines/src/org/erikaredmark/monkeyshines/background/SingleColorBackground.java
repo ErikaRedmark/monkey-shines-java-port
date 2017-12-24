@@ -15,9 +15,11 @@ import java.awt.Color;
 public class SingleColorBackground extends Background {
 
 	private final Color color;
+	private final org.newdawn.slick.Color slickColor;
 	
 	public SingleColorBackground(final Color color) {
 		this.color = color;
+		this.slickColor = new org.newdawn.slick.Color(color.getRed(), color.getGreen(), color.getBlue());
 	}
 	
 	/**
@@ -27,6 +29,14 @@ public class SingleColorBackground extends Background {
 	 */
 	public Color getColor() {
 		return color;
+	}
+
+	/**
+	 * Returns the color in Slick form.
+	 * @return
+	 */
+	public org.newdawn.slick.Color getColorSlick() {
+		return slickColor;
 	}
 	
 }

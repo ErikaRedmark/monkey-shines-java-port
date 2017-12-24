@@ -310,7 +310,10 @@ public class PackReader {
 	}
 	
 	/**
-	 * Loads the pack at the given location for use in the main game.
+	 * Loads the pack at the given location for use in the main game. This must be called AFTER an OpenGL
+	 * context has been created, so the pack loading should only be done within a Slick {@code BasicGame}
+	 * init method
+	 * or when it is otherwise available
 	 * @param packFile
 	 * @return
 	 * @throws ResourcePackException
@@ -432,7 +435,6 @@ public class PackReader {
 					break;
 				// All other types are handled in default, as many different names may belong to one 'class' of things.
 				default:
-					// TODO repeated code here: consider refactoring?
 					/* -------------------- Backgrounds -------------------- */
 					if (entryName.matches("^background[0-9]+\\.png$") ) {
 						int index = indexFromName(entryName);
@@ -451,7 +453,7 @@ public class PackReader {
 							if (sprites[index] != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
 						}
 						if (index > maxSpriteIndex) maxSpriteIndex = index;
-						Image tempSprite = new Image(zipFile.getInputStream(entry), "sprite", false);
+						Image tempSprite = new Image(zipFile.getInputStream(entry), "sprite" + index, false);
 						sprites[index] = tempSprite;
 					} else if (entryName.matches("^pattern[0-9]+\\.png$") ) {
 						int index = indexFromName(entryName);
@@ -459,7 +461,7 @@ public class PackReader {
 							if (patterns[index] != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
 						}
 						if (index > maxPatternIndex) maxPatternIndex = index;
-						Image tempPattern = new Image(zipFile.getInputStream(entry), "pattern", false);
+						Image tempPattern = new Image(zipFile.getInputStream(entry), "pattern" + index, false);
 						patterns[index] = tempPattern;
 					/* ---------------------- Sounds ----------------------- */
 					// Due to the nature of graphics amounts being unknown,

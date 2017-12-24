@@ -1,12 +1,5 @@
 package org.erikaredmark.monkeyshines;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.util.function.Consumer;
-
-import javax.swing.Timer;
-
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.util.GameEndCallback;
 
@@ -22,33 +15,24 @@ import org.erikaredmark.monkeyshines.util.GameEndCallback;
  * the world is 'painted' onto some graphics context should either be equal to or faster than
  * this speed (most likely equal for passive rendering, and faster for active) for the best
  * user experience.
- * <p/>
- * Practically speaking, this allows both a windowed mode and a fullscreen mode.
  * 
  * @author Erika Redmark
  *
  */
 public final class GameWorldLogic {
-	// The primary flow of time
-	private final Timer gameTimer;
-	
 	// Started when the last key is collected, stopped when the 'bonus score' hits zero.
-	private final Timer bonusTimer;
+	// Starts at -1. Once activated, it loops between 0 and GameConstants.BONUS_COUNTDOWN_DELAY.
+	// The easiest way to poll this is to check each update tick if this is 0.
+	private long bonusTimer = -1;
+	private int[] bonusDigits = new int[] { 9, 9, 9, 9 };
+	public static int BONUS_NUM_DIGITS = 4;
 	
-	// Started when the game is frozen, stopped when the game is unfrozen. Acts as a second flow of time when
-	// the game is frozen, allowing rendering, animating, pause menus, or other manner of stuff to function
-	// whilst the game itself is no longer technically running. Unlike other timers, this timer may be null
-	// and is always constructed upon starting with a new callback.
-	private Timer freezeTimer;
+	// When paused, the game world does not process all updates.
+	private boolean paused;
 	
 	// The player and the world
 	private Bonzo bonzo;
 	private World currentWorld;
-	
-	// The splash screen. When true, the splash screen is displayed. Automatically
-	// set to false after a certain amount of running time.
-	private boolean splash;
-	private int splashCounter;
 	
 	/* -------------------- Digits ---------------------- */
 	/* Numerical values displayed in the UI are broken up
@@ -61,16 +45,23 @@ public final class GameWorldLogic {
 	// Default value 0 is guaranteed by language. Bonzo's score always starts at 0
 	private final int digits[] = new int[SCORE_NUM_DIGITS];
 	
-	// Bonus digits
-	public static int BONUS_NUM_DIGITS = 4;
-	// Each new game starts with 10000 countdown, represented by 9999
-	private int countdownDigits[] = new int[] {9, 9, 9, 9};
+	/* ------------------- Grace Animation ------------------ */
+	// When bonzo dies, the game world is in a state of 'grace'
+	// for a few moments. It is in grace when this timer is changed from
+	// -1 to 0, and whilst in grace it counts up to GameConstants.GRACE_PERIOD_FRAMES
+	// before resetting back to -1.
+	// Whilst in grace, renderers should instead draw an overlay over the world
+	// based on how close the grace period is to ending.
+	private int grace = -1;
+	
 
 	/**
-	 * 
-	 * Constructs the living game world. Gigantic constructor but admittedly it
-	 * is the parent object for running the world. Most parameters are callbacks
-	 * to the UI for critical actions.
+	 * Constructs the living game world. This is essentially the universe wrapping the 
+	 * static {@code World} to make it come alive. This includes information about whether
+	 * a grace animation should run, whether it is paused, etc.
+	 * <p/>
+	 * There are no callbacks. This is intended only for use within an update loop that
+	 * updates and polls when needed.
 	 * <p/>
 	 * This world will be in 'stasis', as in not running, when created. {@code start}
 	 * must be called.
@@ -87,11 +78,6 @@ public final class GameWorldLogic {
 	 * @param endGameCallback
 	 * 		a callback for when the game ends
 	 * 
-	 * @param gameTickCallback
-	 * 		a callback for each tick of the game. This indicates that whatever buffer is holding
-	 * 		the 'image' of the game will have to be updated because it no longer reflects the
-	 * 		game state
-	 * 
 	 * @param lifeLostCallback
 	 * 		a callback when bonzo loses a life but it isn't game over. Note that bonzo's life counter
 	 * 		has already decremented, and at the point of this call, bonzo has already 'restarted' on
@@ -102,20 +88,13 @@ public final class GameWorldLogic {
 	 * 		{@code true} to enter playtesting, infinite lives mode, {@code false} if otherwise
 	 * 
 	 */
-	public GameWorldLogic(final KeyboardInput keys, 
-			  			  final KeyBindings keyBindings,
-						  final World world,
+	public GameWorldLogic(final World world,
 			  			  final GameEndCallback gameEndCallback,
-						  final Runnable gameTickCallback,
-						  final Consumer<Bonzo> lifeLostCallback,
 						  final boolean playtestMode) {
 		
-		assert keys != null;
-
 		this.currentWorld = world;
 
 		bonzo = new Bonzo(currentWorld,
-			// DEBUG: Will eventually be based on difficulty
 			playtestMode ? Bonzo.INFINITE_LIVES : 4,
 			new Runnable() { @Override public void run() { scoreUpdate(); } },
 			new GameEndCallback() {
@@ -126,165 +105,75 @@ public final class GameWorldLogic {
 			bonzo -> {
 				currentWorld.restartBonzo(bonzo);
 				// this pointer escape, but function will not be called until gameplay proper
-				lifeLostCallback.accept(bonzo);
+				activateGrace();
 			});
 		
-		currentWorld.setAllRedKeysCollectedCallback(
-			new Runnable() { 
-				@Override public void run() { 
-					redKeysCollected(); 
-				} 
-			});
-		
-		gameTimer = new Timer(GameConstants.GAME_SPEED, new ActionListener() {
-			/**
-			 * Polls the keyboard for valid operations the player may make on Bonzo. During gameplay, 
-			 * the only allowed operations are moving left/right or jumping. 
-			 * This is the method called every tick to run the game logic. This is effectively the
-			 * 'entry point' to the main game loop.
-			 */
-			public void actionPerformed(ActionEvent e) {
-				// If splash screen is showing, the only thing we run is the game tick callback, for painting.
-				// When the client calls paintTo, it will decrement the splash tick and eventually remove the
-				// screen. We don't want stuff happening during splash.
-				
-				if (!(splash) ) {
-					// Poll Keyboard
-					keys.poll();
-					if (keys.keyDown(keyBindings.left) ) {
-						bonzo.move(-1);
-					}
-					if (keys.keyDown(keyBindings.right) ) {
-						bonzo.move(1);
-					}
-					if (keys.keyDown(keyBindings.jump) ) {
-						bonzo.jump(4);
-					}
-					
-					// The only hardcoded key: Esc is a game over
-					if (keys.keyDown(KeyEvent.VK_ESCAPE) ) {
-						endGame_internal(); 
-						gameEndCallback.gameOverEscape(world);
-					}
-					
-					// Update the game first before calling what is possibly a paint
-					// routine.
-					currentWorld.update();
-					bonzo.update();
-				}
-				
-				gameTickCallback.run();
-			}
-		});
-		
-		bonusTimer = new Timer(GameConstants.BONUS_COUNTDOWN_DELAY, new ActionListener() {
-			/**
-			 * Counts down the bonus score for this game session. Stops itself at zero. This will
-			 * also be stopped when bonzo reaches the exit door or dies.
-			 */
-			public void actionPerformed(ActionEvent e) {
-				// Note: Bonus starts at 10000. We only DISPLAY 9999 and because the
-				// update function never runs until the first update and painting, it will end
-				// up redrawing the value 9990.
+		currentWorld.setAllRedKeysCollectedCallback( () -> redKeysCollected());
+	}
+	
+	/** Returns the digits in the bonus countdown in a form that is easy to draw, where
+	 *  each index has a digit 0-9 only. Bonus numbers are made of four digits always.
+	 *  This returned array is the backing array and should not be modified by the caller.
+	 *  It is intended for rendering logic only.
+	 */
+	public int[] getBonusDigits() {
+		return bonusDigits;
+	}
+	
+	public boolean isBonusTickingDown()
+		{ return bonusTimer != -1; }
+	
+	public void updateBonusTick() {
+		if (bonusTimer != -1) {
+			bonusTimer = (bonusTimer + 1) % GameConstants.BONUS_COUNTDOWN_DELAY;
+			if (bonusTimer == 0)
+			{
 				boolean keepCounting = currentWorld.bonusCountdown();
-				createDigits(countdownDigits, BONUS_NUM_DIGITS, currentWorld.getCurrentBonus() );
+				createDigits(bonusDigits, BONUS_NUM_DIGITS, currentWorld.getCurrentBonus() );
 				
-				if (!(keepCounting) )  bonusTimer.stop();
+				if (!(keepCounting) )
+					{ bonusTimer = -1; }
 			}
-		});
-	}
-	
-	/**
-	 * Intended only for drawing utilities.
-	 * Sets the splash display to 'splash'. If true, resets the splash counter.
-	 * <p/>
-	 * Do not set the variable directly or the counter will not be reset.
-	 * 
-	 * @param splash
-	 * 		{@code true} to show splash screen, {@code false} to shut it off
-	 * 
-	 */
-	public void setSplash(boolean showSplash) {
-		splash = showSplash;
-		splashCounter =   showSplash 
-						? GameConstants.SPLASH_TICKS
-						: 0;
-	}
-	
-	/** Intended only for drawing utilities */
-	public int getSplashCounter() { return splashCounter; }
-	
-	/**
-	 * 
-	 * Starts time. Does nothing if time has already started.
-	 * Both the running music and the timer will operate on a different thread than what called this method.
-	 * 
-	 * @param showSplash
-	 * 		if {@code true}, the splash screen will be drawn for however many game ticks
-	 * 		equate to 4 seconds.
-	 * 
-	 */
-	public void start(boolean showSplash) {
-		setSplash(showSplash);
-		gameTimer.start();
-		this.currentWorld.getResource().getSoundManager().playMusic();
-	}
-	
-	/**
-	 * 
-	 * Returns {@code true} if the splash screen is being shown.
-	 * If so, normally renders should render from 0,0 origin point, and not account for UI.
-	 * 
-	 */
-	public boolean showingSplash() {
-		return splash;
-	}
-	
-	/**
-	 * 
-	 * Freezes time. Game will not respond to user events and will not update. Does
-	 * nothing if time has already been frozen.
-	 * <p/>
-	 * A second timer is spawned with the same rate as the one stopped, and it will
-	 * call the passed callback. This allows special things, like painting or animating,
-	 * to be done even when the actual game-clock is stopped.
-	 * 
-	 * @param freezeMusic
-	 * 		{@code true} to stop the music, {@code false} to allow it to continue playing.
-	 * 
-	 * @param tickCallback
-	 * 		a second tick callback function that will fire each tick the game is frozen.
-	 * 
-	 */
-	public void freeze(boolean freezeMusic, final Runnable tickCallback) {
-		gameTimer.stop();
-		if (freezeMusic) {
-			this.currentWorld.getResource().getSoundManager().stopPlayingMusic();
 		}
-		
-		freezeTimer = new Timer(GameConstants.GAME_SPEED, new ActionListener() {
-			@Override public void actionPerformed(ActionEvent e) {
-				tickCallback.run();
-			}
-		});
-		freezeTimer.start();
+	}
+	
+	/** Called per tick of gameplay. Gameplay ticks must be clamped at proper speed; this class
+	 *  has no concept of dealing with delta values.
+	 *  Regardless of the state of the game world, this should always be called every update tick.
+	 *  Grace period, pause, and other states are all handled properly here, and the proper items
+	 *  will update the proper amount as long as this is consistently called every tick.
+	 */
+	public void update() {
+		if (!paused && grace == -1) {
+			currentWorld.update();
+			bonzo.update();
+		} else if (grace != -1) {
+			updateGrace();
+		}
+		// otherwise it is just paused.
+	}
+	
+	private void activateGrace() {
+		grace = 0;
+		paused = false;
+	}
+	
+	private void updateGrace() {
+		++grace;
+		if (grace >= GameConstants.GRACE_PERIOD_FRAMES)
+			{ grace = -1; }
+	}
+	
+	/** Pauses the game. Does nothing if the grace period is active. */
+	public void pause(boolean p) { 
+		if (grace == -1)
+			{ paused = p; } 
 	}
 	
 	/**
-	 * 
-	 * Unfreezesm time. Game will respond normally to events and update. Does nothing if the
-	 * game is already unfrozen. if the music was stopped, will resume.
-	 * 
+	 * Starts up background music
 	 */
-	public void unfreeze() {
-		if (!(gameTimer.isRunning() ) ) {
-			assert freezeTimer != null : "No freeze timer was started during a game freeze!";
-			freezeTimer.stop();
-			freezeTimer = null;
-			
-			gameTimer.start();
-		}
-		
+	public void startBgm() {
 		this.currentWorld.getResource().getSoundManager().playMusic();
 	}
 	
@@ -321,66 +210,34 @@ public final class GameWorldLogic {
 
 	
 	// Called when bonzo has collected all the red keys.
-	private void redKeysCollected() {
-		// Start the countdown timer
-		bonusTimer.start();
-	}
+	private void redKeysCollected() { bonusTimer = 0; }
 	
 	// Common code for all types of game endings
 	private void endGame_internal() {
-		bonusTimer.stop();
+		bonusTimer = -1;
 		currentWorld.getResource().getSoundManager().stopPlayingMusic();
 		currentWorld.worldFinished(bonzo);
 	}
 	
-	/**
-	 * 
-	 * Returns the resource data for the world that is currently running.
-	 * 
-	 * @return
-	 * 
+	/**bonusDigits
+	 * Returns the resource data for the world that is currently running. Note that when using 
+	 * {@code GameWorldLogic, it is in the context of the actual game and not the level editor,
+	 * so the resource will always have Slick based graphics.cfc
 	 */
-	public WorldResource getResource() {
-		return currentWorld.getResource();
-	}
+	public WorldResource getResource() { return currentWorld.getResource(); }
 	
 	/**
-	 * 
 	 * Returns a numerical representation of bonzos health, required
 	 * to draw the health bar. 
-	 * 
-	 * @return
-	 * 
 	 */
-	public int getBonzoHealth() {
-		return bonzo.getHealth();
-	}
+	public int getBonzoHealth() { return bonzo.getHealth(); }
 	
 	/**
-	 * 
 	 * Returns the array of digits, from most to least significant, that represent
 	 * the current player score. The returned array IS the backing array and should not
 	 * be modified by the caller.
-	 * 
-	 * @return
-	 * 
 	 */
-	public int[] getScoreDigits() {
-		return digits;
-	}
-	
-	/**
-	 * 
-	 * Returns the array of digits, from most to least significant, that represent
-	 * the countdown for the bonus, which is started when the last red key is collected.
-	 * The returned array IS the backing array and should not be modified by the caller.
-	 * 
-	 * @return
-	 * 
-	 */
-	public int[] getBonusDigits() {
-		return countdownDigits;
-	}
+	public int[] getScoreDigits() { return digits; }
 	
 	/**
 	 * 
@@ -394,12 +251,9 @@ public final class GameWorldLogic {
 	 * @return
 	 * 
 	 */
-	public int getLifeDigit() {
-		return bonzo.getLives();
-	}
+	public int getLifeDigit() { return bonzo.getLives(); }
 	
 	/**
-	 * 
 	 * Determines if a powerup is visible in the powerup-indicator on the UI. This does
 	 * NOT say if bonzo HAS a powerup, only if it should be drawn or not. Powerups are
 	 * still available and not drawn when they are 'fading'. This is for drawing purposes
@@ -407,23 +261,14 @@ public final class GameWorldLogic {
 	 * 
 	 * @return
 	 * 		{@code true} if a powerup should be drawn, {@code false} if otherwise
-	 * 
 	 */
-	public boolean isPowerupVisible() {
-		return bonzo.powerupUIVisible();
-	}
+	public boolean isPowerupVisible() { return bonzo.powerupUIVisible(); }
 	
 	/**
-	 * 
 	 * Returns the current powerup bonzo is holding. This should only be called if
 	 * {@code isPowerupVisible} returns {@code true}.
-	 * 
-	 * @return
-	 * 
 	 */
-	public Powerup getCurrentPowerup() {
-		return bonzo.getCurrentPowerup();
-	}
+	public Powerup getCurrentPowerup() { return bonzo.getCurrentPowerup(); }
 	
 	/**
 	 * 
@@ -432,18 +277,7 @@ public final class GameWorldLogic {
 	 * Failure to call will result in memory leaks.
 	 * 
 	 */
-	public void dispose() {
-		currentWorld.getResource().dispose();
-		gameTimer.stop();
-		bonusTimer.stop();
-	}
+	public void dispose() { currentWorld.getResource().dispose(); }
 
-	public Bonzo getBonzo() {
-		return bonzo;
-	}
-
-	/** Private to rendering methods that are rendering the splash screen first. */
-	public void decrementSplashCounter() {
-		--splashCounter;
-	}
+	public Bonzo getBonzo() { return bonzo; }
 }

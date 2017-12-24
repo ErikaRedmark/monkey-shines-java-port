@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,6 +21,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import org.erikaredmark.monkeyshines.SlickMonkeyShines.UnloadedWorld;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.encoder.WorldIO;
@@ -105,7 +107,7 @@ public final class SelectAWorld extends JPanel {
 		spookedButton.setLocation(SPOOKED_X, NON_OTHER_Y);
 		spookedButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-				World world = loadInternalWorld(SelectAWorld.this, InternalWorld.SPOOKED);
+				UnloadedWorld world = loadInternalWorld(SelectAWorld.this, InternalWorld.SPOOKED);
 				if (world != null) {
 					callback.worldSelected(world);
 				}
@@ -118,7 +120,7 @@ public final class SelectAWorld extends JPanel {
 		spacedButton.setLocation(SPACED_OUT_X, NON_OTHER_Y);
 		spacedButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-				World world = loadInternalWorld(SelectAWorld.this, InternalWorld.SPACED_OUT);
+				UnloadedWorld world = loadInternalWorld(SelectAWorld.this, InternalWorld.SPACED_OUT);
 				if (world != null) {
 					callback.worldSelected(world);
 				}
@@ -131,7 +133,7 @@ public final class SelectAWorld extends JPanel {
 		aboutTheHouseButton.setLocation(ABOUT_THE_HOUSE_X, NON_OTHER_Y);
 		aboutTheHouseButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-				World world = loadInternalWorld(SelectAWorld.this, InternalWorld.ABOUT_THE_HOUSE);
+				UnloadedWorld world = loadInternalWorld(SelectAWorld.this, InternalWorld.ABOUT_THE_HOUSE);
 				if (world != null) {
 					callback.worldSelected(world);
 				}
@@ -144,7 +146,7 @@ public final class SelectAWorld extends JPanel {
 		inTheDrinkButton.setLocation(IN_THE_DRINK_X, NON_OTHER_Y);
 		inTheDrinkButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-				World world = loadInternalWorld(SelectAWorld.this, InternalWorld.IN_THE_DRINK);
+				UnloadedWorld world = loadInternalWorld(SelectAWorld.this, InternalWorld.IN_THE_DRINK);
 				if (world != null) {
 					callback.worldSelected(world);
 				}
@@ -157,7 +159,7 @@ public final class SelectAWorld extends JPanel {
 		inTheSwingButton.setLocation(IN_THE_SWING_X, NON_OTHER_Y);
 		inTheSwingButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-				World world = loadInternalWorld(SelectAWorld.this, InternalWorld.IN_THE_SWING);
+				UnloadedWorld world = loadInternalWorld(SelectAWorld.this, InternalWorld.IN_THE_SWING);
 				if (world != null) {
 					callback.worldSelected(world);
 				}
@@ -170,10 +172,8 @@ public final class SelectAWorld extends JPanel {
 		otherButton.setLocation(OTHER_X, OTHER_Y);
 		otherButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-				World world = loadCustomWorld(SelectAWorld.this);
-				if (world != null) {
-					callback.worldSelected(world);
-				}
+				Optional<UnloadedWorld> world = loadCustomWorld(SelectAWorld.this);
+				world.ifPresent(callback::worldSelected);
 			}
 		});
 		
@@ -185,15 +185,12 @@ public final class SelectAWorld extends JPanel {
 	}
 	
 	/**
-	 * 
-	 * Loads an internal world in this .jar. If this fails, the .jar is bad, and a dialog will appear
-	 * with the exception info and an exception stacktrace will be logged. Otherwise, loads the level
-	 * from the .jar with the given name.
-	 * 
-	 * @param name
-	 * @return
+	 * Returns an unloaded world from the stock ones in this .jar. If this fails, the .jar is bad, 
+	 * and a dialog will appear
+	 * with the exception info and an exception stacktrace will be logged. Otherwise, the returned object
+	 * can be used with {@code SlickMonkeyShines} to load the world.
 	 */
-	private static World loadInternalWorld(Component parent, InternalWorld chosenWorld) {
+	private static UnloadedWorld loadInternalWorld(Component parent, InternalWorld chosenWorld) {
 		// Can skip WorldIO and just jump to Encoded since we have a stream.
 		try (InputStream is = SelectAWorld.class.getResourceAsStream(chosenWorld.internalPath);
 			 InputStream rsrcIs = SelectAWorld.class.getResourceAsStream(chosenWorld.internalResourcePath) ) {
@@ -207,20 +204,11 @@ public final class SelectAWorld extends JPanel {
 			
 			// TODO use Slick based graphics. However, for time being, AWT is standin
 			// until Slick infrastructure is ready.
-//			WorldResource rsrc = PackReader.fromPackSlick(tempRsrc);
-			WorldResource rsrc = PackReader.fromPackAwt(tempRsrc);
+//			WorldResource rsrc = PackReader.fromPackAwt(tempRsrc);
 			
 			// Clean up temporary files
-			try {
-				Files.delete(tempRsrc);
-				Files.delete(tempRsrcDir);
-			} catch (IOException e) {
-				LOGGER.log(Level.WARNING,
-						   CLASS_NAME + ": Could not delete temporary files (should not affect gameplay) due to: " + e.getMessage(),
-						   e);
-			}
 			
-			return world.newWorldInstance(rsrc);
+			return new UnloadedWorld(world, tempRsrc, true);
 		} catch (Exception e) {
 			LOGGER.severe(CLASS_NAME + ": Missing world " + chosenWorld.internalPath + " from .jar file. Possible .jar corruption.");
 			handleWorldLoadException(parent, e);
@@ -230,13 +218,11 @@ public final class SelectAWorld extends JPanel {
 	}
 
 	/**
-	 * 
-	 * Attempts to load a world by giving the user a file chooser. If a world is loaded, bonzo is set and
-	 * gameplay begins proper. Otherwise, state does not transition to playing and user remains back on main
-	 * menu.
+	 * Returns both the encoded world and a path to the resource pack (if available)
+	 * after a selection.
 	 * <p/>
-	 * The world will be fully constructed and set up when returned and can be passed directly to a 
-	 * {@code GameWindow} to be played.
+	 * The world construction must be deferred until the init method of {@code SlickMonkeyShines}.
+	 * The result of this is typically passed there.
 	 * 
 	 * @param parent
 	 * 		the parent component for displaying the dialog on
@@ -245,7 +231,7 @@ public final class SelectAWorld extends JPanel {
 	 * 		the selected world, or {@code null} if no world was selected.
 	 * 
 	 */
-	public static World loadCustomWorld(final Component parent) {
+	public static Optional<UnloadedWorld> loadCustomWorld(final Component parent) {
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setCurrentDirectory(BinaryLocation.BINARY_LOCATION.toFile() );
 		System.out.println(fileChooser.getCurrentDirectory() );
@@ -259,8 +245,7 @@ public final class SelectAWorld extends JPanel {
 				// Remove .world extension so we can substitute with .zip.
 				String worldName = fileName.substring(0, fileName.lastIndexOf('.') );
 				Path packFile = worldFile.getParent().resolve(worldName + ".zip");
-				WorldResource rsrc = PackReader.fromPackSlick(packFile);
-				return world.newWorldInstance(rsrc);
+				return Optional.of(new UnloadedWorld(world, packFile, false));
 			} catch (Exception e) {
 				// See method. Instances in if/else are the exception we expect to catch.
 				// This technically catches everything but I see no reason why any exceptions
@@ -270,7 +255,7 @@ public final class SelectAWorld extends JPanel {
 		}
 		
 		// no world chosen if method hasn't returned yet
-		return null;
+		return Optional.empty();
 	}
 
 	private static void handleWorldLoadException(final Component parent, Exception ex) {
@@ -374,7 +359,7 @@ public final class SelectAWorld extends JPanel {
 	
 	/**
 	 * 
-	 * Effectively a runnable that is called with a World reference. Used to communicate back to the client
+	 * Effectively a runnable that is called with an {@code UnloadedWorld} reference. Used to communicate back to the client
 	 * creating this panel the selected world. Typically this being called, the client will close or otherwise
 	 * dispose of the panel.
 	 * 
@@ -382,7 +367,7 @@ public final class SelectAWorld extends JPanel {
 	 *
 	 */
 	public interface WorldSelectionCallback {
-		void worldSelected(World world);
+		void worldSelected(UnloadedWorld world);
 	}
 	
 }

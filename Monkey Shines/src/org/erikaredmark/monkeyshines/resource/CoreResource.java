@@ -102,7 +102,7 @@ public enum CoreResource {
 	 * 		infinity image
 	 * 
 	 */
-	public Image getInfinity() {
+	public BufferedImage getInfinity() {
 		return thunderbird;
 	}
 	

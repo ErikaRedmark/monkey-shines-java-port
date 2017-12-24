@@ -25,13 +25,28 @@ import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.SCORE_DRAW
 import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.SCORE_HEIGHT;
 import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.SCORE_WIDTH;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
+import org.erikaredmark.monkeyshines.global.SpecialSettings;
+import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import org.erikaredmark.monkeyshines.resource.CoreResource;
+import org.erikaredmark.monkeyshines.resource.PackReader;
+import org.erikaredmark.monkeyshines.resource.SlickRenderer;
+import org.erikaredmark.monkeyshines.resource.SlickWorldGraphics;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
+import org.erikaredmark.monkeyshines.util.GameEndCallback;
 import org.newdawn.slick.AppGameContainer;
 import org.newdawn.slick.BasicGame;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.ScalableGame;
 import org.newdawn.slick.SlickException;
+import org.newdawn.slick.opengl.InternalTextureLoader;
 /**
  * Begins running the actual game. This is typically started from the main menu, 
  * and takes control away from the Swing-based menu system.
@@ -42,7 +57,9 @@ import org.newdawn.slick.SlickException;
  * @author Goddess
  */
 public class SlickMonkeyShines extends BasicGame {
-
+	private static final String CLASS_NAME = "org.erikaredmark.monkeyshines.SlickMonkeyShines";
+	private static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
+	
 	/**
 	 * Creates, but does not start, the primary object that will play the passed
 	 * world. 
@@ -53,19 +70,31 @@ public class SlickMonkeyShines extends BasicGame {
 	 * 		if the passed world's resource (graphics data) is using {@code BufferedImage}
 	 * 		instead of Slick2D's image type. 
 	 */
-	public SlickMonkeyShines(World world) {
+	public SlickMonkeyShines(UnloadedWorld world, KeyBindings keys) {
 		super("Monkey Shines (Java Port)");
-		this.universe = world;
-		this.rsrc = world.getResource();
-		
-		if (!this.rsrc.isSlickGraphics())
-		{
-			throw new IllegalArgumentException("Cannot start game: wrong graphcis loaded (expected Slick, got AWT)");
-		}
+		this.frozenUniverse = world;
+		this.keyBindings = keys;
 	}
 
+	public void setQuitAction(Runnable run)
+		{ quit = run; }
+	
 	@Override public void init(GameContainer gc) throws SlickException {
 		gc.setShowFPS(false);
+		try
+		{
+			this.world = frozenUniverse.load();
+			this.rsrc = this.world.getResource();
+			this.slickGraphics = this.rsrc.getSlickGraphics();
+			this.universe = new GameWorldLogic(
+				this.world, 
+				new GameOverHandler(), 
+				SpecialSettings.isThunderbird());
+			frozenUniverse.removeTemporaryFiles();
+			frozenUniverse = null;
+		} catch (ResourcePackException e) {
+			throw new SlickException("Issue with world resource pack: " + e.getMessage(), e);
+		}
 	}
 
 	@Override public void update(GameContainer gc, int delta) throws SlickException {
@@ -74,103 +103,41 @@ public class SlickMonkeyShines extends BasicGame {
 		universe.update();
 	}
 
-	@Override public void render(GameContainer gc, Graphics g2d) throws SlickException {
-		/* --------------------- Initial Banner ---------------------- */
-//		WorldResource rsrc = universe.getResource();
-//		g2d.drawImage(rsrc.getBanner(), 
-//					  0, 0,
-//					  GameConstants.SCREEN_WIDTH, GameConstants.UI_HEIGHT,
-//					  0, 0,
-//					  GameConstants.SCREEN_WIDTH, GameConstants.UI_HEIGHT,
-//					  null);
-//		
-//		/* ------------------------- Health -------------------------- */
-//		// Normalise bonzo's current health with drawing.
-//		double healthWidth = ((double)universe.getBonzoHealth()) * HEALTH_MULTIPLIER;
-//		
-//		g2d.drawImage(rsrc.getEnergyBar(),
-//					  HEALTH_DRAW_X, HEALTH_DRAW_Y,
-//					  HEALTH_DRAW_X + (int)healthWidth, HEALTH_DRAW_Y2,
-//					  0, 0,
-//					  (int)healthWidth, 10,
-//					  null);
-//		
-//		/* -------------------------- Score -------------------------- */
-//		for (int i = 0; i < GameWorldLogic.SCORE_NUM_DIGITS; i++) {
-//			int drawToX = SCORE_DRAW_X + (SCORE_WIDTH * i);
-//			// draw to Y is always the same
-//			int drawFromX = SCORE_WIDTH * universe.getScoreDigits()[i];
-//			// draw from Y is always the same, 0
-//			g2d.drawImage(rsrc.getScoreNumbersSheet(), 
-//						  drawToX, SCORE_DRAW_Y,
-//						  drawToX + SCORE_WIDTH, SCORE_DRAW_Y2, 
-//						  drawFromX, 0, 
-//						  drawFromX + SCORE_WIDTH, SCORE_HEIGHT, 
-//						  null);
-//		}
-//		
-//		/* -------------------- Bonus Countdown ---------------------- */
-//		for (int i = 0; i < GameWorldLogic.BONUS_NUM_DIGITS; i++) {
-//			int drawToX = BONUS_DRAW_X + (SCORE_WIDTH * i);
-//			// draw to Y is always the same
-//			int drawFromX = SCORE_WIDTH * universe.getBonusDigits()[i];
-//			// draw from Y is always the same, 0
-//			g2d.drawImage(rsrc.getBonusNumbersSheet(),
-//						  drawToX, SCORE_DRAW_Y,
-//						  drawToX + SCORE_WIDTH, SCORE_DRAW_Y2,
-//						  drawFromX, 0,
-//						  drawFromX + SCORE_WIDTH, SCORE_HEIGHT,
-//						  null);
-//		}
-//		
-//		/* ------------------------- Lives --------------------------- */
-//		{
-//			int lifeDigit = universe.getLifeDigit();
-//			if (lifeDigit >= 0) {
-//				assert lifeDigit < 10;
-//				int drawFromX = SCORE_WIDTH * lifeDigit;
-//				
-//				g2d.drawImage(rsrc.getScoreNumbersSheet(),
-//							  LIFE_DRAW_X, LIFE_DRAW_Y,
-//							  LIFE_DRAW_X2, LIFE_DRAW_Y2,
-//							  drawFromX, 0,
-//							  drawFromX + SCORE_WIDTH, SCORE_HEIGHT,
-//							  null);
-//			} else {
-//				g2d.drawImage(CoreResource.INSTANCE.getInfinity(),
-//							  INFINITY_DRAW_X, INFINITY_DRAW_Y,
-//							  INFINITY_DRAW_X2, INFINITY_DRAW_Y2,
-//							  0, 0,
-//							  INFINITY_WIDTH, INFINITY_HEIGHT,
-//							  null);
-//			}
-//		}
-//		
-//		/* ------------------------ Powerup --------------------------- */
-//		{
-//			if (universe.isPowerupVisible() ) {
-//				Powerup powerup = universe.getCurrentPowerup();
-//				assert powerup != null : "Powerup should be invisible if null";
-//				
-//				g2d.drawImage(rsrc.getGoodieSheet(),
-//						      POWERUP_DRAW_X, POWERUP_DRAW_Y,
-//						      POWERUP_DRAW_X2, POWERUP_DRAW_Y2,
-//						      powerup.drawFromX(), Powerup.POWERUP_DRAW_FROM_Y,
-//						      powerup.drawFromX2(), Powerup.POWERUP_DRAW_FROM_Y2,
-//						      null);
-//			}
-//		}
-//		
-//		/* ----------------------- Actual Game -------------------------- */
-//		// game is drawn at 80 pixels down if UI was drawn
-//		g2d.translate(0, 80);
-//		universe.paintTo(g2d);
-//		g2d.translate(0, -80);
+	@Override public void render(GameContainer gc, Graphics g) throws SlickException {
+		SlickRenderer.paintUI(g, universe, slickGraphics);
+		
+		g.translate(0, 80);
+		g.pushTransform();
+		SlickRenderer.paintWorld(g, world);
+		SlickRenderer.paintBonzo(g, universe.getBonzo(), slickGraphics);
+		g.popTransform();
 	}
 	
 	@Override public boolean closeRequested() {
 		running = false;
 		return true;
+	}
+	
+	public class GameOverHandler implements GameEndCallback {
+		@Override public void gameOverFail(World w) {
+			// TODO Auto-generated method stub
+			// Need to show failure screen
+			quit.run();
+		}
+
+		@Override public void gameOverEscape(World w) {
+			// TODO Auto-generated method stub
+			// Just jump back to menu after a fade to black.
+			quit.run();
+		}
+
+		@Override
+		public void gameOverWin(World w) {
+			// TODO Auto-generated method stub
+			// Show winning screen
+			quit.run();
+		}
+		
 	}
 	
 	/**
@@ -190,7 +157,7 @@ public class SlickMonkeyShines extends BasicGame {
 	 * @return
 	 * @throws SlickException
 	 */
-	public boolean startMonkeyShines(World world, boolean fullScreen) 
+	public static boolean startMonkeyShines(UnloadedWorld world, KeyBindings keyBindings, boolean fullScreen) 
 		throws SlickException
 	{
 		if (running)
@@ -199,24 +166,103 @@ public class SlickMonkeyShines extends BasicGame {
 		}
 		
 		running = true;
-		AppGameContainer bonzoContainer = new AppGameContainer(new SlickMonkeyShines(world));
-		bonzoContainer.setDisplayMode(GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT, false);
+		SlickMonkeyShines monkeyShines = new SlickMonkeyShines(world,  keyBindings);
+		
+		AppGameContainer bonzoContainer = new AppGameContainer(
+			new ScalableGame(
+				monkeyShines,
+				GameConstants.SCREEN_WIDTH, 
+				GameConstants.SCREEN_HEIGHT + GameConstants.UI_HEIGHT));
+		monkeyShines.setQuitAction(() -> bonzoContainer.exit());
+		
+		// TODO if fullscreen, set screen width and height to actual resolution of current monitor.
+		bonzoContainer.setDisplayMode(
+			GameConstants.SCREEN_WIDTH, 
+			(GameConstants.SCREEN_HEIGHT + GameConstants.UI_HEIGHT), 
+			fullScreen);
 		
 		// This game was never set up with the ability to calculate things using a delta of time between
 		// updating game logic. Easiest solution currently is to just clamp the speed to the exact speed it
 		// should run, which shouldn't have a problem on modern systems given how simple the game is.
 		bonzoContainer.setMinimumLogicUpdateInterval(GameConstants.GAME_SPEED);
-		bonzoContainer.setTargetFrameRate(GameConstants.GAME_SPEED);
+		bonzoContainer.setTargetFrameRate(GameConstants.FRAMES_PER_SECOND);
+		bonzoContainer.setForceExit(false);
 		
 		bonzoContainer.start();
+		
+		bonzoContainer.destroy();
+		
+		// This is VERY important! If the texture cache is not cleared, then if the user
+		// starts another game the textures from the previous game will collide with the textures
+		// from the... it's basically a fucking mess. Comment this out to see something cool when
+		// choosing another world but otherwise keep this in.
+		InternalTextureLoader.get().clear();
 		
 		return true;
 	}
 	
-	private final World universe;
-	private final WorldResource rsrc;
+	// Not set until init function; requires graphics resources that are not
+	// available until then. Is not used until update method anyway.
+	private GameWorldLogic universe;
+	private World world;
+	private WorldResource rsrc;
+	private SlickWorldGraphics slickGraphics;
+	// the data required to load the universe, before we actually load it.
+	private UnloadedWorld frozenUniverse;
+	private final KeyBindings keyBindings;
+	
+	// Forces the app container for this game to exit, since the rest of the game (main menus and such)
+	// still operate under AWT And Swing.
+	private Runnable quit;
+	
 	
 	// mutable variable to make sure a game isn't already running.
 	private static boolean running = false;
+	
+	/**
+	 * Represents the parts needed to load the world, but has not loaded the world yet. Graphics
+	 * data won't be available until the gl context is started so resource creation, and therefore world
+	 * creation, must be deferred until then.
+	 * <p/>
+	 * deleteOnLoad should ONLY be true for internal worlds, as the resources are extracted to a temporary
+	 * location! Putting this as true for custom worlds will delete them. 
+	 * <p/>
+	 * Feed this object into {@code startMonkeyShines} to actually start up the game engine and
+	 * run the world.
+	 */
+	public static class UnloadedWorld {
+		public UnloadedWorld(EncodedWorld enc, Path rsrcPck, boolean delOnLoad) {
+			this.encodedWorld = enc;
+			this.rsrcPack = rsrcPck;
+			this.deleteOnLoad = delOnLoad;
+		}
+		
+		/**
+		 * Actually performs the loading of the world. Do not call this until the GL Context
+		 * is available or the image loading will fail.
+		 */
+		public World load() throws ResourcePackException {
+			WorldResource rsrc = PackReader.fromPackSlick(rsrcPack);
+			return encodedWorld.newWorldInstance(rsrc);
+		}
+		
+		/** Removes, if needed, temporary files created from loading an internal world. */
+		public void removeTemporaryFiles() {
+			if (deleteOnLoad) {
+				try {
+					Files.delete(rsrcPack);
+					Files.delete(rsrcPack.getParent());
+				} catch (IOException e) {
+					LOGGER.log(Level.WARNING,
+							   CLASS_NAME + ": Could not delete temporary files (should not affect gameplay) due to: " + e.getMessage(),
+							   e);
+				}
+			}
+		}
+		
+		public final EncodedWorld encodedWorld;
+		public final Path rsrcPack;
+		public final boolean deleteOnLoad;
+	}
 	
 }
