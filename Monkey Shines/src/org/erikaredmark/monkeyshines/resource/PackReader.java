@@ -116,7 +116,6 @@ public class PackReader {
 		BufferedImage scoreNumbersSheet = null;
 		BufferedImage bonusNumbersSheet = null;
 		BufferedImage explosionSheet = null;
-		BufferedImage splashScreen = null;
 		BufferedImage energyBar = null;
 		
 		// Sound clips
@@ -189,15 +188,6 @@ public class PackReader {
 				case "explosion.png":
 					if (explosionSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "explosion.png");
 					explosionSheet = ImageIO.read(zipFile.getInputStream(entry) );
-					break;
-				// TODO the next cases can be removed (until default) once switchover to Slick completely is made.
-				case "splash.png":
-					if (splashScreen != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "splash.png");
-					splashScreen = ImageIO.read(zipFile.getInputStream(entry));
-					break;
-				case "music.ogg":
-					if (backgroundMusic != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "music.ogg");
-					backgroundMusic = loadSoundClip(zipFile, entry);
 					break;
 				// All other types are handled in default, as many different names may belong to one 'class' of things.
 				default:
@@ -297,12 +287,7 @@ public class PackReader {
 			cutSprites,
 			goodieSheet, 
 			yumSheet,
-			bannerSheet,
-			scoreNumbersSheet,
-			bonusNumbersSheet,
-			explosionSheet,
-			splashScreen,
-			energyBar);
+			explosionSheet);
 		
 		WorldResource worldRsrc = WorldResource.createAwtResource(awtGraphics, gameSounds, backgroundMusic);
 		

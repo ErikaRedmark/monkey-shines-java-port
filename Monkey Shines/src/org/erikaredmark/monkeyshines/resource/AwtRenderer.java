@@ -1,30 +1,5 @@
 package org.erikaredmark.monkeyshines.resource;
 
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.BONUS_DRAW_X;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.HEALTH_DRAW_X;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.HEALTH_DRAW_Y;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.HEALTH_DRAW_Y2;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.HEALTH_MULTIPLIER;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.INFINITY_DRAW_X;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.INFINITY_DRAW_X2;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.INFINITY_DRAW_Y;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.INFINITY_DRAW_Y2;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.INFINITY_HEIGHT;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.INFINITY_WIDTH;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.LIFE_DRAW_X;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.LIFE_DRAW_X2;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.LIFE_DRAW_Y;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.LIFE_DRAW_Y2;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.POWERUP_DRAW_X;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.POWERUP_DRAW_X2;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.POWERUP_DRAW_Y;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.POWERUP_DRAW_Y2;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.SCORE_DRAW_X;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.SCORE_DRAW_Y;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.SCORE_DRAW_Y2;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.SCORE_HEIGHT;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.SCORE_WIDTH;
-
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -36,12 +11,10 @@ import org.erikaredmark.monkeyshines.ClippingRectangle;
 import org.erikaredmark.monkeyshines.Conveyer;
 import org.erikaredmark.monkeyshines.DeathAnimation;
 import org.erikaredmark.monkeyshines.GameConstants;
-import org.erikaredmark.monkeyshines.GameWorldLogic;
 import org.erikaredmark.monkeyshines.Goodie;
 import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.LevelScreen;
 import org.erikaredmark.monkeyshines.Point2D;
-import org.erikaredmark.monkeyshines.Powerup;
 import org.erikaredmark.monkeyshines.Sprite;
 import org.erikaredmark.monkeyshines.TileMap;
 import org.erikaredmark.monkeyshines.World;
@@ -65,101 +38,6 @@ import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
 public class AwtRenderer 
 {
 
-	/**
-	 * Paints the UI components to the world. Note that if this is chosen, then the 
-	 * g2d object must be translated 80 pixels down before drawing the rest of the
-	 * world, as otherwise the UI overlay will cut into the world.
-	 * <p/>
-	 * @param universe
-	 * 		the game world logic to determine the state of the UI elements.
-	 */
-	public static void paintUI(Graphics2D g2d, GameWorldLogic universe, AwtWorldGraphics awtGraphics) {
-		/* --------------------- Initial Banner ---------------------- */
-		g2d.drawImage(awtGraphics.banner, 
-					  0, 0,
-					  GameConstants.SCREEN_WIDTH, GameConstants.UI_HEIGHT,
-					  0, 0,
-					  GameConstants.SCREEN_WIDTH, GameConstants.UI_HEIGHT,
-					  null);
-		
-		/* ------------------------- Health -------------------------- */
-		// Normalise bonzo's current health with drawing.
-		double healthWidth = ((double)universe.getBonzoHealth()) * HEALTH_MULTIPLIER;
-		
-		g2d.drawImage(awtGraphics.energyBar,
-					  HEALTH_DRAW_X, HEALTH_DRAW_Y,
-					  HEALTH_DRAW_X + (int)healthWidth, HEALTH_DRAW_Y2,
-					  0, 0,
-					  (int)healthWidth, 10,
-					  null);
-		
-		/* -------------------------- Score -------------------------- */
-		for (int i = 0; i < GameWorldLogic.SCORE_NUM_DIGITS; i++) {
-			int drawToX = SCORE_DRAW_X + (SCORE_WIDTH * i);
-			// draw to Y is always the same
-			int drawFromX = SCORE_WIDTH * universe.getScoreDigits()[i];
-			// draw from Y is always the same, 0
-			g2d.drawImage(awtGraphics.scoreNumbers, 
-						  drawToX, SCORE_DRAW_Y,
-						  drawToX + SCORE_WIDTH, SCORE_DRAW_Y2, 
-						  drawFromX, 0, 
-						  drawFromX + SCORE_WIDTH, SCORE_HEIGHT, 
-						  null);
-		}
-		
-		/* -------------------- Bonus Countdown ---------------------- */
-		for (int i = 0; i < GameWorldLogic.BONUS_NUM_DIGITS; i++) {
-			int drawToX = BONUS_DRAW_X + (SCORE_WIDTH * i);
-			// draw to Y is always the same
-			int drawFromX = SCORE_WIDTH * universe.getBonusDigits()[i];
-			// draw from Y is always the same, 0
-			g2d.drawImage(awtGraphics.bonusNumbers,
-						  drawToX, SCORE_DRAW_Y,
-						  drawToX + SCORE_WIDTH, SCORE_DRAW_Y2,
-						  drawFromX, 0,
-						  drawFromX + SCORE_WIDTH, SCORE_HEIGHT,
-						  null);
-		}
-		
-		/* ------------------------- Lives --------------------------- */
-		{
-			int lifeDigit = universe.getLifeDigit();
-			if (lifeDigit >= 0) {
-				assert lifeDigit < 10;
-				int drawFromX = SCORE_WIDTH * lifeDigit;
-				
-				g2d.drawImage(awtGraphics.scoreNumbers,
-							  LIFE_DRAW_X, LIFE_DRAW_Y,
-							  LIFE_DRAW_X2, LIFE_DRAW_Y2,
-							  drawFromX, 0,
-							  drawFromX + SCORE_WIDTH, SCORE_HEIGHT,
-							  null);
-			} else {
-				g2d.drawImage(CoreResource.INSTANCE.getInfinity(),
-							  INFINITY_DRAW_X, INFINITY_DRAW_Y,
-							  INFINITY_DRAW_X2, INFINITY_DRAW_Y2,
-							  0, 0,
-							  INFINITY_WIDTH, INFINITY_HEIGHT,
-							  null);
-			}
-		}
-		
-		/* ------------------------ Powerup --------------------------- */
-		{
-			if (universe.isPowerupVisible() ) {
-				Powerup powerup = universe.getCurrentPowerup();
-				assert powerup != null : "Powerup should be invisible if null";
-				
-				g2d.drawImage(awtGraphics.goodieSheet,
-						      POWERUP_DRAW_X, POWERUP_DRAW_Y,
-						      POWERUP_DRAW_X2, POWERUP_DRAW_Y2,
-						      powerup.drawFromX(), Powerup.POWERUP_DRAW_FROM_Y,
-						      powerup.drawFromX2(), Powerup.POWERUP_DRAW_FROM_Y2,
-						      null);
-			}
-		}
-	}
-	
 	/**
 	 * Paints the given {@code Background} object, delegating to the proper painting methods based on
 	 * the type, and syncs the data in the object with the graphics data to determine the actual

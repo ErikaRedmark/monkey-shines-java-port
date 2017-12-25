@@ -9,6 +9,7 @@ import org.erikaredmark.monkeyshines.TileMap;
 import org.erikaredmark.monkeyshines.editor.model.Template.TemplateTile;
 import org.erikaredmark.monkeyshines.resource.AwtRenderer;
 import org.erikaredmark.monkeyshines.resource.AwtWorldGraphics;
+import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.tiles.CommonTile;
 import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
 
@@ -35,9 +36,11 @@ public final class TemplateUtils {
 	 * 		an image representing the template
 	 * 
 	 */
-	public static BufferedImage renderTemplate(final Template t, final AwtWorldGraphics awtGraphics) {
+	public static BufferedImage renderTemplate(final Template t, final WorldResource rsrc) {
 		// Currently, do no scaling. Just get a tilemap to fit and render that to the graphics
+		AwtWorldGraphics awtGraphics = rsrc.getAwtGraphics();
 		TileMap map = t.fitToTilemap();
+		map.updateDrawInformation(rsrc);
 		BufferedImage icon = 
 			new BufferedImage(
 				// the + 1 is for the last pixel to be the grid.

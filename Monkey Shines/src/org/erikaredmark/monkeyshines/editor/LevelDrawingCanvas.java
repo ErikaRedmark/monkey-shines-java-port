@@ -49,9 +49,6 @@ import org.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 import org.erikaredmark.monkeyshines.resource.AwtRenderer;
 import org.erikaredmark.monkeyshines.resource.CoreResource;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
-import org.erikaredmark.monkeyshines.tiles.CommonTile;
-import org.erikaredmark.monkeyshines.tiles.TileType;
-import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
 
 /**
  * 
@@ -407,7 +404,7 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 			assert currentTemplate != null : "Null template during updating indicator";
 			
 			BufferedImage templateRendered = TemplateUtils.renderTemplate(
-				currentTemplate, currentWorldEditor.getWorldResource().getAwtGraphics());
+				currentTemplate, currentWorldEditor.getWorldResource());
 			indicatorImage = new BufferedImage(templateRendered.getWidth(), templateRendered.getHeight(), templateRendered.getType() );
 			
 			Graphics2D g = indicatorImage.createGraphics();
@@ -768,14 +765,8 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 											  0);
 				
 				// reclaculate the entire tilemap
-				TileType[] rawMap = map.internalMap();
 				WorldResource rsrc = editor.currentMapEditor.getWorld().getResource();
-				for (int i = 0; i < rawMap.length; ++i) {
-					TileType tt = rawMap[i];
-					if (tt instanceof CommonTile && ((CommonTile)tt).getUnderlyingType() != StatelessTileType.NONE) {
-						((CommonTile)tt).recomputeDrawState(rsrc);
-					}
-				}
+				map.updateDrawInformation(rsrc);
 			}
 
 			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 

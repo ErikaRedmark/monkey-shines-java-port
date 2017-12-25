@@ -200,7 +200,7 @@ public final class TemplatePalette extends JPanel {
 	
 	private JButton createTemplateButton(final Template template) {
 		
-		JButton templateButton = new JButton(new ImageIcon(TemplateUtils.renderTemplate(template, world.getResource().getAwtGraphics()) ) );
+		JButton templateButton = new JButton(new ImageIcon(TemplateUtils.renderTemplate(template, world.getResource()) ) );
 		MenuUtils.renderImageOnly(templateButton);
 		MenuUtils.removeMargins(templateButton);
 		templateButton.addActionListener(new ActionListener() {

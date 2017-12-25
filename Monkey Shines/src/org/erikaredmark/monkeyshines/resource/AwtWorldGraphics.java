@@ -6,6 +6,12 @@ import java.awt.image.BufferedImage;
 import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
 
+/**
+ * Graphics in AWT format for level editor. Includes only those graphics relevant
+ * for level editing.
+ * @author Goddess
+ *
+ */
 public class AwtWorldGraphics {
 	/* ---------------------------- TILES ----------------------------- */
 	public final BufferedImage solidTiles;
@@ -45,18 +51,6 @@ public class AwtWorldGraphics {
 	/* -------------------------- Explosions -------------------------- */
 	public final BufferedImage explosionSheet;
 	
-	/* ------------------------- UI Elements -------------------------- */
-	// Shown on the top the main game screen; gives score, bonus, lives, current powerup, and current world.
-	public final BufferedImage banner;
-	// Bitmap numbers for drawing the score on the banner.
-	public final BufferedImage scoreNumbers;
-	// Bitmap numbers for drawing the bonus score remaining on the banner
-	public final BufferedImage bonusNumbers;
-	
-	public final BufferedImage splashScreen;
-	
-	public final BufferedImage energyBar;
-	
 	public AwtWorldGraphics(
 		final BufferedImage solidTiles,
 	    final BufferedImage thruTiles,
@@ -69,12 +63,7 @@ public class AwtWorldGraphics {
 	    final BufferedImage[] sprites,
 	    final BufferedImage goodieSheet,
 	    final BufferedImage yumSheet,
-	    final BufferedImage banner,
-	    final BufferedImage scoreNumbers,
-	    final BufferedImage bonusNumbers,
-	    final BufferedImage explosionSheet,
-	    final BufferedImage splashScreen,
-	    final BufferedImage energy)
+	    final BufferedImage explosionSheet)
 	{
 		this.solidTiles = solidTiles;
 		this.thruTiles = thruTiles;
@@ -88,11 +77,7 @@ public class AwtWorldGraphics {
 		this.goodieSheet = goodieSheet;
 		this.yumSheet = yumSheet;
 		// May be null
-		this.banner = banner;
-		this.scoreNumbers = scoreNumbers;
-		this.bonusNumbers = bonusNumbers;
 		this.explosionSheet = explosionSheet;
-		this.splashScreen = splashScreen;
 		
 		// Height of conveyer sheet can calculate total conveyers in world
 		// Remember, a single set is both clockwise and anti-clockwise (hence times 2)
@@ -107,7 +92,6 @@ public class AwtWorldGraphics {
 						  : 0;
 		
 		// Energy bar is special. We explode the 8x11 image into a full 150x11 image.
-		this.energyBar = explodeEnergyBar(energy);
 		
 		patternedBackgrounds = new BufferedImage[patterns.length];
 		for (int i = 0; i < patterns.length; ++i) {
@@ -116,47 +100,6 @@ public class AwtWorldGraphics {
 				{ break; }
 			patternedBackgrounds[i] = fromPattern(ppat);
 		}
-	}
-	
-	/**
-	 * Explodes the energy bar segment into a full energy bar. This class
-	 * does that automatically during construction.
-	 * @param energySegment
-	 */
-	public static BufferedImage explodeEnergyBar(BufferedImage energySegment)
-	{
-		BufferedImage energyBar = new BufferedImage(150, 11, energySegment.getType() );
-		Graphics2D g2dEnergyBar = energyBar.createGraphics();
-		try {
-			g2dEnergyBar.drawImage(energySegment, 
-								   0, 0, 
-								   2, 11, 
-								   0, 0,
-								   2, 11, 
-								   null);
-			
-			// 2 pixel on each side from the 150 total gives 146 pixels to fill (41 iterations)
-			// math is kept in to make calculations a bit more obvious
-			for (int i = 0; i < 146; i += 4) {
-				int startX = 2 + i;
-				g2dEnergyBar.drawImage(energySegment, 
-									   startX, 0, 
-									   startX + 4, 11, 
-									   2, 0, 
-									   6, 11, 
-									   null);
-			}
-			
-			g2dEnergyBar.drawImage(energySegment,
-								   148, 0,
-								   150, 11,
-								   6, 0,
-								   8, 11,
-								   null);
-		} finally {
-			g2dEnergyBar.dispose();
-		}
-		return energyBar;
 	}
 	
 	/**

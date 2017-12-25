@@ -1,7 +1,5 @@
 package org.erikaredmark.monkeyshines;
 
-import java.util.Arrays;
-
 import org.erikaredmark.monkeyshines.bounds.Boundable;
 import org.erikaredmark.monkeyshines.bounds.IPoint2D;
 import org.erikaredmark.monkeyshines.resource.SlickWorldGraphics;
