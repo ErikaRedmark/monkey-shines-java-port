@@ -73,10 +73,10 @@ public class SlickWorldGraphics {
 	
 	// Infinite Lives Thunderbird
 	public final Image infinity;
-	
 	public final Image bonzo;
-	
 	public final Image getReady;
+	public final Image pause;
+	
 	
 	/**
 	 * Partially constructs the initial world graphics. Because actual image loading may be
@@ -136,6 +136,9 @@ public class SlickWorldGraphics {
 			Texture getReadyTexture = BufferedImageUtil.getTexture("get-ready", CoreResource.INSTANCE.getGetReady());
 			this.getReady = new Image(getReadyTexture.getImageHeight(), getReadyTexture.getImageHeight());
 			this.getReady.setTexture(getReadyTexture);
+			
+			// Not in core images (not needed there) load directly
+			pause = new Image("resources/graphics/pause.png");
 			
 		} catch (IOException e) {
 			throw new SlickException("Could not convert core images to slick form: " + e.getMessage(), e);

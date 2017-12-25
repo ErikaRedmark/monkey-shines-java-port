@@ -55,6 +55,11 @@ public class SlickMonkeyShines extends StateBasedGame {
 	private FrozenWorld frozenUniverse;
 	private final KeyBindingsSlick keyBindings;
 	
+	// Starts at 0. When pause is pressed and this is not zero, nothing happens.
+	// Otherwise state is changed and this is set to another value. This is to prevent accidentally
+	// rapidly unpausing/pausing the game by holding down the key too much
+	private long pauseDelay = 0;
+	
 	// The actual universe. By the time Splash Screen state is exited, all these should be set properly, and all
 	// other states will have full access.
 	// Technically, a lot of these things are accessible within GameWorldLogic, but
@@ -92,6 +97,7 @@ public class SlickMonkeyShines extends StateBasedGame {
 		addState(new SplashScreen());
 		addState(new Game());
 		addState(new Grace());
+		addState(new Pause());
 	}
 	
 	@Override public boolean closeRequested() {
@@ -225,9 +231,12 @@ public class SlickMonkeyShines extends StateBasedGame {
 		}
 	
 		@Override public void update(GameContainer gc, StateBasedGame sbg, int delta) throws SlickException {
+			if (pauseDelay > 0) 
+				{ --pauseDelay; }
+			
 			// delta is ignored for Monkey Shines. The underlying game logic was never designed
 			// with it in mind.
-			handleKeys(gc.getInput());
+			handleKeys(gc.getInput(), sbg);
 			universe.update(soundControl);
 			
 			if (universe.isGrace()) {
@@ -236,7 +245,7 @@ public class SlickMonkeyShines extends StateBasedGame {
 			}
 		}
 		
-		private void handleKeys(Input input) {
+		private void handleKeys(Input input, StateBasedGame sbg) {
 			// Technically, checking left or right should be mutually exclusive. But pressing both
 			// causes bonzo to dance, and that's funny.
 			if (input.isKeyDown(keyBindings.left)) 
@@ -248,6 +257,10 @@ public class SlickMonkeyShines extends StateBasedGame {
 			// hardcoded
 			if (input.isKeyDown(Input.KEY_ESCAPE))
 				{ gameOverHandler.gameOverEscape(world); }
+			else if (input.isKeyDown(Input.KEY_P) && pauseDelay <= 0) { 
+				pauseDelay = 15;
+				sbg.enterState(PAUSE); 
+			}
 		}
 	
 		@Override public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
@@ -304,6 +317,33 @@ public class SlickMonkeyShines extends StateBasedGame {
 		// set from worldIsReady to initial animation, and reset before state
 		// change out of here.
 		private GracePeriodAnimation grace;
+	}
+	
+	/* -------------------- Pause State ------------------ */
+	// Stays paused until the p key
+	// is pressed and game unpauses.
+	private class Pause extends BasicGameState {
+		@Override public void init(GameContainer container, StateBasedGame game) throws SlickException {
+			// nothing to do.
+		}
+
+		@Override public void render(GameContainer container, StateBasedGame game, Graphics g) throws SlickException {
+			renderLevel(g);
+			g.drawImage(slickGraphics.pause, 230, 120);
+		}
+
+		@Override public void update(GameContainer container, StateBasedGame game, int delta) throws SlickException {
+			if (pauseDelay > 0) 
+				{ --pauseDelay; }
+			
+			if (container.getInput().isKeyDown(Input.KEY_P) && pauseDelay <= 0) {
+				pauseDelay = 15;
+				game.enterState(GAME);
+			}
+		}
+		
+		@Override public int getID() 
+			{ return PAUSE; }
 	}
 
 	public class GameOverHandler implements GameEndCallback {
