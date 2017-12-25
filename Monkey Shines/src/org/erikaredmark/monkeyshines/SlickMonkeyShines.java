@@ -104,6 +104,7 @@ public class SlickMonkeyShines extends StateBasedGame {
 		
 		@Override public void init(GameContainer container, StateBasedGame game) throws SlickException {
 			container.setShowFPS(false);
+			LoadingList.setDeferredLoading(false);
 			
 			try {
 				initRsrc = frozenUniverse.loadInit();

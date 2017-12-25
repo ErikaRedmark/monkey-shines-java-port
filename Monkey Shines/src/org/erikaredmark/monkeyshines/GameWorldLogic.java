@@ -124,9 +124,9 @@ public final class GameWorldLogic {
 	public boolean isBonusTickingDown()
 		{ return bonusTimer != -1; }
 	
-	public void updateBonusTick(SoundManager sound) {
+	private void updateBonusTick(SoundManager sound) {
 		if (bonusTimer != -1) {
-			bonusTimer = (bonusTimer + 1) % GameConstants.BONUS_COUNTDOWN_DELAY;
+			bonusTimer = (bonusTimer + 1) % GameConstants.BONUS_COUNTDOWN_DELAY_FRAMES;
 			if (bonusTimer == 0)
 			{
 				boolean keepCounting = currentWorld.bonusCountdown(sound);
@@ -148,6 +148,7 @@ public final class GameWorldLogic {
 		if (!paused && grace == -1) {
 			currentWorld.update();
 			bonzo.update(sound);
+			updateBonusTick(sound);
 		} else if (grace != -1) {
 			updateGrace();
 		}

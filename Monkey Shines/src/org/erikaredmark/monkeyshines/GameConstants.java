@@ -70,9 +70,10 @@ public final class GameConstants {
 	// place on the current screen, they back up to other screens.
 	public static final int SCREEN_HISTORY = 5;
 	
-	// Bonus tick speed handles how many milliseconds between countdown ticks. Once the last red key is grabbed,
+	// Bonus tick speed handles how many frames between countdown ticks. Once the last red key is grabbed,
 	// this ticks down at this speed.
-	public static final int BONUS_COUNTDOWN_DELAY = 700;
+	// Should be around .7 seconds.
+	public static final int BONUS_COUNTDOWN_DELAY_FRAMES = (int) ((double)FRAMES_PER_SECOND * 0.7);
 	
 	// Powerup lasts this many milliseconds before STARTING TO FADE.
 	public static final int MAX_POWERUP_TIME = 20 * 1000;
