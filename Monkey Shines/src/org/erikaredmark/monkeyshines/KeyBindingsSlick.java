@@ -114,5 +114,9 @@ public class KeyBindingsSlick {
 		put(KeyEvent.VK_SLASH, Input.KEY_SLASH).
 		put(KeyEvent.VK_SEMICOLON, Input.KEY_SEMICOLON).
 		put(KeyEvent.VK_BACK_SLASH, Input.KEY_BACKSLASH).
+		put(KeyEvent.VK_LEFT, Input.KEY_LEFT).
+		put(KeyEvent.VK_RIGHT, Input.KEY_RIGHT).
+		put(KeyEvent.VK_UP, Input.KEY_UP).
+		put(KeyEvent.VK_DOWN, Input.KEY_DOWN).
 		build();
 }

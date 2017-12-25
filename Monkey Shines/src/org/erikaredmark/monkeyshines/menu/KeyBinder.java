@@ -105,8 +105,9 @@ public class KeyBinder extends JComponent {
 					badKey = false;
 					if (value != e.getKeyCode() ) {
 						int oldValue = value;
-						if (KeyBindingsSlick.keyMappingExistsFor(value)) {
-							value = e.getKeyCode();
+						int newValue = e.getKeyCode();
+						if (KeyBindingsSlick.keyMappingExistsFor(newValue)) {
+							value = newValue;
 							listener.propertyChange(new PropertyChangeEvent(KeyBinder.this, "", oldValue, value) );
 						} else {
 							badKey = true;
@@ -197,8 +198,8 @@ public class KeyBinder extends JComponent {
 			g.drawString(KeyEvent.getKeyText(this.value), 
 						 41, 20);
 		} else {
-			g.drawString("! Unmappable Key !",
-						 41, 20);
+			g.drawString("Unmappable",
+						 21, 20);
 		}
 		
 		// done
