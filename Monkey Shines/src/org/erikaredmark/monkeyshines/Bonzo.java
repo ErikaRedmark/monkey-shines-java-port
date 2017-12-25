@@ -74,10 +74,6 @@ public final class Bonzo {
 	// is relative to the screen.
 	private World worldPointer;
 	
-	// Store a reference to the current resources sound manager for less indirection
-	// playing sounds
-	private SoundManager soundManager;
-	
 	private boolean freeze;
 	
 	
@@ -162,7 +158,6 @@ public final class Bonzo {
 		this.powerupState.clear();
 		this.gameEndCallback = gameEndCallback;
 		this.health = GameConstants.HEALTH_MAX;
-		this.soundManager = worldPointer.getResource().getSoundManager();
 		currentScreenID = 1000; // Always 1000. Everything starts on 1000
 		final LevelScreen currentScreen = worldPointer.getScreenByID(currentScreenID);
 		
@@ -604,13 +599,13 @@ public final class Bonzo {
 	 * 		if bonzo does die, this is the animation that should be used
 	 * 
 	 */
-	public void hurt(int amt, DamageEffect effect) {
+	public void hurt(int amt, DamageEffect effect, SoundManager sound) {
 		if (effect == DamageEffect.FALL && (currentPowerup != null && currentPowerup.isWing() ) )  return;
 		if (effect == DamageEffect.BEE && (currentPowerup != null && currentPowerup.isShield() ) )  return;
 		
 		health -= amt;
-		soundManager.playOnce(effect.soundEffect);
-		if (health < 0)  kill(effect.deathAnimation);
+		sound.playOnce(effect.soundEffect);
+		if (health < 0)  kill(effect.deathAnimation, sound);
 	}
 	
 	/**
@@ -628,9 +623,9 @@ public final class Bonzo {
 	 * 		if bonzo does die, use this death animation
 	 * 
 	 */
-	public void tryKill(DeathAnimation animation) {
+	public void tryKill(DeathAnimation animation, SoundManager sound) {
 		if (currentPowerup == null || !(currentPowerup.isShield() ) ) {
-			kill(animation);
+			kill(animation, sound);
 		}
 	}
 	
@@ -643,7 +638,7 @@ public final class Bonzo {
 	 * 		uses this death animatino for bonzo
 	 * 
 	 */
-	public void kill(DeathAnimation animation) {
+	public void kill(DeathAnimation animation, SoundManager sound) {
 		currentVelocity.setX(0);
 		currentVelocity.setY(0);
 		currentSprite = 0;
@@ -651,7 +646,7 @@ public final class Bonzo {
 		currentPowerup = null;
 		powerupState.clear();
 		setDying(true, animation);
-		soundManager.playOnce(animation.soundEffect() );
+		sound.playOnce(animation.soundEffect() );
 	}
 	
 	/**
@@ -893,7 +888,12 @@ public final class Bonzo {
 	}
 	
 	// We don't increment the sprite unless we are jumping or dying.
-	public void update() {
+	/**
+	 * Runs a single update tick on Bonzo, using the provided sound manager for any sounds that may
+	 * play in the update.
+	 * @param sound
+	 */
+	public void update(SoundManager sound) {
 		// If we are dying, animate the sprite and do nothing else
 		if (isDying) {
 			if (readyToAnimate() ) {
@@ -961,7 +961,11 @@ public final class Bonzo {
 			if (airDifference > 0) {
 				// Do not fear the casts: Cast airDifference to double to apply multiplier, then back to int to
 				// get discrete units of damage to apply.
-				hurt((int)( (Math.pow( ((double)airDifference), GameConstants.FALL_DAMAGE_MULTIPLIER) ) ), DamageEffect.FALL);
+				hurt(
+					(int)((Math.pow( ((double)airDifference), 
+						GameConstants.FALL_DAMAGE_MULTIPLIER))), 
+					DamageEffect.FALL,
+					sound);
 			}
 			
 			// If he is still alive, go ahead and set ground state
@@ -983,7 +987,7 @@ public final class Bonzo {
 		
 		/* ------------------------ Collision Checking --------------------------- */
 		// Give all collisions to World
-		worldPointer.checkCollisions(this);
+		worldPointer.checkCollisions(this, sound);
 		
 		/* ---------------------------- Jump Logic ------------------------------- */
 		// if we are jumping, slowly increment the sprite until we get to the end, then leave it there.
@@ -1036,7 +1040,7 @@ public final class Bonzo {
 		}
 		
 		/* ------------------------------ Powerup Decay ------------------------------ */
-		powerupState.update();
+		powerupState.update(sound);
 		
 		updateReadyToAnimate();
 		
@@ -1197,7 +1201,7 @@ public final class Bonzo {
 		
 		// Updates the state. If the state reaches final state (powerup completely faded)
 		// has the side effect of setting bonzos current powerup to null
-		private void update() {
+		private void update(SoundManager sound) {
 			if (done)  return;
 			
 			if (ticksForDegrade <= 0) {
@@ -1210,7 +1214,7 @@ public final class Bonzo {
 				--flashCount;
 				ticksForDegrade = FLASH_TICKS;
 				// Play warning sound for each even flash count
-				if (flashCount % 2 == 0)  soundManager.playOnce(GameSoundEffect.POWERUP_FADE);
+				if (flashCount % 2 == 0)  sound.playOnce(GameSoundEffect.POWERUP_FADE);
 			}
 			
 			--ticksForDegrade;

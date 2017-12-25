@@ -127,9 +127,6 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 	 * 
 	 */
 	public void loadWorld(final EncodedWorld world, final WorldResource rsrc) {
-		if (currentWorldEditor != null) {
-			currentWorldEditor.getWorldResource().dispose();
-		}
 		currentWorldEditor = WorldEditor.fromEncoded(world, rsrc);
 		setCurrentScreenEditor(currentWorldEditor.getLevelScreenEditor(1000) );
 		changeState(EditorState.USE_MAP_EDITOR);

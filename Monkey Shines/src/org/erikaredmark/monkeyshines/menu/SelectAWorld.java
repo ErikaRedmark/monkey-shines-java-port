@@ -21,7 +21,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import org.erikaredmark.monkeyshines.SlickMonkeyShines.UnloadedWorld;
+import org.erikaredmark.monkeyshines.FrozenWorld;
 import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.encoder.WorldIO;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
@@ -104,7 +104,7 @@ public final class SelectAWorld extends JPanel {
 		spookedButton.setLocation(SPOOKED_X, NON_OTHER_Y);
 		spookedButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-				UnloadedWorld world = loadInternalWorld(SelectAWorld.this, InternalWorld.SPOOKED);
+				FrozenWorld world = loadInternalWorld(SelectAWorld.this, InternalWorld.SPOOKED);
 				if (world != null) {
 					callback.worldSelected(world);
 				}
@@ -117,7 +117,7 @@ public final class SelectAWorld extends JPanel {
 		spacedButton.setLocation(SPACED_OUT_X, NON_OTHER_Y);
 		spacedButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-				UnloadedWorld world = loadInternalWorld(SelectAWorld.this, InternalWorld.SPACED_OUT);
+				FrozenWorld world = loadInternalWorld(SelectAWorld.this, InternalWorld.SPACED_OUT);
 				if (world != null) {
 					callback.worldSelected(world);
 				}
@@ -130,7 +130,7 @@ public final class SelectAWorld extends JPanel {
 		aboutTheHouseButton.setLocation(ABOUT_THE_HOUSE_X, NON_OTHER_Y);
 		aboutTheHouseButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-				UnloadedWorld world = loadInternalWorld(SelectAWorld.this, InternalWorld.ABOUT_THE_HOUSE);
+				FrozenWorld world = loadInternalWorld(SelectAWorld.this, InternalWorld.ABOUT_THE_HOUSE);
 				if (world != null) {
 					callback.worldSelected(world);
 				}
@@ -143,7 +143,7 @@ public final class SelectAWorld extends JPanel {
 		inTheDrinkButton.setLocation(IN_THE_DRINK_X, NON_OTHER_Y);
 		inTheDrinkButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-				UnloadedWorld world = loadInternalWorld(SelectAWorld.this, InternalWorld.IN_THE_DRINK);
+				FrozenWorld world = loadInternalWorld(SelectAWorld.this, InternalWorld.IN_THE_DRINK);
 				if (world != null) {
 					callback.worldSelected(world);
 				}
@@ -156,7 +156,7 @@ public final class SelectAWorld extends JPanel {
 		inTheSwingButton.setLocation(IN_THE_SWING_X, NON_OTHER_Y);
 		inTheSwingButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-				UnloadedWorld world = loadInternalWorld(SelectAWorld.this, InternalWorld.IN_THE_SWING);
+				FrozenWorld world = loadInternalWorld(SelectAWorld.this, InternalWorld.IN_THE_SWING);
 				if (world != null) {
 					callback.worldSelected(world);
 				}
@@ -169,7 +169,7 @@ public final class SelectAWorld extends JPanel {
 		otherButton.setLocation(OTHER_X, OTHER_Y);
 		otherButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent arg0) {
-				Optional<UnloadedWorld> world = loadCustomWorld(SelectAWorld.this);
+				Optional<FrozenWorld> world = loadCustomWorld(SelectAWorld.this);
 				world.ifPresent(callback::worldSelected);
 			}
 		});
@@ -187,7 +187,7 @@ public final class SelectAWorld extends JPanel {
 	 * with the exception info and an exception stacktrace will be logged. Otherwise, the returned object
 	 * can be used with {@code SlickMonkeyShines} to load the world.
 	 */
-	private static UnloadedWorld loadInternalWorld(Component parent, InternalWorld chosenWorld) {
+	private static FrozenWorld loadInternalWorld(Component parent, InternalWorld chosenWorld) {
 		// Can skip WorldIO and just jump to Encoded since we have a stream.
 		try (InputStream is = SelectAWorld.class.getResourceAsStream(chosenWorld.internalPath);
 			 InputStream rsrcIs = SelectAWorld.class.getResourceAsStream(chosenWorld.internalResourcePath) ) {
@@ -205,7 +205,7 @@ public final class SelectAWorld extends JPanel {
 			
 			// Clean up temporary files
 			
-			return new UnloadedWorld(world, tempRsrc, true);
+			return new FrozenWorld(world, tempRsrc, true);
 		} catch (Exception e) {
 			LOGGER.severe(CLASS_NAME + ": Missing world " + chosenWorld.internalPath + " from .jar file. Possible .jar corruption.");
 			handleWorldLoadException(parent, e);
@@ -228,7 +228,7 @@ public final class SelectAWorld extends JPanel {
 	 * 		the selected world, or {@code null} if no world was selected.
 	 * 
 	 */
-	public static Optional<UnloadedWorld> loadCustomWorld(final Component parent) {
+	public static Optional<FrozenWorld> loadCustomWorld(final Component parent) {
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setCurrentDirectory(BinaryLocation.BINARY_LOCATION.toFile() );
 		System.out.println(fileChooser.getCurrentDirectory() );
@@ -242,7 +242,7 @@ public final class SelectAWorld extends JPanel {
 				// Remove .world extension so we can substitute with .zip.
 				String worldName = fileName.substring(0, fileName.lastIndexOf('.') );
 				Path packFile = worldFile.getParent().resolve(worldName + ".zip");
-				return Optional.of(new UnloadedWorld(world, packFile, false));
+				return Optional.of(new FrozenWorld(world, packFile, false));
 			} catch (Exception e) {
 				// See method. Instances in if/else are the exception we expect to catch.
 				// This technically catches everything but I see no reason why any exceptions
@@ -364,7 +364,7 @@ public final class SelectAWorld extends JPanel {
 	 *
 	 */
 	public interface WorldSelectionCallback {
-		void worldSelected(UnloadedWorld world);
+		void worldSelected(FrozenWorld world);
 	}
 	
 }

@@ -7,7 +7,6 @@ import org.erikaredmark.monkeyshines.global.PreferencePersistException;
 import org.erikaredmark.monkeyshines.resource.AbsentSoundManager;
 import org.erikaredmark.monkeyshines.resource.JavaDefaultSoundManager;
 import org.erikaredmark.monkeyshines.resource.SoundManager;
-import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.util.ObservableModel;
 
 /**
@@ -150,11 +149,10 @@ public final class SoundSettings {
 	 * @param worldResource
 	 * @return
 	 */
-	public static SoundManager setUpSoundManager(
-			WorldResource worldResource) {
+	public static SoundManager setUpSoundManager() {
 		try
 		{
-			SoundManager manager = new JavaDefaultSoundManager(worldResource);
+			SoundManager manager = new JavaDefaultSoundManager();
 			return manager;
 		} catch (Exception e) {
 			LOGGER.log(

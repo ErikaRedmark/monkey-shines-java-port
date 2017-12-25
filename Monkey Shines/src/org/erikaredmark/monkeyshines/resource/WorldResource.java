@@ -1,14 +1,12 @@
 package org.erikaredmark.monkeyshines.resource;
 
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import javax.sound.sampled.Clip;
 
 import org.erikaredmark.monkeyshines.GameSoundEffect;
-import org.erikaredmark.monkeyshines.global.SoundSettings;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Unlike {@code World}, this contains all the graphics for a world, and only that. There is no level information. All worlds
@@ -21,9 +19,7 @@ import org.erikaredmark.monkeyshines.global.SoundSettings;
  * of sprite id apply here</li>
  * </ol>
  * <p/>
- * Instances of this class are publicly immutable until disposed. Once constructed with all available graphics resources, this can not change
- * until {@code dispose() } is called. This is mainly designed to release sound resources and should be thought of as the 'destructor' of this object.
- * Only call when about to otherwise remove references to an instance of this class.
+ * Instances of this class are publicly immutable.
  * <p/>
  * Graphics data is split into Slick and AWT compatible for use with both the editor and the
  * main game. Since only one or the other is ever active at once, only one type is loaded
@@ -44,59 +40,49 @@ public final class WorldResource {
 	
 	/* --------------------------- SOUNDS ----------------------------- */
 	// Whilst sounds are stored here, they should only be played via the
-	// SoundManager. null sounds are possible; in that case, that means
-	// that there is no sound available for a particular event.
-	private final Map<GameSoundEffect, Optional<Clip>> sounds;
-	private final Set<GameSoundEffect> holdSounds = new HashSet<>();
-	
-	// Package-private: Only intended for SoundManager
-	final Optional<Clip> backgroundMusic;
-	
-	// Generated automatically in constructor
-	private final SoundManager soundManager;
+	// SoundManager.
+	// Sounds won't be loaded when the level editor is running (basically,
+	// the pack reader for AwtGraphics won't load sounds and music since
+	// it assumes a level editor context.
+	private final ImmutableMap<GameSoundEffect, Optional<Clip>> sounds;
 
-
-	/** Static factories call this with proper defensive copying. No defensive copying is done in constructor
-	 */
-	private boolean isDisposed;
-	
 	public WorldResource(
 		final AwtWorldGraphics awtGraphics,
 		final SlickWorldGraphics slickGraphics,
-	    final Map<GameSoundEffect, Optional<Clip>> sounds,
-	    final Optional<Clip> backgroundMusic) 
+	    final ImmutableMap<GameSoundEffect, Optional<Clip>> sounds) 
 	{
 		
 		this.awtGraphics = awtGraphics;
 		this.slickGraphics = slickGraphics;
 		
 		this.sounds = sounds;
-		// May be null
-		this.backgroundMusic = backgroundMusic;
-		
-		// Generated data
-		// this pointer escapes, but no one gets a reference to the manager until construction is over
-		// and the manager constructor itself calls no methods on this class.
-		soundManager = SoundSettings.setUpSoundManager(this);
-		// unregistered in dispose method
-		SoundSettings.registerSoundManager(soundManager);
-
-	}
-
-	public static WorldResource createAwtResource(
-		AwtWorldGraphics awtGraphics, 
-		Map<GameSoundEffect, Optional<Clip>> sounds, 
-		Optional<Clip> bgm) 
-	{
-		return new WorldResource(awtGraphics, null, sounds, bgm);
 	}
 	
+	public ImmutableMap<GameSoundEffect, Optional<Clip>> getSounds() { return sounds; }
+
+	/**
+	 * Creates an AWT resource for the level editor. AWT Resources only have editor specific graphics in
+	 * awt format, and do not include sounds.
+	 * @param awtGraphics
+	 * @return
+	 */
+	public static WorldResource createAwtResource(
+		AwtWorldGraphics awtGraphics) 
+	{
+		return new WorldResource(awtGraphics, null, JavaDefaultSoundManager.EMPTY_SOUNDS_MAP);
+	}
+	
+	/**
+	 * Creates a Slick resource for the game itself. note that splash screens and
+	 * music are in {@code InitResource}, and that should be read from the resource pack first
+	 * and displayed/played before attempting the expensive process of loading the rest of the
+	 * world data.
+	 */
 	public static WorldResource createSlickResource(
 		SlickWorldGraphics slickGraphics, 
-		Map<GameSoundEffect, Optional<Clip>> sounds, 
-		Optional<Clip> bgm) 
+		ImmutableMap<GameSoundEffect, Optional<Clip>> sounds) 
 	{
-		return new WorldResource(null, slickGraphics, sounds, bgm);
+		return new WorldResource(null, slickGraphics, sounds);
 	}
 	
 	/**
@@ -150,86 +136,6 @@ public final class WorldResource {
 	 */
 	Optional<Clip> getSoundFor(GameSoundEffect effect) {
 		return sounds.get(effect);
-	}
-	
-	public SoundManager getSoundManager() { return this.soundManager; }
-	
-	/**
-	 * 
-	 * The 'destructor' of this object. Only call when about to otherwise remove a reference to the given
-	 * instance. Destroys all sound resources, and anything else claimed by this object that may not
-	 * be released under normal gc.
-	 * 
-	 */
-	public void dispose() {
-		for (GameSoundEffect effect : sounds.keySet() ) {
-			Optional<Clip> c = sounds.get(effect);
-			if (c.isPresent() ) {
-				if (!(isSoundHeld(effect) ) ) {
-					c.get().close();
-				}
-			}
-		}
-		
-		SoundSettings.unregisterSoundManager(soundManager);
-		
-		// Intended for anything that requires late disposal.
-		isDisposed = true;
-	}
-	
-	/**
-	 * 
-	 * Prevents the given sound effect from being disposed on the dispose call. This is intended for fine-tuned 
-	 * resource holding in case a single effect is required later even if the rest of the world is disposed.
-	 * <p/>
-	 * It is an error to call this whilst a sound is already held
-	 * 
-	 * @param effect
-	 * 		the effect to NOT dispose
-	 * 
-	 * @throws IllegalStateException
-	 * 		if a hold is already on the sound
-	 * 
-	 */
-	public void holdSound(GameSoundEffect effect) {
-		if (!(holdSounds.add(effect) ) ) {
-			throw new IllegalArgumentException("Sound effect " + effect + " already held in previous request");
-		}
-	}
-	
-	/**
-	 * 
-	 * Releases the resource, allowing it to be disposed. If this object was already disposed, the resource is closed
-	 * as soon as this method returns. Otherwise, the resource becomes eligble to be destroyed on the next call to dispose.
-	 * 
-	 * @param effect
-	 * 		the effect to release
-	 * 
-	 * @throws IllegalStateException
-	 * 		if the resource is not already held
-	 * 
-	 */
-	public void releaseSound(GameSoundEffect effect) {
-		if (!(holdSounds.remove(effect) ) ) {
-			throw new IllegalArgumentException("Sound effect " + effect + " was not previously held");
-		}
-		
-		// Are we already disposed? Clean it now.
-		if (isDisposed) {
-			Optional<Clip> c = sounds.get(effect);
-			c.get().close();
-		}
-	}
-	
-	/**
-	 * 
-	 * Determines if a resource is held. Held resources may not be destroyed until released.
-	 * 
-	 * @param effect
-	 * 
-	 */
-	public boolean isSoundHeld(GameSoundEffect effect) {
-		return holdSounds.contains(effect);
 	}
 
 	// -----------------------------------------------------------------------

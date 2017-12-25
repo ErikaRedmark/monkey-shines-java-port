@@ -10,6 +10,15 @@ import org.newdawn.slick.SlickException;
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.util.BufferedImageUtil;
 
+/**
+ * Encodes all slick based image data for Monkey Shines. 
+ * <p/>
+ * This object is NOT immutable, as image data may have deferred loading, which will prevent the
+ * object from being fully constructed until then. When deferred loading is over, finishInitialisation
+ * must be called.
+ * @author Goddess
+ *
+ */
 public class SlickWorldGraphics {
 	/* ---------------------------- TILES ----------------------------- */
 	public final Image solidTiles;
@@ -23,18 +32,16 @@ public class SlickWorldGraphics {
 	public final Image conveyerTiles;
 	// Special: lazily initialised (since the real game doesn't ask for
 	// it) when editor asks for selecting conveyer belts.
-	public Image editorConveyerTiles;
-	public final int conveyerCount;
+	public int conveyerCount;
 
 	/* -------------------------- COLLAPSING -------------------------- */
 	public final Image collapsingTiles;
 	// Another lazily initialised sprite sheet specific to the editor.
-	public Image editorCollapsingTiles;
-	public final int collapsingCount;
+	public int collapsingCount;
 	
 	/* -------------------------- BACKGROUND -------------------------- */
 	public final Image backgrounds[];
-	public final Image patternedBackgrounds[];
+	public Image patternedBackgrounds[];
 	public final Image patterns[];
 	
 	/* --------------------------- SPRITES ---------------------------- */
@@ -56,9 +63,8 @@ public class SlickWorldGraphics {
 	// Bitmap numbers for drawing the bonus score remaining on the banner
 	public final Image bonusNumbers;
 	
-	public final Image splashScreen;
-	
-	public final Image energyBar;
+	public final Image energySegment;
+	public Image energyBar;
 	
 	/* -------------------------- Core Resources -----------------------*/
 	// Core resources normally available everywhere must be manually converted
@@ -70,6 +76,10 @@ public class SlickWorldGraphics {
 	
 	public final Image bonzo;
 	
+	/**
+	 * Partially constructs the initial world graphics. Because actual image loading may be
+	 * deferred, graphics and values that require
+	 */
 	public SlickWorldGraphics(
 		final Image solidTiles,
 	    final Image thruTiles,
@@ -86,7 +96,6 @@ public class SlickWorldGraphics {
 	    final Image scoreNumbers,
 	    final Image bonusNumbers,
 	    final Image explosionSheet,
-	    final Image splashScreen,
 	    final Image energy) throws SlickException
 	{
 		this.solidTiles = solidTiles;
@@ -105,32 +114,7 @@ public class SlickWorldGraphics {
 		this.scoreNumbers = scoreNumbers;
 		this.bonusNumbers = bonusNumbers;
 		this.explosionSheet = explosionSheet;
-		this.splashScreen = splashScreen;
-		
-		// Height of conveyer sheet can calculate total conveyers in world
-		// Remember, a single set is both clockwise and anti-clockwise (hence times 2)
-		// Empty worlds, and perhaps other worlds, may have no conveyer belts
-		conveyerCount =   conveyerTiles != null
-						? conveyerTiles.getHeight() / (GameConstants.TILE_SIZE_Y * 2)
-						: 0;
-						
-		// Simpler than conveyer; height / size of tiles easily gives collapsable tile count
-		collapsingCount =   collapsingTiles != null
-						  ? collapsingTiles.getHeight() / GameConstants.TILE_SIZE_Y
-						  : 0;
-		
-		// --------- Dynamically generated
-		// Energy bar is special. We explode the 8x11 image into a full 150x11 image.
-		this.energyBar = explodeEnergyBar(energy);
-		
-		
-		patternedBackgrounds = new Image[patterns.length];
-		for (int i = 0; i < patterns.length; ++i) {
-			Image ppat = patterns[i];
-			if (ppat == null) 
-				{ break; }
-			patternedBackgrounds[i] = fromPattern(ppat);
-		}
+		this.energySegment = energy;
 		
 		
 		// --------- Core Image Translation
@@ -147,6 +131,34 @@ public class SlickWorldGraphics {
 			
 		} catch (IOException e) {
 			throw new SlickException("Could not convert core images to slick form: " + e.getMessage(), e);
+		}
+	}
+	
+	public void finishInitialisation() throws SlickException {
+		
+		// Height of conveyer sheet can calculate total conveyers in world
+		// Remember, a single set is both clockwise and anti-clockwise (hence times 2)
+		// Empty worlds, and perhaps other worlds, may have no conveyer belts
+		conveyerCount =   conveyerTiles != null
+						? conveyerTiles.getHeight() / (GameConstants.TILE_SIZE_Y * 2)
+						: 0;
+						
+		// Simpler than conveyer; height / size of tiles easily gives collapsable tile count
+		collapsingCount =   collapsingTiles != null
+						  ? collapsingTiles.getHeight() / GameConstants.TILE_SIZE_Y
+						  : 0;
+		
+		// --------- Dynamically generated
+		// Energy bar is special. We explode the 8x11 image into a full 150x11 image.
+		this.energyBar = explodeEnergyBar(energySegment);
+		
+		
+		patternedBackgrounds = new Image[patterns.length];
+		for (int i = 0; i < patterns.length; ++i) {
+			Image ppat = patterns[i];
+			if (ppat == null) 
+				{ break; }
+			patternedBackgrounds[i] = fromPattern(ppat);
 		}
 	}
 	

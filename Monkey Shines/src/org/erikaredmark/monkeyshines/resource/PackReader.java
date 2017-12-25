@@ -2,6 +2,7 @@ package org.erikaredmark.monkeyshines.resource;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -27,6 +28,9 @@ import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException.Type;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.io.ByteStreams;
 
 /**
  * Reads resource packs, and spits out {@code WorldResource} objects.
@@ -117,15 +121,6 @@ public class PackReader {
 		BufferedImage bonusNumbersSheet = null;
 		BufferedImage explosionSheet = null;
 		BufferedImage energyBar = null;
-		
-		// Sound clips
-		// Unlike graphics, some sounds may not exist, and that is okay. The game just won't play
-		// any sound when requested.
-		// Optional is required to reduce ambigiuity in map
-		Map<GameSoundEffect, Optional<Clip>> gameSounds = new IdentityHashMap<>();
-		
-		// It is okay for this to be null. No music simply means none will be played
-		Optional<Clip> backgroundMusic = null;
 		
 		try (ZipFile zipFile = new ZipFile(packFile.toFile() ) ) {
 			// for (ZipEntry e : file.entries)
@@ -220,21 +215,6 @@ public class PackReader {
 						if (index > maxPatternIndex) maxPatternIndex = index;
 						BufferedImage tempPattern = ImageIO.read(zipFile.getInputStream(entry) );
 						patterns[index] = tempPattern;
-					/* ---------------------- Sounds ----------------------- */
-					// Due to the nature of graphics amounts being unknown,
-					// but types of sounds being finite, any name of any file
-					// not matching any other pattern IS a sound.
-					// TODO may not be best plan. May cause issues if we wish to allow
-					// additional 'stuff' as part of the resource pack, like readmes and whatnot.
-					} else {
-						GameSoundEffect sound = GameSoundEffect.filenameToEnum(entryName);
-						if (sound == null) {
-							System.out.println("Information: " + entry.getName() + " not a valid resource in resource pack. Skipping.");
-							continue;
-						} else {
-							if (gameSounds.containsKey(sound) )  throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
-							gameSounds.put(sound, loadSoundClip(zipFile, entry) );
-						}
 					}
 				}
 			}
@@ -289,7 +269,7 @@ public class PackReader {
 			yumSheet,
 			explosionSheet);
 		
-		WorldResource worldRsrc = WorldResource.createAwtResource(awtGraphics, gameSounds, backgroundMusic);
+		WorldResource worldRsrc = WorldResource.createAwtResource(awtGraphics);
 		
 		return worldRsrc;
 	}
@@ -299,6 +279,10 @@ public class PackReader {
 	 * context has been created, so the pack loading should only be done within a Slick {@code BasicGame}
 	 * init method
 	 * or when it is otherwise available
+	 * <p/>
+	 * This does not load the splash/background music. This also may not be a complete load if LoadingList is set
+	 * to deferred loading. Make sure to call finishInitialisation on the resulting resource before using, either
+	 * immediately after this method call or after deferred loading is finished.
 	 * @param packFile
 	 * @return
 	 * @throws ResourcePackException
@@ -336,7 +320,6 @@ public class PackReader {
 		Image scoreNumbersSheet = null;
 		Image bonusNumbersSheet = null;
 		Image explosionSheet = null;
-		Image splashScreen = null;
 		Image energyBar = null;
 		
 		// Sound clips
@@ -344,9 +327,6 @@ public class PackReader {
 		// any sound when requested.
 		// Optional is required to reduce ambiguity in map
 		Map<GameSoundEffect, Optional<Clip>> gameSounds = new IdentityHashMap<>();
-		
-		// It is okay for this to be null. No music simply means none will be played
-		Optional<Clip> backgroundMusic = null;
 		
 		try (ZipFile zipFile = new ZipFile(packFile.toFile() ) ) {
 			// for (ZipEntry e : file.entries)
@@ -360,63 +340,55 @@ public class PackReader {
 				/* --------------------------------- Graphics Other Than Sprites --------------------------------- */
 				case "solids.png":
 					if (solidTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "solids.png");
-					solidTiles = new Image(zipFile.getInputStream(entry), "solidTiles", false);
+					solidTiles = new Image(copyStream(zipFile.getInputStream(entry)), "solidTiles", false);
 					break;
 				case "thrus.png":
 					if (thruTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "thrus.png");
-					thruTiles = new Image(zipFile.getInputStream(entry), "thruTiles", false);
+					thruTiles = new Image(copyStream(zipFile.getInputStream(entry)), "thruTiles", false);
 					break;
 				case "scenes.png":
 					if (sceneTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "scenes.png");
-					sceneTiles = new Image(zipFile.getInputStream(entry), "scenes", false);
+					sceneTiles = new Image(copyStream(zipFile.getInputStream(entry)), "scenes", false);
 					break;
 				case "conveyers.png":
 					if (conveyerTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "conveyer.png");
-					conveyerTiles = new Image(zipFile.getInputStream(entry), "conveyers", false);
+					conveyerTiles = new Image(copyStream(zipFile.getInputStream(entry)), "conveyers", false);
 					break;
 				case "collapsing.png":
 					if (collapsingTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "collapsing.png");
-					collapsingTiles = new Image(zipFile.getInputStream(entry), "collapsing", false);
+					collapsingTiles = new Image(copyStream(zipFile.getInputStream(entry)), "collapsing", false);
 					break;
 				case "goodies.png":
 					if (goodieSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "goodies.png");
-					goodieSheet = new Image(zipFile.getInputStream(entry), "goodies", false);
+					goodieSheet = new Image(copyStream(zipFile.getInputStream(entry)), "goodies", false);
 					break;
 				case "yums.png":
 					if (yumSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "yums.png");
-					yumSheet = new Image(zipFile.getInputStream(entry), "yums", false);
+					yumSheet = new Image(copyStream(zipFile.getInputStream(entry)), "yums", false);
 					break;
 				case "hazards.png":
 					if (hazardTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "hazards.png");
-					hazardTiles = new Image(zipFile.getInputStream(entry), "hazards", false);
+					hazardTiles = new Image(copyStream(zipFile.getInputStream(entry)), "hazards", false);
 					break;
 				case "uibanner.png":
 					if (bannerSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "uibanner.png");
-					bannerSheet = new Image(zipFile.getInputStream(entry), "uibanner", false);
+					bannerSheet = new Image(copyStream(zipFile.getInputStream(entry)), "uibanner", false);
 					break;
 				case "energy.png":
 					if (energyBar != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "energy.png");
-					energyBar = new Image(zipFile.getInputStream(entry), "energy", false);
+					energyBar = new Image(copyStream(zipFile.getInputStream(entry)), "energy", false);
 					break;
 				case "bonusNumbers.png":
 					if (bonusNumbersSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "bonusNumbers.png");
-					bonusNumbersSheet = new Image(zipFile.getInputStream(entry), "bonusNumbers", false);
+					bonusNumbersSheet = new Image(copyStream(zipFile.getInputStream(entry)), "bonusNumbers", false);
 					break;
 				case "scoreNumbers.png":
 					if (scoreNumbersSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "scoreNumbers.png");
-					scoreNumbersSheet = new Image(zipFile.getInputStream(entry), "scoreNumbers", false);
+					scoreNumbersSheet = new Image(copyStream(zipFile.getInputStream(entry)), "scoreNumbers", false);
 					break;
 				case "explosion.png":
 					if (explosionSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "explosion.png");
-					explosionSheet = new Image(zipFile.getInputStream(entry), "explosion", false);
-					break;
-				case "splash.png":
-					if (splashScreen != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "splash.png");
-					splashScreen = new Image(zipFile.getInputStream(entry), "splash", false);
-					break;
-				case "music.ogg":
-					if (backgroundMusic != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "music.ogg");
-					backgroundMusic = loadSoundClip(zipFile, entry);
+					explosionSheet = new Image(copyStream(zipFile.getInputStream(entry)), "explosion", false);
 					break;
 				// All other types are handled in default, as many different names may belong to one 'class' of things.
 				default:
@@ -429,7 +401,7 @@ public class PackReader {
 							if (backgrounds[index] != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
 						}
 						if (index > maxBackgroundIndex) maxBackgroundIndex = index;
-						Image tempBackground = new Image(zipFile.getInputStream(entry), "background", false);
+						Image tempBackground = new Image(copyStream(zipFile.getInputStream(entry)), "background", false);
 						backgrounds[index] = tempBackground;
 					/* ---------------------- Sprites ---------------------- */
 					} else if (entryName.matches("^sprite[0-9]+\\.png$") ) {
@@ -438,7 +410,7 @@ public class PackReader {
 							if (sprites[index] != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
 						}
 						if (index > maxSpriteIndex) maxSpriteIndex = index;
-						Image tempSprite = new Image(zipFile.getInputStream(entry), "sprite" + index, false);
+						Image tempSprite = new Image(copyStream(zipFile.getInputStream(entry)), "sprite" + index, false);
 						sprites[index] = tempSprite;
 					} else if (entryName.matches("^pattern[0-9]+\\.png$") ) {
 						int index = indexFromName(entryName);
@@ -446,7 +418,7 @@ public class PackReader {
 							if (patterns[index] != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
 						}
 						if (index > maxPatternIndex) maxPatternIndex = index;
-						Image tempPattern = new Image(zipFile.getInputStream(entry), "pattern" + index, false);
+						Image tempPattern = new Image(copyStream(zipFile.getInputStream(entry)), "pattern" + index, false);
 						patterns[index] = tempPattern;
 					/* ---------------------- Sounds ----------------------- */
 					// Due to the nature of graphics amounts being unknown,
@@ -475,7 +447,6 @@ public class PackReader {
 		// -1) Splash screen is available for main game
 		// 0) Nothing is null
 		// 1) Array lists go from 0 to some value with no skips
-		checkResourceNotNull(splashScreen, "splash.png");
 		checkResourceNotNull(solidTiles, "solids.png");
 		checkResourceNotNull(thruTiles, "thrus.png");
 		checkResourceNotNull(sceneTiles, "scenes.png");
@@ -523,15 +494,60 @@ public class PackReader {
 				scoreNumbersSheet,
 				bonusNumbersSheet,
 				explosionSheet,
-				splashScreen,
 				energyBar);
 			
-			WorldResource worldRsrc = WorldResource.createSlickResource(slickGraphics, gameSounds, backgroundMusic);
+			WorldResource worldRsrc = WorldResource.createSlickResource(
+				slickGraphics, ImmutableMap.copyOf(gameSounds));
 			
 			return worldRsrc;
 		} catch (SlickException e) {
 			throw new ResourcePackException(e);
 		}
+	}
+	
+	
+	// Deferred loading will completely mess with the zip loading, as the streams are closed before the loading
+	// occurs. This reads the stream into a byte array and builds a new stream from that.
+	private static ByteArrayInputStream copyStream(InputStream fromZip) throws IOException {
+		return new ByteArrayInputStream(ByteStreams.toByteArray(fromZip));
+	}
+	
+	/**
+	 * Creates the game initialisation resource from the resource pack, consisting of only the splash screen and
+	 * the background music.
+	 * @param packFile
+	 * @return
+	 */
+	public static InitResource initFromPackSlick(final Path packFile) throws ResourcePackException {
+		Image splash = null;
+		Optional<Clip> bgm = Optional.empty();
+		
+		try (ZipFile zipFile = new ZipFile(packFile.toFile())) {
+			for (ZipEntry entry : Collections.list(zipFile.entries())) {
+				if (entry.isDirectory() )  continue; // contents of directories will be iterated over anyway.
+				final String entryName = getFilename(entry);
+				switch (entryName) {
+				case "splash.png":
+					if (splash != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "splash.png");
+					splash = new Image(zipFile.getInputStream(entry), "splash", false);
+					break;
+				case "music.ogg":
+					if (bgm.isPresent()) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "music.ogg");
+					bgm = loadSoundClip(zipFile, entry);
+					break;
+				}
+				
+				// neither are empty? No need to waste any more time here.
+				if (splash != null && bgm.isPresent()) 
+					{ break; }
+			}
+		} catch (IOException | SlickException e) {
+			throw new ResourcePackException(e);
+		}
+		
+		checkResourceNotNull(splash, "splash.png");
+		
+		return new InitResource(splash, bgm);
 	}
 
 	

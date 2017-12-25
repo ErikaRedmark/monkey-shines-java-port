@@ -1,9 +1,14 @@
 package org.erikaredmark.monkeyshines.resource;
 
 import java.beans.PropertyChangeEvent;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import javax.sound.sampled.Clip;
+
 import org.erikaredmark.monkeyshines.GameSoundEffect;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  * SoundManager that does not actually play sounds. In effect, it is a 
@@ -19,6 +24,9 @@ public class AbsentSoundManager implements SoundManager {
 	@Override public void playOnce(GameSoundEffect effect) { }
 	@Override public void playMusic() { }
 	@Override public void stopPlayingMusic() { }
+	@Override public void dispose() { }
+	@Override public void setBgm(Optional<Clip> bgm) { }
+	@Override public void setSounds(final ImmutableMap<GameSoundEffect, Optional<Clip>> sounds) { }
 	@Override public void playOnceDelayed(
 		GameSoundEffect effect, 
 		int delay, 

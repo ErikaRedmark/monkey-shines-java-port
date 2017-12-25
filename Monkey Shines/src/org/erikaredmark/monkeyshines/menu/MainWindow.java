@@ -2,7 +2,6 @@ package org.erikaredmark.monkeyshines.menu;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,18 +11,16 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
-import org.erikaredmark.monkeyshines.GameSoundEffect;
+import org.erikaredmark.monkeyshines.FrozenWorld;
 import org.erikaredmark.monkeyshines.HighScores;
 import org.erikaredmark.monkeyshines.KeyBindingsSlick;
-import org.erikaredmark.monkeyshines.SlickMonkeyShines;
-import org.erikaredmark.monkeyshines.SlickMonkeyShines.UnloadedWorld;
+import org.erikaredmark.monkeyshines.SlickMonkeyShinesStart;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.global.KeySettings;
 import org.erikaredmark.monkeyshines.global.MonkeyShinesPreferences;
 import org.erikaredmark.monkeyshines.global.PreferencePersistException;
 import org.erikaredmark.monkeyshines.global.SpecialSettings;
 import org.erikaredmark.monkeyshines.global.VideoSettings;
-import org.erikaredmark.monkeyshines.resource.SoundManager;
 import org.newdawn.slick.SlickException;
 import org.erikaredmark.monkeyshines.menu.SelectAWorld.WorldSelectionCallback;
 
@@ -182,10 +179,10 @@ public final class MainWindow extends JFrame {
 			@Override public boolean transitionTo(final MainWindow mainWindow) {
 				mainWindow.state.transitionFrom(mainWindow);
 				mainWindow.selectWorldPanel = new SelectAWorld(new WorldSelectionCallback() {
-					@Override public void worldSelected(final UnloadedWorld world) {
+					@Override public void worldSelected(final FrozenWorld world) {
 						// Blocks intentionally until the game context is over.
 						try {
-							SlickMonkeyShines.startMonkeyShines(
+							SlickMonkeyShinesStart.startMonkeyShines(
 								world, 
 								KeyBindingsSlick.fromKeyBindingsAwt(KeySettings.getBindings()),
 								VideoSettings.isFullscreen());
@@ -385,19 +382,19 @@ public final class MainWindow extends JFrame {
 		if (!(w.isWorldFinished() ) ) {
 			throw new IllegalStateException("Cannot tally high scores for an unfinished world");
 		}
-		
+		// TODO restore this entire method
 		final int score = w.getStatistics().getTotalScore();
 		
 		HighScores highScores = HighScores.fromFile(MonkeyShinesPreferences.getHighScoresPath() );
 		if (highScores.isScoreHigh(score) ) {
-			SoundManager snd = w.getResource().getSoundManager();
-			
-			snd.playOnce(GameSoundEffect.YES);
-			String playerName = EnterHighScoreDialog.launch();
-			highScores.addScore(playerName, score);
-			highScores.persistScores(MonkeyShinesPreferences.getHighScoresPath() );
-			// In preparation for high scores movement
-			snd.playOnceDelayed(GameSoundEffect.APPLAUSE, 1, TimeUnit.SECONDS);
+//			SoundManager snd = w.getResource().getSoundManager();
+//			
+//			snd.playOnce(GameSoundEffect.YES);
+//			String playerName = EnterHighScoreDialog.launch();
+//			highScores.addScore(playerName, score);
+//			highScores.persistScores(MonkeyShinesPreferences.getHighScoresPath() );
+//			// In preparation for high scores movement
+//			snd.playOnceDelayed(GameSoundEffect.APPLAUSE, 1, TimeUnit.SECONDS);
 		}		
 	}
 	

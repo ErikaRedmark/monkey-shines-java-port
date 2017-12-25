@@ -1,5 +1,6 @@
 package org.erikaredmark.monkeyshines;
 
+import org.erikaredmark.monkeyshines.resource.SoundManager;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.util.GameEndCallback;
 
@@ -123,12 +124,12 @@ public final class GameWorldLogic {
 	public boolean isBonusTickingDown()
 		{ return bonusTimer != -1; }
 	
-	public void updateBonusTick() {
+	public void updateBonusTick(SoundManager sound) {
 		if (bonusTimer != -1) {
 			bonusTimer = (bonusTimer + 1) % GameConstants.BONUS_COUNTDOWN_DELAY;
 			if (bonusTimer == 0)
 			{
-				boolean keepCounting = currentWorld.bonusCountdown();
+				boolean keepCounting = currentWorld.bonusCountdown(sound);
 				createDigits(bonusDigits, BONUS_NUM_DIGITS, currentWorld.getCurrentBonus() );
 				
 				if (!(keepCounting) )
@@ -143,10 +144,10 @@ public final class GameWorldLogic {
 	 *  Grace period, pause, and other states are all handled properly here, and the proper items
 	 *  will update the proper amount as long as this is consistently called every tick.
 	 */
-	public void update() {
+	public void update(SoundManager sound) {
 		if (!paused && grace == -1) {
 			currentWorld.update();
-			bonzo.update();
+			bonzo.update(sound);
 		} else if (grace != -1) {
 			updateGrace();
 		}
@@ -175,13 +176,6 @@ public final class GameWorldLogic {
 	public void pause(boolean p) { 
 		if (grace == -1)
 			{ paused = p; } 
-	}
-	
-	/**
-	 * Starts up background music
-	 */
-	public void startBgm() {
-		this.currentWorld.getResource().getSoundManager().playMusic();
 	}
 	
 	// Called from callback when bonzos score is updated in game. Sets digit values for
@@ -222,7 +216,6 @@ public final class GameWorldLogic {
 	// Common code for all types of game endings
 	private void endGame_internal() {
 		bonusTimer = -1;
-		currentWorld.getResource().getSoundManager().stopPlayingMusic();
 		currentWorld.worldFinished(bonzo);
 	}
 	
@@ -276,15 +269,6 @@ public final class GameWorldLogic {
 	 * {@code isPowerupVisible} returns {@code true}.
 	 */
 	public Powerup getCurrentPowerup() { return bonzo.getCurrentPowerup(); }
-	
-	/**
-	 * 
-	 * Disposes of graphics and sounds for this running game. This must be called
-	 * exactly ONCE before the last reference of this object is about to go out of scope.
-	 * Failure to call will result in memory leaks.
-	 * 
-	 */
-	public void dispose() { currentWorld.getResource().dispose(); }
 
 	public Bonzo getBonzo() { return bonzo; }
 }

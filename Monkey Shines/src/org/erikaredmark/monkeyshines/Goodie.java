@@ -1,6 +1,6 @@
 package org.erikaredmark.monkeyshines;
 
-import org.erikaredmark.monkeyshines.resource.WorldResource;
+import org.erikaredmark.monkeyshines.resource.SoundManager;
 /**
  * 
  * Represents a specific goodie instance on the map
@@ -11,28 +11,18 @@ import org.erikaredmark.monkeyshines.resource.WorldResource;
 public class Goodie {
 	
 	/**
-	 * 
 	 * Creates a goodie for the specified screen, for the specified world. 
-	 *
-	 * @param type
-	 * 
-	 * @param location
-	 * 
-	 * @param screenId
-	 * 
 	 */
 	public static Goodie newGoodie(final Type type, 
 								   final ImmutablePoint2D location, 
-								   final int screenID, 
-								   final WorldResource rsrc) {
+								   final int screenID) {
 		
-		return new Goodie(type, location, screenID, rsrc);
+		return new Goodie(type, location, screenID);
 	}
 	
-	private Goodie(final Type type, final ImmutablePoint2D location, final int screenId, final WorldResource rsrc) {
+	private Goodie(final Type type, final ImmutablePoint2D location, final int screenId) {
 		this.screenID = screenId;
 		this.location = location;
-		this.rsrc = rsrc;
 		goodieType = type;
 		taken = false;
 		dead = false;
@@ -83,6 +73,8 @@ public class Goodie {
 	 * sound. A goodie may normally only be taken once. If a goodie is already taken, this method does nothing.
 	 * <p/>
 	 * Some goodies are reset when a level screen is restarted.
+	 * <p/>
+	 * If a non absentsound manager is passed in, the goodie take sound will play.
 	 * 
 	 * @param bonzo
 	 * 		a reference to bonzo, so that the goodies effects (score and misc.) may be applied to him.
@@ -94,18 +86,18 @@ public class Goodie {
 	 * 		{@code true} if the goodie was just taken, {@code false} if it was already taken
 	 * 
 	 */
-	public boolean take(final Bonzo bonzo, final World world) {
+	public boolean take(final Bonzo bonzo, final World world, SoundManager snd) {
 		if (taken)  return false;
 		
 		taken = true;
-		rsrc.getSoundManager().playOnce(goodieType.soundEffect);
+		snd.playOnce(goodieType.soundEffect);
 		// If bonzo under the effects if a powerup? Multiply the score
 		int extraScore =   bonzo.getCurrentPowerup() == null
 						 ? goodieType.score
 						 : bonzo.getCurrentPowerup().multiplier() * goodieType.score;
 		
 		bonzo.incrementScore(extraScore);
-		goodieType.affectBonzo(this, bonzo, world);
+		goodieType.affectBonzo(this, bonzo, world, snd);
 		
 		// Finally, if this is a powerup, grant bonzo the powerup.
 		Powerup powerup = goodieType.powerupForGoodie();
@@ -178,13 +170,13 @@ public class Goodie {
 		// Original game had all non essential goodies (ones that didn't do anything) and keys give 100 score, and everything
 		// else gave nothing. For this port, extra lives will give 200 score.
 		RED_KEY(0, 100, GameSoundEffect.YUM_COLLECT, false) {
-			@Override public void affectBonzo(Goodie goodie, Bonzo bonzo, World world) {
-				world.collectedRedKey(goodie);
+			@Override public void affectBonzo(Goodie goodie, Bonzo bonzo, World world, SoundManager sound) {
+				world.collectedRedKey(goodie, sound);
 			}
 		},
 		BLUE_KEY(1, 100, GameSoundEffect.YUM_COLLECT, false) {
-			@Override public void affectBonzo(Goodie goodie, Bonzo bonzo, World world) {
-				world.collectedBlueKey(goodie);
+			@Override public void affectBonzo(Goodie goodie, Bonzo bonzo, World world, SoundManager sound) {
+				world.collectedBlueKey(goodie, sound);
 			}
 		},
 		APPLE(2, 100, GameSoundEffect.YUM_COLLECT, false),
@@ -194,7 +186,7 @@ public class Goodie {
 		BLUE_GRAPES(6, 100, GameSoundEffect.YUM_COLLECT, false),
 		BANANA(7, 100, GameSoundEffect.YUM_COLLECT, false),
 		ENERGY(8, 0, GameSoundEffect.POWERUP_SHIELD, false) {
-			@Override public void affectBonzo(Goodie goodie, Bonzo bonzo, World world) {
+			@Override public void affectBonzo(Goodie goodie, Bonzo bonzo, World world, SoundManager sound) {
 				bonzo.incrementHealth(GameConstants.LIFE_INCREASE);
 			}
 		},
@@ -208,7 +200,7 @@ public class Goodie {
 			@Override public Powerup powerupForGoodie() { return Powerup.SHIELD; }
 		},
 		EXTRA_LIFE(12, 200, GameSoundEffect.POWERUP_EXTRA_LIFE, false) {
-			@Override public void affectBonzo(Goodie goodie, Bonzo bonzo, World world) {
+			@Override public void affectBonzo(Goodie goodie, Bonzo bonzo, World world, SoundManager sound) {
 				bonzo.incrementLives(1);
 			}
 		},
@@ -326,7 +318,8 @@ public class Goodie {
 		 * 		reference to world in case effects a more global, such as red and blue keys
 		 * 
 		 */
-		public void affectBonzo(Goodie goodie, Bonzo bonzo, World world) { /* No op by default, overriden where required */ }
+		public void affectBonzo(Goodie goodie, Bonzo bonzo, World world, SoundManager sound) 
+			{ /* No op by default, overriden where required */ }
 	}
 	
 	// These values indicate starting information for object construction. ONLY THESE
@@ -360,9 +353,6 @@ public class Goodie {
 	public boolean isDead() { return dead; }
 	/** If goodie is taken, but not dead, returns the current phase in yum animation. */
 	public int getYumSprite() { return yumSprite; }
-	
-	
-	private WorldResource rsrc;
 	
 	// When this reaches TICKS_BETWEEN_ANIMATIONS, the y-level for drawing swaps between either the top
 	// row or the bottom row.

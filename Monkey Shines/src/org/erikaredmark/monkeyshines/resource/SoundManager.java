@@ -1,9 +1,14 @@
 package org.erikaredmark.monkeyshines.resource;
 
 import java.beans.PropertyChangeListener;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import javax.sound.sampled.Clip;
+
 import org.erikaredmark.monkeyshines.GameSoundEffect;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Interface for sound manager types. This allows different implementations
@@ -71,5 +76,20 @@ public interface SoundManager extends PropertyChangeListener {
 	 * 
 	 */
 	void stopPlayingMusic();
+
+	/**
+	 * The 'destructor' of this object. Only call when about to otherwise remove a reference to the given
+	 * instance. Destroys all sound resources.
+	 * <p/>
+	 * It may be called more than once, but the object can no longer be used once called.
+	 */
+	void dispose();
+	
+	// ----------- Methods for deferring sound loading -----------
+	/** Sets the current background music that may play. Stop the music first if changing in the middle */
+	void setBgm(Optional<Clip> bgm);
+	
+	/** Sets the current sound set. */
+	void setSounds(final ImmutableMap<GameSoundEffect, Optional<Clip>> sounds);
 
 }

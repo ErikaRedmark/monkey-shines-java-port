@@ -1,7 +1,9 @@
 package org.erikaredmark.monkeyshines.resource;
 
 import java.beans.PropertyChangeEvent;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -16,10 +18,15 @@ import org.erikaredmark.monkeyshines.GameSoundEffect;
 import org.erikaredmark.monkeyshines.global.SoundSettings;
 import org.erikaredmark.monkeyshines.global.SoundUtils;
 
+import com.google.common.collect.ImmutableMap;
+
 /**
  * 
  * Provided to all game objects capable of producing sounds; provides methods to indicate to the sound manager
  * to play certain sounds.
+ * <p/>
+ * Because background music and sounds may come at different times, this is initialised with everything empty,
+ * and the background music and sound effect maps can be added separately.
  * <p/>
  * The sound played, if at all, depends on the {@code WorldResource} used to construct this manager.
  * <p/>
@@ -32,7 +39,9 @@ import org.erikaredmark.monkeyshines.global.SoundUtils;
 public final class JavaDefaultSoundManager implements SoundManager {
 
 	// Use as source of sounds
-	private final WorldResource rsrc;
+	private Optional<Clip> bgm = Optional.empty();
+	private ImmutableMap<GameSoundEffect, Optional<Clip>> sounds = EMPTY_SOUNDS_MAP;
+	private final Set<GameSoundEffect> holdSounds = new HashSet<>();
 	
 	private boolean musicOff;
 	// Set true if music is switched off by volume whilst in the middle of playing.
@@ -45,16 +54,21 @@ public final class JavaDefaultSoundManager implements SoundManager {
 
 	// Created by WorldResource ONLY. That also handles registering/unregistering it from listening to the
 	// SoundSettings global.
-	public JavaDefaultSoundManager(final WorldResource rsrc) {
-		this.rsrc = rsrc;
+	public JavaDefaultSoundManager() {
 		setMusicVolume(SoundSettings.getMusicVolumePercent() );
 		setSoundVolume(SoundSettings.getSoundVolumePercent() );
 	}
+	
+	@Override public void setBgm(final Optional<Clip> bgm)
+		{ this.bgm = bgm; }
+	
+	@Override public void setSounds(final ImmutableMap<GameSoundEffect, Optional<Clip>> sounds)
+		{ this.sounds = sounds; }
 
 	@Override public void playOnce(GameSoundEffect effect) {
 		if (soundOff)  return;
 		
-		Optional<Clip> clip = rsrc.getSoundFor(effect);
+		Optional<Clip> clip = sounds.get(effect);
 		if (clip.isPresent() ) {
 			Clip c = clip.get();
 			if (c.isActive() )  c.stop();
@@ -70,19 +84,19 @@ public final class JavaDefaultSoundManager implements SoundManager {
 		
 		if (soundOff)  return;
 		
-		rsrc.holdSound(effect);
+		holdSound(effect);
 		
 		delaySound.schedule(
 			new Runnable() { 
 				@Override public void run() { 
 					playOnce(effect);
 					// Block this scheduled thread until sound is over
-					Optional<Clip> clip = rsrc.getSoundFor(effect);
+					Optional<Clip> clip = sounds.get(effect);
 					if (clip.isPresent() ) {
 						clip.get().addLineListener(new LineListener() {
 							@Override public void update(LineEvent event) {
 								if (event.getType() == Type.STOP) {
-									rsrc.releaseSound(effect);
+									releaseSound(effect);
 								}
 							}
 						});
@@ -98,8 +112,8 @@ public final class JavaDefaultSoundManager implements SoundManager {
 	 * @see org.erikaredmark.monkeyshines.resource.SoundManager#playMusic()
 	 */
 	@Override public void playMusic() {
-		if (rsrc.backgroundMusic.isPresent() ) {
-			Clip mus = rsrc.backgroundMusic.get();
+		if (bgm.isPresent() ) {
+			Clip mus = bgm.get();
 			if (mus.isActive() )  return;
 			if (musicOff)  return;
 			
@@ -112,8 +126,8 @@ public final class JavaDefaultSoundManager implements SoundManager {
 	 * @see org.erikaredmark.monkeyshines.resource.SoundManager#stopPlayingMusic()
 	 */
 	@Override public void stopPlayingMusic() {
-		if (rsrc.backgroundMusic.isPresent() ) {
-			Clip mus = rsrc.backgroundMusic.get();
+		if (bgm.isPresent() ) {
+			Clip mus = bgm.get();
 			if (mus.isActive() ) {
 				mus.stop();
 			}
@@ -129,8 +143,8 @@ public final class JavaDefaultSoundManager implements SoundManager {
 	 * 		percentage to set music volume to
 	 */
 	private void setMusicVolume(int value) {
-		if (rsrc.backgroundMusic.isPresent() ) {
-			Clip mus = rsrc.backgroundMusic.get();
+		if (bgm.isPresent() ) {
+			Clip mus = bgm.get();
 			if (value == 0) {
 				musicOff = true;
 				// unlike sounds, music must manually be shut off, and then back on again if required.
@@ -148,12 +162,9 @@ public final class JavaDefaultSoundManager implements SoundManager {
 				}
 			}
 	
-			if (rsrc.backgroundMusic.isPresent() ) {
+			if (bgm.isPresent() ) {
 				musicOff = false;
-				FloatControl gainControl = (FloatControl) rsrc.
-					backgroundMusic.
-					get().
-					getControl(FloatControl.Type.MASTER_GAIN);
+				FloatControl gainControl = (FloatControl) bgm.get().getControl(FloatControl.Type.MASTER_GAIN);
 				float decibelLevelOffset = SoundUtils.resolveDecibelOffsetFromPercentage(value);
 				// Music seems to be naturally louder than sound effects, so give it a negative nudge.
 				decibelLevelOffset -= 10;
@@ -185,7 +196,7 @@ public final class JavaDefaultSoundManager implements SoundManager {
 		float decibelLevelOffset = SoundUtils.resolveDecibelOffsetFromPercentage(value);
 		System.out.println("Decibel offset for sound: " + decibelLevelOffset);
 		for (GameSoundEffect effect : GameSoundEffect.values() ) {
-			Optional<Clip> clip = rsrc.getSoundFor(effect);
+			Optional<Clip> clip = sounds.get(effect);
 			if (clip.isPresent() ) {
 				FloatControl gainControl = (FloatControl)
 					clip.get().getControl(FloatControl.Type.MASTER_GAIN);
@@ -210,4 +221,85 @@ public final class JavaDefaultSoundManager implements SoundManager {
 		}
 	}
 	
+	
+	/**
+	 * 
+	 * Prevents the given sound effect from being disposed on the dispose call. This is intended for fine-tuned 
+	 * resource holding in case a single effect is required later even if the rest of the world is disposed.
+	 * <p/>
+	 * It is an error to call this whilst a sound is already held
+	 * 
+	 * @param effect
+	 * 		the effect to NOT dispose
+	 * 
+	 * @throws IllegalStateException
+	 * 		if a hold is already on the sound
+	 * 
+	 */
+	public void holdSound(GameSoundEffect effect) {
+		if (!(holdSounds.add(effect) ) ) {
+			throw new IllegalArgumentException("Sound effect " + effect + " already held in previous request");
+		}
+	}
+	
+	/**
+	 * 
+	 * Releases the resource, allowing it to be disposed. If this object was already disposed, the resource is closed
+	 * as soon as this method returns. Otherwise, the resource becomes eligble to be destroyed on the next call to dispose.
+	 * 
+	 * @param effect
+	 * 		the effect to release
+	 * 
+	 * @throws IllegalStateException
+	 * 		if the resource is not already held
+	 * 
+	 */
+	public void releaseSound(GameSoundEffect effect) {
+		if (!(holdSounds.remove(effect) ) ) {
+			throw new IllegalArgumentException("Sound effect " + effect + " was not previously held");
+		}
+		
+		// Are we already disposed? Clean it now.
+		if (isDisposed) {
+			Optional<Clip> c = sounds.get(effect);
+			c.get().close();
+		}
+	}
+	
+	/**
+	 * 
+	 * Determines if a resource is held. Held resources may not be destroyed until released.
+	 * 
+	 * @param effect
+	 * 
+	 */
+	public boolean isSoundHeld(GameSoundEffect effect) {
+		return holdSounds.contains(effect);
+	}
+	
+	@Override public void dispose() {
+		for (GameSoundEffect effect : sounds.keySet() ) {
+			Optional<Clip> c = sounds.get(effect);
+			if (c.isPresent() ) {
+				if (!(isSoundHeld(effect) ) ) {
+					c.get().close();
+				}
+			}
+		}
+		
+		// Intended for anything that requires late disposal.
+		isDisposed = true;
+	}
+	
+	private static final ImmutableMap<GameSoundEffect, Optional<Clip>> initEmptySounds() {
+		ImmutableMap.Builder<GameSoundEffect, Optional<Clip>> sounds = new ImmutableMap.Builder<>();
+		for (GameSoundEffect effect : GameSoundEffect.values()) {
+			sounds.put(effect, Optional.empty());
+		}
+		return sounds.build();
+	}
+	
+	public static final ImmutableMap<GameSoundEffect, Optional<Clip>> EMPTY_SOUNDS_MAP = initEmptySounds();
+	
+	private boolean isDisposed;
 }

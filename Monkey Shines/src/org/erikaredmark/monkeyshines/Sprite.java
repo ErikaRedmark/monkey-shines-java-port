@@ -3,6 +3,7 @@ package org.erikaredmark.monkeyshines;
 import org.erikaredmark.monkeyshines.bounds.Boundable;
 import org.erikaredmark.monkeyshines.bounds.IPoint2D;
 import org.erikaredmark.monkeyshines.resource.SlickWorldGraphics;
+import org.erikaredmark.monkeyshines.resource.SoundManager;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.opengl.Texture;
@@ -656,27 +657,27 @@ public final class Sprite {
 	
 	public enum SpriteType {
 		NORMAL("Instant Kill") {
-			@Override public void onBonzoCollision(Bonzo bonzo, World world) {
-				bonzo.tryKill(DeathAnimation.NORMAL);
+			@Override public void onBonzoCollision(Bonzo bonzo, World world, SoundManager sound) {
+				bonzo.tryKill(DeathAnimation.NORMAL, sound);
 			}
 		},
 		HEALTH_DRAIN("Health Drain") {
-			@Override public void onBonzoCollision(Bonzo bonzo, World world) {
-				bonzo.hurt(GameConstants.HEALTH_DRAIN_PER_TICK, DamageEffect.BEE);
+			@Override public void onBonzoCollision(Bonzo bonzo, World world, SoundManager sound) {
+				bonzo.hurt(GameConstants.HEALTH_DRAIN_PER_TICK, DamageEffect.BEE, sound);
 			}
 		},
 		EXIT_DOOR("Exit") {
-			@Override public void onBonzoCollision(Bonzo bonzo, World world) {
+			@Override public void onBonzoCollision(Bonzo bonzo, World world, SoundManager sound) {
 				bonzo.hitExitDoor();
 			}
 		},
 		BONUS_DOOR("Bonus") {
-			@Override public void onBonzoCollision(Bonzo bonzo, World world) {
+			@Override public void onBonzoCollision(Bonzo bonzo, World world, SoundManager sound) {
 				world.bonusTransfer(bonzo);
 			}
 		},
 		SCENERY("Harmless") {
-			@Override public void onBonzoCollision(Bonzo bonzo, World world) {
+			@Override public void onBonzoCollision(Bonzo bonzo, World world, SoundManager sound) {
 				// This should not be called. Optimisations should not bother checking collisions
 				// for scenery sprites.
 				assert false : "No collision checks should be performed on scenery sprites";
@@ -699,7 +700,7 @@ public final class Sprite {
 		 * @param world
 		 * 
 		 */
-		public abstract void onBonzoCollision(Bonzo bonzo, World world);
+		public abstract void onBonzoCollision(Bonzo bonzo, World world, SoundManager sound);
 		
 		@Override public String toString() { return name; }
 	}

@@ -275,8 +275,7 @@ public final class EncodedWorld {
 	static Goodie protoToGoodie(WorldFormatProtos.World.Goodie protoGoodie, WorldResource rsrc) {
 		return Goodie.newGoodie(Goodie.Type.byValue(protoGoodie.getId() ), 
 								protoToPoint(protoGoodie.getLocation() ), 
-								protoGoodie.getScreenId(), 
-								rsrc);
+								protoGoodie.getScreenId());
 	}
 	
 	/* ------------------------------ Point -------------------------------- */

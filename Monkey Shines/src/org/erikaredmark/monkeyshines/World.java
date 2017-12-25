@@ -19,6 +19,7 @@ import org.erikaredmark.monkeyshines.bounds.Boundable;
 import org.erikaredmark.monkeyshines.bounds.IPoint2D;
 import org.erikaredmark.monkeyshines.editor.importlogic.WorldTranslationException;
 import org.erikaredmark.monkeyshines.editor.importlogic.WorldTranslationException.TranslationFailure;
+import org.erikaredmark.monkeyshines.resource.SoundManager;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.tiles.ConveyerTile;
 import org.erikaredmark.monkeyshines.tiles.HazardTile;
@@ -277,12 +278,12 @@ public class World {
 	 * 		the key collected
 	 * 
 	 */
-	public void collectedRedKey(Goodie goodie) {
+	public void collectedRedKey(Goodie goodie, SoundManager sound) {
 		assert goodie.getGoodieType() == Type.RED_KEY : "Cannot collect a red key of " + goodie + " as that isn't a red key";
 		assert this.redKeys.contains(goodie) : "Red Key " + goodie + " already collected: Logic Error";
 		
 		this.redKeys.remove(goodie);
-		if (this.redKeys.isEmpty() )  allRedKeysTaken();
+		if (this.redKeys.isEmpty() )  allRedKeysTaken(sound);
 	}
 	
 	/**
@@ -293,16 +294,17 @@ public class World {
 	 * 		the key collected
 	 * 
 	 */
-	public void collectedBlueKey(Goodie goodie) {
+	public void collectedBlueKey(Goodie goodie, SoundManager sound) {
 		assert goodie.getGoodieType() == Type.BLUE_KEY : "Cannot collect a blue key of " + goodie + " as that isn't a blue key";
 		assert this.blueKeys.contains(goodie) : "Blue Key " + goodie + " already collected: Logic Error";
 		
 		this.blueKeys.remove(goodie);
-		if (this.blueKeys.isEmpty() )  allBlueKeysTaken();
+		if (this.blueKeys.isEmpty() )  
+			{ allBlueKeysTaken(sound); }
 	}
 	
-	public void allRedKeysTaken() {
-		this.rsrc.getSoundManager().playOnce(GameSoundEffect.LAST_RED_KEY);
+	public void allRedKeysTaken(SoundManager sound) {
+		sound.playOnce(GameSoundEffect.LAST_RED_KEY);
 		for (Sprite s : exitDoors) {
 			s.setVisible(true);
 		}
@@ -312,8 +314,8 @@ public class World {
 		}
 	}
 	
-	public void allBlueKeysTaken() {
-		this.rsrc.getSoundManager().playOnce(GameSoundEffect.LAST_BLUE_KEY);
+	public void allBlueKeysTaken(SoundManager sound) {
+		sound.playOnce(GameSoundEffect.LAST_BLUE_KEY);
 		for (Sprite s : bonusDoors) {
 			s.setVisible(true);
 		}
@@ -344,10 +346,10 @@ public class World {
 	 * 		{@code true} if the bonus can be decremented again, {@code false} if otherwise
 	 * 
 	 */
-	public boolean bonusCountdown() {
+	public boolean bonusCountdown(SoundManager sound) {
 		assert bonusCountdown > 9 : "Cannot decrement bonus anymore; timer should have stopped";
 		bonusCountdown -= 10;
-		rsrc.getSoundManager().playOnce(GameSoundEffect.TICK);
+		sound.playOnce(GameSoundEffect.TICK);
 		return bonusCountdown > 0;
 	}
 	
@@ -663,7 +665,14 @@ public class World {
 		}
 	}
 	
-	public void checkCollisions(Bonzo theBonzo) {
+	/**
+	 * Checks collisions in the world with respect to Bonzo.
+	 * <p/>
+	 * This may produce sounds if a sound manager is passed in.
+	 * @param theBonzo
+	 * @param sound
+	 */
+	public void checkCollisions(Bonzo theBonzo, SoundManager sound) {
 		// Don't waste time checking collisions if bonzo is dying
 		if (theBonzo.isDying()) return;
 		
@@ -704,7 +713,7 @@ public class World {
 				// Bounding box check done. Do more expensive pixel check
 				// TODO move to Slick based
 				if (nextSprite.pixelCollision(theBonzo, intersection) ) {
-					nextSprite.getType().onBonzoCollision(theBonzo, this);
+					nextSprite.getType().onBonzoCollision(theBonzo, this, sound);
 					// do not do further collisions after bonzo dies
 					break;
 				}
@@ -716,7 +725,7 @@ public class World {
 		currentLocation = theBonzo.getCurrentLocation();
 		
 		// A hazard?
-		hazardCollisionCheck(theBonzo);
+		hazardCollisionCheck(theBonzo, sound);
 		
 		
 		// A goodie?
@@ -736,7 +745,7 @@ public class World {
 		for (WorldCoordinate quad : goodieQuads) {
 			Goodie gotGoodie;
 			if ( (gotGoodie = goodiesInWorld.get(quad) ) != null ) {
-				if (gotGoodie.take(theBonzo, this) ) {
+				if (gotGoodie.take(theBonzo, this, sound) ) {
 					if (gotGoodie.getGoodieType().score > 0)  ++goodiesCollected;
 				}
 			}
@@ -748,14 +757,10 @@ public class World {
 	}
 	
 	/**
-	 * 
 	 * Performs a check if the bonzo is on one or more 'hazard' tiles. If so, then the hazard it set
 	 * to explode (if required) and bonzo is killed based on the hazard properties.
-	 * 
-	 * @param bonzo
-	 * 
 	 */
-	private void hazardCollisionCheck(Bonzo bonzo) {
+	private void hazardCollisionCheck(Bonzo bonzo, SoundManager sound) {
 		ImmutablePoint2D[] tilesToCheck = effectiveTilesCollision(bonzo.getCurrentBounds() );
 		final TileMap map = getCurrentScreen().getMap();
 		for (ImmutablePoint2D tile : tilesToCheck) {
@@ -767,12 +772,12 @@ public class World {
 				// a bomb, the bomb is technically already no longer a hurt for Bonzo.
 				if (hazard.isDead() || hazard.isExploding() )  continue;
 				
-				hazard.hazardHit(rsrc.getSoundManager() );
+				hazard.hazardHit(sound);
 				// Last check; is this hazard harmless? Harmless hazards still play hit sounds and explode, hence why
 				// we did not check earlier.
 				if (!(hazard.getHazard().isHarmless() ) ) {
 					// Send a kill message to bonzo. Only invincibility will save him
-					bonzo.tryKill(hazard.getHazard().getDeathAnimation() );
+					bonzo.tryKill(hazard.getHazard().getDeathAnimation(), sound);
 				}
 				return;
 			}
@@ -864,7 +869,7 @@ public class World {
 		WorldCoordinate coordinate = new WorldCoordinate(screenId, row, col);
 		// If goodie already exists, take out and replace
 		removeGoodie(screenId, row, col);
-		Goodie newGoodie = Goodie.newGoodie(type, ImmutablePoint2D.of(row, col), screenId, rsrc);
+		Goodie newGoodie = Goodie.newGoodie(type, ImmutablePoint2D.of(row, col), screenId);
 		goodiesInWorld.put(coordinate, newGoodie);
 		goodiesPerScreen.put(screenId, new GoodieLocationPair(newGoodie, coordinate) );
 	}

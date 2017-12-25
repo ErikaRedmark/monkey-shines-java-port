@@ -151,8 +151,7 @@ public class RsrcPlvlTranslator {
 				ImmutablePoint2D.of(goodie.location.x() / 20, (goodie.location.y() - 80) / 20);
 			Goodie g = Goodie.newGoodie(Goodie.Type.byValue(goodie.id), 
 										location, 
-										portId, 
-										rsrc);
+										portId);
 			
 			translationState.addGoodie(g);
 		}
