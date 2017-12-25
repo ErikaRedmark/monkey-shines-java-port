@@ -2,6 +2,7 @@ package org.erikaredmark.monkeyshines;
 
 import java.io.IOException;
 
+import org.erikaredmark.monkeyshines.animation.GracePeriodAnimation;
 import org.erikaredmark.monkeyshines.global.SoundSettings;
 import org.erikaredmark.monkeyshines.global.SpecialSettings;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
@@ -19,7 +20,6 @@ import org.newdawn.slick.SlickException;
 import org.newdawn.slick.loading.DeferredResource;
 import org.newdawn.slick.loading.LoadingList;
 import org.newdawn.slick.state.BasicGameState;
-import org.newdawn.slick.state.GameState;
 import org.newdawn.slick.state.StateBasedGame;
 import org.newdawn.slick.state.transition.FadeInTransition;
 import org.newdawn.slick.state.transition.FadeOutTransition;
@@ -45,11 +45,27 @@ public class SlickMonkeyShines extends StateBasedGame {
 	/* ---------------------- States ------------------------ */
 	private static final int SPLASHSCREEN = 0;
 	private static final int GAME         = 1;
+	private static final int GRACE        = 2;
+	private static final int PAUSE        = 3;
+	private static final int WIN          = 4;
+	private static final int LOSE         = 5;
 	
 	/* ------------------ State-wide Data ------------------- */
 	// the data required to load the universe, before we actually load it.
 	private FrozenWorld frozenUniverse;
 	private final KeyBindingsSlick keyBindings;
+	
+	// The actual universe. By the time Splash Screen state is exited, all these should be set properly, and all
+	// other states will have full access.
+	// Technically, a lot of these things are accessible within GameWorldLogic, but
+	// in many cases they are referenced often enough that keeping the references around
+	// directly is nice.
+	private GameWorldLogic universe;
+	private World world;
+	private WorldResource rsrc;
+	private SlickWorldGraphics slickGraphics;
+	private Bonzo bonzo;
+	private GameOverHandler gameOverHandler;
 	
 	/* ---------------- Global Mutable Data ! --------------- */
 	// mutable variable to make sure a game isn't already running.
@@ -75,6 +91,7 @@ public class SlickMonkeyShines extends StateBasedGame {
 	@Override public void initStatesList(GameContainer gc) throws SlickException {
 		addState(new SplashScreen());
 		addState(new Game());
+		addState(new Grace());
 	}
 	
 	@Override public boolean closeRequested() {
@@ -94,6 +111,28 @@ public class SlickMonkeyShines extends StateBasedGame {
 		SoundSettings.unregisterSoundManager(soundControl);
 	}
 	
+	// Called from state transition from splash screen to let this state know that the
+	// world resource has finished internally loading, and the actual world can be constructed.
+	public void worldIsReady(StateBasedGame sbg) throws SlickException {
+		this.rsrc.getSlickGraphics().finishInitialisation();
+		this.world = frozenUniverse.encodedWorld.newWorldInstance(rsrc);
+		this.slickGraphics = this.rsrc.getSlickGraphics();
+		this.gameOverHandler = new GameOverHandler();
+		this.universe = new GameWorldLogic(
+			this.world, 
+			this.gameOverHandler, 
+			SpecialSettings.isThunderbird());
+		this.bonzo = this.universe.getBonzo();
+		// The init will be called after splash init; all states after this will not be
+		// able to access resources.
+		frozenUniverse.removeTemporaryFiles();
+		frozenUniverse = null;
+		soundControl.setSounds(this.rsrc.getSounds());
+		
+		// Set up initial grace animation 
+		assert sbg.getState(GRACE) instanceof Grace : "Unexpected class: " + sbg.getState(GRACE).getClass().getName();
+		((Grace)sbg.getState(GRACE)).initGrace();
+	}
 	
 	public void setQuitAction(Runnable run)
 		{ quit = run; }
@@ -144,9 +183,7 @@ public class SlickMonkeyShines extends StateBasedGame {
 				// Tell next state to actually build the world now that the graphics are in place; remember,
 				// certain calculations require the actual graphics, such as determining the number of hazards.
 				
-				GameState gameState = game.getState(GAME);
-				assert gameState instanceof Game : "Unexpected class: " + gameState.getClass().getName();
-				((Game)gameState).worldIsReady();
+				worldIsReady(game);
 				game.enterState(
 					Game.ID, 
 					new FadeOutTransition(Color.black), 
@@ -175,49 +212,15 @@ public class SlickMonkeyShines extends StateBasedGame {
 	private class Game extends BasicGameState {
 		private static final int ID = GAME;
 		
-		// Called from state transition from splash screen to let this state know that the
-		// world resource has finished internally loading, and the actual world can be constructed.
-		public void worldIsReady() throws SlickException {
-			this.rsrc.getSlickGraphics().finishInitialisation();
-			this.world = frozenUniverse.encodedWorld.newWorldInstance(rsrc);
-			this.slickGraphics = this.rsrc.getSlickGraphics();
-			this.gameOverHandler = new GameOverHandler();
-			this.universe = new GameWorldLogic(
-				this.world, 
-				this.gameOverHandler, 
-				SpecialSettings.isThunderbird());
-			this.bonzo = this.universe.getBonzo();
-			// The init will be called after splash init; all states after this will not be
-			// able to access resources.
-			frozenUniverse.removeTemporaryFiles();
-			frozenUniverse = null;
-			soundControl.setSounds(this.rsrc.getSounds());
-		}
-		
 		@Override public void init(GameContainer gc, StateBasedGame sbg) throws SlickException {
 			gc.setShowFPS(false);
-			// Start the main resource loading
-//			unfreezeWorld = CompletableFuture.supplyAsync( () -> {
 			try {
 				LoadingList.setDeferredLoading(true);
-//				world = frozenUniverse.load();
 				rsrc = frozenUniverse.load();
-//				slickGraphics = this.rsrc.getSlickGraphics();
-//				gameOverHandler = new GameOverHandler();
-//				universe = new GameWorldLogic(
-//					this.world, 
-//					this.gameOverHandler, 
-//					SpecialSettings.isThunderbird());
-//				bonzo = this.universe.getBonzo();
-//				// The init will be called after splash init; all states after this will not be
-//				// able to access resources.
-//				frozenUniverse.removeTemporaryFiles();
-//				frozenUniverse = null;
 			} catch (ResourcePackException e) {
 				LoadingList.setDeferredLoading(false);
 				throw new SlickException("Issue with world resource pack: " + e.getMessage(), e);
 			}
-//			});
 			
 		}
 	
@@ -226,6 +229,11 @@ public class SlickMonkeyShines extends StateBasedGame {
 			// with it in mind.
 			handleKeys(gc.getInput());
 			universe.update(soundControl);
+			
+			if (universe.isGrace()) {
+				((Grace)sbg.getState(GRACE)).initGrace();
+				sbg.enterState(GRACE); 
+			}
 		}
 		
 		private void handleKeys(Input input) {
@@ -239,54 +247,84 @@ public class SlickMonkeyShines extends StateBasedGame {
 				{ bonzo.jump(4); }
 			// hardcoded
 			if (input.isKeyDown(Input.KEY_ESCAPE))
-				{ this.gameOverHandler.gameOverEscape(this.world); }
+				{ gameOverHandler.gameOverEscape(world); }
 		}
 	
 		@Override public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
-			SlickRenderer.paintUI(g, universe, slickGraphics);
-			
-			g.translate(0, 80);
-			g.pushTransform();
-			SlickRenderer.paintWorld(g, world);
-			SlickRenderer.paintBonzo(g, universe.getBonzo(), slickGraphics);
-			g.popTransform();
-		}
-
-		public class GameOverHandler implements GameEndCallback {
-			@Override public void gameOverFail(World w) {
-				// TODO Auto-generated method stub
-				// Need to show failure screen
-				quit.run();
-			}
-	
-			@Override public void gameOverEscape(World w) {
-				// TODO Auto-generated method stub
-				// Just jump back to menu after a fade to black.
-				quit.run();
-			}
-	
-			@Override
-			public void gameOverWin(World w) {
-				// TODO Auto-generated method stub
-				// Show winning screen
-				quit.run();
-			}
-			
+			renderLevel(g);
 		}
 		
 		@Override public int getID() 
 			{ return ID; }
+	}
+	
+	// Renders the level to the graphics. This should only be called after the splash
+	// state is over. Multiple states (gameplay, pause, grace) use level rendering in one
+	// form or another.
+	private void renderLevel(Graphics g) {
+		SlickRenderer.paintUI(g, universe, slickGraphics);
 		
-		// Not set until init function; requires graphics resources that are not
-		// available until then. Is not used until update method anyway.
-		// Technically, a lot of these things are accessible within GameWorldLogic, but
-		// in many cases they are referenced often enough that keeping the references around
-		// directly is nice.
-		private GameWorldLogic universe;
-		private World world;
-		private WorldResource rsrc;
-		private SlickWorldGraphics slickGraphics;
-		private Bonzo bonzo;
-		private GameOverHandler gameOverHandler;
+		g.translate(0, 80);
+		g.pushTransform();
+		SlickRenderer.paintWorld(g, world);
+		SlickRenderer.paintBonzo(g, universe.getBonzo(), slickGraphics);
+		g.popTransform();
+	}
+	
+	/* ----------------- Grace State ------------------- */
+	// renders the world but does not update it anymore until
+	// grace period has ended.
+	private class Grace extends BasicGameState {
+		@Override public void init(GameContainer container, StateBasedGame game) throws SlickException {
+			// nothing to do.
+		}
+
+		@Override public void render(GameContainer container, StateBasedGame game, Graphics g) throws SlickException {
+			renderLevel(g);
+			grace.paint(g);
+		}
+
+		@Override public void update(GameContainer container, StateBasedGame game, int delta) throws SlickException {
+			boolean moreFrames = grace.update();
+			if (!moreFrames) { 
+				universe.resetGrace();
+				game.enterState(GAME);
+			}
+		}
+		
+		@Override public int getID() 
+			{ return GRACE; }
+		
+		// Called when graphics resources are ready and when grace is being reset. Must be called be state
+		// that is making transition to get bonzo's position correct!!!
+		void initGrace() {
+			grace = new GracePeriodAnimation(bonzo, slickGraphics, GameConstants.GRACE_PERIOD_FRAMES, 0, 0);
+		}
+		
+		// set from worldIsReady to initial animation, and reset before state
+		// change out of here.
+		private GracePeriodAnimation grace;
+	}
+
+	public class GameOverHandler implements GameEndCallback {
+		@Override public void gameOverFail(World w) {
+			// TODO Auto-generated method stub
+			// Need to show failure screen
+			quit.run();
+		}
+
+		@Override public void gameOverEscape(World w) {
+			// TODO Auto-generated method stub
+			// Just jump back to menu after a fade to black.
+			quit.run();
+		}
+
+		@Override
+		public void gameOverWin(World w) {
+			// TODO Auto-generated method stub
+			// Show winning screen
+			quit.run();
+		}
+		
 	}
 }

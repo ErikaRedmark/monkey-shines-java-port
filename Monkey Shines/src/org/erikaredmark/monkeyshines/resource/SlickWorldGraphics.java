@@ -76,6 +76,8 @@ public class SlickWorldGraphics {
 	
 	public final Image bonzo;
 	
+	public final Image getReady;
+	
 	/**
 	 * Partially constructs the initial world graphics. Because actual image loading may be
 	 * deferred, graphics and values that require
@@ -128,6 +130,12 @@ public class SlickWorldGraphics {
 			Texture bonzoTexture = BufferedImageUtil.getTexture("bonzo", CoreResource.INSTANCE.getBonzoSheet());
 			this.bonzo = new Image(bonzoTexture.getImageHeight(), bonzoTexture.getImageHeight());
 			this.bonzo.setTexture(bonzoTexture);
+			
+			// Get Ready for Grace animation
+			// bonzo himself
+			Texture getReadyTexture = BufferedImageUtil.getTexture("get-ready", CoreResource.INSTANCE.getGetReady());
+			this.getReady = new Image(getReadyTexture.getImageHeight(), getReadyTexture.getImageHeight());
+			this.getReady.setTexture(getReadyTexture);
 			
 		} catch (IOException e) {
 			throw new SlickException("Could not convert core images to slick form: " + e.getMessage(), e);

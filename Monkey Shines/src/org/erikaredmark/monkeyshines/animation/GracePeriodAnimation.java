@@ -1,14 +1,11 @@
 package org.erikaredmark.monkeyshines.animation;
 
-import java.awt.AlphaComposite;
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-
 import org.erikaredmark.monkeyshines.Bonzo;
 import org.erikaredmark.monkeyshines.GameConstants;
-import org.erikaredmark.monkeyshines.resource.CoreResource;
+import org.erikaredmark.monkeyshines.resource.SlickWorldGraphics;
+import org.newdawn.slick.Color;
+import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Image;
 
 /**
  * 
@@ -50,7 +47,7 @@ public final class GracePeriodAnimation {
 	 * 		the playable area is on the current graphics context.
 	 * 
 	 */
-	public GracePeriodAnimation(Bonzo bonzo, int frames, int xOffset, int yOffset) {
+	public GracePeriodAnimation(Bonzo bonzo, SlickWorldGraphics slickGraphics, int frames, int xOffset, int yOffset) {
 		// final, constant parameters basic on data
 		centerX = (bonzo.getCurrentLocation().x() + 20) + xOffset;
 		centerY = (bonzo.getCurrentLocation().y() + 20) + yOffset;
@@ -59,11 +56,11 @@ public final class GracePeriodAnimation {
 		radiusStep = ((double)(maxRadius - minRadius)) / (double)frames;
 		assert radiusStep > 0 : "Infinite Loop: Radius steps must  be positive non-zero values";
 		
-		opacityInitial = 1.0f;
-		opacityFinal = 0.2f;
+		opacityInitial = 255f;
+		opacityFinal = 0f;
 		opacityStep = (opacityFinal - opacityInitial) / (float)frames;
 		
-		BufferedImage getReady = CoreResource.INSTANCE.getGetReady();
+		getReady = slickGraphics.getReady;
 		getReadyX = (GameConstants.SCREEN_WIDTH / 2) - (getReady.getWidth() / 2);
 		getReadyY = (GameConstants.SCREEN_HEIGHT / 2) - (getReady.getHeight() / 2);
 		getReadyX2 = getReadyX + getReady.getWidth();
@@ -88,30 +85,29 @@ public final class GracePeriodAnimation {
 	 * @return
 	 * 
 	 */
-	public void paint(Graphics2D g2d) {
+	public void paint(Graphics g) {
 		
 		// Animation: Start circle at low opacity from center of bonzo, at a good radius, then decrease radius and increase opacity
 		// at rates such that by 'ms' time, circle if fully opaque and surrounds Bonzo directly.
-		g2d.setStroke(new BasicStroke(4) );
-		g2d.setColor(Color.DARK_GRAY);
-		g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, currentOpacity) );
+		g.setLineWidth(5);
+		Color magentaWithTrans = new Color(Color.magenta.r, Color.magenta.g, Color.magenta.b, currentOpacity);
+		g.setColor(magentaWithTrans);
 		
-		BufferedImage getReady = CoreResource.INSTANCE.getGetReady();
-		g2d.drawImage(getReady, 
-					  getReadyX, getReadyY, 
-					  getReadyX2, getReadyY2, 
-					  0, 0, 
-					  getReady.getWidth(), getReady.getHeight(), null);
+		g.drawImage(getReady, 
+					getReadyX, getReadyY, 
+					getReadyX2, getReadyY2, 
+					0, 0, 
+					getReady.getWidth(), getReady.getHeight());
 		
-		g2d.drawOval((int)(centerX - 2), 
-					 (int)(centerY - 2), 
-					 4, 
-					 4);
+		g.drawOval((int)(centerX - 2), 
+				   (int)(centerY - 2), 
+				   4, 
+				   4);
 		
-		g2d.drawOval((int)(centerX - currentRadius), 
-					 (int)(centerY - currentRadius), 
-					 (int)(currentRadius*2), 
-					 (int)(currentRadius*2) );
+		g.drawOval((int)(centerX - currentRadius), 
+				   (int)(centerY - currentRadius), 
+				   (int)(currentRadius*2), 
+				   (int)(currentRadius*2) );
 
 	}
 	
@@ -146,6 +142,7 @@ public final class GracePeriodAnimation {
 	final int getReadyY;
 	final int getReadyX2;
 	final int getReadyY2;
+	final Image getReady;
 	
 	// State data
 	double currentRadius;

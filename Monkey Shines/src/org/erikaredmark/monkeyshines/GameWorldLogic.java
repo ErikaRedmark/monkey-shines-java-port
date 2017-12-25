@@ -28,9 +28,6 @@ public final class GameWorldLogic {
 	private int[] bonusDigits = new int[] { 9, 9, 9, 9 };
 	public static int BONUS_NUM_DIGITS = 4;
 	
-	// When paused, the game world does not process all updates.
-	private boolean paused;
-	
 	// The player and the world
 	private Bonzo bonzo;
 	private World currentWorld;
@@ -46,16 +43,12 @@ public final class GameWorldLogic {
 	// Default value 0 is guaranteed by language. Bonzo's score always starts at 0
 	private final int digits[] = new int[SCORE_NUM_DIGITS];
 	
-	/* ------------------- Grace Animation ------------------ */
-	// When bonzo dies, the game world is in a state of 'grace'
-	// for a few moments. It is in grace when this timer is changed from
-	// -1 to 0, and whilst in grace it counts up to GameConstants.GRACE_PERIOD_FRAMES
-	// before resetting back to -1.
-	// Whilst in grace, renderers should instead draw an overlay over the world
-	// based on how close the grace period is to ending.
-	private int grace = -1;
+	/* ------------------- Grace ------------------- */
+	// A true or false if bonzo was put in grace; he finished dying.
+	// It is up to the main game to detect this, enter a grace animation
+	// state, and untoggle this when done.
+	private boolean grace = false;
 	
-
 	/**
 	 * Constructs the living game world. This is essentially the universe wrapping the 
 	 * static {@code World} to make it come alive. This includes information about whether
@@ -106,7 +99,7 @@ public final class GameWorldLogic {
 			bonzo -> {
 				currentWorld.restartBonzo(bonzo);
 				// this pointer escape, but function will not be called until gameplay proper
-				activateGrace();
+				grace = true;
 			});
 		
 		currentWorld.setAllRedKeysCollectedCallback( () -> redKeysCollected());
@@ -138,45 +131,18 @@ public final class GameWorldLogic {
 		}
 	}
 	
+	public boolean isGrace() { return grace; }
+	
+	public void resetGrace() { grace = false; }
+	
 	/** Called per tick of gameplay. Gameplay ticks must be clamped at proper speed; this class
 	 *  has no concept of dealing with delta values.
 	 *  Regardless of the state of the game world, this should always be called every update tick.
-	 *  Grace period, pause, and other states are all handled properly here, and the proper items
-	 *  will update the proper amount as long as this is consistently called every tick.
 	 */
 	public void update(SoundManager sound) {
-		if (!paused && grace == -1) {
-			currentWorld.update();
-			bonzo.update(sound);
-			updateBonusTick(sound);
-		} else if (grace != -1) {
-			updateGrace();
-		}
-		// otherwise it is just paused.
-	}
-	
-	private void activateGrace() {
-		grace = 0;
-		bonzo.freeze(true);
-		paused = false;
-	}
-	
-	private void deactivateGrace() {
-		grace = -1;
-		bonzo.freeze(false);
-	}
-	
-	
-	private void updateGrace() {
-		++grace;
-		if (grace >= GameConstants.GRACE_PERIOD_FRAMES)
-			{ deactivateGrace(); }
-	}
-	
-	/** Pauses the game. Does nothing if the grace period is active. */
-	public void pause(boolean p) { 
-		if (grace == -1)
-			{ paused = p; } 
+		currentWorld.update();
+		bonzo.update(sound);
+		updateBonusTick(sound);
 	}
 	
 	// Called from callback when bonzos score is updated in game. Sets digit values for
