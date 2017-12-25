@@ -6,20 +6,21 @@ package org.erikaredmark.monkeyshines;
  * may take. It is up to clients to map an incoming event to this object and then decide what
  * to do based on that event.
  * <p/>
+ * The key bindings should be based on Slick2D key bindings.
+ * <p/>
  * Objects of this class are immutable.
  * 
  * @author Erika Redmark
  *
  */
-public final class KeyBindings {
+public final class KeyBindingsAwt {
 	public final int left;
 	public final int right;
 	public final int jump;
 	
 	/**
-	 * 
-	 * Constructs a new key binding instance using the given keys. The keys can be taken from
-	 * {@code KeyEvent} constants or user-defined.
+	 * Constructs a new key binding instance using the given keys. The keys must be in a form for Slick2D to
+	 * understand.
 	 * 
 	 * @param left
 	 * 		key id to move bonzo left
@@ -31,7 +32,7 @@ public final class KeyBindings {
 	 * 		key id for a jump
 	 * 
 	 */
-	public KeyBindings(int left, int right, int jump) {
+	public KeyBindingsAwt(int left, int right, int jump) {
 		this.left = left;
 		this.right = right;
 		this.jump = jump;

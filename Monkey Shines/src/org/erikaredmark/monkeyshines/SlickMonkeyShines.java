@@ -1,30 +1,5 @@
 package org.erikaredmark.monkeyshines;
 
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.BONUS_DRAW_X;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.HEALTH_DRAW_X;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.HEALTH_DRAW_Y;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.HEALTH_DRAW_Y2;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.HEALTH_MULTIPLIER;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.INFINITY_DRAW_X;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.INFINITY_DRAW_X2;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.INFINITY_DRAW_Y;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.INFINITY_DRAW_Y2;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.INFINITY_HEIGHT;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.INFINITY_WIDTH;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.LIFE_DRAW_X;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.LIFE_DRAW_X2;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.LIFE_DRAW_Y;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.LIFE_DRAW_Y2;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.POWERUP_DRAW_X;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.POWERUP_DRAW_X2;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.POWERUP_DRAW_Y;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.POWERUP_DRAW_Y2;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.SCORE_DRAW_X;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.SCORE_DRAW_Y;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.SCORE_DRAW_Y2;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.SCORE_HEIGHT;
-import static org.erikaredmark.monkeyshines.screendraw.GameUIElements.SCORE_WIDTH;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,7 +9,6 @@ import java.util.logging.Logger;
 import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.global.SpecialSettings;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
-import org.erikaredmark.monkeyshines.resource.CoreResource;
 import org.erikaredmark.monkeyshines.resource.PackReader;
 import org.erikaredmark.monkeyshines.resource.SlickRenderer;
 import org.erikaredmark.monkeyshines.resource.SlickWorldGraphics;
@@ -44,6 +18,7 @@ import org.newdawn.slick.AppGameContainer;
 import org.newdawn.slick.BasicGame;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Input;
 import org.newdawn.slick.ScalableGame;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.opengl.InternalTextureLoader;
@@ -70,7 +45,7 @@ public class SlickMonkeyShines extends BasicGame {
 	 * 		if the passed world's resource (graphics data) is using {@code BufferedImage}
 	 * 		instead of Slick2D's image type. 
 	 */
-	public SlickMonkeyShines(UnloadedWorld world, KeyBindings keys) {
+	public SlickMonkeyShines(UnloadedWorld world, KeyBindingsSlick keys) {
 		super("Monkey Shines (Java Port)");
 		this.frozenUniverse = world;
 		this.keyBindings = keys;
@@ -86,10 +61,12 @@ public class SlickMonkeyShines extends BasicGame {
 			this.world = frozenUniverse.load();
 			this.rsrc = this.world.getResource();
 			this.slickGraphics = this.rsrc.getSlickGraphics();
+			this.gameOverHandler = new GameOverHandler();
 			this.universe = new GameWorldLogic(
 				this.world, 
-				new GameOverHandler(), 
+				this.gameOverHandler, 
 				SpecialSettings.isThunderbird());
+			this.bonzo = this.universe.getBonzo();
 			frozenUniverse.removeTemporaryFiles();
 			frozenUniverse = null;
 		} catch (ResourcePackException e) {
@@ -100,7 +77,22 @@ public class SlickMonkeyShines extends BasicGame {
 	@Override public void update(GameContainer gc, int delta) throws SlickException {
 		// delta is ignored for Monkey Shines. The underlying game logic was never designed
 		// with it in mind.
+		handleKeys(gc.getInput());
 		universe.update();
+	}
+	
+	private void handleKeys(Input input) {
+		// Technically, checking left or right should be mutually exclusive. But pressing both
+		// causes bonzo to dance, and that's funny.
+		if (input.isKeyDown(keyBindings.left)) 
+			{ bonzo.move(-1); }
+		if (input.isKeyDown(keyBindings.right)) 
+			{ bonzo.move(1); }
+		if (input.isKeyDown(keyBindings.jump)) 
+			{ bonzo.jump(4); }
+		// hardcoded
+		if (input.isKeyDown(Input.KEY_ESCAPE))
+			{ this.gameOverHandler.gameOverEscape(this.world); }
 	}
 
 	@Override public void render(GameContainer gc, Graphics g) throws SlickException {
@@ -114,6 +106,7 @@ public class SlickMonkeyShines extends BasicGame {
 	}
 	
 	@Override public boolean closeRequested() {
+		System.out.println("setting running to false...");
 		running = false;
 		return true;
 	}
@@ -157,7 +150,7 @@ public class SlickMonkeyShines extends BasicGame {
 	 * @return
 	 * @throws SlickException
 	 */
-	public static boolean startMonkeyShines(UnloadedWorld world, KeyBindings keyBindings, boolean fullScreen) 
+	public static boolean startMonkeyShines(UnloadedWorld world, KeyBindingsSlick keyBindings, boolean fullScreen) 
 		throws SlickException
 	{
 		if (running)
@@ -173,7 +166,10 @@ public class SlickMonkeyShines extends BasicGame {
 				monkeyShines,
 				GameConstants.SCREEN_WIDTH, 
 				GameConstants.SCREEN_HEIGHT + GameConstants.UI_HEIGHT));
-		monkeyShines.setQuitAction(() -> bonzoContainer.exit());
+		monkeyShines.setQuitAction(() -> {
+			running = false;
+			bonzoContainer.exit();
+		});
 		
 		// TODO if fullscreen, set screen width and height to actual resolution of current monitor.
 		bonzoContainer.setDisplayMode(
@@ -203,13 +199,19 @@ public class SlickMonkeyShines extends BasicGame {
 	
 	// Not set until init function; requires graphics resources that are not
 	// available until then. Is not used until update method anyway.
+	// Technically, a lot of these things are accessible within GameWorldLogic, but
+	// in many cases they are referenced often enough that keeping the references around
+	// directly is nice.
 	private GameWorldLogic universe;
 	private World world;
 	private WorldResource rsrc;
 	private SlickWorldGraphics slickGraphics;
+	private Bonzo bonzo;
+	private GameOverHandler gameOverHandler;
+	
 	// the data required to load the universe, before we actually load it.
 	private UnloadedWorld frozenUniverse;
-	private final KeyBindings keyBindings;
+	private final KeyBindingsSlick keyBindings;
 	
 	// Forces the app container for this game to exit, since the rest of the game (main menus and such)
 	// still operate under AWT And Swing.

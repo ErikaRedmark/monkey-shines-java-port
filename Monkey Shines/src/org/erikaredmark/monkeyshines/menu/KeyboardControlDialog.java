@@ -13,7 +13,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 
-import org.erikaredmark.monkeyshines.KeyBindings;
+import org.erikaredmark.monkeyshines.KeyBindingsAwt;
 
 public class KeyboardControlDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
@@ -42,7 +42,7 @@ public class KeyboardControlDialog extends JDialog {
 	
 	// model state information
 	// There is no 'original' as there is no 'cancel' button
-	private KeyBindings bindings;
+	private KeyBindingsAwt bindings;
 	
 	{
 		try {
@@ -55,7 +55,7 @@ public class KeyboardControlDialog extends JDialog {
 		}
 	}
 	
-	private KeyboardControlDialog(final KeyBindings current) {
+	private KeyboardControlDialog(final KeyBindingsAwt current) {
 		this.bindings = current;
 		
 		// JPanel will handle custom drawing.
@@ -87,7 +87,7 @@ public class KeyboardControlDialog extends JDialog {
 			    new PropertyChangeListener() {
 					@Override public void propertyChange(PropertyChangeEvent event) {
 						int right = (Integer)event.getNewValue();
-						bindings = new KeyBindings(bindings.left, right, bindings.jump);
+						bindings = new KeyBindingsAwt(bindings.left, right, bindings.jump);
 					}
 				},
 				current.right);
@@ -99,7 +99,7 @@ public class KeyboardControlDialog extends JDialog {
 			    new PropertyChangeListener() {
 					@Override public void propertyChange(PropertyChangeEvent event) {
 						int left = (Integer)event.getNewValue();
-						bindings = new KeyBindings(left, bindings.right, bindings.jump);
+						bindings = new KeyBindingsAwt(left, bindings.right, bindings.jump);
 					}
 				},
 				current.left);
@@ -111,7 +111,7 @@ public class KeyboardControlDialog extends JDialog {
 			    new PropertyChangeListener() {
 					@Override public void propertyChange(PropertyChangeEvent event) {
 						int jump = (Integer)event.getNewValue();
-						bindings = new KeyBindings(bindings.left, bindings.right, jump);
+						bindings = new KeyBindingsAwt(bindings.left, bindings.right, jump);
 					}
 				},
 				current.jump);
@@ -146,7 +146,7 @@ public class KeyboardControlDialog extends JDialog {
 	 * 		the newly modified key bindings. May be equal to the original key bindings semantically
 	 * 
 	 */
-	public static KeyBindings launch(final KeyBindings current) {
+	public static KeyBindingsAwt launch(final KeyBindingsAwt current) {
 		KeyboardControlDialog dialog = new KeyboardControlDialog(current);
 		dialog.setModal(true);
 		dialog.setUndecorated(true);

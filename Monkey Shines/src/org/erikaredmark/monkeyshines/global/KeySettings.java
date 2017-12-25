@@ -1,6 +1,6 @@
 package org.erikaredmark.monkeyshines.global;
 
-import org.erikaredmark.monkeyshines.KeyBindings;
+import org.erikaredmark.monkeyshines.KeyBindingsAwt;
 import org.erikaredmark.monkeyshines.global.PreferencePersistException;
 
 /**
@@ -14,13 +14,13 @@ import org.erikaredmark.monkeyshines.global.PreferencePersistException;
  */
 public final class KeySettings {
 	
-	private static KeyBindings currentBindings = MonkeyShinesPreferences.defaultKeyBindings();
+	private static KeyBindingsAwt currentBindings = MonkeyShinesPreferences.defaultKeyBindings();
 	
-	public static void setBindings(final KeyBindings bindings) {
+	public static void setBindings(final KeyBindingsAwt bindings) {
 		currentBindings = bindings;
 	}
 	
-	public static KeyBindings getBindings() {
+	public static KeyBindingsAwt getBindings() {
 		return currentBindings;
 	}
 	

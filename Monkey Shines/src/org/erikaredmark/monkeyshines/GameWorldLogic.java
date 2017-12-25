@@ -155,13 +155,20 @@ public final class GameWorldLogic {
 	
 	private void activateGrace() {
 		grace = 0;
+		bonzo.freeze(true);
 		paused = false;
 	}
+	
+	private void deactivateGrace() {
+		grace = -1;
+		bonzo.freeze(false);
+	}
+	
 	
 	private void updateGrace() {
 		++grace;
 		if (grace >= GameConstants.GRACE_PERIOD_FRAMES)
-			{ grace = -1; }
+			{ deactivateGrace(); }
 	}
 	
 	/** Pauses the game. Does nothing if the grace period is active. */

@@ -22,13 +22,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.erikaredmark.monkeyshines.SlickMonkeyShines.UnloadedWorld;
-import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.encoder.WorldIO;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
-import org.erikaredmark.monkeyshines.resource.PackReader;
-import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.util.BinaryLocation;
 
 /**

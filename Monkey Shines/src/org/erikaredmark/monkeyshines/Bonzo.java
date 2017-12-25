@@ -78,6 +78,8 @@ public final class Bonzo {
 	// playing sounds
 	private SoundManager soundManager;
 	
+	private boolean freeze;
+	
 	
 	/* **********************************************
 	 * 
@@ -663,7 +665,7 @@ public final class Bonzo {
 	 */
 	public void move(double velocity) {
 		// no zombies
-		if (isDying)  return;
+		if (isDying || freeze)  return;
 		// If we are not jumping, unjumping, or dying, increment the sprite
 		// basically, as long as no other state is controlling animation, animate.
 		if (   !(isJumping) 
@@ -693,6 +695,18 @@ public final class Bonzo {
 		// falling, just allows him to get a few pixels closer to the edge.
 		// if (fallAssistGrace > 0)  --fallAssistGrace;
 	}
+	
+	/**
+	 * Prevents bonzo from responding to move commands. Set by game world during certain
+	 * states where movement should be ignored.
+	 * @param b
+	 */
+	public void freeze(boolean frz) {
+		this.freeze = frz;
+	}
+	
+	public boolean isFrozen() 
+		{ return this.freeze; }
 	
 	/**
 	 * 
@@ -1221,6 +1235,5 @@ public final class Bonzo {
 	// Intialises immutable singleton to be used as inital state (when there is no powerup)
 	// so calling update does nothing. After bonzo collects his first powerup, this won't be
 	// used anymore (all powerup states naturally decay to this state)
-
 	
 }

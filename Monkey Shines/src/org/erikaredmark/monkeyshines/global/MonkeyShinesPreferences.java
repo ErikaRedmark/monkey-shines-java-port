@@ -10,7 +10,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.erikaredmark.monkeyshines.KeyBindings;
+import org.erikaredmark.monkeyshines.KeyBindingsAwt;
 import org.erikaredmark.util.BinaryLocation;
 
 /**
@@ -38,7 +38,9 @@ public final class MonkeyShinesPreferences {
 	private static final Properties PREF_INTERNAL = new Properties();
 
 	// Preference defaults if a new preferences file must be created.
-	private static final KeyBindings DEFAULT_BINDINGS = new KeyBindings(KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, KeyEvent.VK_UP);
+	private static final KeyBindingsAwt DEFAULT_BINDINGS = new KeyBindingsAwt(
+		KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT, KeyEvent.VK_UP);
+	
 	private static final int DEFAULT_MUSIC_VOLUME = 60;
 	private static final int DEFAULT_SOUND_VOLUME = 100;
 	private static final boolean DEFAULT_FULLSCREEN_MODE = false;
@@ -144,8 +146,10 @@ public final class MonkeyShinesPreferences {
 	static int defaultMusicVolume() { return Integer.valueOf(PREF_INTERNAL.getProperty(MUSIC_VOLUME) ); }
 	static boolean defaultFullscreen() { return Boolean.valueOf(PREF_INTERNAL.getProperty(FULLSCREEN) ); }
 	static boolean defaultThunderbird() { return Boolean.valueOf(PREF_INTERNAL.getProperty(PLAYTEST) ); }
-	static KeyBindings defaultKeyBindings() { 
-		return new KeyBindings(Integer.valueOf(PREF_INTERNAL.getProperty(KEY_BINDING_LEFT) ), 
+	
+	// Assume the saved keys are slick. They will be in that form 
+	static KeyBindingsAwt defaultKeyBindings() { 
+		return new KeyBindingsAwt(Integer.valueOf(PREF_INTERNAL.getProperty(KEY_BINDING_LEFT) ), 
 							   Integer.valueOf(PREF_INTERNAL.getProperty(KEY_BINDING_RIGHT) ), 
 							   Integer.valueOf(PREF_INTERNAL.getProperty(KEY_BINDING_JUMP) ) ); 
 	}

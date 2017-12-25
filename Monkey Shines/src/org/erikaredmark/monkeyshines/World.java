@@ -664,6 +664,9 @@ public class World {
 	}
 	
 	public void checkCollisions(Bonzo theBonzo) {
+		// Don't waste time checking collisions if bonzo is dying
+		if (theBonzo.isDying()) return;
+		
 		// Another Screen?
 		ImmutablePoint2D currentLocation = theBonzo.getCurrentLocation();
 		ScreenDirection dir = ScreenDirection.fromLocation(currentLocation, Bonzo.BONZO_SIZE);
@@ -700,7 +703,7 @@ public class World {
 			if (intersection != null) {
 				// Bounding box check done. Do more expensive pixel check
 				// TODO move to Slick based
-				if (nextSprite.pixelCollisionAwt(theBonzo, intersection) ) {
+				if (nextSprite.pixelCollision(theBonzo, intersection) ) {
 					nextSprite.getType().onBonzoCollision(theBonzo, this);
 					// do not do further collisions after bonzo dies
 					break;

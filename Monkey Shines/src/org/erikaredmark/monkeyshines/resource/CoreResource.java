@@ -1,6 +1,5 @@
 package org.erikaredmark.monkeyshines.resource;
 
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 

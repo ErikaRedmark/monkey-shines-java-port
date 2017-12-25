@@ -14,7 +14,7 @@ import javax.swing.JMenuItem;
 
 import org.erikaredmark.monkeyshines.GameSoundEffect;
 import org.erikaredmark.monkeyshines.HighScores;
-import org.erikaredmark.monkeyshines.KeyboardInput;
+import org.erikaredmark.monkeyshines.KeyBindingsSlick;
 import org.erikaredmark.monkeyshines.SlickMonkeyShines;
 import org.erikaredmark.monkeyshines.SlickMonkeyShines.UnloadedWorld;
 import org.erikaredmark.monkeyshines.World;
@@ -24,7 +24,6 @@ import org.erikaredmark.monkeyshines.global.PreferencePersistException;
 import org.erikaredmark.monkeyshines.global.SpecialSettings;
 import org.erikaredmark.monkeyshines.global.VideoSettings;
 import org.erikaredmark.monkeyshines.resource.SoundManager;
-import org.erikaredmark.monkeyshines.util.GameEndCallback;
 import org.newdawn.slick.SlickException;
 import org.erikaredmark.monkeyshines.menu.SelectAWorld.WorldSelectionCallback;
 
@@ -188,7 +187,7 @@ public final class MainWindow extends JFrame {
 						try {
 							SlickMonkeyShines.startMonkeyShines(
 								world, 
-								KeySettings.getBindings(),
+								KeyBindingsSlick.fromKeyBindingsAwt(KeySettings.getBindings()),
 								VideoSettings.isFullscreen());
 						} catch (SlickException e) {
 							LOGGER.log(Level.SEVERE, "Expected to start game but could not: " + e.getMessage(), e);

@@ -16,6 +16,7 @@ import javax.swing.JComponent;
 
 import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.ImmutableRectangle;
+import org.erikaredmark.monkeyshines.KeyBindingsSlick;
 
 /**
  * 
@@ -44,6 +45,10 @@ public class KeyBinder extends JComponent {
 	// This single character code is the entire model of this control.
 	private int value;
 	
+	// Indicates if the binder is in error. When so, it displays 'Unmappable Key'.
+	// This is in case a key can't map to a keycode Slick2D will understand.
+	private boolean badKey = false;
+	
 	// The image displayed that indicates what action this key binding will be for.
 	private final BufferedImage contextImage;
 	private static final int CONTEXT_IMAGE_DRAW_X = 104;
@@ -71,7 +76,8 @@ public class KeyBinder extends JComponent {
 	 * 
 	 * @param listener
 	 * 		the listener that will be fired when the selected key is changed. The change event fired will contain
-	 *		the old and new keycode values (as integers)
+	 *		the old and new keycode values (as integers). The keycodes will be in AWT Form, BUT they will have already
+	 *		been vetted as being translatable to Slick form if needed.
 	 * 
 	 * @param initialValue
 	 * 		the initial character used for this key binder. This is a character code from {@code KeyEvent}
@@ -95,10 +101,16 @@ public class KeyBinder extends JComponent {
 		addKeyListener(new KeyAdapter() {
 			@Override public void keyPressed(KeyEvent e) {
 				if (awaitingKeyInput) {
+					// always clear bad key
+					badKey = false;
 					if (value != e.getKeyCode() ) {
 						int oldValue = value;
-						value = e.getKeyCode();
-						listener.propertyChange(new PropertyChangeEvent(KeyBinder.this, "", oldValue, value) );
+						if (KeyBindingsSlick.keyMappingExistsFor(value)) {
+							value = e.getKeyCode();
+							listener.propertyChange(new PropertyChangeEvent(KeyBinder.this, "", oldValue, value) );
+						} else {
+							badKey = true;
+						}
 					}
 					setAwaitingKeyboardInput(false);
 					repaint();
@@ -180,8 +192,14 @@ public class KeyBinder extends JComponent {
 				    ? Color.RED
 				   	: Color.BLUE);
 		g.setFont(new Font("serif", Font.BOLD, 16) );
-		g.drawString(KeyEvent.getKeyText(this.value), 
-					 41, 20);
+		
+		if (!badKey) {
+			g.drawString(KeyEvent.getKeyText(this.value), 
+						 41, 20);
+		} else {
+			g.drawString("! Unmappable Key !",
+						 41, 20);
+		}
 		
 		// done
 	}
