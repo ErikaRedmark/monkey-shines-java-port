@@ -49,6 +49,7 @@ public class SlickMonkeyShines extends StateBasedGame {
 	private static final int PAUSE        = 3;
 	private static final int WIN          = 4;
 	private static final int LOSE         = 5;
+	private static final int HIGH_SCORES  = 6;
 	
 	/* ------------------ State-wide Data ------------------- */
 	// the data required to load the universe, before we actually load it.
@@ -98,6 +99,7 @@ public class SlickMonkeyShines extends StateBasedGame {
 		addState(new Game());
 		addState(new Grace());
 		addState(new Pause());
+		addState(new Lose());
 	}
 	
 	@Override public boolean closeRequested() {
@@ -345,24 +347,55 @@ public class SlickMonkeyShines extends StateBasedGame {
 		@Override public int getID() 
 			{ return PAUSE; }
 	}
+	
+	/* -------------------- Lose State --------------------- */
+	// Upon losing, the sound manager should be told to play the
+	// lose sound and then this comes up for enough frames to fit the sound effect.
+	// or at least, it will play the lose sound effect when I find it. For
+	// now it will play the applause sound because I find that funny.
+	// TODO actually play lose sound effect when found.
+	private class Lose extends BasicGameState {
+		@Override public void init(GameContainer container, StateBasedGame game) throws SlickException {
+			// nothing to do.
+		}
+
+		@Override public void render(GameContainer container, StateBasedGame game, Graphics g) throws SlickException {
+			g.drawImage(slickGraphics.loseBackground, 0, 0);
+		}
+
+		@Override public void update(GameContainer container, StateBasedGame game, int delta) throws SlickException {
+			if (delay >= FRAMES_IN_LOSE_STATE) {
+				quit.run(); 
+			}
+			++delay;
+		}
+		
+		@Override public int getID() 
+			{ return LOSE; }
+		
+		private static final long FRAMES_IN_LOSE_STATE = GameConstants.FRAMES_PER_SECOND * 6;
+		private long delay = 0;
+	}
+	
+	/* ------------------- Win State --------------------- */
+	// When a level is won, shows the score tally, saves the
+	// score to a file, and if it made the high scores list,
+	// transition to that state. Otherwise, quit.
 
 	public class GameOverHandler implements GameEndCallback {
 		@Override public void gameOverFail(World w) {
-			// TODO Auto-generated method stub
-			// Need to show failure screen
-			quit.run();
+			soundControl.stopPlayingMusic();
+			soundControl.playOnce(GameSoundEffect.APPLAUSE);
+			enterState(LOSE);
 		}
 
 		@Override public void gameOverEscape(World w) {
-			// TODO Auto-generated method stub
-			// Just jump back to menu after a fade to black.
+			// Just jump back to menu
 			quit.run();
 		}
 
-		@Override
-		public void gameOverWin(World w) {
-			// TODO Auto-generated method stub
-			// Show winning screen
+		@Override public void gameOverWin(World w) {
+			//enterState(WIN);
 			quit.run();
 		}
 		

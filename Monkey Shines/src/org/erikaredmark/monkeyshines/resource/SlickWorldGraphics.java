@@ -76,6 +76,9 @@ public class SlickWorldGraphics {
 	public final Image bonzo;
 	public final Image getReady;
 	public final Image pause;
+	public final Image highScoresBackground;
+	public final Image loseBackground;
+	public final Image tallyScoresBackground;
 	
 	
 	/**
@@ -139,6 +142,10 @@ public class SlickWorldGraphics {
 			
 			// Not in core images (not needed there) load directly
 			pause = new Image("resources/graphics/pause.png");
+			highScoresBackground = new Image("resources/graphics/mainmenu/highscores/background.png");
+			tallyScoresBackground = new Image("resources/graphics/mainmenu/endgame/bonusTally.png");
+			loseBackground = new Image("resources/graphics/mainmenu/endgame/lose.png");
+			
 			
 		} catch (IOException e) {
 			throw new SlickException("Could not convert core images to slick form: " + e.getMessage(), e);
