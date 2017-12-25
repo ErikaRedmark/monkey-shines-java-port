@@ -600,13 +600,13 @@ public final class Sprite {
 	
 		byte[] extraction = new byte[interW * interH];
 		// Extract from index, place into (i * interW) + j, which should iterate over all entries.
-		for (int i = 0; i < interW; ++i) {
+		for (int i = 0; i < interH; ++i) {
 			// Align to alpha
-			for (int j = 0; j < interH; ++j) {
+			for (int j = 0; j < interW; ++j) {
 				// split up so that if an error occurs, we know which
 				// array index is causing an issue.
 				byte alphaPixel = data[index];
-				extraction[(i * interH) + j] = alphaPixel;
+				extraction[(i * interW) + j] = alphaPixel;
 				index += 4;
 			}
 			
