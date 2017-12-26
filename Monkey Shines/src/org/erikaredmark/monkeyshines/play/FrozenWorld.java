@@ -1,4 +1,4 @@
-package org.erikaredmark.monkeyshines;
+package org.erikaredmark.monkeyshines.play;
 
 import java.io.IOException;
 import java.nio.file.Files;

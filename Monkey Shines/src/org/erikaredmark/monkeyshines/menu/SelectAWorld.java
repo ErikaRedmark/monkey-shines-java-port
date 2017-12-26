@@ -21,11 +21,11 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import org.erikaredmark.monkeyshines.FrozenWorld;
 import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.encoder.WorldIO;
 import org.erikaredmark.monkeyshines.encoder.exception.WorldRestoreException;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
+import org.erikaredmark.monkeyshines.play.FrozenWorld;
 import org.erikaredmark.util.BinaryLocation;
 
 /**

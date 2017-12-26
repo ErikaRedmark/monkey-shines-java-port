@@ -11,10 +11,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
-import org.erikaredmark.monkeyshines.FrozenWorld;
 import org.erikaredmark.monkeyshines.HighScores;
 import org.erikaredmark.monkeyshines.KeyBindingsSlick;
-import org.erikaredmark.monkeyshines.SlickMonkeyShinesStart;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.global.KeySettings;
 import org.erikaredmark.monkeyshines.global.MonkeyShinesPreferences;
@@ -23,6 +21,8 @@ import org.erikaredmark.monkeyshines.global.SpecialSettings;
 import org.erikaredmark.monkeyshines.global.VideoSettings;
 import org.newdawn.slick.SlickException;
 import org.erikaredmark.monkeyshines.menu.SelectAWorld.WorldSelectionCallback;
+import org.erikaredmark.monkeyshines.play.FrozenWorld;
+import org.erikaredmark.monkeyshines.play.SlickMonkeyShinesStart;
 
 /**
  * 

@@ -1,9 +1,25 @@
-package org.erikaredmark.monkeyshines;
+package org.erikaredmark.monkeyshines.play;
 
 import java.io.IOException;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
+
+import org.erikaredmark.monkeyshines.Bonzo;
+import org.erikaredmark.monkeyshines.GameConstants;
+import org.erikaredmark.monkeyshines.GameSoundEffect;
+import org.erikaredmark.monkeyshines.GameWorldLogic;
+import org.erikaredmark.monkeyshines.KeyBindingsSlick;
+import org.erikaredmark.monkeyshines.World;
+import org.erikaredmark.monkeyshines.WorldStatistics;
 import org.erikaredmark.monkeyshines.animation.GracePeriodAnimation;
 import org.erikaredmark.monkeyshines.global.SoundSettings;
+import org.erikaredmark.monkeyshines.global.SoundUtils;
 import org.erikaredmark.monkeyshines.global.SpecialSettings;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import org.erikaredmark.monkeyshines.resource.InitResource;
@@ -33,6 +49,8 @@ import org.newdawn.slick.state.transition.FadeOutTransition;
  * @author Goddess
  */
 public class SlickMonkeyShines extends StateBasedGame {
+	private static final String CLASS_NAME = "org.erikaredmark.monkeyshines.SlickMonkeyShines";
+	private static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
 	
 	/* ------------------- Runnability ---------------------- */
 	// Forces the app container for this game to exit, since the rest of the game (main menus and such)
@@ -100,6 +118,7 @@ public class SlickMonkeyShines extends StateBasedGame {
 		addState(new Grace());
 		addState(new Pause());
 		addState(new Lose());
+		addState(new Win());
 	}
 	
 	@Override public boolean closeRequested() {
@@ -381,12 +400,138 @@ public class SlickMonkeyShines extends StateBasedGame {
 	// When a level is won, shows the score tally, saves the
 	// score to a file, and if it made the high scores list,
 	// transition to that state. Otherwise, quit.
+	private class Win extends BasicGameState {
+		
+		// Must be called before state transition to prepare win statistics.
+		void winReady() {
+			stats = world.getStatistics();
+		}
+		
+		@Override public void init(GameContainer container, StateBasedGame game) throws SlickException {
+			try {
+				// Okay if we can't play sounds.
+				tallySwoosh = Optional.of(SoundUtils.clipFromOggStream(
+						SlickMonkeyShines.class.getResourceAsStream("/resources/sounds/mainmenu/endgame/bonusTally.ogg"), 
+						"bonusTally.ogg"));
+			} catch (UnsupportedAudioFileException | IOException e) {
+				throw new RuntimeException("Missing resource in .jar file: " + e.getMessage(), e);
+			} catch (LineUnavailableException e) {
+				LOGGER.log(Level.WARNING,
+						   "Could not play end game tally sounds: " + e.getMessage() + ". Check .jar integrity.",
+						   e);
+			} catch (Exception e) {
+				LOGGER.log(Level.SEVERE,
+						   "Could not play end game tally sounds, unexpected exception " + e.getMessage(),
+						   e);
+			}
+		}
 
+		@Override public void render(GameContainer container, StateBasedGame game, Graphics g) throws SlickException {
+			g.drawImage(slickGraphics.tallyScoresBackground, 0, 0);
+			g.setColor(Color.green);
+			switch(step) {
+			// brackets intentional to reuse local variable names in each case.
+			// Fallthrough is INTENDED. We don't just draw the current tally, we draw ALL
+			// the tallys up to that point.
+			default: {
+				// anything higher than 0 hits every case.
+			}
+			case 5: {
+				g.setColor(Color.black);
+				g.fillRect(246, 402, 218, 16);
+				g.setColor(Color.green);
+				g.drawString("Press Enter to continue", 250, 400);
+				
+				String toDraw = String.valueOf(stats.getTotalScore() );
+				int rightAlign = ALL_FIELDS_X - g.getFont().getWidth(toDraw);
+				g.drawString(toDraw, rightAlign, TOTAL_SCORE_Y);
+			} // fallthrough intended
+			case 4: {
+				String toDraw = String.valueOf(stats.getRawScore() );
+				int rightAlign = ALL_FIELDS_X - g.getFont().getWidth(toDraw);
+				g.drawString(toDraw, rightAlign, SCORE_Y);
+			} // fallthrough intended
+			case 3: {
+				String toDraw = String.valueOf(stats.getTimeBonus() );
+				int rightAlign = ALL_FIELDS_X - g.getFont().getWidth(toDraw);
+				g.drawString(toDraw, rightAlign, TIME_BONUS_Y);
+			} // fallthrough intended
+			case 2: {
+				String toDraw = String.valueOf(stats.getFruitBonus() );
+				int rightAlign = ALL_FIELDS_X - g.getFont().getWidth(toDraw);
+				g.drawString(toDraw, rightAlign, FRUIT_BONUS_Y);
+			} // fallthrough intended
+			case 1: {
+				String toDraw = String.valueOf(stats.getFuritCollectedPercent()) + "%";
+				int rightAlign = ALL_FIELDS_X - g.getFont().getWidth(toDraw);
+				g.drawString(toDraw, rightAlign, FRUIT_COLLECTED_Y);
+			}
+			// Nothing happens for case zero, but it must appear here or the default case
+			// will get hit
+			case 0: {
+				
+			}
+			}
+		}
+
+		@Override public void update(GameContainer container, StateBasedGame game, int delta) throws SlickException {
+			if (nextNumberDelay >= FRAMES_PER_DELAY) {
+				++step;
+				nextNumberDelay = 0;
+				if (step <= 5) {
+					tallySwoosh.ifPresent(snd -> {
+						if (snd.isActive())
+							{ snd.stop(); }
+						snd.setFramePosition(0);
+						snd.start();
+					});
+				}
+			}
+			
+			if (step <= 5)
+				{ ++nextNumberDelay; }
+			
+			if (step > 5) {
+				Input input = container.getInput();
+				if (input.isKeyDown(Input.KEY_ENTER) || input.isKeyDown(Input.KEY_ESCAPE))
+					{ quit.run(); }
+			}
+		}
+		
+		@Override public int getID() 
+			{ return WIN; }
+		
+		// Together, work to draw the next tally in the win statistics. Each passing of 
+		// FRAMES_PER_DELAY will tally up numbers until all are displayed. At that point input will be accepted
+		// to move off of the tally screen.
+		private long nextNumberDelay = 0;
+		private static final long FRAMES_PER_DELAY = GameConstants.FRAMES_PER_SECOND + (GameConstants.FRAMES_PER_SECOND / 2);
+		
+		// 0 is show nothing, when moving from 0 to 1
+		// show fruit collected, then 1-2 fruit bonus,
+		// then time bonus, then score, then total score,
+		// then 'hit enter or escape to continue.
+		private int step = 0;
+		
+		private Optional<Clip> tallySwoosh = Optional.empty();
+		
+		private WorldStatistics stats;
+		
+		// Static drawing information.
+		private static final int ALL_FIELDS_X = 472;
+		
+		private static final int FRUIT_COLLECTED_Y = 186;
+		private static final int FRUIT_BONUS_Y = 226;
+		private static final int TIME_BONUS_Y = 266;
+		private static final int SCORE_Y = 306;
+		private static final int TOTAL_SCORE_Y = 356;
+	}
+	
 	public class GameOverHandler implements GameEndCallback {
 		@Override public void gameOverFail(World w) {
 			soundControl.stopPlayingMusic();
-			soundControl.playOnce(GameSoundEffect.APPLAUSE);
-			enterState(LOSE);
+			soundControl.playOnceDelayed(GameSoundEffect.APPLAUSE, 1, TimeUnit.SECONDS);
+			enterState(LOSE, new FadeOutTransition(Color.black), new FadeInTransition(Color.black));
 		}
 
 		@Override public void gameOverEscape(World w) {
@@ -395,8 +540,9 @@ public class SlickMonkeyShines extends StateBasedGame {
 		}
 
 		@Override public void gameOverWin(World w) {
-			//enterState(WIN);
-			quit.run();
+			soundControl.stopPlayingMusic();
+			((Win)getState(WIN)).winReady();
+			enterState(WIN, new FadeOutTransition(Color.black, 1000), new FadeInTransition(Color.black, 1000));
 		}
 		
 	}

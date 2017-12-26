@@ -1,5 +1,7 @@
-package org.erikaredmark.monkeyshines;
+package org.erikaredmark.monkeyshines.play;
 
+import org.erikaredmark.monkeyshines.GameConstants;
+import org.erikaredmark.monkeyshines.KeyBindingsSlick;
 import org.newdawn.slick.AppGameContainer;
 import org.newdawn.slick.ScalableGame;
 import org.newdawn.slick.SlickException;
