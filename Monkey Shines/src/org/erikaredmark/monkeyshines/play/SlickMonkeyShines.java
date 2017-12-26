@@ -1,6 +1,7 @@
 package org.erikaredmark.monkeyshines.play;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -14,14 +15,17 @@ import org.erikaredmark.monkeyshines.Bonzo;
 import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.GameSoundEffect;
 import org.erikaredmark.monkeyshines.GameWorldLogic;
+import org.erikaredmark.monkeyshines.HighScores;
 import org.erikaredmark.monkeyshines.KeyBindingsSlick;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.WorldStatistics;
+import org.erikaredmark.monkeyshines.HighScores.HighScore;
 import org.erikaredmark.monkeyshines.animation.GracePeriodAnimation;
 import org.erikaredmark.monkeyshines.global.SoundSettings;
 import org.erikaredmark.monkeyshines.global.SoundUtils;
 import org.erikaredmark.monkeyshines.global.SpecialSettings;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
+import org.erikaredmark.monkeyshines.menu.MenuUtils;
 import org.erikaredmark.monkeyshines.resource.InitResource;
 import org.erikaredmark.monkeyshines.resource.SlickRenderer;
 import org.erikaredmark.monkeyshines.resource.SlickWorldGraphics;
@@ -29,10 +33,12 @@ import org.erikaredmark.monkeyshines.resource.SoundManager;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.util.GameEndCallback;
 import org.newdawn.slick.Color;
+import org.newdawn.slick.Font;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
+import org.newdawn.slick.UnicodeFont;
 import org.newdawn.slick.loading.DeferredResource;
 import org.newdawn.slick.loading.LoadingList;
 import org.newdawn.slick.state.BasicGameState;
@@ -74,10 +80,9 @@ public class SlickMonkeyShines extends StateBasedGame {
 	private FrozenWorld frozenUniverse;
 	private final KeyBindingsSlick keyBindings;
 	
-	// Starts at 0. When pause is pressed and this is not zero, nothing happens.
-	// Otherwise state is changed and this is set to another value. This is to prevent accidentally
-	// rapidly unpausing/pausing the game by holding down the key too much
-	private long pauseDelay = 0;
+	// initialised in Game->Win transition. Used in Win State and High Scores
+	// state.
+	private WorldStatistics stats;
 	
 	// The actual universe. By the time Splash Screen state is exited, all these should be set properly, and all
 	// other states will have full access.
@@ -119,6 +124,7 @@ public class SlickMonkeyShines extends StateBasedGame {
 		addState(new Pause());
 		addState(new Lose());
 		addState(new Win());
+		addState(new HighScoreState());
 	}
 	
 	@Override public boolean closeRequested() {
@@ -252,9 +258,6 @@ public class SlickMonkeyShines extends StateBasedGame {
 		}
 	
 		@Override public void update(GameContainer gc, StateBasedGame sbg, int delta) throws SlickException {
-			if (pauseDelay > 0) 
-				{ --pauseDelay; }
-			
 			// delta is ignored for Monkey Shines. The underlying game logic was never designed
 			// with it in mind.
 			handleKeys(gc.getInput(), sbg);
@@ -278,8 +281,7 @@ public class SlickMonkeyShines extends StateBasedGame {
 			// hardcoded
 			if (input.isKeyDown(Input.KEY_ESCAPE))
 				{ gameOverHandler.gameOverEscape(world); }
-			else if (input.isKeyDown(Input.KEY_P) && pauseDelay <= 0) { 
-				pauseDelay = 15;
+			else if (input.isKeyPressed(Input.KEY_P)) { 
 				sbg.enterState(PAUSE); 
 			}
 		}
@@ -354,11 +356,7 @@ public class SlickMonkeyShines extends StateBasedGame {
 		}
 
 		@Override public void update(GameContainer container, StateBasedGame game, int delta) throws SlickException {
-			if (pauseDelay > 0) 
-				{ --pauseDelay; }
-			
-			if (container.getInput().isKeyDown(Input.KEY_P) && pauseDelay <= 0) {
-				pauseDelay = 15;
+			if (container.getInput().isKeyPressed(Input.KEY_P)) {
 				game.enterState(GAME);
 			}
 		}
@@ -401,11 +399,6 @@ public class SlickMonkeyShines extends StateBasedGame {
 	// score to a file, and if it made the high scores list,
 	// transition to that state. Otherwise, quit.
 	private class Win extends BasicGameState {
-		
-		// Must be called before state transition to prepare win statistics.
-		void winReady() {
-			stats = world.getStatistics();
-		}
 		
 		@Override public void init(GameContainer container, StateBasedGame game) throws SlickException {
 			try {
@@ -493,8 +486,12 @@ public class SlickMonkeyShines extends StateBasedGame {
 			
 			if (step > 5) {
 				Input input = container.getInput();
-				if (input.isKeyDown(Input.KEY_ENTER) || input.isKeyDown(Input.KEY_ESCAPE))
-					{ quit.run(); }
+				if (input.isKeyPressed(Input.KEY_ENTER) || input.isKeyPressed(Input.KEY_ESCAPE)) {
+					// TODO run into high score state
+					quit.run();
+//					((HighScoreState)game.getState(HIGH_SCORES)).setupHighScores();
+//					game.enterState(HIGH_SCORES); 
+				}
 			}
 		}
 		
@@ -515,8 +512,6 @@ public class SlickMonkeyShines extends StateBasedGame {
 		
 		private Optional<Clip> tallySwoosh = Optional.empty();
 		
-		private WorldStatistics stats;
-		
 		// Static drawing information.
 		private static final int ALL_FIELDS_X = 472;
 		
@@ -526,6 +521,71 @@ public class SlickMonkeyShines extends StateBasedGame {
 		private static final int SCORE_Y = 306;
 		private static final int TOTAL_SCORE_Y = 356;
 	}
+	
+	/* ------------------ High Scores ------------------- */
+	// This state is entered from the Win state. It displays
+	// the high scores and, before state transition, the high
+	// scores will be updated and written out.
+	// the stats variable should have been set before transition.
+	// TODO currently there is a rendering bug (easy) and a worse bug...
+	// ... the 'enter player name' uses Java AWT but we are still in Slick,
+	// so an alternative will have to be created. This isn't highest
+	// priority right now to fix so leaving this here for later.
+	private class HighScoreState extends BasicGameState {
+		// Called when win state transitions here
+		// the enter name dialog may block the update loop,
+		// but the game is effectively over anyway.
+//		void setupHighScores() {
+//			int score = stats.getTotalScore();
+//			highScores = HighScores.fromFile(MonkeyShinesPreferences.getHighScoresPath());
+//			if (highScores.isScoreHigh(score)) {
+//				soundControl.playOnce(GameSoundEffect.YES);
+//				String playerName = EnterHighScoreDialog.launch();
+//				highScores.addScore(playerName, score);
+//				highScores.persistScores(MonkeyShinesPreferences.getHighScoresPath());
+//			}
+//			soundControl.playOnceDelayed(GameSoundEffect.APPLAUSE, 1, TimeUnit.SECONDS);
+//		}
+		
+		@Override public void init(GameContainer container, StateBasedGame game) throws SlickException {
+			java.awt.Font temp = new java.awt.Font("sansserif", java.awt.Font.BOLD, 14);
+			scoreFont = new UnicodeFont(temp, temp.getSize(), temp.isBold(), temp.isItalic());
+		}
+
+		@Override public void render(GameContainer container, StateBasedGame game, Graphics g) throws SlickException {
+			g.drawImage(slickGraphics.highScoresBackground, 0, 0);
+			
+			List<HighScore> scores = highScores.getHighScores();
+
+			g.setColor(Color.green);
+			g.setFont(scoreFont);
+			
+			{
+				// Keep index number; we need it for drawing purposes.
+				int index = 0;
+				for (HighScore score : scores) {
+					int yPos =  (index * 24) + 128;
+					g.drawString(MenuUtils.cutString(score.getName(), 50), 40, yPos);
+					g.drawString(String.valueOf(score.getScore() ), 500, yPos);
+					++index;
+				}
+			}
+		}
+
+		@Override public void update(GameContainer container, StateBasedGame game, int delta) throws SlickException {
+			Input input = container.getInput();
+			if (input.isKeyPressed(Input.KEY_ENTER) || input.isKeyPressed(Input.KEY_ESCAPE)) {
+				quit.run();
+			}
+		}
+		
+		@Override public int getID() 
+			{ return HIGH_SCORES; }
+		
+		HighScores highScores;
+		Font scoreFont;
+	}
+	
 	
 	public class GameOverHandler implements GameEndCallback {
 		@Override public void gameOverFail(World w) {
@@ -541,7 +601,7 @@ public class SlickMonkeyShines extends StateBasedGame {
 
 		@Override public void gameOverWin(World w) {
 			soundControl.stopPlayingMusic();
-			((Win)getState(WIN)).winReady();
+			stats = world.getStatistics();
 			enterState(WIN, new FadeOutTransition(Color.black, 1000), new FadeInTransition(Color.black, 1000));
 		}
 		

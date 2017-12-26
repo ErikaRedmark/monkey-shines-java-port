@@ -13,7 +13,6 @@ import javax.swing.JMenuItem;
 
 import org.erikaredmark.monkeyshines.HighScores;
 import org.erikaredmark.monkeyshines.KeyBindingsSlick;
-import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.global.KeySettings;
 import org.erikaredmark.monkeyshines.global.MonkeyShinesPreferences;
 import org.erikaredmark.monkeyshines.global.PreferencePersistException;
@@ -209,78 +208,6 @@ public final class MainWindow extends JFrame {
 				mainWindow.selectWorldPanel = null;
 			}
 		},
-//		// Before changing to this state, tempWorld must be set.
-//		PLAYING_WINDOWED {
-//			@Override public boolean transitionTo(final MainWindow mainWindow) {
-//				if (mainWindow.tempWorld == null)  return false;
-//
-//				// This state transition 
-////				mainWindow.state.transitionFrom(mainWindow);
-////				
-////				mainWindow.currentKeyListener = new KeyboardInput();
-////				mainWindow.runningGameWindowed = 
-////					GamePanel.newGamePanel(mainWindow.currentKeyListener, 
-////										   KeySettings.getBindings(),
-////										   mainWindow.gameEndCallback, 
-////										   mainWindow.tempWorld);
-////				
-////				// Ensure that keyboard events get focus for the listener
-////				mainWindow.requestFocusInWindow();
-////				
-////				// Must add to both.
-////				mainWindow.addKeyListener(mainWindow.currentKeyListener);
-////				mainWindow.add(mainWindow.runningGameWindowed);
-////				mainWindow.pack();
-////				
-////				mainWindow.state = this;
-//				return true;
-//			}
-//
-//			@Override protected void transitionFrom(MainWindow mainWindow) {
-//				if (mainWindow.runningGameWindowed != null) {
-//					
-//					mainWindow.remove(mainWindow.runningGameWindowed);
-//					mainWindow.runningGameWindowed.dispose();
-//					// Nulling reference is important; running game state should be GC'ed as it will no longer be
-//					// transitioned back to.
-//					mainWindow.runningGameWindowed = null;
-//					assert mainWindow.currentKeyListener != null : "Keyboard based game played without a keyboard listener?";
-//					
-//					mainWindow.removeKeyListener(mainWindow.currentKeyListener);
-//				}
-//			}
-//		},
-//		PLAYING_FULLSCREEN {
-//			@Override public boolean transitionTo(MainWindow mainWindow) {
-//				if (mainWindow.tempWorld == null)  return false;
-//				
-//				GameFullscreenWindow fullscreen = new GameFullscreenWindow(new KeyboardInput(), 
-//																		   KeySettings.getBindings(),
-//																		   mainWindow.gameEndCallback,
-//																		   mainWindow.tempWorld);
-//				
-//				if (fullscreen.start() ) {
-//					// Fullscreen should only have one active window
-//					mainWindow.state.transitionFrom(mainWindow);
-//					mainWindow.setVisible(false);
-//					mainWindow.setIgnoreRepaint(true);
-//					// Ensure that keyboard events get focus for the listener
-//					mainWindow.requestFocusInWindow();
-//					
-//					mainWindow.state = this;
-//					return true;
-//				} else {
-//					return false;
-//				}
-//			}
-//
-//			@Override protected void transitionFrom(MainWindow mainWindow) {
-//				// bring back window
-//				mainWindow.setVisible(true);
-//				mainWindow.setIgnoreRepaint(false);
-//			}
-//			
-//		},
 		MENU {
 			@Override public boolean transitionTo(MainWindow mainWindow) {
 				mainWindow.state.transitionFrom(mainWindow);
@@ -361,41 +288,6 @@ public final class MainWindow extends JFrame {
 		 * 
 		 */
 		protected abstract void transitionFrom(final MainWindow mainWindow);
-	}
-	
-	/**
-	 * Determines if the level score is sufficient enough for the high scores (read from a file when this method
-	 * is called), and if so fires up the dialog and prompts the user to enter their name. No further state change
-	 * continues until they do so making this a blocking call.
-	 * <p/>
-	 * Should only be called when the level is completed normally and not via escape or death. It is an error to call
-	 * this function whilst the world is still in play.
-	 * <p/>
-	 * A successful high score from a call to this method readies this object to play the applause sound on the next
-	 * state change to the high scores part of the window by saving the sound manager. The reference will be removed
-	 * once played.
-	 * 
-	 * @param w
-	 * 		the world that was completed.
-	 */
-	private void checkHighScore(World w) {
-		if (!(w.isWorldFinished() ) ) {
-			throw new IllegalStateException("Cannot tally high scores for an unfinished world");
-		}
-		// TODO restore this entire method
-		final int score = w.getStatistics().getTotalScore();
-		
-		HighScores highScores = HighScores.fromFile(MonkeyShinesPreferences.getHighScoresPath() );
-		if (highScores.isScoreHigh(score) ) {
-//			SoundManager snd = w.getResource().getSoundManager();
-//			
-//			snd.playOnce(GameSoundEffect.YES);
-//			String playerName = EnterHighScoreDialog.launch();
-//			highScores.addScore(playerName, score);
-//			highScores.persistScores(MonkeyShinesPreferences.getHighScoresPath() );
-//			// In preparation for high scores movement
-//			snd.playOnceDelayed(GameSoundEffect.APPLAUSE, 1, TimeUnit.SECONDS);
-		}		
 	}
 	
 }
