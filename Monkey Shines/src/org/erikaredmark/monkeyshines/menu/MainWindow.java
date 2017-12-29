@@ -227,6 +227,9 @@ public final class MainWindow extends JFrame {
 			}
 			
 		},
+		// TODO because High scores are viewable from both the main menu AND during gameplay, we have
+		// a bad code duplication. High scores cannot use Slick based rendering in the main menu unless the entire
+		// main menu becomes Slick rendered.
 		HIGH_SCORES {
 			@Override public boolean transitionTo(final MainWindow mainWindow) {
 				mainWindow.state.transitionFrom(mainWindow);

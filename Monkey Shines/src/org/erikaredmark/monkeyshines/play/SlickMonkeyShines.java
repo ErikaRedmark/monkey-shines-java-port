@@ -3,6 +3,7 @@ package org.erikaredmark.monkeyshines.play;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,11 +22,13 @@ import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.WorldStatistics;
 import org.erikaredmark.monkeyshines.HighScores.HighScore;
 import org.erikaredmark.monkeyshines.animation.GracePeriodAnimation;
+import org.erikaredmark.monkeyshines.global.MonkeyShinesPreferences;
 import org.erikaredmark.monkeyshines.global.SoundSettings;
 import org.erikaredmark.monkeyshines.global.SoundUtils;
 import org.erikaredmark.monkeyshines.global.SpecialSettings;
 import org.erikaredmark.monkeyshines.graphics.exception.ResourcePackException;
 import org.erikaredmark.monkeyshines.menu.MenuUtils;
+import org.erikaredmark.monkeyshines.menu.slick.EnterHighScoreName;
 import org.erikaredmark.monkeyshines.resource.InitResource;
 import org.erikaredmark.monkeyshines.resource.SlickRenderer;
 import org.erikaredmark.monkeyshines.resource.SlickWorldGraphics;
@@ -33,12 +36,10 @@ import org.erikaredmark.monkeyshines.resource.SoundManager;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.util.GameEndCallback;
 import org.newdawn.slick.Color;
-import org.newdawn.slick.Font;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
-import org.newdawn.slick.UnicodeFont;
 import org.newdawn.slick.loading.DeferredResource;
 import org.newdawn.slick.loading.LoadingList;
 import org.newdawn.slick.state.BasicGameState;
@@ -488,9 +489,9 @@ public class SlickMonkeyShines extends StateBasedGame {
 				Input input = container.getInput();
 				if (input.isKeyPressed(Input.KEY_ENTER) || input.isKeyPressed(Input.KEY_ESCAPE)) {
 					// TODO run into high score state
-					quit.run();
-//					((HighScoreState)game.getState(HIGH_SCORES)).setupHighScores();
-//					game.enterState(HIGH_SCORES); 
+//					quit.run();
+					((HighScoreState)game.getState(HIGH_SCORES)).setupHighScores(input);
+					game.enterState(HIGH_SCORES); 
 				}
 			}
 		}
@@ -535,21 +536,17 @@ public class SlickMonkeyShines extends StateBasedGame {
 		// Called when win state transitions here
 		// the enter name dialog may block the update loop,
 		// but the game is effectively over anyway.
-//		void setupHighScores() {
-//			int score = stats.getTotalScore();
-//			highScores = HighScores.fromFile(MonkeyShinesPreferences.getHighScoresPath());
-//			if (highScores.isScoreHigh(score)) {
-//				soundControl.playOnce(GameSoundEffect.YES);
-//				String playerName = EnterHighScoreDialog.launch();
-//				highScores.addScore(playerName, score);
-//				highScores.persistScores(MonkeyShinesPreferences.getHighScoresPath());
-//			}
-//			soundControl.playOnceDelayed(GameSoundEffect.APPLAUSE, 1, TimeUnit.SECONDS);
-//		}
+		void setupHighScores(Input input) {
+			int score = stats.getTotalScore();
+			highScores = HighScores.fromFile(MonkeyShinesPreferences.getHighScoresPath());
+			if (highScores.isScoreHigh(score)) {
+				soundControl.playOnce(GameSoundEffect.YES);
+				askForPlayerName = new EnterHighScoreName(200, 200, input);
+			}
+			soundControl.playOnceDelayed(GameSoundEffect.APPLAUSE, 1, TimeUnit.SECONDS);
+		}
 		
 		@Override public void init(GameContainer container, StateBasedGame game) throws SlickException {
-			java.awt.Font temp = new java.awt.Font("sansserif", java.awt.Font.BOLD, 14);
-			scoreFont = new UnicodeFont(temp, temp.getSize(), temp.isBold(), temp.isItalic());
 		}
 
 		@Override public void render(GameContainer container, StateBasedGame game, Graphics g) throws SlickException {
@@ -558,7 +555,7 @@ public class SlickMonkeyShines extends StateBasedGame {
 			List<HighScore> scores = highScores.getHighScores();
 
 			g.setColor(Color.green);
-			g.setFont(scoreFont);
+//			g.setFont(scoreFont);
 			
 			{
 				// Keep index number; we need it for drawing purposes.
@@ -570,20 +567,56 @@ public class SlickMonkeyShines extends StateBasedGame {
 					++index;
 				}
 			}
+			
+			if (askForPlayerName != null && !(askForPlayerName.isDone())) {
+				askForPlayerName.render(g);
+			}
 		}
 
 		@Override public void update(GameContainer container, StateBasedGame game, int delta) throws SlickException {
 			Input input = container.getInput();
-			if (input.isKeyPressed(Input.KEY_ENTER) || input.isKeyPressed(Input.KEY_ESCAPE)) {
-				quit.run();
+
+			// If we are asking for a high score, we are always drawing the high scores
+			// initially in the background anyway, but we won't listen for input ourselves
+			// but instead pass that to EnterHighScoreName
+			if (askForPlayerName != null) {
+				if (askForPlayerName.isDone()) { 
+					// Not null but done indicates the user just finished entering their name. Extract into high
+					// scores
+					String playerName = askForPlayerName.getEnteredText();
+					askForPlayerName = null;
+					highScores.addScore(playerName, stats.getTotalScore());
+					// Don't do file operations on a tight update loop
+					CompletableFuture.runAsync( () -> {
+						highScores.persistScores(MonkeyShinesPreferences.getHighScoresPath());
+					});
+					soundControl.playOnce(GameSoundEffect.APPLAUSE);
+				}
+			} else {
+				if (triggeredDelay && (input.isKeyPressed(Input.KEY_ENTER) || input.isKeyPressed(Input.KEY_ESCAPE))) {
+					quit.run();
+				}
+				if (delay <= DELAY_FRAMES) {
+					++delay;
+				} else {
+					triggeredDelay = true;
+				}
 			}
+			
 		}
 		
 		@Override public int getID() 
 			{ return HIGH_SCORES; }
 		
+		private boolean triggeredDelay = false;
+		long delay = 0;
+		private static final long DELAY_FRAMES = 60;
+		
 		HighScores highScores;
-		Font scoreFont;
+		// If set to non null in state change because of high score being... a high score, will render
+		// the name-entry asking thing before passing input control to escape from the high scores list
+		// and will have the effect of updating the high scores chart after the name is entered.
+		private EnterHighScoreName askForPlayerName;
 	}
 	
 	

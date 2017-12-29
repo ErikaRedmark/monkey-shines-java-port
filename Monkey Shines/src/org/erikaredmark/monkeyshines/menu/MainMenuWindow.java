@@ -122,10 +122,6 @@ public class MainMenuWindow extends JPanel {
 	 * 
 	 * @param playGameCallback
 	 * 		runnable for when the game should start
-	 * 
-	 * @param highScoresCallback
-	 * 		runnable for when the high scores page should be displayed
-	 * 
 	 */
 	public MainMenuWindow(final Runnable playGameCallback, final Runnable highScoresCallback) {
 		// The buttons are the only thing that uses a Swing component; everything else is explicitly painted
