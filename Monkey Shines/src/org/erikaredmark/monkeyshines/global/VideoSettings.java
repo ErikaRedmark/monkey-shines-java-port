@@ -1,6 +1,7 @@
 package org.erikaredmark.monkeyshines.global;
 
 import org.erikaredmark.monkeyshines.global.PreferencePersistException;
+import org.erikaredmark.monkeyshines.video.ScreenSize;
 
 /**
  * 
@@ -13,6 +14,7 @@ public class VideoSettings {
 	
 	private static boolean fullScreen = MonkeyShinesPreferences.defaultFullscreen();
 	
+	private static ScreenSize selectedResolution = MonkeyShinesPreferences.defaultResolution();
 	/**
 	 * 
 	 * Determines if the user asked for a fullscreen mode. Fullscreen mode affects ONLY the actual
@@ -38,10 +40,20 @@ public class VideoSettings {
 	public static void setFullscreen(boolean full) { fullScreen = full; } 
 	
 	/**
-	 *
+	 * Sets the current screen resolution, which will be used next launch of the game. (make sure to
+	 * persist video settings after calling this method)
+	 */
+	public static void setResolution(ScreenSize resolution) {
+		selectedResolution = resolution;
+	}
+	
+	public static ScreenSize getResolution() {
+		return selectedResolution;
+	}
+	
+	/**
 	 * Updates preferences file (if possible) with changes. This is called manually so that playing around with
 	 * preferences doesn't cause excessive disk usage. Only call when the preference is okayed or saved by the user.
-	 * 
 	 */
 	public static void persist() throws PreferencePersistException { MonkeyShinesPreferences.persistVideo(); }
 }

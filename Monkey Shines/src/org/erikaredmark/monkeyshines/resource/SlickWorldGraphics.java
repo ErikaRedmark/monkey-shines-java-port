@@ -1,14 +1,10 @@
 package org.erikaredmark.monkeyshines.resource;
 
-import java.io.IOException;
-
 import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
-import org.newdawn.slick.opengl.Texture;
-import org.newdawn.slick.util.BufferedImageUtil;
 
 /**
  * Encodes all slick based image data for Monkey Shines. 
@@ -122,34 +118,15 @@ public class SlickWorldGraphics {
 		this.energySegment = energy;
 		
 		
-		// --------- Core Image Translation
-		try {
-			// infinity
-			Texture infinityTexture = BufferedImageUtil.getTexture("infinity thunderbird", CoreResource.INSTANCE.getInfinity());
-			this.infinity = new Image(infinityTexture.getImageHeight(), infinityTexture.getImageHeight());
-			this.infinity.setTexture(infinityTexture);
-			
-			// bonzo himself
-			Texture bonzoTexture = BufferedImageUtil.getTexture("bonzo", CoreResource.INSTANCE.getBonzoSheet());
-			this.bonzo = new Image(bonzoTexture.getImageHeight(), bonzoTexture.getImageHeight());
-			this.bonzo.setTexture(bonzoTexture);
-			
-			// Get Ready for Grace animation
-			// bonzo himself
-			Texture getReadyTexture = BufferedImageUtil.getTexture("get-ready", CoreResource.INSTANCE.getGetReady());
-			this.getReady = new Image(getReadyTexture.getImageHeight(), getReadyTexture.getImageHeight());
-			this.getReady.setTexture(getReadyTexture);
-			
-			// Not in core images (not needed there) load directly
-			pause = new Image("resources/graphics/pause.png");
-			highScoresBackground = new Image("resources/graphics/mainmenu/highscores/background.png");
-			tallyScoresBackground = new Image("resources/graphics/mainmenu/endgame/bonusTally.png");
-			loseBackground = new Image("resources/graphics/mainmenu/endgame/lose.png");
-			
-			
-		} catch (IOException e) {
-			throw new SlickException("Could not convert core images to slick form: " + e.getMessage(), e);
-		}
+		// --------- Core Images
+		// infinity
+		this.infinity = new Image("resources/graphics/thunderbird.png", false, Image.FILTER_NEAREST);
+		this.bonzo = new Image("resources/graphics/thebonz.png", false, Image.FILTER_NEAREST);
+		this.getReady = new Image("resources/graphics/getReady.png", false, Image.FILTER_NEAREST);
+		this.pause = new Image("resources/graphics/pause.png", false, Image.FILTER_NEAREST);
+		this.highScoresBackground = new Image("resources/graphics/mainmenu/highscores/background.png");
+		this.tallyScoresBackground = new Image("resources/graphics/mainmenu/endgame/bonusTally.png");
+		this.loseBackground = new Image("resources/graphics/mainmenu/endgame/lose.png");
 	}
 	
 	public void finishInitialisation() throws SlickException {

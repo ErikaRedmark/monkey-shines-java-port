@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.erikaredmark.monkeyshines.KeyBindingsAwt;
+import org.erikaredmark.monkeyshines.video.ScreenSize;
 import org.erikaredmark.util.BinaryLocation;
 
 /**
@@ -53,6 +54,8 @@ public final class MonkeyShinesPreferences {
 	private static final String MUSIC_VOLUME = "music";
 	private static final String FULLSCREEN = "fullscreen";
 	private static final String PLAYTEST = "thunderbird";
+	private static final String RESOLUTION_WIDTH = "res-width";
+	private static final String RESOLUTION_HEIGHT = "res-height";
 	
 	
 	static {
@@ -101,6 +104,14 @@ public final class MonkeyShinesPreferences {
 					PREF_INTERNAL.setProperty(PLAYTEST, "false");
 				}
 				
+				if (!(PREF_INTERNAL.containsKey(RESOLUTION_WIDTH) ) ) {
+					PREF_INTERNAL.setProperty(RESOLUTION_WIDTH, String.valueOf(ScreenSize.getDefaultResolutionWidth()));
+				}
+				
+				if (!(PREF_INTERNAL.containsKey(RESOLUTION_HEIGHT) ) ) {
+					PREF_INTERNAL.setProperty(RESOLUTION_HEIGHT, String.valueOf(ScreenSize.getDefaultResolutionHeight()));
+				}
+				
 			} catch (IOException e) {
 				LOGGER.log(Level.WARNING,
 						   "Preferences cannot be saved for this game session, nor can high scores! Unable to load preferences file: possible preference corruption: " + e.getMessage(),
@@ -142,16 +153,22 @@ public final class MonkeyShinesPreferences {
 	public static String getPreferencesComments() { return "Monkey Shines Preferences File"; }
 
 
-	static int defaultSoundVolume() { return Integer.valueOf(PREF_INTERNAL.getProperty(SOUND_VOLUME) ); }
-	static int defaultMusicVolume() { return Integer.valueOf(PREF_INTERNAL.getProperty(MUSIC_VOLUME) ); }
-	static boolean defaultFullscreen() { return Boolean.valueOf(PREF_INTERNAL.getProperty(FULLSCREEN) ); }
-	static boolean defaultThunderbird() { return Boolean.valueOf(PREF_INTERNAL.getProperty(PLAYTEST) ); }
+	public static int defaultSoundVolume() { return Integer.valueOf(PREF_INTERNAL.getProperty(SOUND_VOLUME) ); }
+	public static int defaultMusicVolume() { return Integer.valueOf(PREF_INTERNAL.getProperty(MUSIC_VOLUME) ); }
+	public static boolean defaultFullscreen() { return Boolean.valueOf(PREF_INTERNAL.getProperty(FULLSCREEN) ); }
+	public static boolean defaultThunderbird() { return Boolean.valueOf(PREF_INTERNAL.getProperty(PLAYTEST) ); }
 	
-	// Assume the saved keys are slick. They will be in that form 
-	static KeyBindingsAwt defaultKeyBindings() { 
+	// Key bindings are stored as java awt key codes. 
+	public static KeyBindingsAwt defaultKeyBindings() { 
 		return new KeyBindingsAwt(Integer.valueOf(PREF_INTERNAL.getProperty(KEY_BINDING_LEFT) ), 
 							   Integer.valueOf(PREF_INTERNAL.getProperty(KEY_BINDING_RIGHT) ), 
 							   Integer.valueOf(PREF_INTERNAL.getProperty(KEY_BINDING_JUMP) ) ); 
+	}
+	
+	public static ScreenSize defaultResolution() { 
+		return new ScreenSize(
+			Integer.valueOf(PREF_INTERNAL.getProperty(RESOLUTION_WIDTH)),
+			Integer.valueOf(PREF_INTERNAL.getProperty(RESOLUTION_HEIGHT)));
 	}
 	
 	private static void save() throws PreferencePersistException {
@@ -179,6 +196,9 @@ public final class MonkeyShinesPreferences {
 	
 	static void persistVideo() throws PreferencePersistException {
 		PREF_INTERNAL.setProperty(FULLSCREEN, String.valueOf(VideoSettings.isFullscreen() ) );
+		ScreenSize resolution = VideoSettings.getResolution();
+		PREF_INTERNAL.setProperty(RESOLUTION_WIDTH, String.valueOf(resolution.getWidth()));
+		PREF_INTERNAL.setProperty(RESOLUTION_HEIGHT, String.valueOf(resolution.getHeight()));
 		
 		save();
 	}

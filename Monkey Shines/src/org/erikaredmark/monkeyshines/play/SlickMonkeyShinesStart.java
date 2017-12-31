@@ -2,6 +2,8 @@ package org.erikaredmark.monkeyshines.play;
 
 import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.KeyBindingsSlick;
+import org.erikaredmark.monkeyshines.global.VideoSettings;
+import org.erikaredmark.monkeyshines.video.ScreenSize;
 import org.newdawn.slick.AppGameContainer;
 import org.newdawn.slick.ScalableGame;
 import org.newdawn.slick.SlickException;
@@ -50,11 +52,17 @@ public class SlickMonkeyShinesStart {
 			bonzoContainer.exit();
 		});
 		
-		// TODO if fullscreen, set screen width and height to actual resolution of current monitor.
+		// TODO separate video settings so that both full/non full screen can use variety of size settings.
+		ScreenSize resolution = fullScreen 
+			? ScreenSize.getLargestResolution()
+			: VideoSettings.getResolution();
+			
 		bonzoContainer.setDisplayMode(
-			GameConstants.SCREEN_WIDTH, 
-			(GameConstants.SCREEN_HEIGHT + GameConstants.UI_HEIGHT), 
+			resolution.getWidth(),
+			resolution.getHeight(),
 			fullScreen);
+		
+		bonzoContainer.setIcon("resources/graphics/ms_launch.png");
 		
 		// This game was never set up with the ability to calculate things using a delta of time between
 		// updating game logic. Easiest solution currently is to just clamp the speed to the exact speed it

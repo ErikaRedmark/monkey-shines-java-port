@@ -6,13 +6,10 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
 
-import org.erikaredmark.monkeyshines.Bonzo;
 import org.erikaredmark.monkeyshines.ClippingRectangle;
 import org.erikaredmark.monkeyshines.Conveyer;
-import org.erikaredmark.monkeyshines.DeathAnimation;
 import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.Goodie;
-import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.LevelScreen;
 import org.erikaredmark.monkeyshines.Point2D;
 import org.erikaredmark.monkeyshines.Sprite;
@@ -277,56 +274,6 @@ public class AwtRenderer
 			currentClip.x(), currentClip.y(), currentClip.width() + currentClip.x(),
 			currentClip.height() + currentClip.y(), 
 			null );
-	}
-	
-//	/**
-//	 * Paints the world to the given graphics context. If the splash screen is being drawn, each call
-//	 * decrements a tick the splash screen should be visible.
-//	 * <p/>
-//	 * This is one step above {@code World} in that it contains other elements of state, such 
-//	 * as being paused or the splash screen being shown.
-//	 * @param g
-//	 */
-//	public static void paintUniverse(Graphics2D g2d, GameWorldLogic logic, AwtWorldGraphics awtGraphics) {
-//		if (!(logic.showingSplash()) ) {
-//			paintWorld(g2d, logic.getWorld());
-//			paintBonzo(g2d, logic.getBonzo());
-//		} else {
-//			g2d.drawImage(awtGraphics.splashScreen, 0, 0, null);
-//			logic.decrementSplashCounter();
-//			if (logic.getSplashCounter() < 0) 
-//				{ logic.setSplash(false); }
-//		}
-//	}
-	
-	public static void paintBonzo(Graphics2D g2d, Bonzo bonzo) {
-		// If dying, that overrides everything.
-		Point2D currentLocation = bonzo.getMutableCurrentLocation();
-		if (bonzo.isDying()) {
-			int currentSprite = bonzo.getCurrentSprite();
-			DeathAnimation deathAnimation = bonzo.getDeathAnimation();
-			ImmutablePoint2D deathStart = deathAnimation.deathStart();
-			ImmutablePoint2D deathSize = deathAnimation.deathSize();
-			ImmutablePoint2D offset = deathAnimation.offset();
-			int drawToX = currentLocation.x() + offset.x();
-			int drawToY = currentLocation.y() + offset.y();
-			int yOffset = deathStart.y() + (deathSize.y() * (currentSprite / deathAnimation.framesPerRow() ) );
-			int xOffset = deathSize.x() * (currentSprite % deathAnimation.framesPerRow() );
-			g2d.drawImage(CoreResource.INSTANCE.getBonzoSheet(), drawToX, drawToY,  //DEST
-					      drawToX + deathSize.x(), drawToY + deathSize.y(), // DEST2
-						  xOffset, yOffset, xOffset + deathSize.x(), yOffset + deathSize.y(),
-						  null);
-			return;
-		} else {
-			// We can just get the draw location and assume 40x40
-			ImmutablePoint2D sourceLocation = bonzo.getDrawLocationInSprite();
-			g2d.drawImage(CoreResource.INSTANCE.getBonzoSheet(), 
-						  currentLocation.x(), currentLocation.y(),
-						  currentLocation.x() + Bonzo.BONZO_SIZE.x(), currentLocation.y() + Bonzo.BONZO_SIZE.y(), 
-						  sourceLocation.x(), sourceLocation.y(),
-						  sourceLocation.x() + Bonzo.BONZO_SIZE.x(), sourceLocation.y() + Bonzo.BONZO_SIZE.y(),
-						  null);
-		}
 	}
 	
 }

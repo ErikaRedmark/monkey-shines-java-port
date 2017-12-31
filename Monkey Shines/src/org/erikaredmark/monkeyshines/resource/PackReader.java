@@ -340,55 +340,55 @@ public class PackReader {
 				/* --------------------------------- Graphics Other Than Sprites --------------------------------- */
 				case "solids.png":
 					if (solidTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "solids.png");
-					solidTiles = new Image(copyStream(zipFile.getInputStream(entry)), "solidTiles", false);
+					solidTiles = new Image(copyStream(zipFile.getInputStream(entry)), "solidTiles", false, Image.FILTER_NEAREST);
 					break;
 				case "thrus.png":
 					if (thruTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "thrus.png");
-					thruTiles = new Image(copyStream(zipFile.getInputStream(entry)), "thruTiles", false);
+					thruTiles = new Image(copyStream(zipFile.getInputStream(entry)), "thruTiles", false, Image.FILTER_NEAREST);
 					break;
 				case "scenes.png":
 					if (sceneTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "scenes.png");
-					sceneTiles = new Image(copyStream(zipFile.getInputStream(entry)), "scenes", false);
+					sceneTiles = new Image(copyStream(zipFile.getInputStream(entry)), "scenes", false, Image.FILTER_NEAREST);
 					break;
 				case "conveyers.png":
 					if (conveyerTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "conveyer.png");
-					conveyerTiles = new Image(copyStream(zipFile.getInputStream(entry)), "conveyers", false);
+					conveyerTiles = new Image(copyStream(zipFile.getInputStream(entry)), "conveyers", false, Image.FILTER_NEAREST);
 					break;
 				case "collapsing.png":
 					if (collapsingTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "collapsing.png");
-					collapsingTiles = new Image(copyStream(zipFile.getInputStream(entry)), "collapsing", false);
+					collapsingTiles = new Image(copyStream(zipFile.getInputStream(entry)), "collapsing", false, Image.FILTER_NEAREST);
 					break;
 				case "goodies.png":
 					if (goodieSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "goodies.png");
-					goodieSheet = new Image(copyStream(zipFile.getInputStream(entry)), "goodies", false);
+					goodieSheet = new Image(copyStream(zipFile.getInputStream(entry)), "goodies", false, Image.FILTER_NEAREST);
 					break;
 				case "yums.png":
 					if (yumSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "yums.png");
-					yumSheet = new Image(copyStream(zipFile.getInputStream(entry)), "yums", false);
+					yumSheet = new Image(copyStream(zipFile.getInputStream(entry)), "yums", false, Image.FILTER_NEAREST);
 					break;
 				case "hazards.png":
 					if (hazardTiles != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "hazards.png");
-					hazardTiles = new Image(copyStream(zipFile.getInputStream(entry)), "hazards", false);
+					hazardTiles = new Image(copyStream(zipFile.getInputStream(entry)), "hazards", false, Image.FILTER_NEAREST);
 					break;
 				case "uibanner.png":
 					if (bannerSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "uibanner.png");
-					bannerSheet = new Image(copyStream(zipFile.getInputStream(entry)), "uibanner", false);
+					bannerSheet = new Image(copyStream(zipFile.getInputStream(entry)), "uibanner", false, Image.FILTER_NEAREST);
 					break;
 				case "energy.png":
 					if (energyBar != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "energy.png");
-					energyBar = new Image(copyStream(zipFile.getInputStream(entry)), "energy", false);
+					energyBar = new Image(copyStream(zipFile.getInputStream(entry)), "energy", false, Image.FILTER_NEAREST);
 					break;
 				case "bonusNumbers.png":
 					if (bonusNumbersSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "bonusNumbers.png");
-					bonusNumbersSheet = new Image(copyStream(zipFile.getInputStream(entry)), "bonusNumbers", false);
+					bonusNumbersSheet = new Image(copyStream(zipFile.getInputStream(entry)), "bonusNumbers", false, Image.FILTER_NEAREST);
 					break;
 				case "scoreNumbers.png":
 					if (scoreNumbersSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "scoreNumbers.png");
-					scoreNumbersSheet = new Image(copyStream(zipFile.getInputStream(entry)), "scoreNumbers", false);
+					scoreNumbersSheet = new Image(copyStream(zipFile.getInputStream(entry)), "scoreNumbers", false, Image.FILTER_NEAREST);
 					break;
 				case "explosion.png":
 					if (explosionSheet != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, "explosion.png");
-					explosionSheet = new Image(copyStream(zipFile.getInputStream(entry)), "explosion", false);
+					explosionSheet = new Image(copyStream(zipFile.getInputStream(entry)), "explosion", false, Image.FILTER_NEAREST);
 					break;
 				// All other types are handled in default, as many different names may belong to one 'class' of things.
 				default:
@@ -410,7 +410,7 @@ public class PackReader {
 							if (sprites[index] != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
 						}
 						if (index > maxSpriteIndex) maxSpriteIndex = index;
-						Image tempSprite = new Image(copyStream(zipFile.getInputStream(entry)), "sprite" + index, false);
+						Image tempSprite = new Image(copyStream(zipFile.getInputStream(entry)), "sprite" + index, false, Image.FILTER_NEAREST);
 						sprites[index] = tempSprite;
 					} else if (entryName.matches("^pattern[0-9]+\\.png$") ) {
 						int index = indexFromName(entryName);
@@ -418,7 +418,7 @@ public class PackReader {
 							if (patterns[index] != null) throw new ResourcePackException(Type.MULTIPLE_DEFINITION, entry.getName() );
 						}
 						if (index > maxPatternIndex) maxPatternIndex = index;
-						Image tempPattern = new Image(copyStream(zipFile.getInputStream(entry)), "pattern" + index, false);
+						Image tempPattern = new Image(copyStream(zipFile.getInputStream(entry)), "pattern" + index, false, Image.FILTER_NEAREST);
 						patterns[index] = tempPattern;
 					/* ---------------------- Sounds ----------------------- */
 					// Due to the nature of graphics amounts being unknown,
