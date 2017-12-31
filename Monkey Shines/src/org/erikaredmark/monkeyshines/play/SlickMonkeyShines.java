@@ -35,7 +35,9 @@ import org.erikaredmark.monkeyshines.resource.SlickWorldGraphics;
 import org.erikaredmark.monkeyshines.resource.SoundManager;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
 import org.erikaredmark.monkeyshines.util.GameEndCallback;
+import org.newdawn.slick.AngelCodeFont;
 import org.newdawn.slick.Color;
+import org.newdawn.slick.Font;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
@@ -97,6 +99,9 @@ public class SlickMonkeyShines extends StateBasedGame {
 	private Bonzo bonzo;
 	private GameOverHandler gameOverHandler;
 	
+	/* ----------------- Global Drawing Data ----------------- */
+	private Font defaultFont;
+	
 	/* ---------------- Global Mutable Data ! --------------- */
 	// mutable variable to make sure a game isn't already running.
 	// Only this class and SlickMonkeyShinesStart should even touch this.
@@ -119,6 +124,13 @@ public class SlickMonkeyShines extends StateBasedGame {
 	}
 	
 	@Override public void initStatesList(GameContainer gc) throws SlickException {
+		// First initialise our default font. We need to draw with display list
+		// caching disabled
+		defaultFont = new AngelCodeFont(
+			"org/newdawn/slick/data/defaultfont.fnt",
+			"org/newdawn/slick/data/defaultfont.png",
+			false);
+		
 		addState(new SplashScreen());
 		addState(new Game());
 		addState(new Grace());
@@ -423,6 +435,7 @@ public class SlickMonkeyShines extends StateBasedGame {
 		@Override public void render(GameContainer container, StateBasedGame game, Graphics g) throws SlickException {
 			g.drawImage(slickGraphics.tallyScoresBackground, 0, 0);
 			g.setColor(Color.green);
+			g.setFont(defaultFont);
 			switch(step) {
 			// brackets intentional to reuse local variable names in each case.
 			// Fallthrough is INTENDED. We don't just draw the current tally, we draw ALL
@@ -541,7 +554,7 @@ public class SlickMonkeyShines extends StateBasedGame {
 			highScores = HighScores.fromFile(MonkeyShinesPreferences.getHighScoresPath());
 			if (highScores.isScoreHigh(score)) {
 				soundControl.playOnce(GameSoundEffect.YES);
-				askForPlayerName = new EnterHighScoreName(200, 200, input);
+				askForPlayerName = new EnterHighScoreName(200, 200, input, defaultFont);
 			}
 			soundControl.playOnceDelayed(GameSoundEffect.APPLAUSE, 1, TimeUnit.SECONDS);
 		}
@@ -555,7 +568,7 @@ public class SlickMonkeyShines extends StateBasedGame {
 			List<HighScore> scores = highScores.getHighScores();
 
 			g.setColor(Color.green);
-//			g.setFont(scoreFont);
+			g.setFont(defaultFont);
 			
 			{
 				// Keep index number; we need it for drawing purposes.

@@ -1,6 +1,7 @@
 package org.erikaredmark.monkeyshines.menu.slick;
 
 import org.newdawn.slick.Color;
+import org.newdawn.slick.Font;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.KeyListener;
@@ -23,10 +24,11 @@ import org.newdawn.slick.KeyListener;
 // TODO remove this class if Nifty is ever included in the build, and replace it with a Nifty text field.
 public class EnterHighScoreName implements KeyListener {
 	
-	public EnterHighScoreName(int x, int y, Input input) {
+	public EnterHighScoreName(int x, int y, Input input, Font font) {
 		this.xPos = x;
 		this.yPos = y;
 		this.input = input;
+		this.font = font;
 		input.addKeyListener(this);
 	}
 	
@@ -59,6 +61,7 @@ public class EnterHighScoreName implements KeyListener {
 		g.fillRoundRect(0, 0, WIDTH, HEIGHT, 4);
 		g.resetFont();
 		g.setColor(STATIC_TEXT_FOREGROUND);
+		g.setFont(font);
 		g.drawString(INTRO_LINE_1, 2, 2);
 		g.drawString(INTRO_LINE_2, 2, 18);
 		
@@ -70,6 +73,8 @@ public class EnterHighScoreName implements KeyListener {
 		
 		g.popTransform();
 	}
+	
+	@Override public void setInput(Input input) { }
 	
 	public String getEnteredText() 
 		{ return currentText.toString(); }
@@ -96,6 +101,7 @@ public class EnterHighScoreName implements KeyListener {
 	private final float xPos;
 	private final float yPos;
 	private final Input input;
+	private final Font font;
 	
 	private static final String INTRO_LINE_1 = "Congratulations on a high score!";
 	private static final String INTRO_LINE_2 = "Enter your name then hit enter.";
@@ -105,9 +111,5 @@ public class EnterHighScoreName implements KeyListener {
 	private static final Color STATIC_TEXT_FOREGROUND = Color.green;
 	private static final Color TYPE_TEXT_BACKGROUND = Color.black.brighter(0.1f);
 	private static int MAX_CHARACTERS = 34;
-	@Override
-	public void setInput(Input input) {
-		// TODO Auto-generated method stub
-		
-	}
+	
 }
