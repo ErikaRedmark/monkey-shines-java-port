@@ -1,0 +1,97 @@
+buildscript {
+	repositories {
+		jcenter()
+	}
+	dependencies {
+		classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.2'
+	}
+}
+
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'java'
+
+// TODO Remote dependencies should probably be handled the proper way
+repositories {
+	mavenCentral()
+	maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+	flatDir {
+		dirs 'lib'
+	}
+}
+
+def natives = 'native'
+
+def lwjglVersion = '2.9.3'
+
+// configurations {
+// 	natives
+// }
+
+dependencies {
+	// ------------- Standard Dependencies --------------
+	// TODO move local dependencies to here for each one that
+	// can be found on an online repository.
+
+	// ------------ From local directories --------------
+	compile name: 'guava-14.0.1'
+	compile name: 'jinput'
+	compile name: 'jogg-0.0.7'
+	compile name: 'jorbis-0.0.15'
+	compile name: 'MacResourceForkManager'
+	compile name: 'protobuf-java-2.5.0'
+	compile name: 'slick'
+	compile name: 'tritonus_share'
+	compile name: 'vorbisspi1.0.3'
+
+  // ------------ Lightweight Java OpenGL ------------
+	// Currently just package all natives into one jar
+	compile "org.lwjgl.lwjgl:lwjgl:${lwjglVersion}"
+
+	testCompile 'junit:junit:4.12'
+	// natives
+	//classpath '
+}
+
+sourceSets {
+	main {
+		java {
+			srcDirs = ['src']
+		}
+		resources {
+			srcDirs = ['src']
+		}
+	}
+	test {
+		java {
+			srcDirs = ['test']
+		}
+	}
+}
+
+// Make sure the output is a fat jar because executables wil be wrapped around this.
+// Executables will help get into level editor; for our purposes, the default is the game.
+jar {
+	manifest {
+		attributes "Main-Class": "org.erikaredmark.monkeyshines.MonkeyShines"
+	}
+}
+
+// -------------------------------------------------------------------------
+// ------ Release and Packaging --------------------------------------------
+def releaseFolder = "ms_release"
+task release(type: Copy) {
+	from {
+		shadowJar.outputJar
+		into("{$releaseFolder}")
+	}
+
+	copynatives
+}
+
+task copynatives(type: Copy) {
+		// Package native libraries for LWJGL
+		from {
+			natives
+			into("{$releaseFolder}/{$natives}")
+		}
+}

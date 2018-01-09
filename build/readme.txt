@@ -1,1 +1,0 @@
-Launch4j is used to build executables. All platform executables will use either ms_exe.xml or ms_editor_exe.xml. Executables, as far as I am aware, can only be created for a platform with a version of launch4j for that platform.
