@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch4jConfig>
+  <dontWrapJar>true</dontWrapJar>
+  <headerType>gui</headerType>
+  <jar>data\Monkey Shines-all.jar</jar>
+  <outfile>Monkey Shines.exe</outfile>
+  <errTitle>The Java 8 runtime is required to play Monkey Shines. </errTitle>
+  <cmdLine></cmdLine>
+  <chdir></chdir>
+  <priority>normal</priority>
+  <downloadUrl>http://www.oracle.com/technetwork/java/javase/downloads/jre7-downloads-1880261.html</downloadUrl>
+  <supportUrl>https://github.com/ErikaRedmark/monkey-shines-java-port</supportUrl>
+  <stayAlive>false</stayAlive>
+  <restartOnCrash>false</restartOnCrash>
+  <manifest></manifest>
+  <icon>icons/ms_launch.ico</icon>
+  <!-- <var>java.library.path=./data</var> -->
+  <singleInstance>
+    <mutexName>Monkey Shines</mutexName>
+    <windowTitle>Monkey Shines</windowTitle>
+  </singleInstance>
+  <classPath>
+    <mainClass>org.erikaredmark.monkeyshines.MonkeyShines</mainClass>
+  </classPath>
+  <jre>
+    <path></path>
+    <bundledJre64Bit>false</bundledJre64Bit>
+    <bundledJreAsFallback>false</bundledJreAsFallback>
+    <minVersion>1.8.0</minVersion>
+    <maxVersion></maxVersion>
+    <jdkPreference>preferJre</jdkPreference>
+    <runtimeBits>64/32</runtimeBits>
+    <args>-Djava.library.path=data</args>
+  </jre>
+  <versionInfo>
+    <fileVersion>1.1.0.0</fileVersion>
+    <txtFileVersion>1.1.0</txtFileVersion>
+    <fileDescription>Game</fileDescription>
+    <copyright>Port Code: Erika Redmark / Concept: Fantasoft / Original Mac Version: Mark Elliott</copyright>
+    <productVersion>1.1.0.0</productVersion>
+    <txtProductVersion>1.1.0</txtProductVersion>
+    <productName>Monkey Shines</productName>
+    <companyName>Erika Redmark</companyName>
+    <internalName>Monkey Shines</internalName>
+    <originalFilename>Monkey Shines.exe</originalFilename>
+    <trademarks></trademarks>
+    <language>ENGLISH_US</language>
+  </versionInfo>
+  <messages>
+    <startupErr>Could not launch Monkey Shines. Make sure the application is in the same folder as &apos;lib&apos; and &apos;monkey_shines.jar&apos; can be found within.</startupErr>
+    <bundledJreErr>This application was configured to use a bundled Java Runtime Environment but the runtime is missing or corrupted.</bundledJreErr>
+    <jreVersionErr>Your version of Java is too low: at least 1.8 (Java 8) is required</jreVersionErr>
+    <launcherErr>Could not launch Monkey Shines. Make sure the application is in the same folder as &apos;lib&apos; and &apos;monkey_shines.jar&apos; can be found within.</launcherErr>
+    <instanceAlreadyExistsMsg>Monkey Shines is already running</instanceAlreadyExistsMsg>
+  </messages>
+</launch4jConfig>

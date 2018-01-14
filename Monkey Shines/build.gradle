@@ -79,19 +79,18 @@ jar {
 // -------------------------------------------------------------------------
 // ------ Release and Packaging --------------------------------------------
 def releaseFolder = "ms_release"
-task release(type: Copy) {
-	from {
-		shadowJar.outputJar
-		into("{$releaseFolder}")
+def dataFolder = releaseFolder + "/data"
+
+tasks.shadowJar.doLast {
+	println "Shadow Jar Location: ${shadowJar.archivePath}"
+	println "Natives            : ${natives}"
+	println "Destination        : ${dataFolder}"
+	copy {
+		into(project.projectDir)
+		into("${dataFolder}") {
+	  	from shadowJar.archivePath, natives
+	  }
 	}
-
-	copynatives
 }
 
-task copynatives(type: Copy) {
-		// Package native libraries for LWJGL
-		from {
-			natives
-			into("{$releaseFolder}/{$natives}")
-		}
-}
+// TODO automate JarSplice to make executables.
