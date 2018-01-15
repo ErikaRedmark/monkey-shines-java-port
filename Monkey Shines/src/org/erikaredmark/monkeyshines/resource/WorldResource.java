@@ -158,16 +158,16 @@ public final class WorldResource {
 
 	public int getBackgroundCount() {
 		if (isSlickGraphics())
-			{ return slickGraphics.backgrounds.length; }
+			{ return slickGraphics.getBackgroundCount(); }
 		else
-			{ return awtGraphics.backgrounds.length; }
+			{ return awtGraphics.getBackgroundCount(); }
 	}
 
 	public int getPatternCount() {
 		if (isSlickGraphics())
-			{ return slickGraphics.patterns.length; }
+			{ return slickGraphics.getPatternBgCount(); }
 		else
-			{ return awtGraphics.patterns.length; }
+			{ return awtGraphics.getPatternBgCount(); }
 	}
 
 	public int getSpritesCount() {

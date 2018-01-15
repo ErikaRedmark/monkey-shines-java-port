@@ -40,6 +40,9 @@ public class SlickWorldGraphics {
 	public Image patternedBackgrounds[];
 	public final Image patterns[];
 	
+	private int patternCount;
+	private int backgroundCount;
+	
 	/* --------------------------- SPRITES ---------------------------- */
 	public final Image sprites[];
 
@@ -155,6 +158,22 @@ public class SlickWorldGraphics {
 				{ break; }
 			patternedBackgrounds[i] = fromPattern(ppat);
 		}
+		
+		int ppatCount = 0;
+		for (int i = 0; i < patterns.length; ++i) {
+			if (patterns[i] == null)
+				{ break; }
+			++ppatCount;
+		}
+		this.patternCount = ppatCount;
+		
+		int bgCount = 0;
+		for (int i = 0; i < backgrounds.length; ++i) {
+			if (backgrounds[i] == null) 
+				{ break; }
+			++bgCount;
+		}
+		this.backgroundCount = bgCount;
 	}
 	
 	
@@ -216,6 +235,24 @@ public class SlickWorldGraphics {
 	public int getHazardCount() {
 		return hazardTiles.getWidth() / GameConstants.TILE_SIZE_X;
 	}
+
+	/**
+	 * Returns the number of patterned backgrounds in this resource. This value may not be set on construction
+	 * if images are deferred loading.
+	 * @return
+	 */
+	public int getPatternBgCount() {
+		return patternCount;
+	}
+	
+	/**
+	 * Returnsbackgrounds in this resource. This value may not be set on construction
+	 * if images are deferred loading.
+	 * @return
+	 */
+	public int getBackgroundCount() {
+		return backgroundCount;
+	}
 	
 	/**
 	 * This classic background type (ppat resource) from the original Monkey Shines. Creates a
@@ -275,7 +312,5 @@ public class SlickWorldGraphics {
 		
 		return background;
 	}
-	
-	
 	
 }
