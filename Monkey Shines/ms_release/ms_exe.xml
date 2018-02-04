@@ -33,12 +33,12 @@
     <args>-Djava.library.path=data</args>
   </jre>
   <versionInfo>
-    <fileVersion>1.1.0.0</fileVersion>
-    <txtFileVersion>1.1.0</txtFileVersion>
+    <fileVersion>1.1.1.0</fileVersion>
+    <txtFileVersion>1.1.1</txtFileVersion>
     <fileDescription>Game</fileDescription>
     <copyright>Port Code: Erika Redmark / Concept: Fantasoft / Original Mac Version: Mark Elliott</copyright>
-    <productVersion>1.1.0.0</productVersion>
-    <txtProductVersion>1.1.0</txtProductVersion>
+    <productVersion>1.1.1.0</productVersion>
+    <txtProductVersion>1.1.1</txtProductVersion>
     <productName>Monkey Shines</productName>
     <companyName>Erika Redmark</companyName>
     <internalName>Monkey Shines</internalName>
