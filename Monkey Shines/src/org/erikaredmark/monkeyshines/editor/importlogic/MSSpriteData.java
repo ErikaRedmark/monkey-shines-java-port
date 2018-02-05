@@ -7,11 +7,11 @@ import org.erikaredmark.monkeyshines.AnimationSpeed;
 import org.erikaredmark.monkeyshines.AnimationType;
 import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.ImmutableRectangle;
-import org.erikaredmark.monkeyshines.Sprite.ForcedDirection;
-import org.erikaredmark.monkeyshines.Sprite.SpriteType;
-import org.erikaredmark.monkeyshines.Sprite.TwoWayFacing;
+import org.erikaredmark.monkeyshines.MonsterType;
 import org.erikaredmark.monkeyshines.editor.importlogic.WorldTranslationException.TranslationFailure;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
+import org.erikaredmark.monkeyshines.sprite.Monster.ForcedDirection;
+import org.erikaredmark.monkeyshines.sprite.Monster.TwoWayFacing;
 
 import static org.erikaredmark.monkeyshines.editor.importlogic.TranslationUtil.*;
 
@@ -282,18 +282,18 @@ final class MSSpriteData {
 	 * Returns the sprite type, Normal, Energy Drainer, Exit Door, or Bonus Door. Harmless sprites
 	 * did not exist in the original game.
 	 */
-	SpriteType getSpriteType() {
+	MonsterType getSpriteType() {
 		// original game ALWAYs had 0 be the bonus door, and 1 be the exit door. The editor manual
 		// even advised not to change this. So, we can easily determine the bonus and exit doors
 		// We check doors first so that a level always has doors.
 		if (id == 0) {
-			return SpriteType.BONUS_DOOR;
+			return MonsterType.BONUS_DOOR;
 		} else if (id == 1) {
-			return SpriteType.EXIT_DOOR;
+			return MonsterType.EXIT_DOOR;
 		} else {
 			return   (flags & FLAG_ENERGY_DRAINER) != 0
-				   ? SpriteType.HEALTH_DRAIN
-				   : SpriteType.NORMAL;
+				   ? MonsterType.HEALTH_DRAIN
+				   : MonsterType.NORMAL;
 		}
 	}
 }

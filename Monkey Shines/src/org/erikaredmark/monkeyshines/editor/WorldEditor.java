@@ -9,11 +9,11 @@ import org.erikaredmark.monkeyshines.Goodie;
 import org.erikaredmark.monkeyshines.Hazard;
 import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.LevelScreen;
-import org.erikaredmark.monkeyshines.Sprite;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.WorldCoordinate;
 import org.erikaredmark.monkeyshines.encoder.EncodedWorld;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
+import org.erikaredmark.monkeyshines.sprite.Monster;
 
 import com.google.common.collect.ImmutableList;
 
@@ -66,7 +66,7 @@ public final class WorldEditor {
 		World world = encoded.newWorldInstance(rsrc);
 		// Make all existing sprites visible
 		for (LevelScreen lvl : world.getLevelScreens().values() ) {
-			for (Sprite s : lvl.getSpritesOnScreen() ) {
+			for (Monster s : lvl.getMonstersOnScreen() ) {
 				s.setVisible(true);
 			}
 		}

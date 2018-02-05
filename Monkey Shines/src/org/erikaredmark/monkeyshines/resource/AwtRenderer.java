@@ -12,12 +12,12 @@ import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.Goodie;
 import org.erikaredmark.monkeyshines.LevelScreen;
 import org.erikaredmark.monkeyshines.Point2D;
-import org.erikaredmark.monkeyshines.Sprite;
 import org.erikaredmark.monkeyshines.TileMap;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.background.Background;
 import org.erikaredmark.monkeyshines.background.FullBackground;
 import org.erikaredmark.monkeyshines.background.SingleColorBackground;
+import org.erikaredmark.monkeyshines.sprite.Monster;
 import org.erikaredmark.monkeyshines.tiles.CollapsibleTile;
 import org.erikaredmark.monkeyshines.tiles.CommonTile;
 import org.erikaredmark.monkeyshines.tiles.ConveyerTile;
@@ -127,8 +127,8 @@ public class AwtRenderer
 	public static void paintLevelScreen(Graphics2D g2d, LevelScreen screen, AwtWorldGraphics awtGraphics) {
 		paintBackground(g2d, screen.getBackground(), awtGraphics);
 		paintTileMap(g2d, screen.getMap(), awtGraphics);
-		for (Sprite s : screen.getSpritesOnScreen()) {
-			paintSprite(g2d, s, awtGraphics);
+		for (Monster s : screen.getMonstersOnScreen()) {
+			paintMonster(g2d, s, awtGraphics);
 		}
 	}
 	
@@ -263,7 +263,7 @@ public class AwtRenderer
 		}
 	}
 	
-	public static void paintSprite(Graphics2D g2d, Sprite sprite, AwtWorldGraphics rsrc) {
+	public static void paintMonster(Graphics2D g2d, Monster sprite, AwtWorldGraphics rsrc) {
 		if (!(sprite.isVisible()) )  return;
 		Point2D currentLocation = sprite.internalCurrentLocation();
 		ClippingRectangle currentClip = sprite.internalCurrentClip();

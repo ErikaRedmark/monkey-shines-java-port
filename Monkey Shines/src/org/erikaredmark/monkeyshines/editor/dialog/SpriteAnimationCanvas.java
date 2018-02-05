@@ -12,10 +12,10 @@ import javax.swing.Timer;
 import org.erikaredmark.monkeyshines.AnimationSpeed;
 import org.erikaredmark.monkeyshines.AnimationType;
 import org.erikaredmark.monkeyshines.GameConstants;
-import org.erikaredmark.monkeyshines.Sprite;
-import org.erikaredmark.monkeyshines.Sprite.SpriteType;
+import org.erikaredmark.monkeyshines.MonsterType;
 import org.erikaredmark.monkeyshines.resource.AwtRenderer;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
+import org.erikaredmark.monkeyshines.sprite.Monster;
 
 /**
  * 
@@ -30,7 +30,7 @@ import org.erikaredmark.monkeyshines.resource.WorldResource;
 public class SpriteAnimationCanvas extends Canvas {
 	private static final long serialVersionUID = 1L;
 	
-	private Sprite animatingSprite;
+	private Monster animatingSprite;
 	
 	private final WorldResource rsrc;
 	
@@ -39,7 +39,7 @@ public class SpriteAnimationCanvas extends Canvas {
 	public SpriteAnimationCanvas(final int spriteId, final AnimationType animationType, final AnimationSpeed speed, final WorldResource rsrc) {
 		this.rsrc = rsrc;
 		// Type is irrelevant for the canvas: no concept of collisions
-		this.animatingSprite = Sprite.newUnmovingSprite(spriteId, animationType, speed, SpriteType.NORMAL, rsrc);
+		this.animatingSprite = Monster.newUnmovingMonster(spriteId, animationType, speed, MonsterType.NORMAL, rsrc);
 		this.animatingSprite.setVisible(true);
 		// Make sprite animate
 		Timer animationTimer = new Timer(GameConstants.GAME_SPEED, new ActionListener() {
@@ -54,25 +54,25 @@ public class SpriteAnimationCanvas extends Canvas {
 	}
 	
 	public void setSpriteId(int id) {
-		this.animatingSprite = Sprite.newUnmovingSprite(id, this.animatingSprite.getAnimationType(), this.animatingSprite.getAnimationSpeed(), SpriteType.NORMAL, rsrc);
+		this.animatingSprite = Monster.newUnmovingMonster(id, this.animatingSprite.getAnimationType(), this.animatingSprite.getAnimationSpeed(), MonsterType.NORMAL, rsrc);
 		this.animatingSprite.setVisible(true);
 		this.repaint();
 	}
 	
 	public void setAnimationType(AnimationType type) {
-		this.animatingSprite = Sprite.newUnmovingSprite(this.animatingSprite.getId(), type, this.animatingSprite.getAnimationSpeed(), SpriteType.NORMAL, rsrc);
+		this.animatingSprite = Monster.newUnmovingMonster(this.animatingSprite.getId(), type, this.animatingSprite.getAnimationSpeed(), MonsterType.NORMAL, rsrc);
 		this.animatingSprite.setVisible(true);
 	}
 	
 	public void setAnimationSpeed(AnimationSpeed speed) {
-		this.animatingSprite = Sprite.newUnmovingSprite(this.animatingSprite.getId(), this.animatingSprite.getAnimationType(), speed, SpriteType.NORMAL, rsrc);
+		this.animatingSprite = Monster.newUnmovingMonster(this.animatingSprite.getId(), this.animatingSprite.getAnimationType(), speed, MonsterType.NORMAL, rsrc);
 		this.animatingSprite.setVisible(true);
 	}
 	
 	@Override public void paint(Graphics g) {
 		super.paint(g);
 		Graphics2D g2d = (Graphics2D) g;
-		AwtRenderer.paintSprite(g2d, animatingSprite, rsrc.getAwtGraphics());
+		AwtRenderer.paintMonster(g2d, animatingSprite, rsrc.getAwtGraphics());
 	}
 	
 }

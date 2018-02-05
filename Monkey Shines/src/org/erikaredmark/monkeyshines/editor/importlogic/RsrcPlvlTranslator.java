@@ -12,11 +12,11 @@ import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.Goodie;
 import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.LevelScreen;
-import org.erikaredmark.monkeyshines.Sprite;
 import org.erikaredmark.monkeyshines.TileMap;
 import org.erikaredmark.monkeyshines.background.SingleColorBackground;
 import org.erikaredmark.monkeyshines.editor.importlogic.WorldTranslationException.TranslationFailure;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
+import org.erikaredmark.monkeyshines.sprite.Monster;
 import org.erikaredmark.monkeyshines.tiles.CollapsibleTile;
 import org.erikaredmark.monkeyshines.tiles.CommonTile;
 import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
@@ -111,12 +111,13 @@ public class RsrcPlvlTranslator {
 		LOGGER.info(CLASS_NAME + ": Stream reading done. Beginning data interpretation starting with sprites");
 		
 		// Sprites
-		List<Sprite> spritesOnScreen = new ArrayList<>(spriteCount);
+		List<Monster> spritesOnScreen = new ArrayList<>(spriteCount);
 		for (MSSpriteData spriteData : sprites) {
-			Sprite s = Sprite.newSprite(spriteData.getSpriteId(), 
+			Monster s = new Monster(spriteData.getSpriteId(), 
 										spriteData.getPortLocation(), 
 										spriteData.getPortBoundingBox(),
-										spriteData.getPortVelocity(), 
+										spriteData.getPortVelocity().x(),
+										spriteData.getPortVelocity().y(), 
 										spriteData.getSpriteAnimationType(), 
 										spriteData.getSpriteAnimationSpeed(), 
 										spriteData.getSpriteType(), 

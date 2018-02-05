@@ -14,13 +14,13 @@ import java.util.Set;
 
 import org.erikaredmark.monkeyshines.Conveyer.Rotation;
 import org.erikaredmark.monkeyshines.Goodie.Type;
-import org.erikaredmark.monkeyshines.Sprite.SpriteType;
 import org.erikaredmark.monkeyshines.bounds.Boundable;
 import org.erikaredmark.monkeyshines.bounds.IPoint2D;
 import org.erikaredmark.monkeyshines.editor.importlogic.WorldTranslationException;
 import org.erikaredmark.monkeyshines.editor.importlogic.WorldTranslationException.TranslationFailure;
 import org.erikaredmark.monkeyshines.resource.SoundManager;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
+import org.erikaredmark.monkeyshines.sprite.Monster;
 import org.erikaredmark.monkeyshines.tiles.ConveyerTile;
 import org.erikaredmark.monkeyshines.tiles.HazardTile;
 import org.erikaredmark.monkeyshines.tiles.PlaceholderTile;
@@ -186,9 +186,9 @@ public class World {
 		// To easily enable bonus and exit doors, we add all such sprites to lists
 		// based on type.
 		for (LevelScreen lvl : worldScreens.values() ) {
-			for (Sprite s : lvl.getSpritesOnScreen() ) {
-				if 		(s.getType() == SpriteType.EXIT_DOOR)   this.exitDoors.add(s);
-				else if (s.getType() == SpriteType.BONUS_DOOR)  this.bonusDoors.add(s);
+			for (Monster s : lvl.getMonstersOnScreen() ) {
+				if 		(s.getType() == MonsterType.EXIT_DOOR)   this.exitDoors.add(s);
+				else if (s.getType() == MonsterType.BONUS_DOOR)  this.bonusDoors.add(s);
 			}
 		}
 		
@@ -305,7 +305,7 @@ public class World {
 	
 	public void allRedKeysTaken(SoundManager sound) {
 		sound.playOnce(GameSoundEffect.LAST_RED_KEY);
-		for (Sprite s : exitDoors) {
+		for (Monster s : exitDoors) {
 			s.setVisible(true);
 		}
 		
@@ -316,7 +316,7 @@ public class World {
 	
 	public void allBlueKeysTaken(SoundManager sound) {
 		sound.playOnce(GameSoundEffect.LAST_BLUE_KEY);
-		for (Sprite s : bonusDoors) {
+		for (Monster s : bonusDoors) {
 			s.setVisible(true);
 		}
 	}
@@ -468,8 +468,8 @@ public class World {
 	private static boolean spriteSafetyCheck(final LevelScreen screen, final ImmutablePoint2D respawnLocation) {
 		ImmutableRectangle respawnBox = ImmutableRectangle.of(respawnLocation.x(), respawnLocation.y(), 40, 40);
 		// Note: In ALL cases, only Killers and Energy Drainers affect this algorithm
-		for (Sprite nextSprite : screen.getSpritesOnScreen() ) {
-			if (nextSprite.getType() != SpriteType.NORMAL && nextSprite.getType() != SpriteType.HEALTH_DRAIN)  continue;
+		for (Monster nextSprite : screen.getMonstersOnScreen() ) {
+			if (nextSprite.getType() != MonsterType.NORMAL && nextSprite.getType() != MonsterType.HEALTH_DRAIN)  continue;
 			
 			ImmutableRectangle spriteBounds = nextSprite.getCurrentBounds();
 			
@@ -705,9 +705,9 @@ public class World {
 			return;
 		}
 		// A Sprite?
-		List<Sprite> allSprites = getCurrentScreen().getSpritesOnScreen();
+		List<Monster> allSprites = getCurrentScreen().getMonstersOnScreen();
 		ImmutableRectangle bonzoBounding = theBonzo.getCurrentBounds();
-		for (Sprite nextSprite : allSprites) {
+		for (Monster nextSprite : allSprites) {
 			Boundable intersection = nextSprite.getCurrentBounds().intersect(bonzoBounding);
 			if (intersection != null) {
 				// Bounding box check done. Do more expensive pixel check
@@ -1171,8 +1171,8 @@ public class World {
 	
 	// Lists of all bonus and exit doors so that setting them visible when all keys are collected doesn't
 	// require iterating over every sprite in the world.
-	private final List<Sprite> bonusDoors = new ArrayList<>(4); // initial size 4. 2 bonus doors, possibly double doored sprites for some worlds.
-	private final List<Sprite> exitDoors = new ArrayList<>(4); // Just in case multiple exits, or exit made up of multiple sprites.
+	private final List<Monster> bonusDoors = new ArrayList<>(4); // initial size 4. 2 bonus doors, possibly double doored sprites for some worlds.
+	private final List<Monster> exitDoors = new ArrayList<>(4); // Just in case multiple exits, or exit made up of multiple sprites.
 	
 	// Intended for callback to UI when certain victory or defeat conditions are met
 	// not set in constructor; will not be run if never set.

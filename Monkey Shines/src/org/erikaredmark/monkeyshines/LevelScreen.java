@@ -14,6 +14,8 @@ import org.erikaredmark.monkeyshines.background.SingleColorBackground;
 import org.erikaredmark.monkeyshines.resource.AwtRenderer;
 import org.erikaredmark.monkeyshines.resource.AwtWorldGraphics;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
+import org.erikaredmark.monkeyshines.sprite.Monster;
+import org.erikaredmark.monkeyshines.sprite.Sprite;
 
 /**
  * Improving the screen-by-screen architecture is NOT something I will be doing.
@@ -42,7 +44,7 @@ public final class LevelScreen {
 	private final TileMap map;
 	// Whilst this is generally final in gameplay, it is left non-final here so it may be modified by the level editor.
 	private       ImmutablePoint2D bonzoStart;
-	private final List<Sprite> spritesOnScreen;
+	private final List<Monster> spritesOnScreen;
 	
 	// state information for the screen. Bonzo can respawn where he came from at the velocity that
 	// he came into the screen
@@ -93,7 +95,7 @@ public final class LevelScreen {
 							   defaultBackground,
 							   new TileMap(GameConstants.LEVEL_ROWS, GameConstants.LEVEL_COLS),
 							   ImmutablePoint2D.of(0, 0),
-							   new ArrayList<Sprite>(),
+							   new ArrayList<Monster>(),
 							   rsrc);
 	}
 	
@@ -108,7 +110,7 @@ public final class LevelScreen {
 			 		   final Background background,
 					   final TileMap map, 
 					   final ImmutablePoint2D bonzoStart, 
-					   final List<Sprite> spritesOnScreen,
+					   final List<Monster> spritesOnScreen,
 					   final WorldResource rsrc) {
 		
 		this.screenId = screenId;
@@ -207,7 +209,7 @@ public final class LevelScreen {
 	 * 
 	 */
 	public void resetScreen() {
-		resetSprites();
+		resetMonsters();
 		map.resetTiles();
 	}
 	
@@ -215,25 +217,25 @@ public final class LevelScreen {
 	 * Sprites move around the screen. This makes them return to where they spawn when the screen is first entered. 
 	 * Typically called alongside resetBonzo when Bonzo dies.
 	 */
-	private void resetSprites() {
-		for (Sprite nextSprite : spritesOnScreen) {
-			nextSprite.resetSprite();
+	private void resetMonsters() {
+		for (Monster nextSprite : spritesOnScreen) {
+			nextSprite.resetMonster();
 		}
 	}
 	
 	// Careful! This is return by reference
-	public List<Sprite> getSpritesOnScreen() {
+	public List<Monster> getMonstersOnScreen() {
 		return spritesOnScreen;
 	}
 	
 
 	/**
-	 * Adds a sprite to the screen. Typically reserved for level editor.
+	 * Adds a monster to the screen. Typically reserved for level editor.
 	 * 
 	 * @param sprite
 	 * 		the sprite to add. The sprite MUST have been skinned with a valid graphics resource first
 	 */
-	public void addSprite(Sprite sprite) {
+	public void addMonster(Monster sprite) {
 		this.spritesOnScreen.add(sprite);
 	}
 	
@@ -245,7 +247,7 @@ public final class LevelScreen {
 	 * 		the sprite to remove
 	 * 
 	 */
-	public void removeSprite(Sprite sprite) {
+	public void removeMonster(Monster sprite) {
 		this.spritesOnScreen.remove(sprite);
 	}
 	
@@ -266,8 +268,8 @@ public final class LevelScreen {
 	 * 		if the first sprite argument is not found in the list
 	 * 
 	 */
-	public void replaceSprite(Sprite sprite, Sprite newSprite) {
-		for (ListIterator<Sprite> it = this.spritesOnScreen.listIterator(); it.hasNext(); /* no op */) {
+	public void replaceMonster(Monster sprite, Monster newSprite) {
+		for (ListIterator<Monster> it = this.spritesOnScreen.listIterator(); it.hasNext(); /* no op */) {
 			Sprite next = it.next();
 			if (sprite.equals(next) ) {
 				it.remove();
@@ -295,11 +297,11 @@ public final class LevelScreen {
 	 * @return
 	 * 		a list of sprites in the area. This may return an empty list if there is none, but never {@code null}
 	 */
-	public List<Sprite> getSpritesWithin(ImmutablePoint2D point, int size) {
+	public List<Monster> getMonstersWithin(ImmutablePoint2D point, int size) {
 		// Convert centre point into upper left point.
 		final ImmutableRectangle box = ImmutableRectangle.of(point.x() - (size / 2), point.y() - (size / 2), size, size);
-		final List<Sprite> returnList = new ArrayList<>();
-		for (Sprite s : spritesOnScreen) {
+		final List<Monster> returnList = new ArrayList<>();
+		for (Monster s : spritesOnScreen) {
 			final ImmutableRectangle rect = s.getCurrentBounds();
 			if (box.intersect(rect) != null) returnList.add(s);
 		}
@@ -376,7 +378,7 @@ public final class LevelScreen {
 		map.update();
 		
 		if (animateSprites) {
-			for (Sprite s : spritesOnScreen) {
+			for (Monster s : spritesOnScreen) {
 				s.update();
 			}
 		}
@@ -467,11 +469,11 @@ public final class LevelScreen {
 		TileMap newTiles = levelScreen.getMap().copy();
 
  		// Handle Sprites
- 		List<Sprite> originalSprites = levelScreen.getSpritesOnScreen();
- 		List<Sprite> newSprites = new ArrayList<>(originalSprites.size() );
+ 		List<Monster> originalSprites = levelScreen.getMonstersOnScreen();
+ 		List<Monster> newSprites = new ArrayList<>(originalSprites.size() );
  		
- 		for (Sprite s : originalSprites) {
- 			newSprites.add(Sprite.copyOf(s) );
+ 		for (Monster s : originalSprites) {
+ 			newSprites.add(Monster.copyOf(s) );
  		}
 		
 		LevelScreen newScreen = 

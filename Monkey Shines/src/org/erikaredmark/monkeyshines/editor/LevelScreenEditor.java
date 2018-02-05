@@ -10,12 +10,12 @@ import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.ImmutableRectangle;
 import org.erikaredmark.monkeyshines.LevelScreen;
-import org.erikaredmark.monkeyshines.Sprite;
-import org.erikaredmark.monkeyshines.Sprite.ForcedDirection;
-import org.erikaredmark.monkeyshines.Sprite.SpriteType;
-import org.erikaredmark.monkeyshines.Sprite.TwoWayFacing;
+import org.erikaredmark.monkeyshines.MonsterType;
 import org.erikaredmark.monkeyshines.background.Background;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
+import org.erikaredmark.monkeyshines.sprite.Monster;
+import org.erikaredmark.monkeyshines.sprite.Monster.ForcedDirection;
+import org.erikaredmark.monkeyshines.sprite.Monster.TwoWayFacing;
 import org.erikaredmark.monkeyshines.tiles.TileType;
 
 /**
@@ -74,8 +74,8 @@ public class LevelScreenEditor {
 	
 	/** Forwarding call to wrapped {@code LevelEditor}
 	 */
-	public List<Sprite> getSpritesWithin(ImmutablePoint2D point, int size) {
-		return this.screen.getSpritesWithin(point, size);
+	public List<Monster> getMonstersWithin(ImmutablePoint2D point, int size) {
+		return this.screen.getMonstersWithin(point, size);
 	}
 	
 	/**
@@ -86,8 +86,8 @@ public class LevelScreenEditor {
 	 * 		all sprites
 	 * 
 	 */
-	public List<Sprite> getSpritesOnScreen() {
-		return this.screen.getSpritesOnScreen();
+	public List<Monster> getMonstersOnScreen() {
+		return this.screen.getMonstersOnScreen();
 	}
 	
 	/**
@@ -103,9 +103,9 @@ public class LevelScreenEditor {
 	 * 		list of sprites currently out of bounds. Cannot be modified
 	 * 
 	 */
-	public List<Sprite> getSpritesOutOfBounds() {
-		List<Sprite> outOfBounds = new ArrayList<>();
-		for (Sprite s : this.screen.getSpritesOnScreen() ) {
+	public List<Monster> getMonstersOutOfBounds() {
+		List<Monster> outOfBounds = new ArrayList<>();
+		for (Monster s : this.screen.getMonstersOnScreen() ) {
 			ImmutableRectangle rect = s.getCurrentBounds();
 			if (rect.intersect(PLAYABLE_FIELD) == null) {
 				outOfBounds.add(s);
@@ -120,22 +120,23 @@ public class LevelScreenEditor {
 	 * Creates a sprite and adds it to the given world.
 	 * 
 	 */
-	public void addSprite(final int spriteId,
+	public void addMonster(final int spriteId,
 						  final ImmutablePoint2D spriteStartingLocation,
 						  final ImmutableRectangle spriteBoundingBox,
 						  final ImmutablePoint2D spriteVelocity,
 						  final AnimationType animationType,
 						  final AnimationSpeed animationSpeed,
-						  final SpriteType spriteType,
+						  final MonsterType spriteType,
 						  final ForcedDirection forcedDirection,
 						  final TwoWayFacing twoWayDirection,
 						  final WorldResource rsrc) {
 		
-		Sprite s =
-			Sprite.newSprite(spriteId, 
+		Monster s =
+			new Monster(spriteId, 
 							 spriteStartingLocation, 
 							 spriteBoundingBox, 
-							 spriteVelocity, 
+							 spriteVelocity.x(),
+							 spriteVelocity.y(), 
 							 animationType, 
 							 animationSpeed, 
 							 spriteType,
@@ -146,7 +147,7 @@ public class LevelScreenEditor {
 		// Game rules for visibility do not apply in the editor.
 		s.setVisible(true);
 		
-		screen.addSprite(s);
+		screen.addMonster(s);
 		
 	}
 	
@@ -156,12 +157,12 @@ public class LevelScreenEditor {
 	 * Forwards to {@code LevelScreen.replaceSprite(Sprite, Sprite) }
 	 * 
 	 */
-	public void replaceSprite(Sprite sprite, Sprite newSprite) {
-		screen.replaceSprite(sprite, newSprite);
+	public void replaceMonster(Monster sprite, Monster newSprite) {
+		screen.replaceMonster(sprite, newSprite);
 	}
 
-	public void removeSprite(Sprite sprite) {
-		screen.removeSprite(sprite);
+	public void removeMonster(Monster sprite) {
+		screen.removeMonster(sprite);
 	}
 	
 

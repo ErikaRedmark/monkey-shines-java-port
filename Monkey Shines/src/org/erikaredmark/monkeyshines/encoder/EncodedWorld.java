@@ -22,13 +22,10 @@ import org.erikaredmark.monkeyshines.Hazard;
 import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.ImmutableRectangle;
 import org.erikaredmark.monkeyshines.LevelScreen;
-import org.erikaredmark.monkeyshines.Sprite;
-import org.erikaredmark.monkeyshines.Sprite.TwoWayFacing;
+import org.erikaredmark.monkeyshines.MonsterType;
 import org.erikaredmark.monkeyshines.TileMap;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.Conveyer.Rotation;
-import org.erikaredmark.monkeyshines.Sprite.ForcedDirection;
-import org.erikaredmark.monkeyshines.Sprite.SpriteType;
 import org.erikaredmark.monkeyshines.WorldCoordinate;
 import org.erikaredmark.monkeyshines.background.Background;
 import org.erikaredmark.monkeyshines.background.FullBackground;
@@ -40,6 +37,9 @@ import org.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 import org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos;
 import org.erikaredmark.monkeyshines.encoder.proto.WorldFormatProtos.World.BackgroundType;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
+import org.erikaredmark.monkeyshines.sprite.Monster;
+import org.erikaredmark.monkeyshines.sprite.Monster.ForcedDirection;
+import org.erikaredmark.monkeyshines.sprite.Monster.TwoWayFacing;
 import org.erikaredmark.monkeyshines.tiles.CollapsibleTile;
 import org.erikaredmark.monkeyshines.tiles.CommonTile;
 import org.erikaredmark.monkeyshines.tiles.ConveyerTile;
@@ -309,7 +309,7 @@ public final class EncodedWorld {
 		protoLevel.setBonzoLocation(pointToProto(level.getBonzoStartingLocation() ) );
 		protoLevel.setBackground(backgroundToProto(level.getBackground() ) );
 		
-		protoLevel.addAllSprites(spritesToProto(level.getSpritesOnScreen() ) );
+		protoLevel.addAllSprites(spritesToProto(level.getMonstersOnScreen() ) );
 		protoLevel.addAllTiles(tilesToProto(level.getMap() ) );
 		
 		return protoLevel.build();
@@ -377,15 +377,15 @@ public final class EncodedWorld {
 	}
 	
 	/* ------------------------------ Sprites -------------------------------- */
-	static List<WorldFormatProtos.World.Sprite> spritesToProto(List<Sprite> sprites) {
+	static List<WorldFormatProtos.World.Sprite> spritesToProto(List<Monster> sprites) {
 		List<WorldFormatProtos.World.Sprite> protoSprites = new ArrayList<>(sprites.size() );
-		for (Sprite s : sprites) {
+		for (Monster s : sprites) {
 			protoSprites.add(spriteToProto(s) );
 		}
 		return protoSprites;
 	}
 	
-	static WorldFormatProtos.World.Sprite spriteToProto(Sprite sprite) {
+	static WorldFormatProtos.World.Sprite spriteToProto(Monster sprite) {
 		WorldFormatProtos.World.Sprite.Builder protoSprite = WorldFormatProtos.World.Sprite.newBuilder();
 		protoSprite.setId(sprite.getId() );
 		protoSprite.setStartLocation(pointToProto(sprite.getStaringLocation() ) );
@@ -404,19 +404,22 @@ public final class EncodedWorld {
 		return protoSprite.build();
 	}
 	
-	static List<Sprite> protoToSprites(List<WorldFormatProtos.World.Sprite> protoSprites, WorldResource rsrc) {
-		List<Sprite> sprites = new ArrayList<>(protoSprites.size() );
+	static List<Monster> protoToSprites(List<WorldFormatProtos.World.Sprite> protoSprites, WorldResource rsrc) {
+		List<Monster> sprites = new ArrayList<>(protoSprites.size() );
 		for (WorldFormatProtos.World.Sprite s : protoSprites) {
 			sprites.add(protoToSprite(s, rsrc) );
 		}
 		return sprites;
 	}
 	
-	static Sprite protoToSprite(WorldFormatProtos.World.Sprite protoSprite, WorldResource rsrc) {
-		return Sprite.newSprite(protoSprite.getId(), 
-								protoToPoint(protoSprite.getStartLocation() ), 
+	static Monster protoToSprite(WorldFormatProtos.World.Sprite protoSprite, WorldResource rsrc) {
+		ImmutablePoint2D initialSpeed = protoToPoint(protoSprite.getInitialSpeed());
+		
+		return new Monster(protoSprite.getId(), 
+							    protoToPoint(protoSprite.getStartLocation() ), 
 								protoToBox(protoSprite.getBoundingBox() ), 
-								protoToPoint(protoSprite.getInitialSpeed() ), 
+								initialSpeed.x(),
+								initialSpeed.y(),
 								protoToAnimationType(protoSprite.getAnimation() ), 
 								protoToAnimationSpeed(protoSprite.getAnimationSpeed() ),
 								protoToSpriteType(protoSprite.getType() ),
@@ -474,7 +477,7 @@ public final class EncodedWorld {
 	}
 	
 	/* --------------------------- Sprite Type --------------------------- */
-	static WorldFormatProtos.World.SpriteType spriteTypeToProto(SpriteType spriteType) {
+	static WorldFormatProtos.World.SpriteType spriteTypeToProto(MonsterType spriteType) {
 		switch (spriteType) {
 		case NORMAL:  return WorldFormatProtos.World.SpriteType.NORMAL;
 		case HEALTH_DRAIN:  return WorldFormatProtos.World.SpriteType.HEALTH_DRAIN;
@@ -485,13 +488,13 @@ public final class EncodedWorld {
 		}
 	}
 	
-	static SpriteType protoToSpriteType(WorldFormatProtos.World.SpriteType spriteTypeProto) {
+	static MonsterType protoToSpriteType(WorldFormatProtos.World.SpriteType spriteTypeProto) {
 		switch (spriteTypeProto) {
-		case NORMAL:  return SpriteType.NORMAL;
-		case HEALTH_DRAIN:  return SpriteType.HEALTH_DRAIN;
-		case BONUS_DOOR:  return SpriteType.BONUS_DOOR;
-		case EXIT_DOOR:  return SpriteType.EXIT_DOOR;
-		case SCENERY_SPRITE:  return SpriteType.SCENERY;
+		case NORMAL:  return MonsterType.NORMAL;
+		case HEALTH_DRAIN:  return MonsterType.HEALTH_DRAIN;
+		case BONUS_DOOR:  return MonsterType.BONUS_DOOR;
+		case EXIT_DOOR:  return MonsterType.EXIT_DOOR;
+		case SCENERY_SPRITE:  return MonsterType.SCENERY;
 		default:  throw new RuntimeException("Proto sprite type " + spriteTypeProto + " has no defined java object");
 		}
 	}

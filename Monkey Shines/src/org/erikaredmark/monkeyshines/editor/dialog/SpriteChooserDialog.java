@@ -12,19 +12,19 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.erikaredmark.monkeyshines.Sprite;
 import org.erikaredmark.monkeyshines.bounds.IPoint2D;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
+import org.erikaredmark.monkeyshines.sprite.Monster;
 
 public final class SpriteChooserDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
 	
-	private Optional<Sprite> selectedSprite = Optional.empty();
+	private Optional<Monster> selectedSprite = Optional.empty();
 	
-	public SpriteChooserDialog(List<Sprite> sprites, WorldResource rsrc) {
+	public SpriteChooserDialog(List<Monster> sprites, WorldResource rsrc) {
 		getContentPane().setLayout(new FlowLayout(FlowLayout.LEFT) );
 		
-		for (Sprite s : sprites) {
+		for (Monster s : sprites) {
 			JPanel spriteSelector = new JPanel();
 			spriteSelector.setLayout(new FlowLayout() );
 			spriteSelector.addMouseListener(new SetSpriteMouseListener(s) );
@@ -43,12 +43,12 @@ public final class SpriteChooserDialog extends JDialog {
 	
 	/** Sets dialog to have the given selection as the model, and quits the dialog.
 	 */
-	private void selectAndQuit(Optional<Sprite> selection) {
+	private void selectAndQuit(Optional<Monster> selection) {
 		this.selectedSprite = selection;
 		setVisible(false);
 	}
 	
-	public static Optional<Sprite> launch(JComponent parent, List<Sprite> spriteChoices, WorldResource rsrc) {
+	public static Optional<Monster> launch(JComponent parent, List<Monster> spriteChoices, WorldResource rsrc) {
 		SpriteChooserDialog dialog = new SpriteChooserDialog(spriteChoices, rsrc);
 		dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		dialog.setModal(true);
@@ -61,9 +61,9 @@ public final class SpriteChooserDialog extends JDialog {
 	}
 	
 	private final class SetSpriteMouseListener implements MouseListener {
-		private final Sprite sprite;
+		private final Monster sprite;
 		
-		public SetSpriteMouseListener(final Sprite s) { this.sprite = s; }
+		public SetSpriteMouseListener(final Monster s) { this.sprite = s; }
 		@Override public void mouseClicked(MouseEvent e) { 
 			selectAndQuit(Optional.of(sprite) );
 		}

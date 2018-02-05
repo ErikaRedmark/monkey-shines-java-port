@@ -28,7 +28,6 @@ import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.Goodie;
 import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.Point2D;
-import org.erikaredmark.monkeyshines.Sprite;
 import org.erikaredmark.monkeyshines.TileMap;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.World.GoodieLocationPair;
@@ -49,6 +48,7 @@ import org.erikaredmark.monkeyshines.encoder.exception.WorldSaveException;
 import org.erikaredmark.monkeyshines.resource.AwtRenderer;
 import org.erikaredmark.monkeyshines.resource.CoreResource;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
+import org.erikaredmark.monkeyshines.sprite.Monster;
 
 /**
  * 
@@ -272,21 +272,21 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 	}
 	
 	public void actionEditOffscreenSprites() {
-		List<Sprite> sprites = currentScreenEditor.getSpritesOutOfBounds();
-		switch(sprites.size() ) {
+		List<Monster> monsters = currentScreenEditor.getMonstersOutOfBounds();
+		switch(monsters.size() ) {
 		case 0: 
 			JOptionPane.showMessageDialog(this, "There are no offscreen sprites to edit");
 			break;
 		case 1: { 
-			Sprite s = sprites.get(0);
+			Monster s = monsters.get(0);
 			SpritePropertiesModel model = SpritePropertiesDialog.launch(this, this.currentWorldEditor.getWorldResource(), s);
 			changeSpriteFromDialogModel(s, model);
 			break;
 		}
 		default: {
-			Optional<Sprite> sOp = SpriteChooserDialog.launch(this, sprites, this.currentWorldEditor.getWorldResource() );
+			Optional<Monster> sOp = SpriteChooserDialog.launch(this, monsters, this.currentWorldEditor.getWorldResource() );
 			if (sOp.isPresent() ) {
-				Sprite s = sOp.get();
+				Monster s = sOp.get();
 				SpritePropertiesModel model = SpritePropertiesDialog.launch(this, this.currentWorldEditor.getWorldResource(), s);
 				changeSpriteFromDialogModel(s, model);
 			}
@@ -475,8 +475,8 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 	 * 		a single sprite at the given location, or no sprite it none such exist
 	 * 
 	 */
-	public Optional<Sprite> resolveSpriteAtLocation(ImmutablePoint2D location) {
-		List<Sprite> sprites = currentScreenEditor.getSpritesWithin(location, 3);
+	public Optional<Monster> resolveMonsterAtLocation(ImmutablePoint2D location) {
+		List<Monster> sprites = currentScreenEditor.getMonstersWithin(location, 3);
 		switch(sprites.size() ) {
 		case 0: return Optional.empty();
 		case 1: return Optional.of(sprites.get(0) );
@@ -614,10 +614,10 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 			currentMapEditor.paint(g2d);
 
 			// Map Editor has no concept of goodies or sprites, so paint them separately.
-			List<Sprite> sprites = currentScreenEditor.getSpritesOnScreen();
-			for (Sprite s : sprites) {
+			List<Monster> sprites = currentScreenEditor.getMonstersOnScreen();
+			for (Monster s : sprites) {
 				if (currentScreenEditor.isAnimatingSprites() )  s.update();
-				AwtRenderer.paintSprite(g2d, s, this.currentWorldEditor.getWorldResource().getAwtGraphics());
+				AwtRenderer.paintMonster(g2d, s, this.currentWorldEditor.getWorldResource().getAwtGraphics());
 			}
 			
 			Collection<GoodieLocationPair> goodies = currentWorldEditor.getWorld().getGoodiesForLevel(currentScreenEditor.getId() );
@@ -781,16 +781,17 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 						editor.currentSpriteId,
 						ImmutablePoint2D.of(editor.mousePosition.x(), editor.mousePosition.y() ) );
 				if (model.isOkay() ) {
-					editor.currentScreenEditor.addSprite(model.getSpriteId(), 
-														 model.getSpriteStartingLocation(), 
-														 model.getSpriteBoundingBox(), 
-														 model.getSpriteVelocity(), 
-														 model.getAnimationType(), 
-														 model.getAnimationSpeed(), 
-														 model.getSpriteType(), 
-														 model.getForceDirection(),
-														 model.getTwoWayFacing(),
-														 editor.currentWorldEditor.getWorldResource() );
+					editor.currentScreenEditor.addMonster(
+						model.getSpriteId(), 
+						model.getSpriteStartingLocation(), 
+						model.getSpriteBoundingBox(), 
+						model.getSpriteVelocity(), 
+						model.getAnimationType(), 
+						model.getAnimationSpeed(), 
+						model.getSpriteType(), 
+						model.getForceDirection(),
+						model.getTwoWayFacing(),
+						editor.currentWorldEditor.getWorldResource() );
 				}
 			}
 			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 
@@ -800,7 +801,7 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 		
 		EDITING_SPRITES {
 			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
-				Optional<Sprite> selected = editor.resolveSpriteAtLocation(ImmutablePoint2D.from(editor.mousePosition) );
+				Optional<Monster> selected = editor.resolveMonsterAtLocation(ImmutablePoint2D.from(editor.mousePosition) );
 				if (selected.isPresent() ) {
 					// Open properties editor for sprite
 					SpritePropertiesModel model = SpritePropertiesDialog.launch(editor, editor.currentWorldEditor.getWorldResource(), selected.get() );
@@ -817,9 +818,9 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 		
 		DELETING_SPRITES {
 			@Override public void defaultClickAction(LevelDrawingCanvas editor) { 
-				Optional<Sprite> selected = editor.resolveSpriteAtLocation(ImmutablePoint2D.from(editor.mousePosition) );
+				Optional<Monster> selected = editor.resolveMonsterAtLocation(ImmutablePoint2D.from(editor.mousePosition) );
 				if (selected.isPresent() ) {
-					editor.currentScreenEditor.removeSprite(selected.get() );
+					editor.currentScreenEditor.removeMonster(selected.get() );
 				}
 			}
 			@Override public void defaultDragAction(LevelDrawingCanvas editor) { 
@@ -874,12 +875,13 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 	 * 		the model for the new sprite
 	 * 
 	 */
-	private void changeSpriteFromDialogModel(Sprite sprite, SpritePropertiesModel model) {
-		Sprite newSprite = Sprite.newSprite(
+	private void changeSpriteFromDialogModel(Monster sprite, SpritePropertiesModel model) {
+		Monster newSprite = new Monster(
 			model.getSpriteId(), 
 		    model.getSpriteStartingLocation(), 
 		    model.getSpriteBoundingBox(), 
-		    model.getSpriteVelocity(), 
+		    model.getSpriteVelocity().x(),
+		    model.getSpriteVelocity().y(),
 		    model.getAnimationType(), 
 		    model.getAnimationSpeed(), 
 		    model.getSpriteType(),
@@ -889,7 +891,7 @@ public final class LevelDrawingCanvas extends JPanel implements MouseListener, M
 		
 		newSprite.setVisible(sprite.isVisible() );
 		
-		currentScreenEditor.replaceSprite(sprite, newSprite);
+		currentScreenEditor.replaceMonster(sprite, newSprite);
 	}
 
 

@@ -28,11 +28,11 @@ import org.erikaredmark.monkeyshines.AnimationSpeed;
 import org.erikaredmark.monkeyshines.AnimationType;
 import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.ImmutableRectangle;
-import org.erikaredmark.monkeyshines.Sprite;
-import org.erikaredmark.monkeyshines.Sprite.ForcedDirection;
-import org.erikaredmark.monkeyshines.Sprite.SpriteType;
-import org.erikaredmark.monkeyshines.Sprite.TwoWayFacing;
+import org.erikaredmark.monkeyshines.MonsterType;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
+import org.erikaredmark.monkeyshines.sprite.Monster;
+import org.erikaredmark.monkeyshines.sprite.Monster.ForcedDirection;
+import org.erikaredmark.monkeyshines.sprite.Monster.TwoWayFacing;
 
 public class SpritePropertiesDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
@@ -207,11 +207,11 @@ public class SpritePropertiesDialog extends JDialog {
 		});
 		
 		
-		final JComboBox<SpriteType> spriteType = new JComboBox<>(SpriteType.values() );
+		final JComboBox<MonsterType> spriteType = new JComboBox<>(MonsterType.values() );
 		spriteType.setSelectedItem(model.getSpriteType() );
 		spriteType.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent event) {
-				final SpriteType type = (SpriteType)spriteType.getSelectedItem();
+				final MonsterType type = (MonsterType)spriteType.getSelectedItem();
 				model.setSpriteType(type);
 			}
 		});
@@ -448,8 +448,8 @@ public class SpritePropertiesDialog extends JDialog {
 	 * 
 	 * @return
 	 */
-	public static SpritePropertiesModel launch(JComponent parent, WorldResource rsrc, Sprite sprite) {
-		SpritePropertiesModel model = SpritePropertiesModel.fromSprite(sprite);
+	public static SpritePropertiesModel launch(JComponent parent, WorldResource rsrc, Monster sprite) {
+		SpritePropertiesModel model = SpritePropertiesModel.fromMonster(sprite);
 		SpritePropertiesDialog dialog = new SpritePropertiesDialog(rsrc, model);
 		dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		dialog.setModal(true);

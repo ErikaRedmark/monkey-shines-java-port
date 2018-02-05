@@ -5,11 +5,11 @@ import org.erikaredmark.monkeyshines.AnimationType;
 import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.ImmutableRectangle;
-import org.erikaredmark.monkeyshines.Sprite;
-import org.erikaredmark.monkeyshines.Sprite.ForcedDirection;
-import org.erikaredmark.monkeyshines.Sprite.SpriteType;
-import org.erikaredmark.monkeyshines.Sprite.TwoWayFacing;
+import org.erikaredmark.monkeyshines.MonsterType;
 import org.erikaredmark.monkeyshines.resource.WorldResource;
+import org.erikaredmark.monkeyshines.sprite.Monster;
+import org.erikaredmark.monkeyshines.sprite.Monster.ForcedDirection;
+import org.erikaredmark.monkeyshines.sprite.Monster.TwoWayFacing;
 import org.erikaredmark.util.ObservableModel;
 
 /**
@@ -34,7 +34,7 @@ public final class SpritePropertiesModel extends ObservableModel {
 	// Increasing frames jump from last frame to 0; cylcing start going back down to 0.
 	private AnimationType animationType;
 	private AnimationSpeed animationSpeed;
-	private SpriteType spriteType;
+	private MonsterType spriteType;
 	// This field is ignored for sprites that do not have two-way sprite sheets.
 	// Defaults to horizontal internally but should be considered 'single' if the sprite
 	// can't handle two-way facing.
@@ -58,7 +58,7 @@ public final class SpritePropertiesModel extends ObservableModel {
 								  final ImmutablePoint2D spriteStartingLocation,
 								  final AnimationType 	 animationType,
 								  final AnimationSpeed   animationSpeed,
-								  final SpriteType		 spriteType,
+								  final MonsterType		 spriteType,
 								  final ForcedDirection  forcedDirection,
 								  final TwoWayFacing     twoWayDirection,
 								  final WorldResource    rsrc,
@@ -106,7 +106,7 @@ public final class SpritePropertiesModel extends ObservableModel {
 										 ImmutablePoint2D.of(0, 0), 
 										 AnimationType.INCREASING_FRAMES, 
 										 AnimationSpeed.NORMAL, 
-										 SpriteType.NORMAL,
+										 MonsterType.NORMAL,
 										 ForcedDirection.NONE,
 										 TwoWayFacing.HORIZONTAL,
 										 rsrc,
@@ -124,7 +124,7 @@ public final class SpritePropertiesModel extends ObservableModel {
 	 * 		instance of this object
 	 * 
 	 */
-	public static SpritePropertiesModel fromSprite(final Sprite s) {
+	public static SpritePropertiesModel fromMonster(final Monster s) {
 		return new SpritePropertiesModel(s.getBoundingBox(), 
 										 ImmutablePoint2D.of(s.getInitialSpeedX(), 
 										 s.getInitialSpeedY() ), 
@@ -145,7 +145,7 @@ public final class SpritePropertiesModel extends ObservableModel {
 	public int getSpriteId() { return spriteId; }
 	public AnimationType getAnimationType() { return animationType; }
 	public AnimationSpeed getAnimationSpeed() { return animationSpeed; }
-	public SpriteType getSpriteType() { return spriteType; }
+	public MonsterType getSpriteType() { return spriteType; }
 	public ForcedDirection getForceDirection() { return forceDirection; }
 	public TwoWayFacing getTwoWayFacing() { return twoWayDirection; }
 	public boolean isTwoWayCapable() { return canBeTwoWayFacing; }
@@ -215,6 +215,6 @@ public final class SpritePropertiesModel extends ObservableModel {
 		firePropertyChange(PROPERTY_SPRITE_ID, oldId, this.spriteId);
 	}
 
-	public void setSpriteType(final SpriteType type) { this.spriteType = type; }
+	public void setSpriteType(final MonsterType type) { this.spriteType = type; }
 	
 }

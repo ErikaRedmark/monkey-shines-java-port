@@ -38,12 +38,12 @@ import org.erikaredmark.monkeyshines.ImmutablePoint2D;
 import org.erikaredmark.monkeyshines.LevelScreen;
 import org.erikaredmark.monkeyshines.Point2D;
 import org.erikaredmark.monkeyshines.Powerup;
-import org.erikaredmark.monkeyshines.Sprite;
 import org.erikaredmark.monkeyshines.TileMap;
 import org.erikaredmark.monkeyshines.World;
 import org.erikaredmark.monkeyshines.background.Background;
 import org.erikaredmark.monkeyshines.background.FullBackground;
 import org.erikaredmark.monkeyshines.background.SingleColorBackground;
+import org.erikaredmark.monkeyshines.sprite.Monster;
 import org.erikaredmark.monkeyshines.tiles.CollapsibleTile;
 import org.erikaredmark.monkeyshines.tiles.CommonTile;
 import org.erikaredmark.monkeyshines.tiles.ConveyerTile;
@@ -253,8 +253,8 @@ public class SlickRenderer {
 	public static void paintLevelScreen(Graphics g2d, LevelScreen screen, SlickWorldGraphics slickGraphics) {
 		paintBackground(g2d, screen.getBackground(), slickGraphics);
 		paintTileMap(g2d, screen.getMap(), slickGraphics);
-		for (Sprite s : screen.getSpritesOnScreen()) {
-			paintSprite(g2d, s, slickGraphics);
+		for (Monster s : screen.getMonstersOnScreen()) {
+			paintMonster(g2d, s, slickGraphics);
 		}
 	}
 	
@@ -384,7 +384,7 @@ public class SlickRenderer {
 		}
 	}
 	
-	public static void paintSprite(Graphics g2d, Sprite sprite, SlickWorldGraphics rsrc) {
+	public static void paintMonster(Graphics g2d, Monster sprite, SlickWorldGraphics rsrc) {
 		if (!(sprite.isVisible()) )  return;
 		Point2D currentLocation = sprite.internalCurrentLocation();
 		ClippingRectangle currentClip = sprite.internalCurrentClip();
