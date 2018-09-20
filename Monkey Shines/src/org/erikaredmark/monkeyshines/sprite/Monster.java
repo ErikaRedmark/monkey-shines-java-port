@@ -53,6 +53,7 @@ public class Monster extends Sprite {
 	 * 
 	 */
 	private void setStateToDefaults() {
+		super.resetSprite();
 		this.cycleDirection = true;
 		this.updateTick = 1;
 		resetClip();

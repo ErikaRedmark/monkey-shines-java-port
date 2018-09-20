@@ -2,6 +2,7 @@ package org.erikaredmark.monkeyshines.resource;
 
 import org.erikaredmark.monkeyshines.GameConstants;
 import org.erikaredmark.monkeyshines.tiles.CommonTile.StatelessTileType;
+import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
@@ -189,6 +190,7 @@ public class SlickWorldGraphics {
 	{
 		Image energyBar = new Image(150, 11);
 		Graphics g2dEnergyBar = energyBar.getGraphics();
+	
 		g2dEnergyBar.drawImage(energySegment, 
 							   0, 0, 
 							   2, 11, 
@@ -211,6 +213,8 @@ public class SlickWorldGraphics {
 							   150, 11,
 							   6, 0,
 							   8, 11);
+		
+		g2dEnergyBar.flush();
 		return energyBar;
 	}
 	

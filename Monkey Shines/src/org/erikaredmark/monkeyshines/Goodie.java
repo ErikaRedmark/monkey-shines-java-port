@@ -1,6 +1,9 @@
 package org.erikaredmark.monkeyshines;
 
+import org.erikaredmark.monkeyshines.resource.SlickWorldGraphics;
 import org.erikaredmark.monkeyshines.resource.SoundManager;
+import org.erikaredmark.monkeyshines.sprite.Sprite;
+import org.newdawn.slick.Image;
 /**
  * 
  * Represents a specific goodie instance on the map
@@ -8,10 +11,11 @@ import org.erikaredmark.monkeyshines.resource.SoundManager;
  * @author Erika Redmark
  *
  */
-public class Goodie {
+public class Goodie extends Sprite {
 	
 	/**
 	 * Creates a goodie for the specified screen, for the specified world. 
+	 * The location is specified as a tile location, not pixel location
 	 */
 	public static Goodie newGoodie(final Type type, 
 								   final ImmutablePoint2D location, 
@@ -21,6 +25,19 @@ public class Goodie {
 	}
 	
 	private Goodie(final Type type, final ImmutablePoint2D location, final int screenId) {
+		// convert tile location data to pixel loc.
+		super(
+			ImmutablePoint2D.of(
+				(int)location.x() * GameConstants.GOODIE_SIZE_X,
+				(int)location.y() * GameConstants.GOODIE_SIZE_Y), 
+			ImmutableRectangle.none(), 
+			0, 
+			0);
+		// super ->
+		//   currentLocation: will never change
+		//   currentClip will cycle between the two animation sets for goodies.
+		//   sppedX/Y: will never change from 0
+		
 		this.screenID = screenId;
 		this.location = location;
 		goodieType = type;
@@ -29,21 +46,30 @@ public class Goodie {
 		yumSprite = -1; // The yumsprite will be set to zero before any drawing goes. This insures the first frame is not skipped.
 		
 		
-		drawToX = (int)location.x() * GameConstants.GOODIE_SIZE_X;
-		drawToY = (int)location.y() * GameConstants.GOODIE_SIZE_Y;
-		
-		drawX = type.getDrawX();
-		drawY = type.getDrawY();
+		currentClip.setX(type.getDrawX());
+		currentClip.setY(type.getDrawY());
+	}
+	
+	@Override public boolean isVisible() {
+		return (!taken && !dead);
+	}
+
+	@Override public Image spriteSheet() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override public SlickWorldGraphics slickGraphics() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	// Very simple animation.
 	public void update() {
 		if (!taken && !dead) {
 			if (readyToAnimate() ) {
-				if (drawY == 0)
-					drawY = GameConstants.GOODIE_SIZE_Y;
-				else
-					drawY = 0;
+				int yMod = currentClip.y() > 0 ? -GameConstants.GOODIE_SIZE_Y : GameConstants.GOODIE_SIZE_Y;
+				super.currentClip.translateY(yMod);
 			}
 		} else if (taken && !dead) {
 			yumSprite++;
@@ -54,10 +80,8 @@ public class Goodie {
 	}
 	
 	/**
-	 * 
 	 * Resets this goodie, making it appear back on the screen, ONLY if it is persistant.
 	 * TODO this method is not currently used
-	 * 
 	 */
 	public void resetIfApplicable() {
 		if (goodieType.persistant) {
@@ -68,7 +92,6 @@ public class Goodie {
 	}
 	
 	/**
-	 * 
 	 * Tells the goodie that it has been taken. This starts the 'Yum' animation and plays the appropriate
 	 * sound. A goodie may normally only be taken once. If a goodie is already taken, this method does nothing.
 	 * <p/>
@@ -84,7 +107,6 @@ public class Goodie {
 	 * 
 	 * @return
 	 * 		{@code true} if the goodie was just taken, {@code false} if it was already taken
-	 * 
 	 */
 	public boolean take(final Bonzo bonzo, final World world, SoundManager snd) {
 		if (taken)  return false;
@@ -108,32 +130,22 @@ public class Goodie {
 		return true;
 	}
 	
-	public int getScreenID() {
-		return screenID;
-	}
+	public int getScreenID() { return screenID; }
 
 	/**
 	 * Returns the type of this goodie, representing what kind of goodie it is
-	 * 
-	 * @return
-	 * 		goodie id
 	 */
 	public Type getGoodieType() { return goodieType; }
 
 	/**
 	 * Returns this goodie's location
-	 * 
-	 * @return
-	 * 		the location this goodie resides on whatever level it is on
 	 */
 	public ImmutablePoint2D getLocation() { return location; }
 
 	/**
-	 * 
 	 * Two goodies are considered equal if they share the same, id, type, and location. State information (
 	 * such as taken or dying) is NOT a factor in equality. Two goodies can NOT share the same id, type, and location
 	 * and yet have different states.
-	 * 
 	 */
 	@Override public boolean equals(Object o) {
 		if (this == o)  return true;
@@ -337,16 +349,10 @@ public class Goodie {
 	private boolean dead;
 	private int yumSprite;
 	
-	// Drawing info
-	private int drawToX;
-	private int drawToY;
-	private int drawX;
-	private int drawY;
-	
-	public int getDrawToX() { return drawToX; }
-	public int getDrawToY() { return drawToY; }
-	public int getDrawX() { return drawX; }
-	public int getDrawY() { return drawY; }
+	public int getDrawToX() { return currentLocation.x(); }
+	public int getDrawToY() { return currentLocation.y(); }
+	public int getDrawX() { return super.currentClip.x(); }
+	public int getDrawY() { return super.currentClip.y(); }
 	/** Goodie was taken and is now animating yum */
 	public boolean isTaken() { return taken; }
 	/** Goodie was taken, yum animation over, it's gone */

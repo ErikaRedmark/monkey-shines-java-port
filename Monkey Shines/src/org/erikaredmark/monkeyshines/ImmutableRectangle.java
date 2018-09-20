@@ -20,6 +20,13 @@ public final class ImmutableRectangle extends Boundable {
 		super.location = ImmutablePoint2D.of(x, y);
 		super.size = ImmutablePoint2D.of(width, height);
 	}
+	
+	/**
+	 * Returns an immutable rectangle at origin with zero size.
+	 */
+	public static ImmutableRectangle none() {
+		return NONE;
+	}
 
 	/**
 	 * 
@@ -80,6 +87,8 @@ public final class ImmutableRectangle extends Boundable {
 	public ImmutableRectangle newSize(ImmutablePoint2D size) {
 		return ImmutableRectangle.of(this.location.x(), this.location.y(), size.x(), size.y() );
 	}
+	
+	private static final ImmutableRectangle NONE = ImmutableRectangle.of(0, 0, 0, 0);
 
 	
 }

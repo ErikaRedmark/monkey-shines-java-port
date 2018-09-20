@@ -71,9 +71,9 @@ public abstract class Sprite {
 	public abstract SlickWorldGraphics slickGraphics();
 	
 	public Sprite(final ImmutablePoint2D startLocation, 
-			  	   final ImmutableRectangle boundingBox, 
-			  	   final int initialSpeedX, 
-			  	   final int initialSpeedY) {
+			  	  final ImmutableRectangle boundingBox, 
+			  	  final int initialSpeedX, 
+			  	  final int initialSpeedY) {
 		
 		this.startLocation = startLocation;
 		this.boundingBox = boundingBox;
@@ -104,6 +104,18 @@ public abstract class Sprite {
 	 * without affecting the original sprite.
 	 */
 	public Point2D newPointFromSpritePosition() { return Point2D.of(currentLocation); }
+	
+	/**
+	 * Called be subclass-- resets the sprite parts of a subclass, allowing the
+	 * subclass to focus on only resetting new information.
+	 */
+	protected final void resetSprite() {
+		// The only place speed is directly set OTHER THAN negation (which is fine and
+		// doesn't require reapplying the multiplier)
+		this.speedX = initialSpeedX * GameConstants.SPEED_MULTIPLIER;
+		this.speedY = initialSpeedY * GameConstants.SPEED_MULTIPLIER;
+		this.currentLocation = Point2D.from(startLocation);
+	}
 	
 	/**
 	 * 

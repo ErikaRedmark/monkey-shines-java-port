@@ -76,9 +76,8 @@ public class AwtRenderer
 	}
 	
 	/**
-	 * Paints the goodie based on state. If the goodie has not been taken yet, it just animates there. Once it is taken,
-	 * it will display the "yum" (taken && !dead) until that animation completes and it is dead, in which from there
-	 * it will not logner be painted.
+	 * Paints the goodie. The editor has no concept of a goodie being taken or in yum state, so likewise this
+	 * renderer doesn't bother with that.
 	 * 
 	 * @param g2d
 	 */
@@ -87,22 +86,10 @@ public class AwtRenderer
 		int drawToY = goodie.getDrawToY();
 		int drawX = goodie.getDrawX();
 		int drawY = goodie.getDrawY();
-		if (!goodie.isTaken() && !goodie.isDead())
-		{
-			g2d.drawImage(rsrc.goodieSheet, drawToX , drawToY, // Destination 1
-				drawToX + GameConstants.GOODIE_SIZE_X, drawToY + GameConstants.GOODIE_SIZE_Y, // Destination 2
-				drawX, drawY, drawX + GameConstants.GOODIE_SIZE_X, drawY + GameConstants.GOODIE_SIZE_Y,
-				null);
-		}
-		else if (goodie.isTaken() && !goodie.isDead()) 
-		{
-			int yumSprite = goodie.getYumSprite();
-			g2d.drawImage(rsrc.yumSheet, drawToX , drawToY, // Destination 1
-				drawToX + GameConstants.GOODIE_SIZE_X, drawToY + GameConstants.GOODIE_SIZE_Y, // Destination 2
-				yumSprite * GameConstants.GOODIE_SIZE_X, 0, // Source 1
-				yumSprite * GameConstants.GOODIE_SIZE_X + GameConstants.GOODIE_SIZE_X, GameConstants.GOODIE_SIZE_Y, // Source 2
-				null);
-		}
+		g2d.drawImage(rsrc.goodieSheet, drawToX , drawToY, // Destination 1
+			drawToX + GameConstants.GOODIE_SIZE_X, drawToY + GameConstants.GOODIE_SIZE_Y, // Destination 2
+			drawX, drawY, drawX + GameConstants.GOODIE_SIZE_X, drawY + GameConstants.GOODIE_SIZE_Y,
+			null);
 	}
 	
 	public static void paintWorld(Graphics2D g2d, World world) {

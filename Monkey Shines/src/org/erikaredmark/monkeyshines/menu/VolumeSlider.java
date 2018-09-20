@@ -53,6 +53,9 @@ public final class VolumeSlider extends JSlider {
 		
 		model.addChangeListener(new ChangeListener() {
 			@Override public void stateChanged(ChangeEvent e) {
+				if (model.getValue() == 0) {
+					model.getMinimum(); // debug breakpoint
+				}
 				type.adjustPercentage(model.getValue() );
 				
 				// Don't play demo sound unless slider has come to a rest, or that would get annoying real fast.

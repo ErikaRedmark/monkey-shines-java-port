@@ -201,7 +201,9 @@ public class SlickRenderer {
 	/**
 	 * Paints the goodie based on state. If the goodie has not been taken yet, it just animates there. Once it is taken,
 	 * it will display the "yum" (taken && !dead) until that animation completes and it is dead, in which from there
-	 * it will not logner be painted.
+	 * it will not longer be painted.
+	 * <p/>
+	 * If the goodie is not in yum state, this is effectively a sprite based drawing.
 	 * 
 	 * @param g2d
 	 */

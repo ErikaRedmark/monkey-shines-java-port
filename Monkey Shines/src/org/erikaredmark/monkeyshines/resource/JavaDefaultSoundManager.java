@@ -59,11 +59,16 @@ public final class JavaDefaultSoundManager implements SoundManager {
 		setSoundVolume(SoundSettings.getSoundVolumePercent() );
 	}
 	
-	@Override public void setBgm(final Optional<Clip> bgm)
-		{ this.bgm = bgm; }
+	// Set background music, but immediately set clip volume
+	@Override public void setBgm(final Optional<Clip> bgm) { 
+		this.bgm = bgm; 
+		setMusicVolume(SoundSettings.getMusicVolumePercent());
+	}
 	
-	@Override public void setSounds(final ImmutableMap<GameSoundEffect, Optional<Clip>> sounds)
-		{ this.sounds = sounds; }
+	@Override public void setSounds(final ImmutableMap<GameSoundEffect, Optional<Clip>> sounds) { 
+		this.sounds = sounds; 
+		setSoundVolume(SoundSettings.getSoundVolumePercent());
+	}
 
 	@Override public void playOnce(GameSoundEffect effect) {
 		if (soundOff)  return;
